@@ -1,0 +1,98 @@
+========================================
+FAHANIECARES QUICK START GUIDE
+========================================
+
+FOR DEVELOPERS
+==============
+
+1. Clone Repository:
+   git clone https://github.com/mpuyoyod/fahanie-cares.git
+   cd fahanie-cares
+
+2. Set Up Environment:
+   python -m venv venv
+   source venv/bin/activate
+   pip install -r requirements.txt
+
+3. Configure:
+   cd src
+   cp .env.example .env
+   # Edit .env with your settings
+
+4. Run Application:
+   python manage.py migrate
+   python manage.py createsuperuser
+   python manage.py runserver
+
+5. Access:
+   http://127.0.0.1:8000/
+   Admin: http://127.0.0.1:8000/admin/
+
+
+FOR USERS (MP OFFICE STAFF)
+===========================
+
+1. Access System:
+   Open browser → Go to system URL → Login page
+
+2. Login:
+   Username: [your.username]
+   Password: [your.password]
+   Click "Login"
+
+3. Main Functions:
+
+   ADD CONSTITUENT:
+   Dashboard → New Constituent → Fill Form → Save
+
+   CREATE REFERRAL:
+   Dashboard → New Referral → Select Constituent → 
+   Choose Service → Fill Details → Submit
+
+   SEARCH:
+   Use search bar → Type name/ID → Press Enter
+
+   GENERATE REPORT:
+   Reports → Select Type → Set Date Range → Generate
+
+   UPLOAD DOCUMENT:
+   Documents → Upload → Select File → Add Description → Upload
+
+4. Common Tasks:
+   - Update referral status: Open referral → Update Status
+   - Send message: Communications → New Message
+   - View analytics: Dashboard → Analytics section
+   - Export data: Reports → Generate → Export
+
+
+EMERGENCY CONTACTS
+==================
+Technical Support: support@fahaniecares.gov.ph
+Emergency: (XXX) XXX-XXXX
+Office Hours: Mon-Fri, 8AM-5PM
+
+
+TROUBLESHOOTING
+===============
+- Cannot login? → Check caps lock, contact admin
+- Slow system? → Clear browser cache, refresh page
+- Missing data? → Check filters, verify permissions
+- Error message? → Note error code, contact support
+
+
+KEYBOARD SHORTCUTS
+==================
+Ctrl+N+C : New Constituent
+Ctrl+N+R : New Referral
+Ctrl+F   : Search
+Ctrl+D   : Dashboard
+Ctrl+S   : Save
+Ctrl+L   : Logout
+
+
+SYSTEM STATUS COLORS
+====================
+🟢 Green  : Active/Completed
+🟡 Yellow : Pending/Processing
+🔴 Red    : Urgent/Overdue
+⚫ Black  : Cancelled/Inactive

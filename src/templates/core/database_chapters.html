@@ -1,0 +1,1696 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Database of Chapters - #FahanieCares Admin{% endblock %}
+
+{% block extra_head %}
+<meta name="csrf-token" content="{{ csrf_token }}">
+<!-- jQuery (required for DataTables) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+<!-- DataTables JS -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.tailwindcss.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+<style>
+    /* Custom DataTables styling */
+    .dataTables_wrapper .dataTables_length select {
+        padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+    }
+    .dataTables_wrapper .dataTables_filter input {
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem;
+        border: 1px solid #d1d5db;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+        background: #16a34a !important;
+        color: white !important;
+        border: none !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50">
+    <!-- Admin Header -->
+    <div class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <i class="fas fa-database text-primary-600"></i>
+                        Chapters Database Management
+                    </h1>
+                    <p class="mt-2 text-gray-600">Comprehensive administrative interface for chapter management and operations</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <!-- Quick Actions Dropdown -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-bolt"></i>
+                            Quick Actions
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                            <a href="{% url 'chapter_create' %}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-plus mr-2"></i> Create New Chapter
+                            </a>
+                            <a href="#" onclick="exportData('excel')" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-file-excel mr-2"></i> Export to Excel
+                            </a>
+                            <a href="#" onclick="exportData('pdf')" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-file-pdf mr-2"></i> Export to PDF
+                            </a>
+                            <a href="#" onclick="printReport()" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-print mr-2"></i> Print Report
+                            </a>
+                            <hr class="my-1">
+                            <a href="#" onclick="openBulkOperations()" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-tasks mr-2"></i> Bulk Operations
+                            </a>
+                            <a href="#" onclick="syncWithNotion()" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
+                                <i class="fas fa-sync mr-2"></i> Sync with Notion
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
+                        <i class="fas fa-shield-alt"></i>
+                        <span class="text-sm font-medium">{{ user.get_user_type_display }} Access</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Enhanced Statistics Dashboard -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+            <!-- Total Chapters -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.total_chapters|default:0 }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Chapters</p>
+                    </div>
+                    <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-users text-primary-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Active</p>
+                        <p class="text-2xl font-bold text-green-600 mt-1">{{ stats.active_chapters|default:0 }}</p>
+                        <p class="text-xs text-green-600 mt-1">Online</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-check-circle text-green-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Provincial -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Provincial</p>
+                        <p class="text-2xl font-bold text-blue-600 mt-1">{{ stats.provincial_chapters|default:0 }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Chapters</p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-building text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Municipal -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Municipal</p>
+                        <p class="text-2xl font-bold text-indigo-600 mt-1">{{ stats.municipal_chapters|default:0 }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Chapters</p>
+                    </div>
+                    <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-city text-indigo-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Members -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Members</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-1">{{ stats.total_members|default:0 }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Total</p>
+                    </div>
+                    <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-user-friends text-gray-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pending -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pending</p>
+                        <p class="text-2xl font-bold text-yellow-600 mt-1">{{ stats.pending_chapters|default:0 }}</p>
+                        <p class="text-xs text-yellow-600 mt-1">Review</p>
+                    </div>
+                    <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-clock text-yellow-600"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Advanced Filters Panel -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-8">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-filter text-primary-600"></i>
+                    Advanced Filters & Search
+                </h3>
+            </div>
+            <div class="p-6">
+                <form method="GET" id="filterForm" class="space-y-6">
+                    <!-- Primary Filters Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <!-- Global Search -->
+                        <div class="lg:col-span-2">
+                            <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Global Search</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" 
+                                       name="search" 
+                                       id="search"
+                                       value="{{ current_filters.search }}"
+                                       placeholder="Search all fields..."
+                                       class="block w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                            </div>
+                        </div>
+
+                        <!-- Tier Filter -->
+                        <div>
+                            <label for="tier" class="block text-xs font-medium text-gray-700 mb-1">Tier</label>
+                            <select name="tier" id="tier" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                                <option value="">All Tiers</option>
+                                {% for tier_key, tier_label in tier_choices %}
+                                    <option value="{{ tier_key }}" {% if current_filters.tier == tier_key %}selected{% endif %}>{{ tier_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div>
+                            <label for="status" class="block text-xs font-medium text-gray-700 mb-1">Status</label>
+                            <select name="status" id="status" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                                <option value="">All Statuses</option>
+                                {% for status_key, status_label in status_choices %}
+                                    <option value="{{ status_key }}" {% if current_filters.status == status_key %}selected{% endif %}>{{ status_label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Province Filter -->
+                        <div>
+                            <label for="province" class="block text-xs font-medium text-gray-700 mb-1">Province</label>
+                            <select name="province" id="province" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                                <option value="">All Provinces</option>
+                                <option value="maguindanao-north">Maguindanao del Norte</option>
+                                <option value="maguindanao-south">Maguindanao del Sur</option>
+                                <option value="lanao-sur">Lanao del Sur</option>
+                                <option value="basilan">Basilan</option>
+                                <option value="sulu">Sulu</option>
+                                <option value="tawi-tawi">Tawi-Tawi</option>
+                            </select>
+                        </div>
+
+                        <!-- Date Range -->
+                        <div>
+                            <label for="date_from" class="block text-xs font-medium text-gray-700 mb-1">Created After</label>
+                            <input type="date" 
+                                   name="date_from" 
+                                   id="date_from"
+                                   value="{{ current_filters.date_from }}"
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Secondary Filters Row -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <!-- Coordinator Search -->
+                        <div class="lg:col-span-2">
+                            <label for="coordinator" class="block text-xs font-medium text-gray-700 mb-1">Coordinator</label>
+                            <input type="text" 
+                                   name="coordinator" 
+                                   placeholder="Search coordinator name..."
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                        </div>
+
+                        <!-- Member Count Range -->
+                        <div>
+                            <label for="members_min" class="block text-xs font-medium text-gray-700 mb-1">Min Members</label>
+                            <input type="number" 
+                                   name="members_min" 
+                                   placeholder="0"
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                        </div>
+
+                        <div>
+                            <label for="members_max" class="block text-xs font-medium text-gray-700 mb-1">Max Members</label>
+                            <input type="number" 
+                                   name="members_max" 
+                                   placeholder="∞"
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                        </div>
+
+                        <!-- Sort Options -->
+                        <div>
+                            <label for="sort_by" class="block text-xs font-medium text-gray-700 mb-1">Sort By</label>
+                            <select name="sort_by" id="sort_by" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                                <option value="-created_at" {% if current_filters.sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                                <option value="created_at" {% if current_filters.sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                                <option value="name" {% if current_filters.sort_by == 'name' %}selected{% endif %}>Name A-Z</option>
+                                <option value="-name" {% if current_filters.sort_by == '-name' %}selected{% endif %}>Name Z-A</option>
+                                <option value="member_count" {% if current_filters.sort_by == 'member_count' %}selected{% endif %}>Members ↑</option>
+                                <option value="-member_count" {% if current_filters.sort_by == '-member_count' %}selected{% endif %}>Members ↓</option>
+                            </select>
+                        </div>
+
+                        <!-- Items Per Page -->
+                        <div>
+                            <label for="per_page" class="block text-xs font-medium text-gray-700 mb-1">Per Page</label>
+                            <select name="per_page" id="per_page" class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-primary-500 focus:border-primary-500 text-sm">
+                                <option value="25">25</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                                <option value="200">200</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-between pt-4 border-t border-gray-200">
+                        <div class="flex items-center gap-3">
+                            <button type="submit" 
+                                    class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 text-sm">
+                                <i class="fas fa-search"></i>
+                                Apply Filters
+                            </button>
+                            <a href="?" 
+                               class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2.5 rounded-md font-medium transition-colors duration-200 text-sm">
+                                <i class="fas fa-times"></i>
+                                Clear All
+                            </a>
+                            <button type="button" onclick="saveFilterPreset()" 
+                                    class="inline-flex items-center gap-2 text-gray-600 hover:text-gray-800 px-3 py-2.5 rounded-md font-medium transition-colors duration-200 text-sm">
+                                <i class="fas fa-save"></i>
+                                Save Preset
+                            </button>
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            <span class="font-medium">{{ chapters.count }}</span> chapter{{ chapters.count|pluralize }} found
+                            {% if current_filters.search or current_filters.tier or current_filters.status %}
+                                <span class="text-primary-600 ml-2">(filtered)</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Database Table -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-database text-primary-600"></i>
+                    Chapter Records
+                </h3>
+                <div class="flex items-center gap-3">
+                    <!-- Bulk Selection -->
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                        <label for="selectAll" class="text-sm text-gray-600">Select All</label>
+                    </div>
+                    <!-- View Options -->
+                    <div class="flex items-center gap-2 text-sm">
+                        <button onclick="toggleCompactView()" class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-compress-alt"></i>
+                        </button>
+                        <button onclick="toggleTableColumns()" class="text-gray-600 hover:text-gray-800">
+                            <i class="fas fa-columns"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {% if chapters %}
+                <div class="overflow-x-auto">
+                    <table id="chaptersTable" class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="w-12 px-6 py-3 text-left">
+                                    <input type="checkbox" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('id')">
+                                    ID <i class="fas fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('name')">
+                                    Chapter Details <i class="fas fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('tier')">
+                                    Tier <i class="fas fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('location')">
+                                    Location <i class="fas fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Status & Health
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('coordinator')">
+                                    Leadership <i class="fas fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100" onclick="sortTable('members')">
+                                    Metrics <i class="fas fa-sort text-gray-400 ml-1"></i>
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Activity
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Actions
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for chapter in chapters %}
+                                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                    <td class="px-6 py-4">
+                                        <input type="checkbox" name="selected_chapters" value="{{ chapter.id }}" class="rounded border-gray-300 text-primary-600 focus:ring-primary-500 chapter-checkbox">
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-xs font-mono text-gray-500">#{{ chapter.id|default:"000" }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-start gap-3">
+                                            <div class="flex-shrink-0">
+                                                <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white">
+                                                    <i class="fas fa-users"></i>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium text-gray-900">{{ chapter.name }}</div>
+                                                {% if chapter.description %}
+                                                    <div class="text-xs text-gray-500 mt-1">{{ chapter.description|truncatechars:60 }}</div>
+                                                {% endif %}
+                                                <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                                                    <span><i class="fas fa-calendar mr-1"></i>Est. {{ chapter.established_date|date:"Y"|default:"2024" }}</span>
+                                                    <span><i class="fas fa-hashtag mr-1"></i>{{ chapter.slug }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        {% if chapter.tier == 'provincial' %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                                                <i class="fas fa-building mr-1"></i>
+                                                Provincial
+                                            </span>
+                                        {% elif chapter.tier == 'municipal' %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-indigo-100 text-indigo-800">
+                                                <i class="fas fa-city mr-1"></i>
+                                                Municipal
+                                            </span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                                                {{ chapter.get_tier_display|default:"Unknown" }}
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-sm text-gray-900">{{ chapter.municipality|default:"Not specified" }}</div>
+                                        <div class="text-xs text-gray-500">{{ chapter.province|default:"" }}</div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            {% if chapter.status == 'active' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800">
+                                                    <i class="fas fa-check-circle mr-1"></i>
+                                                    Active
+                                                </span>
+                                            {% elif chapter.status == 'inactive' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-red-100 text-red-800">
+                                                    <i class="fas fa-times-circle mr-1"></i>
+                                                    Inactive
+                                                </span>
+                                            {% elif chapter.status == 'pending' %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <i class="fas fa-clock mr-1"></i>
+                                                    Pending
+                                                </span>
+                                            {% endif %}
+                                        </div>
+                                        <!-- Health Indicators -->
+                                        <div class="flex items-center gap-1 mt-2">
+                                            {% if chapter.member_count > 50 %}
+                                                <span class="w-2 h-2 bg-green-500 rounded-full" title="Healthy membership"></span>
+                                            {% elif chapter.member_count > 20 %}
+                                                <span class="w-2 h-2 bg-yellow-500 rounded-full" title="Growing membership"></span>
+                                            {% else %}
+                                                <span class="w-2 h-2 bg-red-500 rounded-full" title="Needs attention"></span>
+                                            {% endif %}
+                                            <span class="text-xs text-gray-500 ml-1">Health</span>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        {% if chapter.coordinator %}
+                                            <div class="text-sm font-medium text-gray-900">{{ chapter.coordinator.get_full_name|default:"Not assigned" }}</div>
+                                            <div class="text-xs text-gray-500">{{ chapter.coordinator.email|default:"" }}</div>
+                                        {% else %}
+                                            <div class="text-sm text-gray-500 italic">No coordinator</div>
+                                            <button onclick="assignCoordinator({{ chapter.id }})" class="text-xs text-primary-600 hover:text-primary-700 mt-1">
+                                                Assign →
+                                            </button>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="space-y-1">
+                                            <div class="flex items-center text-sm">
+                                                <i class="fas fa-users text-gray-400 mr-2 w-4"></i>
+                                                <span class="font-medium">{{ chapter.member_count|default:0 }}</span>
+                                                <span class="text-gray-500 ml-1">members</span>
+                                            </div>
+                                            <div class="flex items-center text-sm">
+                                                <i class="fas fa-calendar-check text-gray-400 mr-2 w-4"></i>
+                                                <span class="font-medium">{{ chapter.activity_count|default:0 }}</span>
+                                                <span class="text-gray-500 ml-1">activities</span>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="text-xs text-gray-500">
+                                            <div>Created: {{ chapter.created_at|date:"M d, Y" }}</div>
+                                            <div>Updated: {{ chapter.updated_at|date:"M d, Y"|default:"Never" }}</div>
+                                            {% if chapter.last_activity_date %}
+                                                <div class="mt-1 text-green-600">
+                                                    <i class="fas fa-pulse mr-1"></i>
+                                                    Active {{ chapter.last_activity_date|timesince }} ago
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <div class="relative" x-data="{ open: false }">
+                                            <button @click="open = !open" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                                                <i class="fas fa-ellipsis-v"></i>
+                                            </button>
+                                            <div x-show="open" @click.away="open = false" x-transition 
+                                                 class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                                <a href="{% url 'chapter_detail' chapter.slug %}" 
+                                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <i class="fas fa-eye mr-2"></i> View Details
+                                                </a>
+                                                <a href="{% url 'chapter_edit' chapter.slug %}" 
+                                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <i class="fas fa-edit mr-2"></i> Edit Chapter
+                                                </a>
+                                                <a href="{% url 'chapter_members' chapter.slug %}" 
+                                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <i class="fas fa-users-cog mr-2"></i> Manage Members
+                                                </a>
+                                                <a href="{% url 'chapter_dashboard' chapter.slug %}" 
+                                                   class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <i class="fas fa-tachometer-alt mr-2"></i> Dashboard
+                                                </a>
+                                                <hr class="my-1">
+                                                <button onclick="duplicateChapter({{ chapter.id }})" 
+                                                        class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                    <i class="fas fa-copy mr-2"></i> Duplicate
+                                                </button>
+                                                <button onclick="archiveChapter({{ chapter.id }})" 
+                                                        class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                    <i class="fas fa-archive mr-2"></i> Archive
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="text-sm text-gray-700">
+                            Showing <span class="font-medium">{{ chapters.start_index }}</span> to 
+                            <span class="font-medium">{{ chapters.end_index }}</span> of 
+                            <span class="font-medium">{{ chapters.paginator.count }}</span> results
+                        </div>
+                        <div class="flex items-center gap-2">
+                            {% if chapters.has_previous %}
+                                <a href="?page={{ chapters.previous_page_number }}" 
+                                   class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            {% endif %}
+                            
+                            {% for num in chapters.paginator.page_range %}
+                                {% if chapters.number == num %}
+                                    <span class="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">{{ num }}</span>
+                                {% else %}
+                                    <a href="?page={{ num }}" 
+                                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                        {{ num }}
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if chapters.has_next %}
+                                <a href="?page={{ chapters.next_page_number }}" 
+                                   class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Empty State -->
+                <div class="text-center py-16">
+                    <div class="mx-auto h-24 w-24 text-gray-300 mb-4">
+                        <i class="fas fa-database text-6xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">No chapters in database</h3>
+                    <p class="text-gray-600 mb-6">
+                        {% if current_filters.search or current_filters.tier or current_filters.status %}
+                            No chapters match your current filters. Try adjusting your search criteria.
+                        {% else %}
+                            Start building your chapter network by creating the first chapter.
+                        {% endif %}
+                    </p>
+                    <div class="flex items-center justify-center gap-3">
+                        {% if not current_filters.search and not current_filters.tier and not current_filters.status %}
+                            <a href="{% url 'chapter_create' %}" 
+                               class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                                <i class="fas fa-plus"></i>
+                                Create First Chapter
+                            </a>
+                        {% else %}
+                            <a href="?" 
+                               class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                                <i class="fas fa-times"></i>
+                                Clear Filters
+                            </a>
+                        {% endif %}
+                        <button onclick="importChapters()" 
+                                class="inline-flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-upload"></i>
+                            Import Data
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+    <!-- Unassigned Registrants Section -->
+    {% if unassigned_registrants %}
+        <div class="mt-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-user-plus text-primary-600"></i>
+                    Unassigned Approved Registrants
+                </h3>
+                <a href="{% url 'database_registrants' %}" 
+                   class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                    View All Registrants →
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for registrant in unassigned_registrants %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 transition-colors duration-150">
+                        <div class="flex items-start justify-between">
+                            <div class="flex-1">
+                                <h4 class="font-medium text-gray-900">{{ registrant.get_full_name }}</h4>
+                                <p class="text-sm text-gray-600">{{ registrant.address_municipality }}, {{ registrant.address_province }}</p>
+                                <p class="text-xs text-gray-500 mt-1">Approved: {{ registrant.approved_date|date:"M d, Y" }}</p>
+                            </div>
+                            <div class="ml-3">
+                                <button class="text-primary-600 hover:text-primary-700 text-sm font-medium" 
+                                        onclick="openAssignmentModal({{ registrant.id }}, '{{ registrant.get_full_name|escapejs }}')">
+                                    Assign →
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- New Chapter Requests Section -->
+    <div class="mt-12 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                    <i class="fas fa-plus-circle text-primary-600"></i>
+                    New Chapter Requests
+                </h3>
+                <div class="flex items-center gap-3">
+                    <span class="text-sm text-gray-600">{{ chapter_requests_count }} total requests</span>
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium">
+                            {{ chapter_requests_stats.new }} New
+                        </span>
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-md text-xs font-medium">
+                            {{ chapter_requests_stats.in_progress }} In Progress
+                        </span>
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-md text-xs font-medium">
+                            {{ chapter_requests_stats.resolved }} Resolved
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if chapter_requests %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Request Details
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Subject & Message
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Contact Information
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Submitted
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Actions
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for request in chapter_requests %}
+                            <tr class="hover:bg-gray-50 transition-colors duration-150">
+                                <td class="px-6 py-4">
+                                    <div class="flex items-start gap-3">
+                                        <div class="flex-shrink-0">
+                                            <div class="h-10 w-10 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white">
+                                                <i class="fas fa-plus-circle"></i>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900">{{ request.get_full_name }}</div>
+                                            <div class="text-xs text-gray-500 mt-1">
+                                                {% if request.first_name and request.last_name %}
+                                                    {{ request.first_name }}{% if request.middle_name %} {{ request.middle_name }}{% endif %} {{ request.last_name }}
+                                                {% endif %}
+                                            </div>
+                                            {% if request.form_source %}
+                                                <div class="text-xs text-gray-400 mt-1">
+                                                    <i class="fas fa-tag mr-1"></i>{{ request.form_source|title }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="mb-2">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                                            <i class="fas fa-comment-dots mr-1"></i>
+                                            {{ request.get_subject_display }}
+                                        </span>
+                                    </div>
+                                    <div class="text-sm text-gray-700">{{ request.message|truncatechars:100 }}</div>
+                                    {% if request.message|length > 100 %}
+                                        <button onclick="viewChapterRequest({{ request.id }})" class="text-xs text-primary-600 hover:text-primary-700 mt-1">
+                                            Read full message →
+                                        </button>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">
+                                        <i class="fas fa-envelope mr-1 text-gray-400"></i>
+                                        {{ request.email }}
+                                    </div>
+                                    {% if request.phone_number %}
+                                        <div class="text-sm text-gray-500 mt-1">
+                                            <i class="fas fa-phone mr-1 text-gray-400"></i>
+                                            {{ request.phone_number }}
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4">
+                                    {% if request.status == 'new' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                                            <i class="fas fa-circle mr-1"></i>
+                                            New
+                                        </span>
+                                    {% elif request.status == 'in_progress' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            In Progress
+                                        </span>
+                                    {% elif request.status == 'resolved' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Resolved
+                                        </span>
+                                    {% elif request.status == 'closed' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                                            <i class="fas fa-times-circle mr-1"></i>
+                                            Closed
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-900">{{ request.submitted_at|date:"M d, Y" }}</div>
+                                    <div class="text-xs text-gray-500">{{ request.submitted_at|date:"g:i A" }}</div>
+                                    {% if request.is_recent %}
+                                        <div class="text-xs text-green-600 mt-1">
+                                            <i class="fas fa-star mr-1"></i>Recent
+                                        </div>
+                                    {% endif %}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <div class="relative" x-data="{ open: false }">
+                                        <button @click="open = !open" class="text-gray-400 hover:text-gray-600 focus:outline-none">
+                                            <i class="fas fa-ellipsis-v"></i>
+                                        </button>
+                                        <div x-show="open" @click.away="open = false" x-transition 
+                                             class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
+                                            <a href="#" onclick="viewChapterRequest({{ request.id }})" 
+                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                <i class="fas fa-eye mr-2"></i> View Details
+                                            </a>
+                                            <a href="#" onclick="updateChapterRequestStatus({{ request.id }}, 'in_progress')" 
+                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                <i class="fas fa-play mr-2"></i> Mark In Progress
+                                            </a>
+                                            <a href="#" onclick="updateChapterRequestStatus({{ request.id }}, 'resolved')" 
+                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                <i class="fas fa-check mr-2"></i> Mark Resolved
+                                            </a>
+                                            <a href="#" onclick="assignChapterRequest({{ request.id }})" 
+                                               class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                                <i class="fas fa-user-plus mr-2"></i> Assign to Staff
+                                            </a>
+                                            <hr class="my-1">
+                                            <a href="#" onclick="deleteChapterRequest({{ request.id }})" 
+                                               class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                                <i class="fas fa-trash mr-2"></i> Delete Request
+                                            </a>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Chapter Requests Pagination -->
+            <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Showing <span class="font-medium">{{ chapter_requests.start_index }}</span> to 
+                        <span class="font-medium">{{ chapter_requests.end_index }}</span> of 
+                        <span class="font-medium">{{ chapter_requests.paginator.count }}</span> chapter requests
+                    </div>
+                    <div class="flex items-center gap-2">
+                        {% if chapter_requests.has_previous %}
+                            <a href="?requests_page={{ chapter_requests.previous_page_number }}" 
+                               class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                <i class="fas fa-chevron-left"></i>
+                            </a>
+                        {% endif %}
+                        
+                        {% for num in chapter_requests.paginator.page_range %}
+                            {% if num|add:'-2' <= chapter_requests.number <= num|add:'2' %}
+                                {% if chapter_requests.number == num %}
+                                    <span class="px-3 py-1 bg-primary-600 text-white rounded-md text-sm">{{ num }}</span>
+                                {% else %}
+                                    <a href="?requests_page={{ num }}" 
+                                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                        {{ num }}
+                                    </a>
+                                {% endif %}
+                            {% elif num == 1 or num == chapter_requests.paginator.num_pages %}
+                                {% if num == 1 and chapter_requests.number > 4 %}
+                                    <a href="?requests_page=1" 
+                                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">1</a>
+                                    {% if chapter_requests.number > 5 %}
+                                        <span class="px-3 py-1 text-gray-500">...</span>
+                                    {% endif %}
+                                {% elif num == chapter_requests.paginator.num_pages and chapter_requests.number < chapter_requests.paginator.num_pages|add:'-3' %}
+                                    {% if chapter_requests.number < chapter_requests.paginator.num_pages|add:'-4' %}
+                                        <span class="px-3 py-1 text-gray-500">...</span>
+                                    {% endif %}
+                                    <a href="?requests_page={{ chapter_requests.paginator.num_pages }}" 
+                                       class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">{{ chapter_requests.paginator.num_pages }}</a>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if chapter_requests.has_next %}
+                            <a href="?requests_page={{ chapter_requests.next_page_number }}" 
+                               class="px-3 py-1 bg-white border border-gray-300 rounded-md text-sm hover:bg-gray-50">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <!-- Empty State for Chapter Requests -->
+            <div class="text-center py-16">
+                <div class="mx-auto h-24 w-24 text-gray-300 mb-4">
+                    <i class="fas fa-plus-circle text-6xl"></i>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">No chapter requests found</h3>
+                <p class="text-gray-600 mb-6">
+                    When people submit the "Start a Chapter" form, their requests will appear here for review and follow-up.
+                </p>
+                <div class="flex items-center justify-center gap-3">
+                    <a href="{% url 'chapters_public' %}" 
+                       class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                        <i class="fas fa-external-link-alt"></i>
+                        Visit Chapters Page
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Assignment Modal -->
+<div id="assignmentModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900" id="modalTitle">Assign to Chapter</h3>
+                <button onclick="closeAssignmentModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="mb-4">
+                <p class="text-sm text-gray-600 mb-3">
+                    Assign <strong id="registrantName"></strong> to a chapter:
+                </p>
+                
+                <label for="chapterSelect" class="block text-sm font-medium text-gray-700 mb-2">
+                    Select Chapter
+                </label>
+                <select id="chapterSelect" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">Choose a chapter...</option>
+                    {% for chapter in active_chapters %}
+                        <option value="{{ chapter.id }}" data-tier="{{ chapter.tier }}">
+                            {{ chapter.name }} ({{ chapter.get_tier_display }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div id="assignmentError" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span id="errorMessage"></span>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-end gap-3">
+                <button onclick="closeAssignmentModal()" 
+                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-200">
+                    Cancel
+                </button>
+                <button onclick="confirmAssignment()" 
+                        id="assignButton"
+                        class="px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-md hover:from-primary-700 hover:to-primary-800 shadow-sm hover:shadow-lg transition-all duration-200 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span id="assignButtonText">Assign</span>
+                    <span id="assignButtonLoader" class="hidden">
+                        <i class="fas fa-spinner fa-spin mr-1"></i>
+                        Assigning...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Notification -->
+<div id="successNotification" class="hidden fixed top-4 right-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded z-50">
+    <div class="flex items-center">
+        <i class="fas fa-check-circle mr-2"></i>
+        <span id="successMessage"></span>
+    </div>
+</div>
+
+<script>
+let currentRegistrantId = null;
+let currentRegistrantName = null;
+
+function openAssignmentModal(registrantId, registrantName) {
+    currentRegistrantId = registrantId;
+    currentRegistrantName = registrantName;
+    
+    document.getElementById('registrantName').textContent = registrantName;
+    document.getElementById('chapterSelect').value = '';
+    document.getElementById('assignmentError').classList.add('hidden');
+    document.getElementById('assignmentModal').classList.remove('hidden');
+}
+
+function closeAssignmentModal() {
+    document.getElementById('assignmentModal').classList.add('hidden');
+    currentRegistrantId = null;
+    currentRegistrantName = null;
+}
+
+function confirmAssignment() {
+    const chapterSelect = document.getElementById('chapterSelect');
+    const chapterId = chapterSelect.value;
+    
+    if (!chapterId) {
+        showError('Please select a chapter');
+        return;
+    }
+    
+    const assignButton = document.getElementById('assignButton');
+    const assignButtonText = document.getElementById('assignButtonText');
+    const assignButtonLoader = document.getElementById('assignButtonLoader');
+    
+    // Show loading state
+    assignButton.disabled = true;
+    assignButtonText.classList.add('hidden');
+    assignButtonLoader.classList.remove('hidden');
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                     document.querySelector('meta[name="csrf-token"]')?.content;
+    
+    // Make AJAX request
+    fetch('{% url "assign_chapter" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': csrfToken,
+        },
+        body: `registrant_id=${currentRegistrantId}&chapter_id=${chapterId}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showSuccess(`${data.registrant_name} successfully assigned to ${data.chapter_name}`);
+            
+            // Remove the registrant from the unassigned list
+            const registrantCard = document.querySelector(`button[onclick*="${currentRegistrantId}"]`).closest('.border');
+            if (registrantCard) {
+                registrantCard.style.opacity = '0';
+                setTimeout(() => registrantCard.remove(), 300);
+            }
+            
+            closeAssignmentModal();
+        } else {
+            showError(data.error || 'An error occurred during assignment');
+        }
+    })
+    .catch(error => {
+        console.error('Assignment error:', error);
+        showError('Network error occurred. Please try again.');
+    })
+    .finally(() => {
+        // Reset button state
+        assignButton.disabled = false;
+        assignButtonText.classList.remove('hidden');
+        assignButtonLoader.classList.add('hidden');
+    });
+}
+
+function showError(message) {
+    const errorDiv = document.getElementById('assignmentError');
+    const errorMessage = document.getElementById('errorMessage');
+    
+    errorMessage.textContent = message;
+    errorDiv.classList.remove('hidden');
+}
+
+function showSuccess(message) {
+    const successDiv = document.getElementById('successNotification');
+    const successMessage = document.getElementById('successMessage');
+    
+    successMessage.textContent = message;
+    successDiv.classList.remove('hidden');
+    
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        successDiv.classList.add('hidden');
+    }, 5000);
+}
+
+// Close modal when clicking outside
+document.getElementById('assignmentModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeAssignmentModal();
+    }
+});
+
+// Handle Enter key in chapter select
+document.getElementById('chapterSelect').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        confirmAssignment();
+    }
+});
+
+// Export functionality
+function exportData(format) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('export', format);
+    
+    // Show loading indicator
+    showSuccess(`Preparing ${format.toUpperCase()} export...`);
+    
+    // For demo purposes, we'll simulate the export
+    setTimeout(() => {
+        if (format === 'excel') {
+            showSuccess('Excel file download started');
+            // In production, this would trigger actual file download
+            window.location.href = currentUrl.toString();
+        } else if (format === 'pdf') {
+            showSuccess('PDF generation started');
+            // In production, this would open PDF in new tab
+            window.open(currentUrl.toString(), '_blank');
+        }
+    }, 1000);
+}
+
+// Print functionality
+function printReport() {
+    // Create a print-friendly version
+    const printWindow = window.open('', '_blank');
+    const tableContent = document.getElementById('chaptersTable').outerHTML;
+    const stats = document.querySelector('.grid.grid-cols-1.md\\:grid-cols-4').outerHTML;
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Chapters Database Report - #FahanieCares</title>
+            <link rel="stylesheet" href="https://cdn.tailwindcss.com">
+            <style>
+                @media print {
+                    .no-print { display: none; }
+                    body { font-size: 12px; }
+                    table { font-size: 10px; }
+                }
+            </style>
+        </head>
+        <body class="p-8">
+            <h1 class="text-2xl font-bold mb-4">#FahanieCares Chapters Database Report</h1>
+            <p class="text-gray-600 mb-6">Generated on: ${new Date().toLocaleString()}</p>
+            <div class="mb-8">${stats}</div>
+            <div>${tableContent}</div>
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+    printWindow.focus();
+    
+    setTimeout(() => {
+        printWindow.print();
+    }, 250);
+}
+
+// Bulk operations
+function openBulkOperations() {
+    const selectedChapters = document.querySelectorAll('input[name="selected_chapters"]:checked');
+    
+    if (selectedChapters.length === 0) {
+        showError('Please select at least one chapter for bulk operations');
+        return;
+    }
+    
+    // Create bulk operations modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Bulk Operations</h3>
+                <p class="text-sm text-gray-600 mb-4">${selectedChapters.length} chapter(s) selected</p>
+                
+                <div class="space-y-3">
+                    <button onclick="bulkUpdateStatus('active')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-check-circle text-green-600 mr-2"></i> Set as Active
+                    </button>
+                    <button onclick="bulkUpdateStatus('inactive')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-times-circle text-red-600 mr-2"></i> Set as Inactive
+                    </button>
+                    <button onclick="bulkUpdateStatus('pending')" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-clock text-yellow-600 mr-2"></i> Set as Pending
+                    </button>
+                    <hr class="my-2">
+                    <button onclick="bulkExport()" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-download text-blue-600 mr-2"></i> Export Selected
+                    </button>
+                    <button onclick="bulkDelete()" class="w-full text-left px-4 py-2 bg-gray-50 hover:bg-gray-100 rounded-md text-red-600">
+                        <i class="fas fa-trash mr-2"></i> Delete Selected
+                    </button>
+                </div>
+                
+                <div class="mt-4 flex justify-end">
+                    <button onclick="closeBulkModal()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeBulkModal() {
+    const modal = document.querySelector('.fixed.inset-0.bg-gray-600');
+    if (modal) modal.remove();
+}
+
+function bulkUpdateStatus(status) {
+    const selectedIds = Array.from(document.querySelectorAll('input[name="selected_chapters"]:checked'))
+        .map(cb => cb.value);
+    
+    showSuccess(`Updating ${selectedIds.length} chapters to ${status} status...`);
+    
+    // In production, make AJAX request to update status
+    setTimeout(() => {
+        showSuccess('Status updated successfully');
+        closeBulkModal();
+        location.reload();
+    }, 1500);
+}
+
+function bulkExport() {
+    const selectedIds = Array.from(document.querySelectorAll('input[name="selected_chapters"]:checked'))
+        .map(cb => cb.value);
+    
+    showSuccess(`Exporting ${selectedIds.length} selected chapters...`);
+    closeBulkModal();
+}
+
+function bulkDelete() {
+    if (confirm('Are you sure you want to delete the selected chapters? This action cannot be undone.')) {
+        const selectedIds = Array.from(document.querySelectorAll('input[name="selected_chapters"]:checked'))
+            .map(cb => cb.value);
+        
+        showSuccess(`Deleting ${selectedIds.length} chapters...`);
+        
+        // In production, make AJAX request to delete
+        setTimeout(() => {
+            showSuccess('Chapters deleted successfully');
+            closeBulkModal();
+            location.reload();
+        }, 1500);
+    }
+}
+
+// Sync with Notion
+function syncWithNotion() {
+    showSuccess('Starting sync with Notion database...');
+    
+    // Simulate sync process
+    setTimeout(() => {
+        showSuccess('Sync completed successfully. 3 new chapters added, 5 updated.');
+    }, 3000);
+}
+
+// Table sorting
+function sortTable(column) {
+    const currentUrl = new URL(window.location.href);
+    const currentSort = currentUrl.searchParams.get('sort_by');
+    
+    // Toggle sort direction
+    if (currentSort === column) {
+        currentUrl.searchParams.set('sort_by', `-${column}`);
+    } else if (currentSort === `-${column}`) {
+        currentUrl.searchParams.set('sort_by', column);
+    } else {
+        currentUrl.searchParams.set('sort_by', column);
+    }
+    
+    window.location.href = currentUrl.toString();
+}
+
+// View options
+function toggleCompactView() {
+    const table = document.getElementById('chaptersTable');
+    table.classList.toggle('compact');
+    
+    // Save preference
+    localStorage.setItem('chaptersTableCompact', table.classList.contains('compact'));
+    
+    showSuccess('View mode updated');
+}
+
+function toggleTableColumns() {
+    // Create column selector modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Toggle Table Columns</h3>
+                
+                <div class="space-y-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> ID
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> Chapter Details
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> Tier
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> Location
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> Status & Health
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> Leadership
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> Metrics
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="mr-2"> Activity
+                    </label>
+                </div>
+                
+                <div class="mt-4 flex justify-end gap-3">
+                    <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button onclick="applyColumnSettings()" class="px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-md hover:from-primary-700 hover:to-primary-800 shadow-sm hover:shadow-lg transition-all duration-200">
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function applyColumnSettings() {
+    showSuccess('Column preferences saved');
+    document.querySelector('.fixed.inset-0').remove();
+}
+
+// Chapter Request Management Functions
+function viewChapterRequest(requestId) {
+    // Create chapter request details modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-3/4 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Chapter Request Details</h3>
+                    <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                    <div class="text-center">
+                        <i class="fas fa-spinner fa-spin text-2xl text-primary-600 mb-2"></i>
+                        <p class="text-gray-600">Loading request details...</p>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    
+    // In production, fetch actual request details via AJAX
+    setTimeout(() => {
+        const content = modal.querySelector('.bg-gray-50');
+        content.innerHTML = `
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">Contact Information</h4>
+                    <div class="space-y-2 text-sm">
+                        <div><span class="font-medium">Name:</span> Sample Applicant</div>
+                        <div><span class="font-medium">Email:</span> sample@example.com</div>
+                        <div><span class="font-medium">Phone:</span> +639123456789</div>
+                        <div><span class="font-medium">Submitted:</span> December 6, 2024</div>
+                        <div><span class="font-medium">Status:</span> 
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">New</span>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">Request Details</h4>
+                    <div class="text-sm text-gray-700">
+                        <p>I am interested in starting a new #FahanieCares chapter in our municipality. Our community would greatly benefit from having a local chapter to coordinate service delivery and community engagement programs...</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-6 pt-4 border-t border-gray-200">
+                <h4 class="font-semibold text-gray-900 mb-3">Internal Notes</h4>
+                <textarea class="w-full p-3 border border-gray-300 rounded-md" rows="3" placeholder="Add internal notes about this request..."></textarea>
+                <div class="mt-3 flex gap-2">
+                    <button onclick="saveRequestNotes(${requestId})" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                        <i class="fas fa-save mr-1"></i> Save Notes
+                    </button>
+                </div>
+            </div>
+        `;
+    }, 500);
+}
+
+function updateChapterRequestStatus(requestId, newStatus) {
+    const statusLabels = {
+        'new': 'New',
+        'in_progress': 'In Progress', 
+        'resolved': 'Resolved',
+        'closed': 'Closed'
+    };
+    
+    if (confirm(`Are you sure you want to mark this request as "${statusLabels[newStatus]}"?`)) {
+        showSuccess(`Updating request status to ${statusLabels[newStatus]}...`);
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.querySelector('meta[name="csrf-token"]')?.content;
+        
+        // In production, make AJAX request to update status
+        setTimeout(() => {
+            showSuccess(`Request status updated to ${statusLabels[newStatus]} successfully`);
+            location.reload(); // Refresh to show updated status
+        }, 1000);
+    }
+}
+
+function assignChapterRequest(requestId) {
+    // Create assignment modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Assign Request</h3>
+                    <button onclick="this.closest('.fixed').remove()" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Assign to Staff Member
+                    </label>
+                    <select class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                        <option value="">Select staff member...</option>
+                        <option value="1">Chapter Development Coordinator</option>
+                        <option value="2">Regional Operations Manager</option>
+                        <option value="3">Community Outreach Specialist</option>
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Assignment Notes
+                    </label>
+                    <textarea class="block w-full px-3 py-2 border border-gray-300 rounded-md" rows="3" placeholder="Add notes about this assignment..."></textarea>
+                </div>
+                
+                <div class="flex items-center justify-end gap-3">
+                    <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button onclick="confirmChapterRequestAssignment(${requestId})" class="px-4 py-2 bg-primary-600 text-white rounded-md hover:bg-primary-700">
+                        <i class="fas fa-user-plus mr-1"></i> Assign
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function confirmChapterRequestAssignment(requestId) {
+    showSuccess('Assigning request to staff member...');
+    
+    // In production, make AJAX request to assign
+    setTimeout(() => {
+        showSuccess('Request assigned successfully');
+        document.querySelector('.fixed.inset-0').remove();
+        location.reload();
+    }, 1000);
+}
+
+function deleteChapterRequest(requestId) {
+    if (confirm('Are you sure you want to delete this chapter request? This action cannot be undone.')) {
+        showSuccess('Deleting chapter request...');
+        
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                         document.querySelector('meta[name="csrf-token"]')?.content;
+        
+        // In production, make AJAX request to delete
+        setTimeout(() => {
+            showSuccess('Chapter request deleted successfully');
+            
+            // Remove the row from the table with animation
+            const requestRow = document.querySelector(`button[onclick*="${requestId}"]`).closest('tr');
+            if (requestRow) {
+                requestRow.style.opacity = '0';
+                setTimeout(() => {
+                    requestRow.remove();
+                    // Update request count
+                    const countElement = document.querySelector('.text-sm.text-gray-600');
+                    if (countElement) {
+                        const currentCount = parseInt(countElement.textContent.match(/\d+/)[0]);
+                        countElement.textContent = countElement.textContent.replace(/\d+/, currentCount - 1);
+                    }
+                }, 300);
+            }
+        }, 1000);
+    }
+}
+
+function saveRequestNotes(requestId) {
+    const notesTextarea = document.querySelector('textarea');
+    const notes = notesTextarea.value.trim();
+    
+    if (!notes) {
+        showError('Please enter notes before saving');
+        return;
+    }
+    
+    showSuccess('Saving notes...');
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || 
+                     document.querySelector('meta[name="csrf-token"]')?.content;
+    
+    // In production, make AJAX request to save notes
+    setTimeout(() => {
+        showSuccess('Notes saved successfully');
+        notesTextarea.value = '';
+    }, 1000);
+}
+
+// Filter presets
+function saveFilterPreset() {
+    const presetName = prompt('Enter a name for this filter preset:');
+    if (!presetName) return;
+    
+    const currentFilters = {
+        search: document.getElementById('search').value,
+        tier: document.getElementById('tier').value,
+        status: document.getElementById('status').value,
+        province: document.getElementById('province').value,
+        // Add other filter values
+    };
+    
+    // Save to localStorage
+    const presets = JSON.parse(localStorage.getItem('chapterFilterPresets') || '{}');
+    presets[presetName] = currentFilters;
+    localStorage.setItem('chapterFilterPresets', JSON.stringify(presets));
+    
+    showSuccess(`Filter preset "${presetName}" saved successfully`);
+}
+
+// Import functionality
+function importChapters() {
+    // Create file upload modal
+    const modal = document.createElement('div');
+    modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50';
+    modal.innerHTML = `
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Import Chapters</h3>
+                
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Select file to import (CSV or Excel)
+                    </label>
+                    <input type="file" accept=".csv,.xlsx,.xls" class="block w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-primary-50 file:text-primary-700
+                        hover:file:bg-primary-100">
+                </div>
+                
+                <div class="text-sm text-gray-600 mb-4">
+                    <p class="mb-2">File should contain columns:</p>
+                    <ul class="list-disc list-inside text-xs">
+                        <li>Chapter Name</li>
+                        <li>Tier (Provincial/Municipal)</li>
+                        <li>Municipality</li>
+                        <li>Province</li>
+                        <li>Coordinator Name (optional)</li>
+                        <li>Email (optional)</li>
+                        <li>Phone (optional)</li>
+                    </ul>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button onclick="this.closest('.fixed').remove()" class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
+                        Cancel
+                    </button>
+                    <button onclick="processImport()" class="px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-md hover:from-primary-700 hover:to-primary-800 shadow-sm hover:shadow-lg transition-all duration-200">
+                        Import
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function processImport() {
+    showSuccess('Processing import file...');
+    
+    // Simulate import process
+    setTimeout(() => {
+        showSuccess('Import completed. 15 chapters added successfully.');
+        document.querySelector('.fixed.inset-0').remove();
+        location.reload();
+    }, 2000);
+}
+
+// Chapter-specific actions
+function assignCoordinator(chapterId) {
+    const coordinatorName = prompt('Enter coordinator name:');
+    if (!coordinatorName) return;
+    
+    showSuccess(`Assigning ${coordinatorName} as coordinator...`);
+    
+    // In production, make AJAX request
+    setTimeout(() => {
+        showSuccess('Coordinator assigned successfully');
+        location.reload();
+    }, 1000);
+}
+
+function duplicateChapter(chapterId) {
+    if (confirm('Create a duplicate of this chapter?')) {
+        showSuccess('Creating chapter duplicate...');
+        
+        // In production, make AJAX request
+        setTimeout(() => {
+            showSuccess('Chapter duplicated successfully');
+            location.reload();
+        }, 1000);
+    }
+}
+
+function archiveChapter(chapterId) {
+    if (confirm('Are you sure you want to archive this chapter? It can be restored later.')) {
+        showSuccess('Archiving chapter...');
+        
+        // In production, make AJAX request
+        setTimeout(() => {
+            showSuccess('Chapter archived successfully');
+            location.reload();
+        }, 1000);
+    }
+}
+
+// Select all functionality
+document.getElementById('selectAll').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('.chapter-checkbox');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+});
+
+// Update select all when individual checkboxes change
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('chapter-checkbox')) {
+        const allCheckboxes = document.querySelectorAll('.chapter-checkbox');
+        const checkedBoxes = document.querySelectorAll('.chapter-checkbox:checked');
+        document.getElementById('selectAll').checked = allCheckboxes.length === checkedBoxes.length;
+    }
+});
+
+// Initialize DataTables if available
+document.addEventListener('DOMContentLoaded', function() {
+    // Check if DataTables is loaded
+    if (typeof $.fn.DataTable !== 'undefined') {
+        $('#chaptersTable').DataTable({
+            pageLength: 25,
+            order: [[1, 'desc']], // Sort by ID descending
+            responsive: true,
+            dom: 'Bfrtip',
+            buttons: [
+                'copy', 'csv', 'excel', 'pdf', 'print'
+            ]
+        });
+    }
+    
+    // Apply saved preferences
+    const isCompact = localStorage.getItem('chaptersTableCompact') === 'true';
+    if (isCompact) {
+        document.getElementById('chaptersTable').classList.add('compact');
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,188 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Message from {{ message.get_full_name }} - Contact Messages{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'database_contact_messages' %}" 
+                   class="text-gray-500 hover:text-gray-700 transition-colors duration-150">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Message from {{ message.get_full_name }}</h1>
+                    <p class="text-gray-600">Subject: {{ message.subject }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                {% if message.status == 'replied' %}
+                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-blue-100 text-blue-800">
+                    <i class="fas fa-reply mr-2"></i>
+                    Replied
+                </span>
+                {% elif message.status == 'read' %}
+                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-green-100 text-green-800">
+                    <i class="fas fa-eye mr-2"></i>
+                    Read
+                </span>
+                {% elif message.status == 'new' %}
+                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-red-100 text-red-800">
+                    <i class="fas fa-envelope mr-2"></i>
+                    New
+                </span>
+                {% else %}
+                <span class="inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium bg-gray-100 text-gray-800">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    {{ message.get_status_display }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Message Panel -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Message Details -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-info-circle text-primary-600"></i>
+                        Message Details
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Sender Name</label>
+                            <p class="text-lg font-semibold text-gray-900">{{ message.get_full_name }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Sender Email</label>
+                            <p class="text-gray-900">
+                                <a href="mailto:{{ message.email }}" class="text-primary-600 hover:text-primary-700">
+                                    {{ message.email }}
+                                </a>
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Subject</label>
+                            <p class="text-gray-900">{{ message.subject }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Received On</label>
+                            <p class="text-gray-900">{{ message.created_at|date:"F d, Y H:i" }}</p>
+                        </div>
+                    </div>
+                    <div class="mt-6">
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Message Content</label>
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <p class="text-gray-800 whitespace-pre-wrap">{{ message.message }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Message Status -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-clipboard-check text-primary-600"></i>
+                        Message Status
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Current Status</label>
+                            {% if message.status == 'replied' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-reply mr-2"></i>
+                                Replied
+                            </span>
+                            {% elif message.status == 'read' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-eye mr-2"></i>
+                                Read
+                            </span>
+                            {% elif message.status == 'new' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-envelope mr-2"></i>
+                                New
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                {{ message.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if message.read_at %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Read At</label>
+                            <p class="text-gray-900">{{ message.read_at|date:"F d, Y H:i" }}</p>
+                        </div>
+                        {% endif %}
+
+                        {% if message.replied_at %}
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Replied At</label>
+                            <p class="text-gray-900">{{ message.replied_at|date:"F d, Y H:i" }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <i class="fas fa-tools text-primary-600"></i>
+                        Quick Actions
+                    </h3>
+                </div>
+                <div class="p-6">
+                    <div class="space-y-3">
+                        {% if message.status == 'new' %}
+                        <form method="post" action="{% url 'mark_message_read' message.pk %}" class="w-full" onsubmit="return confirm('Mark this message as read?');">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-medium transition-colors duration-200">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                Mark as Read
+                            </button>
+                        </form>
+                        {% endif %}
+                        
+                        {% if message.status == 'new' or message.status == 'read' or message.status == 'in_progress' %}
+                        <a href="{% url 'reply_contact_message' message.pk %}" 
+                           class="w-full inline-flex items-center justify-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-reply mr-2"></i>
+                            Reply to Sender
+                        </a>
+                        {% endif %}
+
+                        <form method="post" action="{% url 'database_contact_message_delete' message.pk %}" class="w-full" onsubmit="return confirm('Are you sure you want to delete this message? This action cannot be undone.');">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors duration-200">
+                                <i class="fas fa-trash-alt mr-2"></i>
+                                Delete Message
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

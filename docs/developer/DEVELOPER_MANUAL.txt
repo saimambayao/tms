@@ -1,0 +1,477 @@
+========================================
+FAHANIECARES DEVELOPER MANUAL
+========================================
+Version 1.0 - January 2025
+
+TABLE OF CONTENTS
+================
+1. SYSTEM OVERVIEW
+2. DEVELOPMENT ENVIRONMENT SETUP
+3. PROJECT STRUCTURE
+4. DJANGO ARCHITECTURE
+5. NOTION INTEGRATION
+6. DATABASE MODELS
+7. VIEWS AND TEMPLATES
+8. API ENDPOINTS
+9. AUTHENTICATION & SECURITY
+10. DEPLOYMENT GUIDE
+11. TESTING
+12. TROUBLESHOOTING
+13. CONTRIBUTING GUIDELINES
+
+========================================
+1. SYSTEM OVERVIEW
+========================================
+
+The #FahanieCares system is a Django-based web application designed to manage constituent services for MP Atty. Sittie Fahanie S. Uy-Oyod's office. The system integrates with Notion as its primary database and provides comprehensive tools for public service delivery.
+
+Key Technologies:
+- Python 3.9+
+- Django 4.2+
+- Notion API
+- PostgreSQL/SQLite
+- HTML/CSS/JavaScript
+- TailwindCSS
+
+========================================
+2. DEVELOPMENT ENVIRONMENT SETUP
+========================================
+
+Prerequisites:
+- Python 3.9 or higher
+- Git
+- PostgreSQL (for production)
+- Node.js (for frontend assets)
+
+Setup Steps:
+
+1. Clone the repository:
+   git clone https://github.com/mpuyoyod/fahanie-cares.git
+   cd fahanie-cares
+
+2. Create virtual environment:
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+3. Install dependencies:
+   pip install -r requirements.txt
+
+4. Configure environment variables:
+   cd src
+   cp .env.example .env
+   # Edit .env with your configuration
+
+5. Required environment variables:
+   SECRET_KEY=your-django-secret-key
+   DEBUG=True
+   ALLOWED_HOSTS=localhost,127.0.0.1
+   
+   # Notion API Configuration
+   NOTION_API_KEY=your-notion-api-key
+   NOTION_MEMBER_DATABASE=database-id
+   NOTION_PROGRAM_DATABASE=database-id
+   NOTION_REQUEST_DATABASE=database-id
+   NOTION_CHAPTER_DATABASE=database-id
+   NOTION_MINISTRY_DATABASE=database-id
+
+6. Run migrations:
+   python manage.py migrate
+
+7. Create superuser:
+   python manage.py createsuperuser
+
+8. Run development server:
+   python manage.py runserver
+
+9. Access the application:
+   http://127.0.0.1:8000/
+
+========================================
+3. PROJECT STRUCTURE
+========================================
+
+fahanie-cares/
+├── src/        # Main Django project
+│   ├── apps/                    # Django applications
+│   │   ├── core/               # Core functionality
+│   │   ├── users/              # User management
+│   │   ├── constituents/       # Constituent profiles
+│   │   ├── referrals/          # Service referrals
+│   │   ├── chapters/           # Chapter management
+│   │   ├── parliamentary/      # Parliamentary work
+│   │   ├── analytics/          # Analytics module
+│   │   ├── communications/     # Communication tools
+│   │   └── services/           # Service management
+│   ├── config/                 # Django settings
+│   │   ├── settings/
+│   │   │   ├── base.py        # Common settings
+│   │   │   ├── development.py # Dev settings
+│   │   │   └── production.py  # Production settings
+│   │   ├── urls.py            # Root URL config
+│   │   └── wsgi.py           # WSGI config
+│   ├── static/                # Static files
+│   ├── media/                 # Media files
+│   ├── templates/             # Global templates
+│   └── utils/                 # Utility modules
+│       └── notion/           # Notion integration
+├── deployment/               # Deployment configs
+├── docs/                    # Documentation
+├── scripts/                 # Utility scripts
+└── tests/                   # Test files
+
+========================================
+4. DJANGO ARCHITECTURE
+========================================
+
+Settings Configuration:
+The project uses a modular settings structure:
+- config/settings/base.py: Common settings
+- config/settings/development.py: Dev-specific
+- config/settings/production.py: Production settings
+
+To use development settings:
+export DJANGO_SETTINGS_MODULE=config.settings.development
+
+URL Structure:
+- /admin/ - Django admin interface
+- /accounts/ - Authentication
+- /constituents/ - Constituent management
+- /referrals/ - Service referrals
+- /chapters/ - Chapter management
+- /analytics/ - Analytics dashboard
+- /api/ - REST API endpoints
+
+========================================
+5. NOTION INTEGRATION
+========================================
+
+The system uses Notion as its primary database through a service layer:
+
+Core Components:
+1. NotionService (utils/notion/client.py)
+   - Central service for Notion API interactions
+   - Implements rate limiting (3 requests/second)
+   - Handles connection pooling
+   - Manages pagination
+
+2. Database utilities (utils/notion/database.py)
+   - Maps Django models to Notion databases
+   - Handles data transformation
+   - Manages sync operations
+
+3. Domain services (e.g., utils/notion/referrals.py)
+   - Specific implementations for each module
+   - Handle CRUD operations
+   - Manage relationships
+
+Usage Example:
+```python
+from utils.notion.client import NotionService
+
+notion = NotionService()
+referrals = notion.get_referrals(status="pending")
+```
+
+========================================
+6. DATABASE MODELS
+========================================
+
+Key Models:
+
+1. User (apps/users/models.py)
+   - Custom user model extending AbstractUser
+   - Roles: admin, staff, coordinator, public
+   - MFA support
+
+2. Constituent (apps/constituents/models.py)
+   - Profile information
+   - Contact details
+   - Service history
+   - Notion sync fields
+
+3. Referral (apps/referrals/models.py)
+   - Service requests
+   - Status tracking
+   - Multi-agency coordination
+   - Document attachments
+
+4. Chapter (apps/chapters/models.py)
+   - Chapter information
+   - Member management
+   - Activity tracking
+   - Performance metrics
+
+5. Service (apps/referrals/models.py)
+   - Service catalog
+   - Requirements
+   - Processing times
+   - Associated agencies
+
+Model Patterns:
+- Models include notion_id for syncing
+- Use created_at, updated_at timestamps
+- Implement soft deletes where needed
+- Include audit fields
+
+========================================
+7. VIEWS AND TEMPLATES
+========================================
+
+View Types:
+1. Class-based views (recommended)
+   - ListView, DetailView, CreateView, UpdateView
+   - Custom mixins for permissions
+   - Context processors for global data
+
+2. Function-based views (for simple logic)
+   - API endpoints
+   - AJAX handlers
+   - Utility views
+
+Template Structure:
+templates/
+├── base/
+│   ├── base.html          # Master template
+│   └── mobile_base.html   # Mobile template
+├── components/            # Reusable components
+├── core/                  # Core app templates
+├── referrals/            # Referral templates
+├── constituents/         # Constituent templates
+└── users/               # User templates
+
+Template Guidelines:
+- Extend from base.html
+- Use template tags for reusable components
+- Implement responsive design
+- Follow naming conventions
+
+========================================
+8. API ENDPOINTS
+========================================
+
+RESTful API using Django REST Framework:
+
+Key Endpoints:
+- GET /api/constituents/ - List constituents
+- POST /api/constituents/ - Create constituent
+- GET /api/constituents/{id}/ - Get constituent
+- PUT /api/constituents/{id}/ - Update constituent
+- DELETE /api/constituents/{id}/ - Delete constituent
+
+- GET /api/referrals/ - List referrals
+- POST /api/referrals/ - Create referral
+- GET /api/referrals/{id}/ - Get referral
+- PUT /api/referrals/{id}/ - Update referral
+- POST /api/referrals/{id}/status/ - Update status
+
+Authentication:
+- Token-based authentication
+- Session authentication for web
+- Permission classes for access control
+
+========================================
+9. AUTHENTICATION & SECURITY
+========================================
+
+Security Features:
+1. Django authentication system
+2. Role-based access control (RBAC)
+3. Multi-factor authentication (MFA)
+4. CSRF protection
+5. XSS prevention
+6. SQL injection protection
+7. Rate limiting
+8. Session security
+
+Permission Classes:
+- IsAuthenticated
+- IsStaffUser
+- IsOwnerOrStaff
+- Custom permission classes
+
+Security Best Practices:
+- Use environment variables for secrets
+- Implement proper password policies
+- Regular security audits
+- SSL/TLS in production
+- Input validation
+- Output sanitization
+
+========================================
+10. DEPLOYMENT GUIDE
+========================================
+
+Production Deployment:
+
+1. Server Requirements:
+   - Ubuntu 20.04+ or similar
+   - Python 3.9+
+   - PostgreSQL 13+
+   - Nginx
+   - Gunicorn
+
+2. Deployment Steps:
+   a. Set up server environment
+   b. Clone repository
+   c. Install dependencies
+   d. Configure PostgreSQL
+   e. Set environment variables
+   f. Run migrations
+   g. Collect static files
+   h. Configure Nginx
+   i. Set up Gunicorn
+   j. Configure SSL
+   k. Set up monitoring
+
+3. Environment Variables:
+   SECRET_KEY=production-secret-key
+   DEBUG=False
+   ALLOWED_HOSTS=yourdomain.com
+   DATABASE_URL=postgres://user:pass@host/db
+   NOTION_API_KEY=your-api-key
+
+4. Static Files:
+   python manage.py collectstatic
+
+5. Database:
+   python manage.py migrate
+
+6. Gunicorn Configuration:
+   gunicorn config.wsgi:application --bind 0.0.0.0:8000
+
+7. Nginx Configuration:
+   - Proxy pass to Gunicorn
+   - Serve static files
+   - SSL termination
+
+========================================
+11. TESTING
+========================================
+
+Testing Structure:
+tests/
+├── test_models.py
+├── test_views.py
+├── test_api.py
+├── test_notion.py
+└── test_integration.py
+
+Running Tests:
+# All tests
+python manage.py test
+
+# Specific app
+python manage.py test apps.referrals
+
+# With coverage
+coverage run --source='.' manage.py test
+coverage report
+
+Test Categories:
+1. Unit tests - Model methods, utilities
+2. Integration tests - View interactions
+3. API tests - Endpoint testing
+4. Notion tests - Mock API calls
+5. End-to-end tests - User workflows
+
+Testing Best Practices:
+- Use fixtures for test data
+- Mock external API calls
+- Test edge cases
+- Maintain test coverage >80%
+- Use factory patterns
+
+========================================
+12. TROUBLESHOOTING
+========================================
+
+Common Issues:
+
+1. Notion API Errors:
+   - Check API key
+   - Verify database IDs
+   - Check rate limits
+   - Review permissions
+
+2. Database Issues:
+   - Run migrations
+   - Check connection settings
+   - Verify credentials
+   - Check disk space
+
+3. Static Files:
+   - Run collectstatic
+   - Check STATIC_ROOT
+   - Verify Nginx config
+   - Clear browser cache
+
+4. Authentication:
+   - Check session settings
+   - Verify middleware order
+   - Review permission classes
+   - Check CSRF tokens
+
+Debug Tools:
+- Django Debug Toolbar
+- Python debugger (pdb)
+- Logging configuration
+- Sentry for error tracking
+
+========================================
+13. CONTRIBUTING GUIDELINES
+========================================
+
+Development Workflow:
+1. Create feature branch
+2. Write tests first (TDD)
+3. Implement feature
+4. Run tests
+5. Update documentation
+6. Submit pull request
+
+Code Standards:
+- Follow PEP 8
+- Use type hints
+- Write docstrings
+- Meaningful variable names
+- DRY principle
+
+Git Commit Messages:
+- Use conventional commits
+- feat: New feature
+- fix: Bug fix
+- docs: Documentation
+- style: Code style
+- refactor: Refactoring
+- test: Tests
+- chore: Maintenance
+
+Review Process:
+1. Code review required
+2. Tests must pass
+3. Documentation updated
+4. No merge conflicts
+5. Approved by maintainer
+
+========================================
+ADDITIONAL RESOURCES
+========================================
+
+1. Django Documentation:
+   https://docs.djangoproject.com/
+
+2. Notion API Reference:
+   https://developers.notion.com/
+
+3. Python Style Guide:
+   https://www.python.org/dev/peps/pep-0008/
+
+4. Project Repository:
+   https://github.com/mpuyoyod/fahanie-cares
+
+5. Support Contact:
+   development@fahaniecares.gov.ph
+
+========================================
+END OF DEVELOPER MANUAL
+========================================

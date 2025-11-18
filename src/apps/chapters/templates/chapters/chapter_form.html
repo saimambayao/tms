@@ -1,0 +1,544 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}
+    {% if object %}Edit Chapter{% else %}Create New Chapter{% endif %} - #FahanieCares
+{% endblock %}
+
+{% block hero %}
+<div class="bg-primary-600 text-white py-12">
+    <div class="container mx-auto px-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold mb-4 flex items-center gap-4">
+                        <i class="fas fa-users text-white"></i>
+                        {% if object %}Edit Chapter{% else %}Create New Chapter{% endif %}
+                    </h1>
+                    <p class="text-xl text-white/90 max-w-2xl">
+                        {% if object %}
+                            Update the information for <span class="font-semibold">{{ object.name }}</span>
+                        {% else %}
+                            Expand our community network by adding a new #FahanieCares chapter
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="mt-6 md:mt-0 flex flex-col gap-3">
+                    {% include 'components/atoms/button.html' with variant='outline-white' text='Back to Chapters' href=chapter_list_url icon='fas fa-arrow-left' icon_position='left' %}
+                    <div class="flex items-center gap-2 text-sm text-white/80">
+                        <i class="fas fa-user-shield"></i>
+                        <span>Staff Access Required</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="bg-white border-b">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex items-center text-sm text-gray-600">
+            <a href="{% url 'home' %}" class="hover:text-primary-600 transition">Home</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            <a href="{% url 'chapter_list' %}" class="hover:text-primary-600 transition">Chapters</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            {% if object %}
+            <a href="{% url 'chapter_detail' object.slug %}" class="hover:text-primary-600 transition">{{ object.name }}</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            <span class="text-gray-800 font-medium">Edit</span>
+            {% else %}
+            <span class="text-gray-800 font-medium">Create New</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Form Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-8 py-6 border-b border-gray-100">
+            <h2 class="text-2xl font-semibold text-gray-900 flex items-center gap-3">
+                <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                    <i class="fas fa-edit text-primary-600"></i>
+                </div>
+                Chapter Information
+            </h2>
+            <p class="mt-2 text-gray-600">Please fill out all required fields to create or update the chapter.</p>
+        </div>
+        
+        <form method="post" enctype="multipart/form-data" class="p-8 space-y-8">
+            {% csrf_token %}
+            
+            <!-- Basic Information Section -->
+            <div class="border-b border-gray-200 pb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                    <i class="fas fa-info-circle text-primary-600"></i>
+                    Basic Information
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Chapter Name -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-tag text-primary-600 mr-1"></i>
+                            Chapter Name
+                            <span class="text-error-600">*</span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.name.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">The official name of the chapter (e.g., "#FahanieCares Cotabato Chapter")</p>
+                    </div>
+                    
+                    <!-- Tier -->
+                    <div>
+                        <label for="{{ form.tier.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-layer-group text-primary-600 mr-1"></i>
+                            Chapter Tier
+                            <span class="text-error-600">*</span>
+                        </label>
+                        {{ form.tier }}
+                        {% if form.tier.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.tier.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Parent Chapter -->
+                    <div>
+                        <label for="{{ form.parent_chapter.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-sitemap text-primary-600 mr-1"></i>
+                            Parent Chapter
+                        </label>
+                        {{ form.parent_chapter }}
+                        {% if form.parent_chapter.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.parent_chapter.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">Leave blank for provincial chapters</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location Information Section -->
+            <div class="border-b border-gray-200 pb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                    <i class="fas fa-map-marker-alt text-primary-600"></i>
+                    Location Information
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Municipality -->
+                    <div>
+                        <label for="{{ form.municipality.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-city text-primary-600 mr-1"></i>
+                            Municipality/City
+                            <span class="text-error-600">*</span>
+                        </label>
+                        {{ form.municipality }}
+                        {% if form.municipality.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.municipality.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Province -->
+                    <div>
+                        <label for="{{ form.province.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-mountain text-primary-600 mr-1"></i>
+                            Province
+                            <span class="text-error-600">*</span>
+                        </label>
+                        {{ form.province }}
+                        {% if form.province.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.province.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Country -->
+                    <div>
+                        <label for="{{ form.country.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-flag text-primary-600 mr-1"></i>
+                            Country
+                            <span class="text-error-600">*</span>
+                        </label>
+                        {{ form.country }}
+                        {% if form.country.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.country.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Address -->
+                <div class="mt-6">
+                    <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        <i class="fas fa-home text-primary-600 mr-1"></i>
+                        Complete Address
+                    </label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                        <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ form.address.errors.0 }}
+                        </p>
+                    {% endif %}
+                    <p class="mt-1 text-sm text-gray-500">Full address including street, barangay, and landmarks</p>
+                </div>
+            </div>
+
+            <!-- Chapter Details Section -->
+            <div class="border-b border-gray-200 pb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                    <i class="fas fa-file-alt text-primary-600"></i>
+                    Chapter Details
+                </h3>
+                
+                <div class="space-y-6">
+                    <!-- Description -->
+                    <div>
+                        <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-align-left text-primary-600 mr-1"></i>
+                            Description
+                            <span class="text-error-600">*</span>
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.description.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">Brief description of the chapter's focus and community</p>
+                    </div>
+                    
+                    <!-- Mission Statement -->
+                    <div>
+                        <label for="{{ form.mission_statement.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-bullseye text-primary-600 mr-1"></i>
+                            Mission Statement
+                        </label>
+                        {{ form.mission_statement }}
+                        {% if form.mission_statement.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.mission_statement.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">The chapter's specific mission and goals</p>
+                    </div>
+                    
+                    <!-- Established Date -->
+                    <div class="md:w-1/2">
+                        <label for="{{ form.established_date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-calendar-alt text-primary-600 mr-1"></i>
+                            Established Date
+                        </label>
+                        {{ form.established_date }}
+                        {% if form.established_date.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.established_date.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="border-b border-gray-200 pb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                    <i class="fas fa-address-book text-primary-600"></i>
+                    Contact Information
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Coordinator -->
+                    <div>
+                        <label for="{{ form.coordinator.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-user-tie text-primary-600 mr-1"></i>
+                            Chapter Coordinator
+                        </label>
+                        {{ form.coordinator }}
+                        {% if form.coordinator.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.coordinator.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Email -->
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-envelope text-primary-600 mr-1"></i>
+                            Email Address
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.email.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Phone -->
+                    <div>
+                        <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-phone text-primary-600 mr-1"></i>
+                            Phone Number
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.phone.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Meeting Location -->
+                    <div>
+                        <label for="{{ form.meeting_location.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-map-marker-alt text-primary-600 mr-1"></i>
+                            Meeting Location
+                        </label>
+                        {{ form.meeting_location }}
+                        {% if form.meeting_location.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.meeting_location.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Meeting Schedule -->
+                    <div class="md:col-span-2">
+                        <label for="{{ form.meeting_schedule.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fas fa-clock text-primary-600 mr-1"></i>
+                            Meeting Schedule
+                        </label>
+                        {{ form.meeting_schedule }}
+                        {% if form.meeting_schedule.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.meeting_schedule.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">e.g., "Every first Saturday of the month at 2:00 PM"</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Social Media Section -->
+            <div class="pb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-6 flex items-center gap-2">
+                    <i class="fas fa-share-alt text-primary-600"></i>
+                    Social Media (Optional)
+                </h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Facebook -->
+                    <div>
+                        <label for="{{ form.facebook_page.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fab fa-facebook text-blue-600 mr-1"></i>
+                            Facebook Page
+                        </label>
+                        {{ form.facebook_page }}
+                        {% if form.facebook_page.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.facebook_page.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">Full URL to Facebook page</p>
+                    </div>
+                    
+                    <!-- Twitter -->
+                    <div>
+                        <label for="{{ form.twitter_handle.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fab fa-twitter text-blue-400 mr-1"></i>
+                            Twitter Handle
+                        </label>
+                        {{ form.twitter_handle }}
+                        {% if form.twitter_handle.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.twitter_handle.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">Without @ symbol</p>
+                    </div>
+                    
+                    <!-- Instagram -->
+                    <div>
+                        <label for="{{ form.instagram_handle.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="fab fa-instagram text-pink-600 mr-1"></i>
+                            Instagram Handle
+                        </label>
+                        {{ form.instagram_handle }}
+                        {% if form.instagram_handle.errors %}
+                            <p class="mt-1 text-sm text-error-600 flex items-center gap-1">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.instagram_handle.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-1 text-sm text-gray-500">Without @ symbol</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between pt-8 border-t border-gray-200 gap-4">
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <i class="fas fa-info-circle text-info-600"></i>
+                    <span>Fields marked with <span class="text-error-600 font-medium">*</span> are required</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    {% include 'components/atoms/button.html' with variant='outline' text='Cancel' href=cancel_url icon='fas fa-times' icon_position='left' %}
+                    {% include 'components/atoms/button.html' with variant='primary' text=submit_text type='submit' icon='fas fa-save' icon_position='left' size='lg' %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Enhanced form behavior for #FahanieCares chapter form
+    
+    // Apply consistent styling to all form controls
+    const formControls = document.querySelectorAll('input, select, textarea');
+    formControls.forEach(control => {
+        if (!control.classList.contains('form-check-input')) {
+            // Apply #FahanieCares form control styling
+            control.classList.add(
+                'block', 'w-full', 'px-4', 'py-3', 'border', 'border-gray-300', 
+                'rounded-lg', 'shadow-sm', 'transition-all', 'duration-200',
+                'focus:ring-2', 'focus:ring-primary-500', 'focus:border-primary-500', 
+                'focus:outline-none', 'placeholder-gray-400'
+            );
+            
+            // Add hover effects
+            control.addEventListener('mouseenter', function() {
+                if (!this.classList.contains('focus:ring-primary-500')) return;
+                this.classList.add('border-gray-400');
+            });
+            
+            control.addEventListener('mouseleave', function() {
+                if (!this.classList.contains('focus:ring-primary-500')) return;
+                this.classList.remove('border-gray-400');
+            });
+        }
+    });
+    
+    // Enhanced textarea styling
+    const textareas = document.querySelectorAll('textarea');
+    textareas.forEach(textarea => {
+        textarea.classList.add('resize-vertical');
+        textarea.style.minHeight = '100px';
+    });
+    
+    // Enhanced select styling
+    const selects = document.querySelectorAll('select');
+    selects.forEach(select => {
+        select.classList.add('bg-white', 'cursor-pointer');
+    });
+    
+    // Enhanced date input styling
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(dateInput => {
+        dateInput.classList.add('cursor-pointer');
+    });
+    
+    // Form validation feedback
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const requiredFields = form.querySelectorAll('[required]');
+            let hasErrors = false;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.classList.add('border-error-300', 'focus:border-error-500', 'focus:ring-error-500');
+                    field.classList.remove('border-gray-300', 'focus:border-primary-500', 'focus:ring-primary-500');
+                    hasErrors = true;
+                } else {
+                    field.classList.remove('border-error-300', 'focus:border-error-500', 'focus:ring-error-500');
+                    field.classList.add('border-gray-300', 'focus:border-primary-500', 'focus:ring-primary-500');
+                }
+            });
+            
+            if (hasErrors) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = form.querySelector('.border-error-300');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        });
+    }
+    
+    // Dynamic field dependencies
+    const tierSelect = document.getElementById('{{ form.tier.id_for_label }}');
+    const parentChapterField = document.getElementById('{{ form.parent_chapter.id_for_label }}');
+    
+    if (tierSelect && parentChapterField) {
+        function updateParentChapterVisibility() {
+            const parentDiv = parentChapterField.closest('div');
+            if (tierSelect.value === 'provincial') {
+                parentDiv.style.opacity = '0.5';
+                parentChapterField.disabled = true;
+                parentChapterField.value = '';
+            } else {
+                parentDiv.style.opacity = '1';
+                parentChapterField.disabled = false;
+            }
+        }
+        
+        tierSelect.addEventListener('change', updateParentChapterVisibility);
+        updateParentChapterVisibility(); // Initial state
+    }
+    
+    // Auto-generate chapter name suggestions
+    const nameField = document.getElementById('{{ form.name.id_for_label }}');
+    const municipalityField = document.getElementById('{{ form.municipality.id_for_label }}');
+    
+    if (nameField && municipalityField && !nameField.value) {
+        municipalityField.addEventListener('blur', function() {
+            if (this.value && !nameField.value) {
+                nameField.value = `#FahanieCares ${this.value} Chapter`;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
+
+{% block cta %}
+<!-- No CTA Section for Form Pages -->
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}Confirm Delete{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Confirm Delete</h1>
+
+    <p class="mb-4">Are you sure you want to delete the announcement: "{{ object.title }}"?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+            Confirm Delete
+        </button>
+        <a href="{% url 'database_updates' %}" class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800 ml-4">
+            Cancel
+        </a>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}#FahanieCares{% endblock %}</title>
+    <meta
+      name="description"
+      content="{% block meta_description %}#FahanieCares: Bringing Bangsamoro Public Service Closer to You{% endblock %}"
+    />
+    <!-- Compiled TailwindCSS -->
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/output.css' %}">
+    
+    <!-- Modern Color System Integration -->
+    {% include 'components/design-system/color_palette.html' %}
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{% static 'css/fontawesome.min.css' %}">
+    
+    <!-- Contact Form Fixes -->
+    <link rel="stylesheet" href="{% static 'css/contact-form-fixes.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>#FC</text></svg>" sizes="any">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>#FC</text></svg>" type="image/svg+xml" sizes="32x32">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>#FC</text></svg>" type="image/svg+xml" sizes="16x16">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>#FC</text></svg>" sizes="180x180">
+    <link rel="manifest" href="{% static 'site.webmanifest' %}?v=2">
+    <style>
+      /* Smooth scrolling for anchor links */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+
+      /* Contact Form Custom Styles */
+      .contact-form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-size: 1.5em 1.5em;
+      }
+
+      .contact-form-select:focus {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      }
+
+      /* Contact Form Input Styling */
+      .contact-form-input {
+        color: #000000 !important;
+      }
+
+      .contact-form-input::placeholder {
+        color: #6b7280 !important;
+        font-size: 11px !important;
+      }
+
+      /* Ensure buttons fill their containers for consistent width with center alignment */
+      [style*="width: 180px"] a {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center !important;
+        display: inline-flex !important;
+      }
+
+      /* Hover animations ONLY for specific buttons - very targeted selectors */
+      
+      /* Only target the actual button links in Ways to Get Involved section */
+      a[href="/accounts/register/"],
+      a[href="/chapters/"],
+      a[href="/partner/"],
+      a[href="/donate/"] {
+        transition: all 0.3s ease-in-out !important;
+      }
+
+      a[href="/accounts/register/"]:hover,
+      a[href="/chapters/"]:hover,
+      a[href="/partner/"]:hover,
+      a[href="/donate/"]:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        background-color: #f8fafc !important;
+      }
+
+      /* Only target the specific Send Message button */
+      button[type="submit"].bg-primary-600 {
+        transition: all 0.3s ease-in-out !important;
+      }
+
+      button[type="submit"].bg-primary-600:hover {
+        background-color: #15803d !important;
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(21, 128, 61, 0.3) !important;
+      }
+
+      /* Custom style for field errors */
+      .field-error-message {
+        color: red;
+        font-size: 0.875rem; /* text-sm */
+        margin-top: 0.25rem; /* mt-1 */
+      }
+    </style>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Animation Components -->
+    {% include 'components/animations/scroll_animations.html' %}
+    
+    <!-- Common Behaviors -->
+    {% include 'components/behaviors/common_behaviors.html' %}
+    
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body class="bg-gray-100 font-sans leading-normal tracking-normal">
+
+    <!-- Header Navigation -->
+    {% include 'components/navigation/modern_navbar.html' %}
+    
+    <!-- Spacer for fixed navbar -->
+    <div class="h-16"></div>
+    
+    {% block hero %}
+    {% endblock %} 
+    
+    {% block breadcrumbs %}{% endblock %}
+
+    <!-- Main Content -->
+    <main class="flex-grow py-12">
+      <div class="container mx-auto px-4">
+        {% if messages %}
+          <div class="mb-8">
+            {% for message in messages %}
+              <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800 border border-green-400{% elif message.tags == 'error' %}bg-red-100 text-red-800 border border-red-400{% elif message.tags == 'info' %}bg-blue-100 text-blue-800 border border-blue-400{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800 border border-yellow-400{% endif %} mb-4" role="alert">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0">
+                    {% if message.tags == 'success' %}<i class="fas fa-check-circle text-green-500 mr-2"></i>
+                    {% elif message.tags == 'error' %}<i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
+                    {% elif message.tags == 'info' %}<i class="fas fa-info-circle text-blue-500 mr-2"></i>
+                    {% elif message.tags == 'warning' %}<i class="fas fa-exclamation-triangle text-yellow-500 mr-2"></i>
+                    {% endif %}
+                  </div>
+                  <div>
+                    {{ message }}
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+
+    {% block cta %}{% endblock %}
+
+    <!-- Footer -->
+    {% include 'components/navigation/footer.html' %}
+
+    <!-- JavaScript -->
+    <script>
+      // Mobile Menu Toggle
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButton = document.querySelector("button.mobile-menu-button");
+        const mobileMenu = document.querySelector(".mobile-menu");
+
+        if (menuButton && mobileMenu) {
+          menuButton.addEventListener("click", function () {
+            mobileMenu.classList.toggle("hidden");
+          });
+        }
+      });
+    </script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

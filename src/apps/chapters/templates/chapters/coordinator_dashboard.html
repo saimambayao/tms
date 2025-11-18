@@ -1,0 +1,198 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ chapter.name }} - Coordinator Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">{{ chapter.name }} Dashboard</h1>
+        <p class="text-gray-600">Coordinator overview and management tools</p>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-blue-500 rounded-md">
+                    <i class="fas fa-users text-white"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Active Members</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ member_stats.active|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-green-500 rounded-md">
+                    <i class="fas fa-hand-holding-heart text-white"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Volunteers</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ member_stats.volunteers|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-yellow-500 rounded-md">
+                    <i class="fas fa-calendar-alt text-white"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Upcoming Activities</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ upcoming_activities|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-2 bg-red-500 rounded-md">
+                    <i class="fas fa-user-clock text-white"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Pending Applications</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ pending_memberships|default:0 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Recent Activities -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Recent Activities</h2>
+            </div>
+            <div class="p-6">
+                {% if recent_activities %}
+                    <div class="space-y-4">
+                        {% for activity in recent_activities %}
+                            <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                                <div>
+                                    <h3 class="font-medium text-gray-900">{{ activity.title }}</h3>
+                                    <p class="text-sm text-gray-600">{{ activity.date|date:"M d, Y" }} at {{ activity.start_time|time:"H:i" }}</p>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                        {% if activity.status == 'completed' %}bg-green-100 text-green-800
+                                        {% elif activity.status == 'ongoing' %}bg-blue-100 text-blue-800
+                                        {% elif activity.status == 'planned' %}bg-yellow-100 text-yellow-800
+                                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                        {{ activity.get_status_display }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ activity.get_absolute_url }}" 
+                                       class="text-primary-600 hover:text-primary-900 text-sm font-medium">
+                                        View
+                                    </a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-8">
+                        <i class="fas fa-calendar-plus text-gray-400 text-4xl mb-4"></i>
+                        <p class="text-gray-500">No recent activities</p>
+                        <p class="text-sm text-gray-400">Activities will appear here once you create them</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Quick Actions</h2>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <a href="{% url 'chapter_edit' chapter.slug %}" 
+                       class="block w-full text-left p-4 bg-primary-50 border border-primary-200 rounded-lg hover:bg-primary-100 transition-colors">
+                        <div class="flex items-center">
+                            <i class="fas fa-edit text-primary-600 mr-3"></i>
+                            <div>
+                                <h3 class="font-medium text-primary-900">Edit Chapter Information</h3>
+                                <p class="text-sm text-primary-700">Update chapter details and settings</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'chapter_members' chapter.slug %}" 
+                       class="block w-full text-left p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors">
+                        <div class="flex items-center">
+                            <i class="fas fa-users text-blue-600 mr-3"></i>
+                            <div>
+                                <h3 class="font-medium text-blue-900">Manage Members</h3>
+                                <p class="text-sm text-blue-700">View and manage chapter memberships</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    <a href="{% url 'chapter_activities' chapter.slug %}" 
+                       class="block w-full text-left p-4 bg-green-50 border border-green-200 rounded-lg hover:bg-green-100 transition-colors">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-alt text-green-600 mr-3"></i>
+                            <div>
+                                <h3 class="font-medium text-green-900">Manage Activities</h3>
+                                <p class="text-sm text-green-700">Create and manage chapter activities</p>
+                            </div>
+                        </div>
+                    </a>
+
+                    {% if pending_memberships > 0 %}
+                        <div class="p-4 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-exclamation-circle text-red-600 mr-3"></i>
+                                <div>
+                                    <h3 class="font-medium text-red-900">Pending Approvals</h3>
+                                    <p class="text-sm text-red-700">{{ pending_memberships }} membership application(s) need review</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    {% if activities_needing_reports > 0 %}
+                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                            <div class="flex items-center">
+                                <i class="fas fa-file-alt text-yellow-600 mr-3"></i>
+                                <div>
+                                    <h3 class="font-medium text-yellow-900">Reports Needed</h3>
+                                    <p class="text-sm text-yellow-700">{{ activities_needing_reports }} completed activities need reports</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Volunteer Hours Summary -->
+    {% if member_stats.total_volunteer_hours > 0 %}
+        <div class="mt-8 bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Volunteer Impact</h2>
+            </div>
+            <div class="p-6">
+                <div class="text-center">
+                    <div class="text-4xl font-bold text-primary-600 mb-2">
+                        {{ member_stats.total_volunteer_hours|floatformat:1 }}
+                    </div>
+                    <p class="text-gray-600">Total volunteer hours contributed by chapter members</p>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Navigation Back -->
+    <div class="mt-8">
+        <a href="{{ chapter.get_absolute_url }}" 
+           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Back to Chapter
+        </a>
+    </div>
+</div>
+{% endblock %}

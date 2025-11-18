@@ -1,0 +1,192 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Attendance Tracking - Staff Management{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-primary-800">Attendance Tracking</h1>
+            <p class="text-gray-600 mt-1">Track and manage staff attendance</p>
+        </div>
+        <div class="flex gap-3">
+            {% include 'components/atoms/button.html' with variant='primary' text='Generate Report' href='/staff/attendance/report/' %}
+            {% include 'components/atoms/button.html' with variant='outline' text='Export Data' href='/staff/attendance/export/' %}
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="mb-6">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} bg-{% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% else %}blue{% endif %}-100 border border-{% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% else %}blue{% endif %}-400 text-{% if message.tags == 'success' %}green{% elif message.tags == 'error' %}red{% else %}blue{% endif %}-700 px-4 py-3 rounded mb-4">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Today's Attendance Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ attendance_summary.present|default:0 }}</p>
+                    <p class="text-gray-600">Present</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-red-100">
+                    <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ attendance_summary.absent|default:0 }}</p>
+                    <p class="text-gray-600">Absent</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100">
+                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ attendance_summary.late|default:0 }}</p>
+                    <p class="text-gray-600">Late</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100">
+                    <i class="fas fa-calendar-times text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ attendance_summary.on_leave|default:0 }}</p>
+                    <p class="text-gray-600">On Leave</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Record Attendance Form -->
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h3 class="text-lg font-semibold mb-4">Record Attendance</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <select name="staff_id" required class="border rounded px-3 py-2">
+                    <option value="">Select Staff Member</option>
+                    {% for staff in all_staff %}
+                    <option value="{{ staff.id }}">{{ staff.full_name }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select name="status" required class="border rounded px-3 py-2">
+                    <option value="">Select Status</option>
+                    <option value="present">Present</option>
+                    <option value="absent">Absent</option>
+                    <option value="late">Late</option>
+                    <option value="on_leave">On Leave</option>
+                    <option value="official_business">Official Business</option>
+                </select>
+                
+                <input type="time" name="time_in" placeholder="Time In" class="border rounded px-3 py-2">
+                <input type="time" name="time_out" placeholder="Time Out" class="border rounded px-3 py-2">
+                
+                {% include 'components/atoms/button.html' with variant='primary' text='Record' type='submit' %}
+            </div>
+            <div class="mt-4">
+                <textarea name="notes" placeholder="Additional notes..." class="w-full border rounded px-3 py-2" rows="2"></textarea>
+            </div>
+        </form>
+    </div>
+
+    <!-- Recent Attendance Records -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b">
+            <h3 class="text-lg font-semibold">Recent Attendance Records</h3>
+        </div>
+        
+        {% if recent_attendance %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Member</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time In</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time Out</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for attendance in recent_attendance %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ attendance.staff.full_name }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ attendance.date|date:"M d, Y" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="attendance-status status-{{ attendance.status }}">
+                                    {{ attendance.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ attendance.time_in|time:"H:i"|default:"-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ attendance.time_out|time:"H:i"|default:"-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {% if attendance.hours_worked %}{{ attendance.hours_worked }} hrs{% else %}-{% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="/staff/attendance/{{ attendance.id }}/edit/" class="text-primary-600 hover:text-primary-900">Edit</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No attendance records</h3>
+                <p class="text-gray-600">Start by recording attendance for staff members.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+.attendance-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.status-present { background-color: #d1fae5; color: #065f46; }
+.status-absent { background-color: #fee2e2; color: #991b1b; }
+.status-late { background-color: #fef3c7; color: #92400e; }
+.status-on_leave { background-color: #e0e7ff; color: #3730a3; }
+.status-official_business { background-color: #fef3c7; color: #92400e; }
+</style>
+{% endblock %}

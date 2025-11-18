@@ -1,0 +1,337 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Browse Programs by Sector - #FahanieCares{% endblock %}
+{% block meta_description %}Browse #FahanieCares Programs by Sector - Health, Education, Agriculture, Social Services, Infrastructure, and Economic Development{% endblock %}
+
+{% block hero %}
+<div class="bg-primary-600 text-white py-12">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Browse Programs by Sector</h1>
+            <p class="text-xl text-white/90">Find the right support for your needs - browse #FahanieCares programs organized by sector</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block breadcrumbs %}
+<div class="bg-white border-b">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex items-center text-sm text-gray-600">
+            <a href="{% url 'home' %}" class="hover:text-primary-600 transition">Home</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            <span class="text-gray-800 font-medium">Browse Programs</span>
+            {% if current_sector %}
+                <i class="fas fa-chevron-right text-xs mx-2"></i>
+                <span class="text-gray-800 font-medium">{{ current_sector.name }}</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Sector Navigation -->
+<div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+    <h2 class="text-xl font-semibold text-slate-800 mb-4">Browse by Sector</h2>
+    <p class="text-gray-600 mb-6">Select a sector to explore programs, projects, and activities tailored to your needs.</p>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+        <a href="{% url 'ministries_ppas' %}" 
+           class="{% if not sector_filter %}bg-primary-600 text-white border-primary-600{% else %}bg-white border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} group p-4 border rounded-lg transition duration-200 hover:shadow-md">
+            <div class="flex items-center mb-2">
+                <i class="fas fa-th-large text-lg mr-3 {% if not sector_filter %}text-white{% else %}text-gray-500 group-hover:text-primary-600{% endif %}"></i>
+                <span class="font-medium">All Sectors</span>
+            </div>
+            <div class="text-sm {% if not sector_filter %}text-white/90{% else %}text-gray-500{% endif %}">
+                {{ total_programs }} Programs
+            </div>
+        </a>
+        
+        {% for sector in sectors %}
+            <a href="{% url 'ministries_ppas' %}?sector={{ sector.code }}" 
+               class="{% if sector_filter == sector.code %}bg-primary-600 text-white border-primary-600{% else %}bg-white border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} group p-4 border rounded-lg transition duration-200 hover:shadow-md">
+                <div class="flex items-center mb-2">
+                    <i class="{{ sector.icon }} text-lg mr-3 {% if sector_filter == sector.code %}text-white{% else %}text-{{ sector.color }}-500 group-hover:text-primary-600{% endif %}"></i>
+                    <span class="font-medium">{{ sector.name }}</span>
+                </div>
+                <div class="text-sm {% if sector_filter == sector.code %}text-white/90{% else %}text-gray-500{% endif %}">
+                    {{ sector.count }} Program{{ sector.count|pluralize }}
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+    
+    {% if sector_filter and current_sector %}
+    <div class="mt-6 p-4 bg-primary-50 rounded-lg border border-primary-200">
+        <div class="flex items-center mb-2">
+            <i class="{{ current_sector.icon }} text-xl text-primary-600 mr-3"></i>
+            <h3 class="text-lg font-semibold text-primary-800">{{ current_sector.name }} Sector</h3>
+        </div>
+        <p class="text-primary-700 text-sm">{{ current_sector.description }}</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Sector Overview -->
+{% if not sector_filter %}
+<!-- Overall Summary -->
+<div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+    <div class="text-center">
+        <h2 class="text-2xl font-bold text-slate-800 mb-2">#FahanieCares Programs by Sector</h2>
+        <p class="text-gray-600 mb-6">Comprehensive Programs, Projects, Activities and Services organized by sectors to serve the Bangsamoro people</p>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="bg-primary-50 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-primary-600">{{ total_programs }}</div>
+                <div class="text-sm text-gray-600">Total Programs</div>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-green-600">{{ sectors|length }}</div>
+                <div class="text-sm text-gray-600">Active Sectors</div>
+            </div>
+            <div class="bg-blue-50 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-blue-600">₱16.5B</div>
+                <div class="text-sm text-gray-600">Total Budget</div>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg">
+                <div class="text-2xl font-bold text-purple-600">1M+</div>
+                <div class="text-sm text-gray-600">Beneficiaries</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- PPAS Listings -->
+<div class="mb-6">
+    <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold text-slate-800">
+            {% if sector_filter and current_sector %}
+                {{ current_sector.name }} Programs
+            {% else %}
+                All Programs by Sector
+            {% endif %}
+        </h2>
+        <span class="text-gray-500 text-sm">Showing {{ ppas_items|length }} of {{ total_programs }} programs</span>
+    </div>
+</div>
+
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    {% for item in ppas_items %}
+    <!-- PPAS Card -->
+    <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 hover:shadow-md transition-shadow">
+        <!-- Header with Sector Color -->
+        <div class="h-2 {% if item.sector_color == 'green' %}bg-green-500{% elif item.sector_color == 'blue' %}bg-blue-500{% elif item.sector_color == 'orange' %}bg-orange-500{% elif item.sector_color == 'purple' %}bg-purple-500{% elif item.sector_color == 'indigo' %}bg-indigo-500{% elif item.sector_color == 'emerald' %}bg-emerald-500{% else %}bg-gray-500{% endif %}"></div>
+        
+        <div class="p-6">
+            <div class="flex justify-between items-start mb-3">
+                <div class="flex flex-col gap-1">
+                    <div class="flex items-center gap-2">
+                        <i class="{{ item.sector_icon }} text-{{ item.sector_color }}-500 text-sm"></i>
+                        <span class="bg-{{ item.sector_color }}-100 text-{{ item.sector_color }}-800 text-xs px-2 py-1 rounded font-medium">{{ item.sector }}</span>
+                    </div>
+                    <span class="text-xs text-gray-500 tracking-wide">{{ item.type }} • {{ item.ministry_code|upper }}</span>
+                </div>
+                <div class="text-right">
+                    {% if item.status == 'Active' %}
+                        <span class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">{{ item.status }}</span>
+                    {% elif item.status == 'Pending Approval' %}
+                        <span class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">{{ item.status }}</span>
+                    {% else %}
+                        <span class="bg-gray-100 text-gray-800 text-xs px-2 py-1 rounded">{{ item.status }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <h3 class="text-lg font-semibold text-slate-800 mb-2 line-clamp-2">{{ item.title }}</h3>
+            <p class="text-gray-600 mb-4 text-sm line-clamp-3">{{ item.description }}</p>
+            
+            <!-- Program Details -->
+            <div class="space-y-2 mb-4">
+                {% if item.location %}
+                <div class="flex items-start">
+                    <i class="fas fa-map-marker-alt text-gray-400 w-4 mt-0.5 mr-2 flex-shrink-0"></i>
+                    <span class="text-gray-600 text-sm line-clamp-2">{{ item.location }}</span>
+                </div>
+                {% endif %}
+                
+                {% if item.target %}
+                <div class="flex items-start">
+                    <i class="fas fa-users text-gray-400 w-4 mt-0.5 mr-2 flex-shrink-0"></i>
+                    <span class="text-gray-600 text-sm line-clamp-2">{{ item.target }}</span>
+                </div>
+                {% endif %}
+                
+                <div class="flex items-center">
+                    <i class="fas fa-calendar-alt text-gray-400 w-4 mr-2"></i>
+                    <span class="text-gray-600 text-sm">{{ item.timeline }}</span>
+                </div>
+                
+                {% if item.budget_display %}
+                <div class="flex items-center">
+                    <i class="fas fa-peso-sign text-gray-400 w-4 mr-2"></i>
+                    <span class="text-gray-600 text-sm font-medium">{{ item.budget_display }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Priority Badge -->
+            {% if item.priority %}
+            <div class="mb-4">
+                {% if item.priority == 'Critical' %}
+                    <span class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded font-medium">🔴 {{ item.priority }} Priority</span>
+                {% elif item.priority == 'High' %}
+                    <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-medium">🟠 {{ item.priority }} Priority</span>
+                {% else %}
+                    <span class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded font-medium">🔵 {{ item.priority }} Priority</span>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            <a href="#program-{{ item.id }}" 
+               onclick="showProgramDetails({{ item.id }})" 
+               class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition text-center block text-sm">
+                View Details
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not ppas_items %}
+<div class="text-center py-12">
+    <div class="text-gray-400 text-6xl mb-4">
+        <i class="fas fa-folder-open"></i>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900 mb-2">No Programs Found</h3>
+    <p class="text-gray-500">
+        {% if sector_filter and current_sector %}
+            No programs are currently available in the {{ current_sector.name }} sector.
+        {% else %}
+            No programs are currently available.
+        {% endif %}
+    </p>
+    {% if sector_filter %}
+    <a href="{% url 'ministries_ppas' %}" class="mt-4 inline-block bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">
+        Browse All Sectors
+    </a>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Pagination -->
+<div class="flex justify-center mb-8">
+    <nav class="inline-flex rounded-md shadow-sm">
+        <a href="#" class="px-3 py-2 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+            <i class="fas fa-chevron-left"></i>
+        </a>
+        <a href="#" class="px-3 py-2 text-white bg-primary-600 border border-primary-600">1</a>
+        <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">2</a>
+        <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">3</a>
+        <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">4</a>
+        <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">5</a>
+        <a href="#" class="px-3 py-2 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+            <i class="fas fa-chevron-right"></i>
+        </a>
+    </nav>
+</div>
+
+<!-- Notion Form Integration Placeholder -->
+<div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+    <h2 class="text-xl font-semibold text-slate-800 mb-4">Request Information</h2>
+    <p class="text-gray-600 mb-6">Interested in a specific PPAS? Fill out the form below and we'll connect you with the right ministry.</p>
+    
+    <div class="bg-gray-100 p-8 rounded-lg border border-gray-200 flex items-center justify-center">
+        <div class="text-center">
+            <div class="text-3xl text-gray-400 mb-2">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <p class="text-gray-600 mb-4">Notion Form Embed Will Appear Here</p>
+            <p class="text-sm text-gray-500">The actual implementation will include an embedded Notion Form for information requests</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showProgramDetails(programId) {
+    // For now, just show an alert with the program ID
+    // In the future, this could open a modal or navigate to a detail page
+    alert('Program Details for ID: ' + programId + '\n\nThis will show detailed information about the ministry program including objectives, implementation strategy, and how to apply.');
+}
+
+// Sector filter functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add smooth scrolling for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+    
+    // Add loading animation when filtering by sector
+    document.querySelectorAll('a[href*="sector="]').forEach(link => {
+        link.addEventListener('click', function(e) {
+            const button = this;
+            const originalContent = button.innerHTML;
+            const icon = button.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-spinner fa-spin text-lg mr-3';
+            }
+            
+            // Allow the navigation to proceed
+            setTimeout(() => {
+                button.innerHTML = originalContent;
+            }, 1500);
+        });
+    });
+    
+    // Add hover effects for sector cards
+    document.querySelectorAll('.group').forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+</script>
+{% endblock %}
+
+{% block cta %}
+<!-- CTA Section -->
+<section class="py-12 bg-primary-600 text-white">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-2xl font-bold mb-4">Become a #FahanieCares Member</h2>
+        <p class="text-white/80 max-w-2xl mx-auto mb-8">Register as a #FahanieCares member to access our full range of services and receive updates about Bangsamoro Ministries' PPAS.</p>
+        <a href="{% url 'register' %}" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition inline-block">Register Now</a>
+    </div>
+</section>
+{% endblock %}

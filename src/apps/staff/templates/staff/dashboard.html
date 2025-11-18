@@ -1,0 +1,415 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Staff Management Dashboard - #FahanieCares{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stat-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: var(--color-primary-600);
+    }
+    .stat-label {
+        color: var(--color-gray-500);
+        font-size: 0.875rem;
+        margin-top: 5px;
+    }
+    .chart-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    .attendance-status {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: bold;
+    }
+    .status-present { background-color: #d1fae5; color: #065f46; }
+    .status-absent { background-color: #fee2e2; color: #991b1b; }
+    .status-late { background-color: #fef3c7; color: #92400e; }
+    .status-leave { background-color: #e0e7ff; color: #3730a3; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-primary-800">Staff Management Dashboard</h1>
+            <p class="text-gray-600 mt-1">Overview of staff, teams, and attendance</p>
+        </div>
+        <div class="flex gap-3">
+            {% include 'components/atoms/button.html' with variant='primary' text='View All Staff' href='/staff/list/' %}
+            {% include 'components/atoms/button.html' with variant='success' text='Track Attendance' href='/staff/attendance/' %}
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <!-- Total Staff -->
+        <div class="stat-card">
+            <div class="stat-number">{{ total_staff }}</div>
+            <div class="stat-label">Total Active Staff</div>
+        </div>
+
+        <!-- Active Teams -->
+        <div class="stat-card">
+            <div class="stat-number">{{ active_teams }}</div>
+            <div class="stat-label">Active Teams</div>
+        </div>
+
+        <!-- Total Tasks -->
+        <div class="stat-card">
+            <div class="stat-number">{{ task_stats.total_tasks }}</div>
+            <div class="stat-label">Total Tasks</div>
+        </div>
+
+        <!-- Today's Attendance -->
+        <div class="stat-card">
+            <div class="stat-number">{{ attendance_summary.present }}</div>
+            <div class="stat-label">Present Today</div>
+        </div>
+
+        <!-- Overdue Tasks -->
+        <div class="stat-card">
+            <div class="stat-number text-red-600">{{ task_stats.overdue_tasks }}</div>
+            <div class="stat-label">Overdue Tasks</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Division Statistics -->
+        <div class="chart-container">
+            <h3 class="text-lg font-semibold mb-4">Staff by Division</h3>
+            <div class="space-y-3">
+                {% for division in division_stats %}
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium">
+                        {% if division.division %}
+                            {% if division.division == 'legislative_affairs' %}
+                                Legislative Affairs
+                            {% elif division.division == 'administrative_affairs' %}
+                                Administrative Affairs
+                            {% elif division.division == 'communications' %}
+                                Communications
+                            {% elif division.division == 'it_unit' %}
+                                IT Unit
+                            {% elif division.division == 'mp_office' %}
+                                MP Uy-Oyod's Office
+                            {% else %}
+                                {{ division.division|title }}
+                            {% endif %}
+                        {% else %}
+                            Unassigned
+                        {% endif %}
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-20 bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: {{ division.percentage }}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600">{{ division.count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Employment Status -->
+        <div class="chart-container">
+            <h3 class="text-lg font-semibold mb-4">Employment Status</h3>
+            <div class="space-y-3">
+                {% for status in status_stats %}
+                <div class="flex justify-between items-center">
+                    <span class="text-sm font-medium">
+                        {% if status.employment_status %}
+                            {% if status.employment_status == 'contractual' %}
+                                Contractual
+                            {% elif status.employment_status == 'coterminous' %}
+                                Coterminous
+                            {% elif status.employment_status == 'consultant' %}
+                                Consultant
+                            {% elif status.employment_status == 'intern' %}
+                                Intern
+                            {% elif status.employment_status == 'volunteer' %}
+                                Volunteer
+                            {% else %}
+                                {{ status.employment_status|title }}
+                            {% endif %}
+                        {% else %}
+                            Unassigned
+                        {% endif %}
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <div class="w-20 bg-gray-200 rounded-full h-2">
+                            <div class="bg-green-600 h-2 rounded-full" style="width: {{ status.percentage }}%"></div>
+                        </div>
+                        <span class="text-sm text-gray-600">{{ status.count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <!-- Attendance Summary -->
+        <div class="chart-container">
+            <h3 class="text-lg font-semibold mb-4">Today's Attendance Summary</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600 mb-1">{{ attendance_summary.present }}</div>
+                    <div class="text-sm text-gray-600">Present</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600 mb-1">{{ attendance_summary.absent }}</div>
+                    <div class="text-sm text-gray-600">Absent</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-yellow-600 mb-1">{{ attendance_summary.late }}</div>
+                    <div class="text-sm text-gray-600">Late</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600 mb-1">{{ attendance_summary.on_leave }}</div>
+                    <div class="text-sm text-gray-600">On Leave</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Hires -->
+        <div class="chart-container">
+            <h3 class="text-lg font-semibold mb-4">Recent Hires (Last 30 Days)</h3>
+            {% if recent_hires %}
+                <div class="space-y-3">
+                    {% for staff in recent_hires %}
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div>
+                            <div class="font-medium text-sm">{{ staff.full_name }}</div>
+                            <div class="text-xs text-gray-500">{{ staff.position }}</div>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            {{ staff.date_hired|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-gray-500 text-center py-8">
+                    No new hires in the last 30 days
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Task Management Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+        <!-- Task Status Overview -->
+        <div class="chart-container">
+            <h3 class="text-lg font-semibold mb-4">Task Status Overview</h3>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-gray-600 mb-1">{{ task_stats.pending_tasks }}</div>
+                    <div class="text-sm text-gray-600">Pending</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-blue-600 mb-1">{{ task_stats.in_progress_tasks }}</div>
+                    <div class="text-sm text-gray-600">In Progress</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-green-600 mb-1">{{ task_stats.completed_tasks }}</div>
+                    <div class="text-sm text-gray-600">Completed</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl font-bold text-red-600 mb-1">{{ task_stats.overdue_tasks }}</div>
+                    <div class="text-sm text-gray-600">Overdue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Tasks (if user is a staff member) -->
+        {% if current_staff %}
+        <div class="chart-container">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-semibold">My Tasks</h3>
+                <a href="{% url 'staff:my_tasks' %}" class="text-primary-600 hover:text-primary-700 text-sm">View All</a>
+            </div>
+            {% if my_tasks %}
+                <div class="space-y-3">
+                    {% for task in my_tasks %}
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div class="flex-1">
+                            <div class="font-medium text-sm">{{ task.title }}</div>
+                            <div class="text-xs text-gray-500">
+                                Priority: 
+                                {% if task.priority == 'urgent' %}
+                                    <span class="text-red-600 font-semibold">{{ task.get_priority_display }}</span>
+                                {% elif task.priority == 'high' %}
+                                    <span class="text-orange-600 font-semibold">{{ task.get_priority_display }}</span>
+                                {% else %}
+                                    <span class="text-gray-600">{{ task.get_priority_display }}</span>
+                                {% endif %}
+                                {% if task.due_date %}
+                                    | Due: {{ task.due_date|date:"M d" }}
+                                    {% if task.is_overdue %}
+                                        <span class="text-red-600 font-semibold">(OVERDUE)</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            {% if task.status == 'pending' %}
+                                <span class="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">{{ task.get_status_display }}</span>
+                            {% elif task.status == 'in_progress' %}
+                                <span class="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded">{{ task.get_status_display }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-gray-500 text-center py-8">
+                    No pending tasks assigned to you
+                </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <!-- Recent Tasks for non-staff users -->
+        <div class="chart-container">
+            <h3 class="text-lg font-semibold mb-4">Recent Tasks</h3>
+            {% if recent_tasks %}
+                <div class="space-y-3">
+                    {% for task in recent_tasks %}
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
+                        <div>
+                            <div class="font-medium text-sm">{{ task.title }}</div>
+                            <div class="text-xs text-gray-500">Assigned to: {{ task.assigned_to.full_name }}</div>
+                        </div>
+                        <div class="text-xs text-gray-500">
+                            {{ task.created_at|date:"M d, Y" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-gray-500 text-center py-8">
+                    No recent tasks
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Urgent Tasks Section -->
+    {% if urgent_tasks %}
+    <div class="mt-8">
+        <div class="chart-container">
+            <h3 class="text-lg font-semibold mb-4 text-red-600">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                High Priority & Urgent Tasks
+            </h3>
+            <div class="space-y-3">
+                {% for task in urgent_tasks %}
+                <div class="flex justify-between items-center py-3 px-4 bg-red-50 border-l-4 border-red-400 rounded-r">
+                    <div class="flex-1">
+                        <div class="font-medium text-sm">{{ task.title }}</div>
+                        <div class="text-xs text-gray-600 mt-1">
+                            Assigned to: {{ task.assigned_to.full_name }}
+                            {% if task.due_date %}
+                                | Due: {{ task.due_date|date:"M d, Y H:i" }}
+                                {% if task.is_overdue %}
+                                    <span class="text-red-600 font-semibold">(OVERDUE)</span>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <span class="inline-block px-3 py-1 text-xs font-semibold bg-red-600 text-white rounded">
+                            {{ task.get_priority_display }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Actions -->
+    <div class="mt-8">
+        <h3 class="text-lg font-semibold mb-4">Quick Actions</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Task Management Actions -->
+            <a href="{% url 'staff:task_list' %}" 
+               class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+                <div class="text-primary-600 mb-2">
+                    <i class="fas fa-tasks text-2xl"></i>
+                </div>
+                <div class="font-medium">All Tasks</div>
+                <div class="text-sm text-gray-500">View all tasks</div>
+            </a>
+
+            <a href="{% url 'staff:task_create' %}" 
+               class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+                <div class="text-green-600 mb-2">
+                    <i class="fas fa-plus-circle text-2xl"></i>
+                </div>
+                <div class="font-medium">Create Task</div>
+                <div class="text-sm text-gray-500">Assign new task</div>
+            </a>
+
+            {% if current_staff %}
+            <a href="{% url 'staff:my_tasks' %}" 
+               class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+                <div class="text-blue-600 mb-2">
+                    <i class="fas fa-user-check text-2xl"></i>
+                </div>
+                <div class="font-medium">My Tasks</div>
+                <div class="text-sm text-gray-500">Tasks assigned to me</div>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'staff:staff_list' %}" 
+               class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+                <div class="text-indigo-600 mb-2">
+                    <i class="fas fa-users text-2xl"></i>
+                </div>
+                <div class="font-medium">Staff Directory</div>
+                <div class="text-sm text-gray-500">View all staff</div>
+            </a>
+        </div>
+
+        <!-- Additional Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <a href="{% url 'staff:export_staff_csv' %}" 
+               class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+                <div class="text-green-600 mb-2">
+                    <i class="fas fa-download text-2xl"></i>
+                </div>
+                <div class="font-medium">Export to CSV</div>
+                <div class="text-sm text-gray-500">Download staff data</div>
+            </a>
+
+            <a href="{% url 'staff:performance_overview' %}" 
+               class="block p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-center">
+                <div class="text-purple-600 mb-2">
+                    <i class="fas fa-chart-bar text-2xl"></i>
+                </div>
+                <div class="font-medium">Performance Overview</div>
+                <div class="text-sm text-gray-500">View evaluations</div>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

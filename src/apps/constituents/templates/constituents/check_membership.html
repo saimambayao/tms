@@ -1,0 +1,147 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Check Membership Status{% endblock %}
+
+{% block hero %}
+<!-- Hero Section with Emerald Theme -->
+<section class="relative overflow-hidden py-16 md:py-24" style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%);">
+    <!-- Minimal background elements -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-1/2 left-1/2 w-32 h-32 rounded-full blur-2xl animate-pulse" style="background-color: #10b981;"></div>
+    </div>
+
+    <!-- Dark gradient overlay for text area -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.7) 20%, rgba(6, 95, 70, 0.4) 40%, rgba(4, 120, 87, 0.2) 60%, transparent 80%);"></div>
+
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-2xl mx-auto text-center">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white drop-shadow-lg">Am I a Member?</h1>
+            <p class="text-xl md:text-2xl text-white/90 drop-shadow-md mb-8">Enter your full name below to check your membership status with #FahanieCares.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-8 px-4">
+    <div class="max-w-4xl mx-auto rounded-2xl shadow-lg p-8 mb-8" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); border: 1px solid #a7f3d0;">
+
+        <form method="GET" action="{% url 'check_membership' %}" class="mb-8">
+            <div class="flex flex-col items-center space-y-4">
+                <div class="w-full max-w-md">
+                    <label for="search-query" class="sr-only">Search Name</label>
+                    <input type="text" id="search-query" name="q"
+                           value="{{ search_query }}"
+                           placeholder="Enter your full name (e.g., Juan Dela Cruz)"
+                           class="w-full px-4 py-3 border border-emerald-200 rounded-lg shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white"
+                           required>
+                </div>
+                <div class="w-full max-w-md">
+                    <button type="submit"
+                            class="w-full inline-flex items-center justify-center px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-colors"
+                            style="background-color: #059669;"
+                            onmouseover="this.style.backgroundColor='#047857'"
+                            onmouseout="this.style.backgroundColor='#059669'">
+                        <i class="fas fa-search mr-2"></i>
+                        Check Status
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        {% if member_found %}
+            {% for member in members_list %}
+            <div class="p-6 rounded-xl shadow-sm mb-6" style="background-color: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46;">
+                <div class="flex items-center mb-4">
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center mr-3" style="background-color: #10b981;">
+                        <i class="fas fa-check text-white"></i>
+                    </div>
+                    <h2 class="text-xl font-bold" style="color: #065f46;">Membership Details Found!</h2>
+                </div>
+                <div class="grid md:grid-cols-2 gap-4">
+                    <div class="bg-white rounded-lg p-4" style="border-left: 4px solid #10b981;">
+                        <p class="mb-2"><strong style="color: #047857;">Name:</strong> {{ member.full_name }}</p>
+                        <p class="mb-2"><strong style="color: #047857;">Date of Registration:</strong> {{ member.date_of_registration }}</p>
+                    </div>
+                    <div class="bg-white rounded-lg p-4" style="border-left: 4px solid #10b981;">
+                        <p class="mb-2"><strong style="color: #047857;">Current Status:</strong>
+                            {% if member.status == 'Approved' %}
+                                <span class="font-bold" style="color: #059669;">{{ member.status }}</span>
+                            {% elif member.status == 'Pending' %}
+                                <div class="flex flex-col gap-1">
+                                    <span class="font-bold" style="color: #d97706;">{{ member.status }}</span>
+                                    <div class="text-xs px-2 py-1 rounded border max-w-xs" style="color: #b45309; background-color: #fffbeb; border-color: #fed7aa;">
+                                        <div class="flex items-start gap-1">
+                                            <svg class="w-3 h-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span>Waiting for admin verification</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif member.status == 'Incomplete' %}
+                                <div class="flex flex-col gap-1">
+                                    <span class="font-bold" style="color: #ea580c;">{{ member.status }}</span>
+                                    <div class="text-xs px-2 py-1 rounded border max-w-xs" style="color: #c2410c; background-color: #fff7ed; border-color: #fed7aa;">
+                                        <div class="flex items-start gap-1">
+                                            <svg class="w-3 h-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                            </svg>
+                                            <span>Verification documents (Voter's Certificate) are expired and need to be updated before approval</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif member.status == 'Non Compliant' %}
+                                <div class="flex flex-col gap-1">
+                                    <span class="font-bold" style="color: #dc2626;">{{ member.status }}</span>
+                                    <div class="text-xs px-2 py-1 rounded border max-w-xs" style="color: #b91c1c; background-color: #fef2f2; border-color: #fecaca;">
+                                        <div class="flex items-start gap-1">
+                                            <svg class="w-3 h-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                            </svg>
+                                            <span>Submitted wrong verification documents. Must submit a valid picture of Voter's Certificate (at least 6 months latest)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="font-bold" style="color: #059669;">{{ member.status }}</span>
+                            {% endif %}
+                        </p>
+                        <p class="mb-2"><strong style="color: #047857;">Sector:</strong> {{ member.sector }}</p>
+                    </div>
+                </div>
+                <div class="mt-4 p-4 rounded-lg" style="background-color: #dcfce7; border: 1px solid #a7f3d0;">
+                    <p class="text-sm" style="color: #047857;">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        If you believe there's an error, please contact our office for assistance.
+                    </p>
+                </div>
+            </div>
+            {% endfor %}
+        {% elif search_query %}
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 p-6 rounded-xl shadow-sm">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-amber-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-search text-white text-xl"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">No Membership Found</h3>
+                    <p class="mb-2">No membership found for "{{ search_query }}". Please double-check the spelling or try a different name.</p>
+                    <p class="text-sm">If you recently registered, it might take some time for your status to update. For further assistance, please contact our office.</p>
+                </div>
+            </div>
+        {% endif %}
+
+        {% if messages %}
+            <div class="mt-6">
+                {% for message in messages %}
+                    <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-emerald-50 text-emerald-700 border border-emerald-200{% elif message.tags == 'info' %}bg-blue-50 text-blue-700 border border-blue-200{% elif message.tags == 'warning' %}bg-amber-50 text-amber-700 border border-amber-200{% elif message.tags == 'error' %}bg-red-50 text-red-700 border border-red-200{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

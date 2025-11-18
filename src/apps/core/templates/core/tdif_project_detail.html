@@ -1,0 +1,185 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ project.title }} - #FahanieCares{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+
+{% block breadcrumbs %}
+<div class="bg-white border-b">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex items-center text-sm text-gray-600">
+            <a href="{% url 'home' %}" class="hover:text-primary-600 transition">Home</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            <a href="{% url 'tdif_projects' %}" class="hover:text-primary-600 transition">TDIF Projects</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            <span class="text-gray-800 font-medium">{{ project.title }}</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Main Content Grid -->
+    <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Article Content (Main Program Details) -->
+        <article class="lg:col-span-2">
+            <!-- Header -->
+            <header class="mb-8">
+                <div class="flex items-center mb-4">
+                    <span class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+                          style="background-color: {% if project.status == 'active' %}#d1fae5{% elif project.status == 'completed' %}#bfdbfe{% else %}#e5e7eb{% endif %};
+                                 color: {% if project.status == 'active' %}#065f46{% elif project.status == 'completed' %}#1e40af{% else %}#4b5563{% endif %};">
+                        {{ project.get_status_display }}
+                    </span>
+                    <span class="text-gray-500 text-sm ml-auto">{{ project.start_date|date:"F d, Y" }} {% if project.end_date and project.start_date != project.end_date %}- {{ project.end_date|date:"F d, Y" }}{% endif %}</span>
+                </div>
+                
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">{{ project.title }}</h1>
+                
+                <p class="text-lg text-slate-600 leading-relaxed mb-6 text-justify">{{ project.description|default_if_none:project.objectives }}</p>
+            </header>
+
+            <!-- Program Details Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Project Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 text-base">
+                    <div class="flex items-center"><i class="fas fa-tag text-primary-600 w-6 mr-2"></i> <strong>Type:</strong> {{ project.get_ppa_type_display }}</div>
+                    <div class="flex items-center"><i class="fas fa-calendar-alt text-primary-600 w-6 mr-2"></i> <strong>Duration:</strong> {{ project.start_date|date:"M d, Y" }} {% if project.end_date and project.start_date != project.end_date %}- {{ project.end_date|date:"M d, Y" }}{% endif %}</div>
+                    {% comment %} Removed budget display as per user request {% endcomment %}
+                    <div class="flex items-center"><i class="fas fa-map-marker-alt text-primary-600 w-6 mr-2"></i> <strong>Coverage:</strong> {{ project.geographic_coverage }}</div>
+                    <div class="flex items-center"><i class="fas fa-users text-primary-600 w-6 mr-2"></i> <strong>Beneficiaries:</strong> {{ project.estimated_beneficiaries|default:"N/A" }}</div>
+                    <div class="flex items-center"><i class="fas fa-chart-line text-primary-600 w-6 mr-2"></i> <strong>Status:</strong> <span class="font-semibold {% if 'Active' in project.get_status_display %}text-green-700{% elif 'Pending' in project.get_status_display %}text-orange-700{% else %}text-gray-700{% endif %}">{{ project.get_status_display }}</span></div>
+                    <div class="flex items-center"><i class="fas fa-exclamation-triangle text-primary-600 w-6 mr-2"></i> <strong>Priority:</strong> {{ project.get_priority_level_display }}</div>
+                </div>
+            </div>
+
+            <!-- Objectives & Outcomes Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Objectives & Outcomes</h3>
+                <div class="prose prose-lg max-w-none mb-5">
+                    <h4>Objectives:</h4>
+                    <p class="text-justify">{{ project.objectives }}</p>
+                    <h4>Expected Outcomes:</h4>
+                    <p class="text-justify">{{ project.expected_outcomes }}</p>
+                </div>
+            </div>
+
+            {% if project.target_beneficiaries %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Target Beneficiaries & Eligibility</h3>
+                <div class="prose prose-lg max-w-none">
+                    <p class="text-justify">{{ project.target_beneficiaries }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if project.implementation_strategy or project.implementing_units or project.partner_agencies %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Implementation Details</h3>
+                <div class="prose prose-lg max-w-none">
+                    {% if project.implementation_strategy %}
+                    <p class="text-justify"><strong>Strategy:</strong> {{ project.implementation_strategy }}</p>
+                    {% endif %}
+                    {% if project.implementing_units %}
+                    <p class="text-justify"><strong>Implementing Units:</strong> {{ project.implementing_units }}</p>
+                    {% endif %}
+                    {% if project.partner_agencies %}
+                    <p class="text-justify"><strong>Partner Agencies:</strong> {{ project.partner_agencies }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Navigation Buttons -->
+            <nav class="flex flex-col sm:flex-row gap-4 justify-center mt-10 pt-8 border-t border-gray-200">
+                <a href="{% url 'tdif_projects' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
+                    <i class="fas fa-arrow-left mr-2"></i> Back to TDIF Projects
+                </a>
+            </nav>
+        </article>
+
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1">
+            <!-- Key Contacts -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Key Contacts</h3>
+                <div class="space-y-3 text-gray-700 text-base">
+                    <p><i class="fas fa-envelope text-primary-600 w-6 mr-2"></i> <a href="mailto:info@fahaniecares.org" class="hover:text-primary-600 transition-colors">info@fahaniecares.org</a></p>
+                    <p><i class="fas fa-phone-alt text-primary-600 w-6 mr-2"></i> <a href="tel:+1234567890" class="hover:text-primary-600 transition-colors">+1 (234) 567-890</a></p>
+                    <p><i class="fas fa-map-marker-alt text-primary-600 w-6 mr-2"></i> 123 Program St, City, Country</p>
+                </div>
+            </div>
+
+            <!-- Share This Program -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Share This Project</h3>
+                <div class="flex justify-center space-x-4">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="text-blue-600 hover:text-blue-800 transition-colors">
+                        <i class="fab fa-facebook-square text-3xl"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ project.title }}" target="_blank" class="text-blue-400 hover:text-blue-600 transition-colors">
+                        <i class="fab fa-twitter-square text-3xl"></i>
+                    </a>
+                    <a href="mailto:?subject={{ project.title }}&body=Check out this project: {{ request.build_absolute_uri }}" class="text-gray-600 hover:text-gray-800 transition-colors">
+                        <i class="fas fa-envelope-square text-3xl"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Related Programs -->
+            {% if related_projects %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Related TDIF Projects</h3>
+                
+                <div class="space-y-4">
+                    {% for related_project in related_projects %}
+                    <article class="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-hands-helping text-gray-400"></i> {# Placeholder icon #}
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center mb-1">
+                                    {% with related_project.get_sector_info as related_sector_info %}
+                                    {% include 'components/atoms/badge.html' with variant=related_sector_info.color|default:'gray' text=related_sector_info.name|default:'Other' size='sm' %}
+                                    {% endwith %}
+                                </div>
+                                <h4 class="text-sm font-medium text-slate-800 leading-tight mb-1 line-clamp-2">
+                                    <a href="{% url 'tdif_project_detail' related_project.slug %}" class="hover:text-primary-600 transition-colors">
+                                        {{ related_project.title }}
+                                    </a>
+                                </h4>
+                                <p class="text-xs text-gray-500">{{ related_project.start_date|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6">
+                    <a href="{% url 'tdif_projects' %}" 
+                       class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
+                        View All TDIF Projects
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact CTA -->
+            <div class="bg-primary-600 rounded-lg p-6 text-white">
+                <h3 class="text-xl font-semibold mb-3">Inquire About Projects</h3>
+                <p class="text-white/90 mb-4 text-sm">Have questions about this or other projects? Contact us directly.</p>
+                
+                <div class="space-y-3">
+                    <a href="{% url 'contact' %}" 
+                       class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-white text-primary-700 hover:bg-slate-50 focus:ring-white">
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

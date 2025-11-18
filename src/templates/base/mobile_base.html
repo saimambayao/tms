@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#10b981">
+    
+    <title>{% block title %}#FahanieCares{% endblock %}</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    
+    <!-- Icons -->
+    <link rel="icon" href="{% static 'images/favicon.png' %}?v=2" type="image/png" sizes="32x32">
+    <link rel="icon" href="{% static 'images/favicon.png' %}?v=2" type="image/png" sizes="16x16">
+    <link rel="apple-touch-icon" href="{% static 'images/favicon.png' %}?v=2" sizes="180x180">
+    
+    <!-- Stylesheets -->
+    <link href="{% static 'css/output.css' %}" rel="stylesheet">
+    <link href="{% static 'css/mobile.css' %}" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="{% static 'css/fontawesome.min.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 text-gray-900">
+    {% include 'components/navigation/modern_navbar.html' %}
+    
+    <!-- Main Content -->
+    <div class="pt-16"> {# Add padding-top to account for fixed navbar #}
+        <!-- Messages -->
+        {% if messages %}
+            <div class="messages mt-4 px-4 sm:px-6 lg:px-8"> {# Adjust padding for messages #}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} mobile-alert">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <!-- Page Content -->
+        <main class="p-4"> {# Removed mobile-main class as it might conflict with new layout #}
+            {% block content %}{% endblock %}
+        </main>
+        
+    {% include 'components/navigation/footer.html' %}
+    </div>
+    
+    <!-- Scripts -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script src="{% static 'js/mobile.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,365 @@
+PROJECT: #FahanieCares Unified Interface Implementation
+
+OVERVIEW:
+Transform the current multi-portal architecture (#FahanieCares website) into a unified interface that serves all user types (public, members, staff, administrators) through progressive disclosure and role-based access control. This project implements the "One Platform, Many Roles" philosophy to create a seamless, maintainable solution that reduces development overhead by 60% while improving user experience.
+
+CONTEXT:
+The current system maintains separate interfaces for different user types, causing maintenance challenges, inconsistent experiences, and difficult user transitions. The unified interface will consolidate these into a single, adaptive platform that reveals features based on user authentication and permissions.
+
+TECHNOLOGY STACK:
+- Backend: Django 4.2+ with Django REST Framework
+- Frontend: Django Templates with HTMX for progressive enhancement
+- Database: PostgreSQL 14+ with full Django ORM integration
+- Caching: Django Redis for session and view caching
+- Authentication: Django-Allauth with 2FA support
+- Permission System: Django Guardian for object-level permissions
+- Task Queue: Django-Q2 for background processing
+- Monitoring: Django Debug Toolbar (development), Sentry (production)
+- CDN: CloudFront for static assets
+- Search: PostgreSQL Full Text Search with Django integration
+- Admin Interface: Django Admin with custom enhancements
+
+KEY OBJECTIVES:
+1. Create a single, cohesive platform serving all user types
+2. Implement progressive disclosure based on user roles and permissions
+3. Ensure seamless transitions as users progress from public to member to staff
+4. Reduce maintenance overhead through shared components and single codebase
+5. Maintain security through backend permission enforcement
+6. Optimize performance with role-based code splitting
+
+USER ROLES & REQUIREMENTS:
+
+PUBLIC/ANONYMOUS USERS:
+- Browse all government services and programs
+- Submit basic referral requests without registration
+- View general information about MP and #FahanieCares
+- Access contact information and office locations
+- Register for member account with benefits preview
+
+REGISTERED MEMBERS:
+- All public features plus:
+- Personal dashboard with referral tracking
+- Upload supporting documents for requests
+- Receive real-time status updates
+- Access community features and chapter information
+- Participate in events and volunteer opportunities
+- Manage family member accounts
+
+REFERRAL PROCESSING STAFF:
+- All member features plus:
+- Case management dashboard with queue prioritization
+- Process and assign referrals to agencies
+- Track agency responses and follow-ups
+- Access referral analytics and performance metrics
+- Bulk operations for efficiency
+- Internal notes and communication tools
+
+PROGRAM ADMIN STAFF:
+- All referral staff features plus:
+- Manage ministry programs and eligibility criteria
+- Control program budgets and allocations
+- View program-specific analytics and impact reports
+- Configure application workflows
+- Approve special requests and exceptions
+
+SUPERADMIN:
+- All features plus:
+- User management and role assignment
+- System configuration and settings
+- Full audit trail access
+- Integration management
+- Performance monitoring and optimization
+
+TECHNICAL REQUIREMENTS:
+
+ARCHITECTURE:
+- Django MVT pattern with direct PostgreSQL integration
+- Class-based views with Django Braces mixins for permission handling
+- Custom middleware for role detection and feature flagging
+- Template inheritance hierarchy: base.html → role_base.html → feature_specific.html
+- Django Signals for cross-app communication
+- Django ORM with custom model managers for complex queries
+- Django REST Framework for API endpoints
+- HTMX for dynamic UI updates without full page reloads
+- Progressive Web App with service workers for offline capability
+- Modular app structure following Django best practices:
+  * core - Base functionality and shared utilities
+  * users - Authentication and user management
+  * constituents - Member profiles and constituent data
+  * referrals - Service referral system with workflow management
+  * chapters - Chapter organization and membership
+  * services - Government programs and eligibility management
+  * analytics - Reporting and insights
+  * notifications - Multi-channel notification system
+
+PERMISSION SYSTEM:
+- Django's built-in permission framework extended with Django Guardian
+- Role hierarchy implemented through Django Groups:
+  * Anonymous (no group)
+  * Member (constituents.member)
+  * Referral Staff (referrals.staff)
+  * Program Admin (services.admin)
+  * Superadmin (is_superuser=True)
+- Custom permission classes:
+  * IsOwnerOrReadOnly for object ownership
+  * HasRolePermission for role-based access
+  * HasFeatureAccess for feature flags
+- Permission caching with Django Redis (5-minute TTL)
+- Django Simple History for comprehensive audit trails
+- Custom decorators:
+  * @require_role('role_name')
+  * @progressive_disclosure('feature_name')
+  * @track_access for audit logging
+- Middleware for permission preloading
+- Template tags: {% can_access 'feature' %}, {% has_role 'role' %}
+
+PROGRESSIVE DISCLOSURE:
+- Dynamic navigation based on user role
+- Adaptive form fields showing role-appropriate options
+- Smart components that check permissions internally
+- Role-based dashboard widgets
+- Context-aware help system
+
+USER INTERFACE:
+- Mobile-first responsive design using Tailwind CSS
+- Component library with Django Cotton for reusable UI elements
+- HTMX integration for dynamic interactions:
+  * hx-get for lazy loading role-specific content
+  * hx-trigger for real-time updates
+  * hx-swap for progressive disclosure
+- Accessibility implementation:
+  * ARIA labels and landmarks
+  * Keyboard navigation support
+  * Screen reader optimization
+  * WCAG 2.1 AA compliance
+- Internationalization using Django's i18n framework:
+  * English (en)
+  * Filipino (fil)
+  * Maguindanaon (mdh)
+  * Tausug (tsg)
+- Django Messages framework for user feedback
+- Custom template context processors for role detection
+- Progressive enhancement approach:
+  * Core functionality works without JavaScript
+  * Enhanced features with HTMX/Alpine.js
+  * Fallback for older browsers
+
+PERFORMANCE:
+- Code splitting by role to optimize bundle sizes
+- Lazy loading of role-specific features
+- Progressive web app capabilities
+- CDN optimization for static assets
+- Database query optimization based on user context
+
+MIGRATION REQUIREMENTS:
+- Preserve existing user accounts and permissions
+- Maintain all current referral data in PostgreSQL
+- Map existing roles to new Django Groups and permissions
+- Ensure zero downtime through parallel-run strategy
+- Provide automated rollback capability using database snapshots
+- Implement phased migration approach:
+  * Deploy unified interface alongside existing portals
+  * Route traffic progressively (5% → 20% → 100%)
+  * Monitor performance and user feedback at each stage
+  * Validate data integrity using Django's migration framework
+  * Maintain both systems during transition period
+- Create Django data migration scripts for data transformation
+- Use Django's dumpdata/loaddata for backup and recovery
+- Leverage PostgreSQL's transactional DDL for safe migrations
+
+INTEGRATION POINTS:
+- Email System (Django-Anymail):
+  * SendGrid for transactional emails
+  * Template-based emails with Django Templates
+  * Queue-based sending via Django-Q2
+  * Tracking and analytics
+- SMS Integration:
+  * Twilio for SMS notifications
+  * Template management for message consistency
+  * Opt-in/opt-out management
+  * Delivery status tracking
+- Government APIs:
+  * PhilSys for identity verification
+  * Agency-specific APIs with OAuth2
+  * Standardized adapter pattern
+- Analytics Integration:
+  * Google Analytics 4 for user behavior
+  * Custom Django analytics app for internal metrics
+  * Real-time dashboards with Django Channels
+- External Services:
+  * AWS S3 for document storage
+  * CloudFront CDN for static assets
+  * Sentry for error tracking
+  * Redis for caching and sessions
+
+SUCCESS CRITERIA:
+1. All users can access appropriate features without errors
+2. Performance metrics achieved:
+   - First Contentful Paint < 1.5s (target), < 2.5s (mobile 3G)
+   - Time to Interactive < 3.5s (target), < 5.0s (mobile 3G)
+   - Largest Contentful Paint < 2.5s (target), < 4.0s (mobile 3G)
+   - Total Blocking Time < 300ms
+   - JavaScript bundle size < 150KB
+3. 95% of users can complete tasks without assistance
+4. Zero security breaches from permission failures
+5. 50% reduction in support tickets after implementation
+6. Successful migration of all existing data with zero downtime
+7. All staff complete certification training
+8. Parallel-run validates 100% data integrity
+
+CONSTRAINTS:
+- Must work on low-end devices common in rural areas
+- Limited internet connectivity in some regions
+- Varying technical literacy among users
+- Must maintain government compliance requirements
+- Budget constraints for infrastructure
+
+IMPLEMENTATION PHASES:
+
+PHASE 1 - Foundation:
+- Refactor existing Django project for unified architecture
+- Enhance current permission system for role-based access
+- Create base templates and shared components
+- Develop core navigation with progressive disclosure
+- Build public interface features
+- Set up parallel-run infrastructure
+Completion Criteria: Core system operational with basic features
+
+PHASE 2 - Member Experience:
+- Implement member dashboard and tracking
+- Add document upload capabilities
+- Create community features
+- Develop notification system
+- Test user progression flows
+- Create training materials for members
+Completion Criteria: Member features fully functional and tested
+
+PHASE 3 - Staff Tools:
+- Build case management interface
+- Implement referral processing workflows
+- Add analytics dashboards
+- Create bulk operation tools
+- Develop internal communication features
+- Conduct staff training workshops
+Completion Criteria: Staff can process referrals efficiently
+
+PHASE 4 - Administration:
+- Implement program management tools
+- Add user administration interface
+- Create system configuration options
+- Build audit logging and reporting
+- Develop backup and recovery systems
+- Complete security audit
+Completion Criteria: Full administrative control established
+
+PHASE 5 - Migration & Launch:
+- Deploy unified interface alongside existing (parallel-run)
+- Alpha testing with 5% internal users
+- Beta testing with 20% active members
+- Progressive rollout to 100% users
+- Monitor performance and stability
+- Implement rollback procedures if needed
+Completion Criteria: All users successfully migrated
+
+PHASE 6 - Optimization:
+- Performance optimization based on real usage
+- Final bug fixes and adjustments
+- Complete documentation
+- Decommission legacy systems
+- Post-migration audit
+Completion Criteria: System fully optimized and legacy retired
+
+DELIVERABLES:
+1. Production-Ready Django Application:
+   - Fully configured Django project with modular apps
+   - Complete test suite (>90% coverage)
+   - Docker containerization with docker-compose
+   - CI/CD pipeline configuration (GitHub Actions)
+   - Environment-specific settings management
+
+2. Frontend Implementation:
+   - Mobile-responsive templates for all features
+   - Component library documentation
+   - HTMX patterns and usage guide
+   - Progressive Web App manifest and service workers
+   - Accessibility compliance report
+
+3. Technical Documentation:
+   - API documentation with Django REST Swagger
+   - Developer setup guide with prerequisites
+   - Architecture decision records (ADRs)
+   - Data flow diagrams and ER diagrams
+   - Deployment runbooks for AWS/Railway
+
+4. Migration Infrastructure:
+   - Django management commands for data migration
+   - Rollback procedures with database snapshots
+   - Data validation scripts
+   - Performance benchmarks pre/post migration
+   - Zero-downtime deployment strategy
+
+5. Security Package:
+   - OWASP compliance checklist
+   - Penetration testing results
+   - Security headers configuration
+   - SSL/TLS setup documentation
+   - GDPR compliance measures
+
+6. Monitoring and Operations:
+   - Logging configuration with structured logs
+   - Monitoring dashboards (Grafana/Prometheus)
+   - Alert rules and escalation procedures
+   - Backup and disaster recovery plans
+   - Performance optimization report
+
+RISKS & MITIGATION:
+- User confusion during transition: Provide in-app tutorials and guided tours
+- Performance degradation: Implement aggressive caching and optimization
+- Security vulnerabilities: Conduct thorough penetration testing
+- Data migration errors: Create comprehensive backup and validation procedures
+- Technical challenges during implementation: Iterative development with continuous testing
+
+ACCEPTANCE TESTING:
+- User acceptance testing for each role
+- Security penetration testing
+- Performance load testing
+- Accessibility compliance testing
+- Cross-browser and device testing
+- Integration testing with external systems
+
+POST-LAUNCH OPERATIONS:
+
+1. Monitoring and Metrics:
+   - Real-time performance monitoring via Django APM
+   - User journey analytics with Mixpanel integration
+   - Custom Django admin dashboards for KPIs
+   - Weekly automated reports to stakeholders
+   - Error rate tracking with Sentry alerts
+
+2. Continuous Improvement:
+   - A/B testing framework with Django-Experiments
+   - Feature flag system for gradual rollouts
+   - User feedback widget integration
+   - Monthly performance optimization sprints
+   - Quarterly security audits
+
+3. Maintenance Procedures:
+   - Automated dependency updates with Dependabot
+   - Django security releases within 48 hours
+   - Database maintenance windows (monthly)
+   - Cache warming strategies
+   - Load testing before major events
+
+4. Scalability Planning:
+   - Auto-scaling configuration for traffic spikes
+   - Database read replicas for analytics
+   - CDN optimization for regional performance
+   - Queue system for heavy processing
+   - Microservice extraction roadmap
+
+5. Knowledge Management:
+   - Internal wiki with Confluence/Notion
+   - Recorded training sessions library
+   - Troubleshooting guide updates
+   - Post-mortem documentation
+   - Architecture evolution tracking

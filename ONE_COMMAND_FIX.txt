@@ -1,0 +1,19 @@
+🚀 COPY AND PASTE THIS ONE COMMAND ON YOUR PRODUCTION SERVER:
+
+curl -s https://raw.githubusercontent.com/tech-bangsamoro/fahanie-cares/main/deploy-css-fix.sh | bash
+
+That's it! This single command will:
+✅ Pull latest code from Git
+✅ Find your Docker container automatically
+✅ Rebuild CSS with TailwindCSS
+✅ Collect static files
+✅ Clear CloudFront cache (if AWS CLI is configured)
+✅ Show you colored progress updates
+
+Alternative if curl doesn't work:
+
+wget -qO- https://raw.githubusercontent.com/tech-bangsamoro/fahanie-cares/main/deploy-css-fix.sh | bash
+
+Or if you want to see what it does first:
+
+curl https://raw.githubusercontent.com/tech-bangsamoro/fahanie-cares/main/deploy-css-fix.sh

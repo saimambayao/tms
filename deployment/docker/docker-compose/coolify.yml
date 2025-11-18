@@ -1,0 +1,220 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: fahaniecares_db
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-fahaniecares_production}
+      POSTGRES_USER: ${POSTGRES_USER:-fahaniecares_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fahaniecares_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fahaniecares_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: fahaniecares_redis
+    restart: unless-stopped
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    healthcheck:
+      test: ["CMD", "redis-cli", "auth", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fahaniecares_network
+
+  # Django Web Application
+  web:
+    build:
+      context: ../../../src
+      dockerfile: ../deployment/docker/Dockerfile.django
+    container_name: fahaniecares_web
+    restart: unless-stopped
+    command: sh -c "
+      echo 'Waiting for database...' &&
+      python manage.py wait_for_db &&
+      echo 'Running database migrations...' &&
+      python manage.py migrate --noinput &&
+      echo 'Collecting static files...' &&
+      python manage.py collectstatic --noinput --clear &&
+      echo 'Creating cache table...' &&
+      python manage.py createcachetable &&
+      echo 'Optimizing database...' &&
+      python manage.py optimize_database &&
+      echo 'Setting up RBAC...' &&
+      python manage.py setup_rbac &&
+      echo 'Creating superuser if needed...' &&
+      python manage.py create_developer_superusers &&
+      echo 'Starting production server with Gunicorn...' &&
+      gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --max-requests 1000 --max-requests-jitter 50 --worker-class sync --worker-connections 1000 --keep-alive 5 --preload config.wsgi:application"
+    volumes:
+      - static_files:/app/staticfiles
+      - media_files:/app/media
+      - logs:/app/logs
+    ports:
+      - "8000:8000"
+    environment:
+      # Coolify Magic Variables
+      - SERVICE_FQDN_WEB=${SERVICE_FQDN_WEB:-fahaniecares.ph}
+      - SERVICE_FQDN_WEB_8000=${SERVICE_FQDN_WEB_8000:-/}
+      
+      # Django Settings
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DEBUG=False
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-fahaniecares.ph,www.fahaniecares.ph,.fahaniecares.ph}
+      
+      # CSRF Configuration for fahaniecares.ph
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-https://fahaniecares.ph,https://www.fahaniecares.ph}
+      
+      # Database Configuration
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-fahaniecares_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fahaniecares_production}
+      
+      # Redis Configuration
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CACHE_BACKEND=django_redis.cache.RedisCache
+      
+      # Security Settings
+      - SECURE_SSL_REDIRECT=${SECURE_SSL_REDIRECT:-True}
+      - SESSION_COOKIE_SECURE=${SESSION_COOKIE_SECURE:-True}
+      - CSRF_COOKIE_SECURE=${CSRF_COOKIE_SECURE:-True}
+      
+      
+      # Email Configuration
+      - EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+      - EMAIL_HOST=${EMAIL_HOST:-smtp.gmail.com}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@fahaniecares.ph}
+      
+      # AWS S3 Configuration (Optional)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME:-fahaniecares-media}
+      - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME:-ap-southeast-1}
+      
+      # CDN Configuration (Optional)
+      - CDN_ENABLED=${CDN_ENABLED:-False}
+      - CDN_DOMAIN=${CDN_DOMAIN}
+      
+      # Monitoring & Error Tracking
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-production}
+      - SENTRY_TRACES_SAMPLE_RATE=${SENTRY_TRACES_SAMPLE_RATE:-0.1}
+      
+      # Additional Settings
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fahaniecares_network
+
+  # Nginx Reverse Proxy (Optional - Coolify handles this)
+  nginx:
+    image: nginx:alpine
+    container_name: fahaniecares_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ../../nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_files:/app/static:ro
+      - media_files:/app/media:ro
+    depends_on:
+      - web
+    networks:
+      - fahaniecares_network
+
+  # Celery Worker for Background Tasks (Optional)
+  celery:
+    build:
+      context: ../../../src
+      dockerfile: ../deployment/docker/Dockerfile.django
+    container_name: fahaniecares_celery
+    restart: unless-stopped
+    command: celery -A config worker -l info --concurrency=2
+    volumes:
+      - media_files:/app/media
+      - logs:/app/logs
+    environment:
+      # Same environment as web service
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DEBUG=False
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-fahaniecares_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fahaniecares_production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fahaniecares_network
+
+  # Celery Beat Scheduler (Optional)
+  celery-beat:
+    build:
+      context: ../../../src
+      dockerfile: ../deployment/docker/Dockerfile.django
+    container_name: fahaniecares_celery_beat
+    restart: unless-stopped
+    command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - logs:/app/logs
+    environment:
+      # Same environment as web service
+      - DJANGO_SETTINGS_MODULE=config.settings.production
+      - DEBUG=False
+      - SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-fahaniecares_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fahaniecares_production}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fahaniecares_network
+
+volumes:
+  postgres_data:
+    name: fahaniecares_postgres_data
+  redis_data:
+    name: fahaniecares_redis_data
+  static_files:
+    name: fahaniecares_static_files
+  media_files:
+    name: fahaniecares_media_files
+  logs:
+    name: fahaniecares_logs
+
+networks:
+  fahaniecares_network:
+    name: fahaniecares_network
+    driver: bridge

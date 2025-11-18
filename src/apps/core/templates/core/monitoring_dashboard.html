@@ -1,0 +1,297 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}System Monitoring Dashboard - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">System Monitoring Dashboard</h1>
+            <p class="mt-2 text-gray-600">Real-time system health and performance metrics</p>
+            <div class="mt-4 flex items-center space-x-4">
+                <span class="text-sm text-gray-500">Last updated: <span id="last-updated" class="font-medium">{{ last_updated }}</span></span>
+                <button onclick="refreshDashboard()" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                </button>
+            </div>
+        </div>
+
+        <!-- System Status Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <!-- Overall Health -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">System Health</p>
+                        <p class="text-2xl font-bold mt-2">
+                            {% if overall_health == 'healthy' %}
+                                <span class="text-green-600">Healthy</span>
+                            {% elif overall_health == 'degraded' %}
+                                <span class="text-yellow-600">Degraded</span>
+                            {% else %}
+                                <span class="text-red-600">Unhealthy</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="p-3 rounded-full {% if overall_health == 'healthy' %}bg-green-100{% elif overall_health == 'degraded' %}bg-yellow-100{% else %}bg-red-100{% endif %}">
+                        <i class="fas fa-heartbeat text-2xl {% if overall_health == 'healthy' %}text-green-600{% elif overall_health == 'degraded' %}text-yellow-600{% else %}text-red-600{% endif %}"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Uptime -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Uptime</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-2">{{ uptime_percentage }}%</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ uptime_duration }}</p>
+                    </div>
+                    <div class="p-3 bg-primary-100 rounded-full">
+                        <i class="fas fa-clock text-2xl text-primary-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Time -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Avg Response Time</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-2">{{ avg_response_time }}ms</p>
+                        <p class="text-xs text-gray-500 mt-1">Last 24 hours</p>
+                    </div>
+                    <div class="p-3 bg-blue-100 rounded-full">
+                        <i class="fas fa-tachometer-alt text-2xl text-blue-600"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error Rate -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-600">Error Rate</p>
+                        <p class="text-2xl font-bold text-gray-900 mt-2">{{ error_rate }}%</p>
+                        <p class="text-xs text-gray-500 mt-1">{{ error_count }} errors today</p>
+                    </div>
+                    <div class="p-3 {% if error_rate < 1 %}bg-green-100{% elif error_rate < 5 %}bg-yellow-100{% else %}bg-red-100{% endif %} rounded-full">
+                        <i class="fas fa-exclamation-triangle text-2xl {% if error_rate < 1 %}text-green-600{% elif error_rate < 5 %}text-yellow-600{% else %}text-red-600{% endif %}"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Status Grid -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Service Status</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for service, status in services.items %}
+                <div class="border rounded-lg p-4 {% if status.status == 'healthy' %}border-green-200 bg-green-50{% elif status.status == 'degraded' %}border-yellow-200 bg-yellow-50{% else %}border-red-200 bg-red-50{% endif %}">
+                    <div class="flex items-center justify-between">
+                        <div>
+                            <h3 class="font-medium text-gray-900">{{ service|title }}</h3>
+                            <p class="text-sm text-gray-600 mt-1">{{ status.message|default:"Operational" }}</p>
+                        </div>
+                        <div class="flex items-center">
+                            {% if status.status == 'healthy' %}
+                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            {% elif status.status == 'degraded' %}
+                                <i class="fas fa-exclamation-circle text-yellow-600 text-xl"></i>
+                            {% else %}
+                                <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if status.latency %}
+                    <p class="text-xs text-gray-500 mt-2">Response: {{ status.latency }}ms</p>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Performance Metrics -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Request Volume Chart -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Request Volume</h2>
+                <div class="relative" style="height: 300px;">
+                    <canvas id="requestVolumeChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Response Time Chart -->
+            <div class="bg-white rounded-lg shadow-sm p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Response Times</h2>
+                <div class="relative" style="height: 300px;">
+                    <canvas id="responseTimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Errors -->
+        <div class="bg-white rounded-lg shadow-sm p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Recent Errors</h2>
+            {% if recent_errors %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Error</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Path</th>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for error in recent_errors %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ error.timestamp|date:"H:i:s" }}</td>
+                            <td class="px-6 py-4 text-sm text-gray-900">{{ error.message|truncatewords:10 }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ error.path }}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ error.user|default:"Anonymous" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-500">No recent errors to display.</p>
+            {% endif %}
+        </div>
+
+        <!-- Background Tasks Status -->
+        <div class="bg-white rounded-lg shadow-sm p-6">
+            <h2 class="text-xl font-semibold text-gray-900 mb-4">Background Tasks</h2>
+            <div class="space-y-4">
+                {% for task in background_tasks %}
+                <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <h3 class="font-medium text-gray-900">{{ task.name }}</h3>
+                        <p class="text-sm text-gray-600">Last run: {{ task.last_run|date:"Y-m-d H:i" }}</p>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm {% if task.status == 'success' %}text-green-600{% else %}text-red-600{% endif %}">
+                            {{ task.status|title }}
+                        </span>
+                        <span class="text-sm text-gray-500">Next: {{ task.next_run|date:"H:i" }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Initialize charts
+const requestVolumeCtx = document.getElementById('requestVolumeChart').getContext('2d');
+const responseTimeCtx = document.getElementById('responseTimeChart').getContext('2d');
+
+// Request Volume Chart
+new Chart(requestVolumeCtx, {
+    type: 'line',
+    data: {
+        labels: {{ request_volume_labels|safe }},
+        datasets: [{
+            label: 'Requests',
+            data: {{ request_volume_data|safe }},
+            borderColor: 'rgb(34, 197, 94)',
+            backgroundColor: 'rgba(34, 197, 94, 0.1)',
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+            padding: {
+                top: 10,
+                bottom: 10
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    borderDash: [5, 5]
+                }
+            }
+        }
+    }
+});
+
+// Response Time Chart
+new Chart(responseTimeCtx, {
+    type: 'line',
+    data: {
+        labels: {{ response_time_labels|safe }},
+        datasets: [{
+            label: 'Response Time (ms)',
+            data: {{ response_time_data|safe }},
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            tension: 0.4,
+            borderWidth: 2,
+            pointRadius: 3,
+            pointHoverRadius: 5
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+            padding: {
+                top: 10,
+                bottom: 10
+            }
+        },
+        plugins: {
+            legend: {
+                display: false
+            }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false
+                }
+            },
+            y: {
+                beginAtZero: true,
+                grid: {
+                    borderDash: [5, 5]
+                }
+            }
+        }
+    }
+});
+
+// Auto-refresh dashboard
+function refreshDashboard() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(() => {
+    document.getElementById('last-updated').textContent = new Date().toLocaleTimeString();
+}, 30000);
+</script>
+{% endblock %}

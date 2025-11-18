@@ -1,0 +1,219 @@
+{% extends 'base/base.html' %}
+
+{% block title %}{{ program.title }} - #FahanieCares{% endblock %}
+{% block meta_description %}{{ meta_description }}{% endblock %}
+
+{% block breadcrumbs %}
+<div class="bg-white border-b">
+    <div class="container mx-auto px-4 py-3">
+        <div class="flex items-center text-sm text-gray-600">
+            <a href="{% url 'home' %}" class="hover:text-primary-600 transition">Home</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            <a href="{% url 'accessible_ministry_programs' %}" class="hover:text-primary-600 transition">Ministry Programs</a>
+            <i class="fas fa-chevron-right text-xs mx-2"></i>
+            <span class="text-gray-800 font-medium">{{ program.title }}</span>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Main Content Grid -->
+    <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Article Content (Main Program Details) -->
+        <article class="lg:col-span-2">
+            <!-- Header -->
+            <header class="mb-8">
+                <div class="flex items-center mb-4">
+                    <span class="px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap"
+                          style="background-color: {% if program.status == 'active' %}#d1fae5{% elif program.status == 'completed' %}#bfdbfe{% else %}#e5e7eb{% endif %};
+                                 color: {% if program.status == 'active' %}#065f46{% elif program.status == 'completed' %}#1e40af{% else %}#4b5563{% endif %};">
+                        {{ program.get_status_display }}
+                    </span>
+                    <span class="text-gray-500 text-sm ml-auto">{{ program.start_date|date:"F d, Y" }} {% if program.end_date and program.start_date != program.end_date %}- {{ program.end_date|date:"F d, Y" }}{% endif %}</span>
+                </div>
+                
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">{{ program.title }}</h1>
+                
+                <p class="text-lg text-slate-600 leading-relaxed mb-6 text-justify">{{ program.description|default_if_none:program.objectives }}</p>
+            </header>
+
+            <!-- Program Details Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Ministry Program Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700 text-base">
+                    <div class="flex items-center"><i class="fas fa-tag text-primary-600 w-6 mr-2"></i> <strong>Type:</strong> {{ program.get_ppa_type_display }}</div>
+                    <div class="flex items-center"><i class="fas fa-calendar-alt text-primary-600 w-6 mr-2"></i> <strong>Duration:</strong> {{ program.start_date|date:"M d, Y" }} {% if program.end_date and program.start_date != program.end_date %}- {{ program.end_date|date:"M d, Y" }}{% endif %}</div>
+                    <div class="flex items-center"><i class="fas fa-map-marker-alt text-primary-600 w-6 mr-2"></i> <strong>Coverage:</strong> {{ program.geographic_coverage }}</div>
+                    <div class="flex items-center"><i class="fas fa-users text-primary-600 w-6 mr-2"></i> <strong>Beneficiaries:</strong> {{ program.estimated_beneficiaries|default:"N/A" }}</div>
+                    <div class="flex items-center"><i class="fas fa-chart-line text-primary-600 w-6 mr-2"></i> <strong>Status:</strong> <span class="font-semibold {% if 'Active' in program.get_status_display %}text-green-700{% elif 'Pending' in program.get_status_display %}text-orange-700{% else %}text-gray-700{% endif %}">{{ program.get_status_display }}</span></div>
+                    <div class="flex items-center"><i class="fas fa-exclamation-triangle text-primary-600 w-6 mr-2"></i> <strong>Priority:</strong> {{ program.get_priority_level_display }}</div>
+                </div>
+            </div>
+
+            <!-- Objectives & Outcomes Section -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Objectives & Outcomes</h3>
+                <div class="prose prose-lg max-w-none mb-5">
+                    <h4>Objectives:</h4>
+                    <p class="text-justify">{{ program.objectives }}</p>
+                    <h4>Expected Outcomes:</h4>
+                    <p class="text-justify">{{ program.expected_outcomes }}</p>
+                </div>
+            </div>
+
+            {% if program.target_beneficiaries %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Target Beneficiaries & Eligibility</h3>
+                <div class="prose prose-lg max-w-none">
+                    <p class="text-justify">{{ program.target_beneficiaries }}</p>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if program.implementation_strategy or program.implementing_units or program.partner_agencies %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4 border-b pb-2 border-gray-200">Implementation Details</h3>
+                <div class="prose prose-lg max-w-none">
+                    {% if program.implementation_strategy %}
+                    <p class="text-justify"><strong>Strategy:</strong> {{ program.implementation_strategy }}</p>
+                    {% endif %}
+                    {% if program.implementing_units %}
+                    <p class="text-justify"><strong>Implementing Units:</strong> {{ program.implementing_units }}</p>
+                    {% endif %}
+                    {% if program.partner_agencies %}
+                    <p class="text-justify"><strong>Partner Agencies:</strong> {{ program.partner_agencies }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Navigation Buttons -->
+            <nav class="flex flex-col sm:flex-row gap-4 justify-center mt-10 pt-8 border-t border-gray-200">
+                {% if program.program_source == 'ministry' %}
+                    <a href="{% url 'accessible_ministry_programs' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to Ministry Programs
+                    </a>
+                {% elif program.program_source == 'fahaniecares' %}
+                    <a href="{% url 'programs' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
+                        <i class="fas fa-arrow-left mr-2"></i> Back to #FahanieCares Programs
+                    </a>
+                {% endif %}
+            </nav>
+
+            <!-- Apply Button -->
+            <div class="flex justify-center mt-8">
+                <a href="{% url 'application_form' %}" 
+                   class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 text-lg bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500"
+                   onclick="return checkAuthAndApply(event)">
+                    Apply Now <i class="fas fa-external-link-alt ml-2"></i>
+                </a>
+            </div>
+        </article>
+
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1">
+            <!-- Key Contacts -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Key Contacts</h3>
+                <div class="space-y-3 text-gray-700 text-base">
+                    <p><i class="fas fa-envelope text-primary-600 w-6 mr-2"></i> <a href="mailto:info@fahaniecares.org" class="hover:text-primary-600 transition-colors">info@fahaniecares.org</a></p>
+                    <p><i class="fas fa-phone-alt text-primary-600 w-6 mr-2"></i> <a href="tel:+1234567890" class="hover:text-primary-600 transition-colors">+1 (234) 567-890</a></p>
+                    <p><i class="fas fa-map-marker-alt text-primary-600 w-6 mr-2"></i> 123 Program St, City, Country</p>
+                </div>
+            </div>
+
+            <!-- Share This Program -->
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Share This Ministry Program</h3>
+                <div class="flex justify-center space-x-4">
+                    <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" target="_blank" class="text-blue-600 hover:text-blue-800 transition-colors">
+                        <i class="fab fa-facebook-square text-3xl"></i>
+                    </a>
+                    <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ program.title }}" target="_blank" class="text-blue-400 hover:text-blue-600 transition-colors">
+                        <i class="fab fa-twitter-square text-3xl"></i>
+                    </a>
+                    <a href="mailto:?subject={{ program.title }}&body=Check out this program: {{ request.build_absolute_uri }}" class="text-gray-600 hover:text-gray-800 transition-colors">
+                        <i class="fas fa-envelope-square text-3xl"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Related Programs -->
+            {% if related_programs %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Related Ministry Programs</h3>
+                
+                <div class="space-y-4">
+                    {% for related_program in related_programs %}
+                    <article class="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
+                        <div class="flex items-start space-x-3">
+                            <div class="flex-shrink-0 w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-hands-helping text-gray-400"></i> {# Placeholder icon #}
+                            </div>
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center mb-1">
+                                    {% with related_program.get_sector_info as related_sector_info %}
+                                    {% include 'components/atoms/badge.html' with variant=related_sector_info.color|default:'gray' text=related_sector_info.name|default:'Other' size='sm' %}
+                                    {% endwith %}
+                                </div>
+                                <h4 class="text-sm font-medium text-slate-800 leading-tight mb-1 line-clamp-2">
+                                    <a href="{% url 'fahaniecares_program_detail' related_program.slug %}" class="hover:text-primary-600 transition-colors">
+                                        {{ related_program.title }}
+                                    </a>
+                                </h4>
+                                <p class="text-xs text-gray-500">{{ related_program.start_date|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6">
+                    {% if program.program_source == 'ministry' %}
+                        <a href="{% url 'accessible_ministry_programs' %}" 
+                           class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
+                            View All Ministry Programs
+                        </a>
+                    {% elif program.program_source == 'fahaniecares' %}
+                        <a href="{% url 'programs' %}" 
+                           class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
+                            View All #FahanieCares Programs
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact CTA -->
+            <div class="bg-primary-600 rounded-lg p-6 text-white">
+                <h3 class="text-xl font-semibold mb-3">Inquire About Programs</h3>
+                <p class="text-white/90 mb-4 text-sm">Have questions about this or other programs? Contact us directly.</p>
+                
+                <div class="space-y-3">
+                    <a href="{% url 'contact' %}" 
+                       class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-white text-primary-700 hover:bg-slate-50 focus:ring-white">
+                        Contact Us
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+    // Function to check authentication before applying
+    function checkAuthAndApply(event) {
+        {% if not user.is_authenticated %}
+            event.preventDefault(); // Prevent default navigation
+            alert('Please sign in to apply for programs.');
+            return false;
+        {% else %}
+            return true; // Allow navigation
+        {% endif %}
+    }
+</script>
+{% endblock %}

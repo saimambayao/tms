@@ -1,0 +1,92 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Subscription Successful - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+  <div class="bg-white rounded-lg shadow-md p-8 border border-gray-100">
+    <!-- Success Icon -->
+    <div class="text-center mb-6">
+      <div class="mx-auto flex items-center justify-center w-20 h-20 bg-green-100 rounded-full">
+        <i class="fas fa-check text-green-600 text-3xl"></i>
+      </div>
+    </div>
+
+    <h1 class="text-2xl font-bold text-center text-slate-800 mb-2">
+      Successfully Subscribed!
+    </h1>
+    <p class="text-center text-gray-600 mb-6">
+      Thank you for subscribing to #FahanieCares updates. You'll receive the latest news and announcements directly to your inbox.
+    </p>
+
+    <!-- What's Next Section -->
+    <div class="bg-primary-50 rounded-lg p-4 mb-6">
+      <h2 class="text-sm font-semibold text-primary-800 mb-2">What happens next?</h2>
+      <ul class="space-y-2 text-sm text-primary-700">
+        <li class="flex items-start gap-2">
+          <i class="fas fa-check-circle text-primary-600 mt-0.5"></i>
+          <span>You'll receive a welcome email shortly</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i class="fas fa-check-circle text-primary-600 mt-0.5"></i>
+          <span>We'll notify you about new programs and services</span>
+        </li>
+        <li class="flex items-start gap-2">
+          <i class="fas fa-check-circle text-primary-600 mt-0.5"></i>
+          <span>You can unsubscribe anytime from any email</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="space-y-3">
+      <a href="{% url 'announcements' %}" 
+         class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        View Latest Updates
+      </a>
+      <a href="{% url 'home' %}" 
+         class="w-full flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+        Return to Home
+      </a>
+    </div>
+
+    <!-- Social Share -->
+    <div class="mt-6">
+      <div class="relative">
+        <div class="absolute inset-0 flex items-center">
+          <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center text-sm">
+          <span class="px-2 bg-white text-gray-500">Share with others</span>
+        </div>
+      </div>
+
+      <div class="mt-4 flex justify-center space-x-4">
+        <a href="#" class="text-gray-400 hover:text-blue-600 transition-colors duration-200">
+          <i class="fab fa-facebook text-xl"></i>
+        </a>
+        <a href="#" class="text-gray-400 hover:text-blue-400 transition-colors duration-200">
+          <i class="fab fa-twitter text-xl"></i>
+        </a>
+        <a href="#" class="text-gray-400 hover:text-green-600 transition-colors duration-200">
+          <i class="fab fa-whatsapp text-xl"></i>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Auto-hide success messages after 30 seconds
+setTimeout(function() {
+  const messages = document.querySelectorAll('.messages .alert');
+  messages.forEach(function(message) {
+    message.style.transition = 'opacity 0.5s';
+    message.style.opacity = '0';
+    setTimeout(function() {
+      message.remove();
+    }, 500);
+  });
+}, 30000);
+</script>
+{% endblock %}

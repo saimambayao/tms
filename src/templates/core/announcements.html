@@ -1,0 +1,310 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Latest Updates - #FahanieCares{% endblock %}
+
+{% block extra_head %}
+{% include 'components/design-system/color_palette.html' %}
+{% include 'components/behaviors/common_behaviors.html' %}
+{% include 'components/animations/scroll_animations.html' %}
+{% endblock %}
+
+{% block hero %}
+<!-- Hero Section with Emerald Theme -->
+<section class="relative overflow-hidden py-16 md:py-24" style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%); position: relative;">
+    <!-- Minimal background elements -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-emerald-500 rounded-full blur-2xl animate-pulse"></div>
+    </div>
+
+    <!-- Dark gradient overlay for text area -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.7) 20%, rgba(6, 95, 70, 0.4) 40%, rgba(4, 120, 87, 0.2) 60%, transparent 80%);"></div>
+
+    <!-- Dark gradient overlay for bottom right -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(17, 24, 39, 0.9) 0%, rgba(31, 41, 55, 0.8) 20%, rgba(6, 95, 70, 0.6) 40%, rgba(4, 120, 87, 0.4) 60%, rgba(5, 150, 105, 0.2) 80%, transparent 100%);"></div>
+
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white drop-shadow-lg">Latest Updates</h1>
+            <p class="text-xl md:text-2xl text-white/90 drop-shadow-md mb-8 max-w-3xl mx-auto">Stay informed about the latest activities, programs, and parliamentary updates from MP Uy-Oyod.</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'email_subscribe' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; background: white; color: #047857; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);" onmouseover="this.style.backgroundColor='#f9fafb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';">Subscribe to Updates</a>
+                <a href="{% url 'register' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; border: 2px solid white; color: white; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px rgba(255, 255, 255, 0.5)';">Join #FahanieCares</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- Main Content Section -->
+    
+    <!-- Search and Filter Section -->
+    <div class="mb-12 animate-fade-in-up" x-data="scrollAnimation()" x-bind:class="{ 'animate-in': isVisible }">
+        <form method="get" class="flex flex-col md:flex-row gap-4 items-center justify-center">
+            <!-- Search Box -->
+            <div class="w-full md:w-1/2 lg:w-1/3">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-slate-400"></i>
+                    </div>
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ request.GET.search }}"
+                        placeholder="Search announcements..."
+                        class="w-full pl-10 pr-4 py-2.5 border border-emerald-200 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-all duration-300 bg-white shadow-sm"
+                    >
+                </div>
+            </div>
+            
+            <!-- Category Filters -->
+            <div class="w-full md:w-auto">
+                <select name="category" onchange="this.form.submit()"
+                        class="w-full md:w-auto px-4 py-2.5 rounded-lg border border-emerald-200 transition-all duration-300 text-sm font-medium bg-white shadow-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                    <option value="">All Categories</option>
+                    <option value="news" {% if request.GET.category == 'news' %}selected{% endif %}>News</option>
+                    <option value="event" {% if request.GET.category == 'event' %}selected{% endif %}>Event</option>
+                    <option value="parliament" {% if request.GET.category == 'parliament' %}selected{% endif %}>Parliamentary</option>
+                    <option value="program" {% if request.GET.category == 'program' %}selected{% endif %}>Programs</option>
+                    <option value="community" {% if request.GET.category == 'community' %}selected{% endif %}>Community</option>
+                </select>
+            </div>
+            <button type="submit" style="width: auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.625rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)';" class="flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+                <i class="fas fa-filter"></i>
+                Apply Filters
+            </button>
+        </form>
+    </div>
+    
+    <!-- Announcements Grid -->
+    {% if announcements %}
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12" x-data="staggerAnimation({staggerDelay: 150})">
+        {% for announcement in announcements %}
+        <article class="group bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100 animate-fade-in-up transition-all duration-500 flex flex-col h-full hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-2 hover:border-primary-200 focus-within:ring-2 focus-within:ring-primary-500 focus-within:ring-offset-2" 
+                 tabindex="0"
+                 x-data="{ isHovered: false, imageLoaded: false }"
+                 @mouseenter="isHovered = true"
+                 @mouseleave="isHovered = false">
+            
+            <!-- Image Section with Enhanced Hover Effects -->
+            <div class="relative h-52 bg-gradient-to-br from-slate-100 to-slate-200 overflow-hidden">
+                {% if announcement.image %}
+                <img 
+                    src="{{ announcement.image.url }}" 
+                    alt="{{ announcement.title }}" 
+                    class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110"
+                    @load="imageLoaded = true"
+                    :class="{ 'opacity-100': imageLoaded, 'opacity-0': !imageLoaded }"
+                >
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100">
+                    <div class="text-center">
+                        <i class="fas fa-newspaper text-primary-300 text-4xl mb-2"></i>
+                        <p class="text-primary-600 text-sm font-medium">Announcement</p>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Gradient Overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-black/10 to-transparent opacity-0 transition-opacity duration-500"
+                     :class="{ 'opacity-100': isHovered }"></div>
+                
+                <!-- Category Badge Overlay -->
+                <div class="absolute top-4 left-4 transform transition-transform duration-300"
+                     :class="{ '-translate-y-1': isHovered }">
+                    {% include 'components/atoms/badge.html' with variant=announcement.get_category_color text=announcement.get_category_display size='sm' %}
+                </div>
+                
+                <!-- Date Badge -->
+                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-lg px-3 py-1 transform transition-all duration-300"
+                     :class="{ '-translate-y-1 bg-white': isHovered }">
+                    <span class="text-slate-700 text-xs font-medium">{{ announcement.published_date|date:"M d" }}</span>
+                </div>
+                
+                <!-- Quick Action Button -->
+                <div class="absolute bottom-4 right-4 opacity-0 transform translate-y-4 transition-all duration-300"
+                     :class="{ 'opacity-100 translate-y-0': isHovered }">
+                    <a href="{{ announcement.get_absolute_url }}" 
+                       class="inline-flex items-center justify-center w-10 h-10 bg-white/90 backdrop-blur-sm rounded-full text-primary-600 hover:bg-white hover:text-primary-700 transition-all duration-200 hover:scale-110">
+                        <i class="fas fa-arrow-right text-sm"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Content Section with Micro-interactions -->
+            <div class="p-6 flex flex-col flex-grow">
+                <!-- Title with Hover Animation -->
+                <h3 class="text-xl font-bold text-slate-800 mb-3 line-clamp-2 group-hover:text-primary-700 transition-colors duration-300">
+                    {{ announcement.title }}
+                </h3>
+                
+                <!-- Excerpt with Character Limit -->
+                <p class="text-slate-600 mb-4 flex-grow line-clamp-3 leading-relaxed">
+                    {{ announcement.excerpt|truncatewords:20 }}
+                </p>
+                
+                <!-- Action Section -->
+                <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                    <!-- Read Time Estimate -->
+                    <div class="flex items-center text-sm text-slate-500">
+                        <i class="fas fa-clock mr-1"></i>
+                        <span>3 min read</span>
+                    </div>
+                    
+                    <!-- Read More Button -->
+                    <a href="{{ announcement.get_absolute_url }}" 
+                       class="inline-flex items-center text-primary-600 hover:text-primary-800 font-semibold text-sm transition-all duration-300 group/link">
+                        Read More
+                        <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover/link:translate-x-1"></i>
+                    </a>
+                </div>
+                
+                <!-- Engagement Indicators -->
+                <div class="flex items-center justify-between mt-3 pt-3 border-t border-slate-50 opacity-0 transform translate-y-2 transition-all duration-300"
+                     :class="{ 'opacity-100 translate-y-0': isHovered }">
+                    <div class="flex items-center space-x-4 text-xs text-slate-500">
+                        <span class="flex items-center">
+                            <i class="fas fa-eye mr-1"></i>
+                            <span>1,234 views</span>
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-heart mr-1"></i>
+                            <span>42 likes</span>
+                        </span>
+                    </div>
+                    <button class="text-slate-400 hover:text-primary-600 transition-colors duration-200">
+                        <i class="fas fa-share-alt text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </article>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <div class="flex justify-center">
+        <nav class="flex items-center space-x-2">
+            {% if page_obj.has_previous %}
+                <a href="?page=1" class="px-3 py-2 rounded-md text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                    <i class="fas fa-angle-double-left"></i>
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 rounded-md text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                    <i class="fas fa-angle-left"></i>
+                </a>
+            {% endif %}
+            
+            <span class="px-4 py-2 text-slate-700">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+            
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 rounded-md text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                    <i class="fas fa-angle-right"></i>
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}" class="px-3 py-2 rounded-md text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                    <i class="fas fa-angle-double-right"></i>
+                </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="text-center py-16">
+        {% include 'components/molecules/empty_state.html' with icon='fas fa-newspaper' title='No Updates Available' description='Check back later for the latest news and announcements.' %}
+    </div>
+    {% endif %}
+    
+    <!-- Loading Skeleton Template (Hidden by default) -->
+    <template x-if="false" id="announcement-skeleton">
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+            <div x-data="{ }" x-show="true" class="animate-pulse" x-transition>
+                <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-100">
+                    <!-- Skeleton Image -->
+                    <div class="h-52 bg-slate-200"></div>
+                    <!-- Skeleton Content -->
+                    <div class="p-6">
+                        <div class="flex items-center mb-3">
+                            <div class="h-5 w-20 bg-slate-200 rounded-full"></div>
+                            <div class="h-4 w-16 bg-slate-200 rounded ml-auto"></div>
+                        </div>
+                        <div class="h-6 bg-slate-200 rounded mb-2"></div>
+                        <div class="h-6 bg-slate-200 rounded mb-4 w-3/4"></div>
+                        <div class="space-y-2">
+                            <div class="h-4 bg-slate-200 rounded"></div>
+                            <div class="h-4 bg-slate-200 rounded w-5/6"></div>
+                            <div class="h-4 bg-slate-200 rounded w-4/6"></div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-slate-100">
+                            <div class="flex justify-between items-center">
+                                <div class="h-4 w-16 bg-slate-200 rounded"></div>
+                                <div class="h-4 w-20 bg-slate-200 rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+    
+{% endblock %}
+
+{% block cta %}
+<!-- Community Engagement CTA Section -->
+<div class="container mx-auto px-4 mt-20 mb-20">
+    <div style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%);" class="rounded-2xl p-8 lg:p-12 text-white relative overflow-hidden animate-fade-in-up" x-data="scrollAnimation()" x-bind:class="{ 'animate-in': isVisible }">
+        <!-- Background Pattern -->
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
+            <div class="absolute bottom-0 right-0 w-24 h-24 bg-white rounded-full translate-x-12 translate-y-12"></div>
+            <div class="absolute top-1/2 left-1/3 w-16 h-16 bg-white rounded-full"></div>
+        </div>
+
+        <div class="relative z-10 text-center max-w-4xl mx-auto">
+            <!-- Icon -->
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full mb-6">
+                <i class="fas fa-bullhorn text-2xl text-white"></i>
+            </div>
+
+            <!-- Heading -->
+            <h2 class="text-3xl lg:text-4xl font-bold mb-4">Stay Connected with Your Community</h2>
+            <p class="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
+                Join thousands of constituents who stay informed about the latest programs, services, and parliamentary updates from MP Uy-Oyod.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="{% url 'email_subscribe' %}"
+                   style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1.5rem; background: white; color: #047857; font-weight: 600; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='#f9fafb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';">
+                    <i class="fas fa-bell"></i>
+                    Subscribe to Updates
+                </a>
+                {% include 'components/atoms/button.html' with variant='outline-white' text='Join Our Chapter' icon='fas fa-users' href='/chapters/' %}
+            </div>
+
+            <!-- Social Media Links -->
+            <div class="mt-8 pt-8 border-t border-white/20">
+                <p class="text-white/80 text-sm mb-4">Follow us on social media for real-time updates</p>
+                <div class="flex justify-center space-x-6">
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';">
+                        <i class="fab fa-facebook text-xl"></i>
+                    </a>
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';">
+                        <i class="fab fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';">
+                        <i class="fab fa-instagram text-xl"></i>
+                    </a>
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

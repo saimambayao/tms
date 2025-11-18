@@ -1,0 +1,347 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{% if form.instance.pk %}Edit{% else %}Create{% endif %} Database - Unified Database System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: var(--gradient-page);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .form-header {
+        background: var(--gradient-hero);
+        color: var(--color-text-inverse);
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow-primary-lg);
+        text-align: center;
+    }
+
+    .form-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 1rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-header p {
+        font-size: 1.125rem;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .form-card {
+        background: var(--color-surface-primary);
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--color-border-light);
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .form-section {
+        padding: 2rem;
+        border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+    }
+
+    .section-title {
+        color: var(--color-text-primary);
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 1.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-label {
+        color: var(--color-text-secondary);
+        font-weight: 500;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+    }
+
+    .form-input {
+        padding: 0.75rem 1rem;
+        border: 2px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 1rem;
+        transition: all 0.2s ease;
+        background: white;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+    }
+
+    .form-textarea {
+        min-height: 120px;
+        resize: vertical;
+    }
+
+    .form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
+
+    .checkbox-group {
+        flex-direction: row;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .checkbox-input {
+        width: auto;
+        margin: 0;
+    }
+
+    .form-actions {
+        padding: 2rem;
+        background: var(--gradient-card);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 48px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(5, 150, 105, 0.4);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+        transform: translateY(-2px);
+    }
+
+    .help-text {
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    @media (max-width: 768px) {
+        .form-header h1 {
+            font-size: 2rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="container mx-auto px-4">
+        <!-- Header Section -->
+        <div class="form-header">
+            <h1>
+                <svg class="w-10 h-10 inline mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                {{ title }}
+            </h1>
+            <p>{{ submit_text }} a new database for organizing your data collection needs</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="form-card">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Basic Information
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.name.id_for_label }}">
+                                Database Name *
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.help_text %}
+                                <div class="help-text">{{ form.name.help_text }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.database_type.id_for_label }}">
+                                Database Type
+                            </label>
+                            {{ form.database_type }}
+                            {% if form.database_type.help_text %}
+                                <div class="help-text">{{ form.database_type.help_text }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label" for="{{ form.description.id_for_label }}">
+                            Description
+                        </label>
+                        {{ form.description }}
+                        {% if form.description.help_text %}
+                            <div class="help-text">{{ form.description.help_text }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Structure Settings -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Structure Settings
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="{{ form.parent_database.id_for_label }}">
+                                Parent Database (Optional)
+                            </label>
+                            {{ form.parent_database }}
+                            <div class="help-text">
+                                {% if request.GET.parent %}
+                                    Creating sub-database under: <strong>{{ request.GET.parent|default:"Selected Database" }}</strong>
+                                {% else %}
+                                    Create a sub-database under an existing database, or leave empty for a root database
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Hierarchy Preview -->
+                    <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="text-sm font-medium text-gray-700 mb-2">Database Hierarchy:</h4>
+                        <div class="text-sm text-gray-600">
+                            {% if request.GET.parent %}
+                                <div class="flex items-center gap-2">
+                                    <span class="text-gray-500">Root Database</span>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                    <span class="text-blue-600">{{ request.GET.parent }}</span>
+                                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                    <span class="text-purple-600">{{ form.name.value|default:"New Database" }}</span>
+                                </div>
+                            {% else %}
+                                <div class="flex items-center gap-2">
+                                    <span class="text-purple-600">{{ form.name.value|default:"New Database" }}</span>
+                                    <span class="text-gray-400">(Root Database)</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Access Settings -->
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                        Access Settings
+                    </h2>
+                    <div class="form-grid">
+                        <div class="form-group checkbox-group">
+                            {{ form.is_public }}
+                            <label class="form-label" for="{{ form.is_public.id_for_label }}">
+                                Public Database
+                            </label>
+                            <div class="help-text">Allow public access to this database</div>
+                        </div>
+                        <div class="form-group checkbox-group">
+                            {{ form.allow_self_registration }}
+                            <label class="form-label" for="{{ form.allow_self_registration.id_for_label }}">
+                                Allow Self-Registration
+                            </label>
+                            <div class="help-text">Let users add themselves to this database</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-actions">
+                    <a href="{% url 'unified_db:database_list' %}" class="btn btn-secondary">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        {{ submit_text }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

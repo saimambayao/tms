@@ -1,0 +1,81 @@
+{% comment %}
+Button Component - Atomic Design Level: Atom
+
+Usage Examples:
+{% include 'components/atoms/button.html' with variant='primary' text='Click Me' href='/example' %}
+{% include 'components/atoms/button.html' with variant='secondary' text='Cancel' type='button' %}
+{% include 'components/atoms/button.html' with variant='outline' text='Learn More' icon='fas fa-arrow-right' %}
+
+Parameters:
+- variant: 'primary', 'secondary', 'outline', 'ghost', 'inverse', 'danger', 'success', 'warning', 'error', 'info', 'gradient', 'white', 'outline-white' (required)
+- text: Button text content (required)
+- href: URL for link buttons (optional)
+- type: 'button', 'submit', 'reset' for form buttons (optional, default: 'button')
+- icon: Font Awesome icon class (optional)
+- icon_position: 'left', 'right' (optional, default: 'right')
+- size: 'sm', 'md', 'lg' (optional, default: 'md')
+- full_width: true/false (optional, default: false)
+- disabled: true/false (optional, default: false)
+- loading: true/false (optional, default: false)
+- extra_classes: Additional CSS classes (optional)
+{% endcomment %}
+
+{% if href %}
+    <a href="{{ href }}"
+       class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 {% if disabled %}opacity-50 cursor-not-allowed{% endif %} {% if size == 'sm' %}px-3 py-2 text-sm{% elif size == 'lg' %}px-6 py-3 text-lg{% else %}px-4 py-2 text-base{% endif %} {% if variant == 'primary' %}bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 focus:ring-emerald-500 shadow-sm hover:shadow-lg{% elif variant == 'secondary' %}bg-gradient-to-r from-slate-600 to-slate-700 text-white hover:from-slate-700 hover:to-slate-800 focus:ring-slate-500 shadow-sm hover:shadow-lg{% elif variant == 'outline' %}border-2 border-primary-600 text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 focus:ring-primary-500 transition-all duration-200{% elif variant == 'ghost' %}text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 focus:ring-primary-500 transition-all duration-200{% elif variant == 'inverse' %}bg-gradient-to-r from-white to-gray-50 text-primary-600 hover:from-gray-50 hover:to-gray-100 hover:text-primary-700 focus:ring-primary-500 font-medium shadow-sm hover:shadow-lg transition-all duration-200{% elif variant == 'white' %}bg-gradient-to-r from-white to-gray-50 text-primary-600 hover:from-primary-50 hover:to-primary-100 hover:text-primary-700 focus:ring-white shadow-sm hover:shadow-lg font-semibold transition-all duration-200{% elif variant == 'outline-white' %}border-2 border-white text-white hover:bg-white hover:text-primary-800 focus:ring-white{% elif variant == 'danger' %}bg-gradient-to-r from-error-600 to-error-700 text-white hover:from-error-700 hover:to-error-800 focus:ring-error-500 shadow-sm hover:shadow-lg{% elif variant == 'success' %}bg-gradient-to-r from-success-600 to-success-700 text-white hover:from-success-700 hover:to-success-800 focus:ring-success-500 shadow-sm hover:shadow-lg{% elif variant == 'warning' %}bg-gradient-to-r from-warning-600 to-warning-700 text-white hover:from-warning-700 hover:to-warning-800 focus:ring-warning-500 shadow-sm hover:shadow-lg{% elif variant == 'error' %}bg-gradient-to-r from-error-600 to-error-700 text-white hover:from-error-700 hover:to-error-800 focus:ring-error-500 shadow-sm hover:shadow-lg{% elif variant == 'info' %}bg-gradient-to-r from-info-600 to-info-700 text-white hover:from-info-700 hover:to-info-800 focus:ring-info-500 shadow-sm hover:shadow-lg{% elif variant == 'gradient' %}bg-gradient-primary text-white hover:shadow-lg focus:ring-primary-500{% else %}bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 focus:ring-emerald-500 shadow-sm hover:shadow-lg{% endif %} {% if full_width %}w-full{% endif %} {{ extra_classes }}"
+       {% if disabled %}aria-disabled="true" tabindex="-1"{% endif %}>
+
+        {% if icon and icon_position == 'left' %}
+            {% if loading %}
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            {% else %}
+                <i class="{{ icon }} mr-2"></i>
+            {% endif %}
+        {% endif %}
+
+        {{ text }}
+
+        {% if icon and icon_position != 'left' %}
+            {% if loading %}
+                <svg class="animate-spin ml-3 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            {% else %}
+                <i class="{{ icon }} ml-2"></i>
+            {% endif %}
+        {% endif %}
+    </a>
+{% else %}
+    <button type="{% if type %}{{ type }}{% else %}button{% endif %}"
+            class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed {% if size == 'sm' %}px-3 py-2 text-sm{% elif size == 'lg' %}px-6 py-3 text-lg{% else %}px-4 py-2 text-base{% endif %} {% if variant == 'primary' %}bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 focus:ring-emerald-500 shadow-sm hover:shadow-lg{% elif variant == 'secondary' %}bg-gradient-to-r from-slate-600 to-slate-700 text-white hover:from-slate-700 hover:to-slate-800 focus:ring-slate-500 shadow-sm hover:shadow-lg{% elif variant == 'outline' %}border-2 border-primary-600 text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 focus:ring-primary-500 transition-all duration-200{% elif variant == 'ghost' %}text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 focus:ring-primary-500 transition-all duration-200{% elif variant == 'inverse' %}bg-gradient-to-r from-white to-gray-50 text-primary-600 hover:from-gray-50 hover:to-gray-100 hover:text-primary-700 focus:ring-primary-500 font-medium shadow-sm hover:shadow-lg transition-all duration-200{% elif variant == 'white' %}bg-gradient-to-r from-white to-gray-50 text-primary-600 hover:from-primary-50 hover:to-primary-100 hover:text-primary-700 focus:ring-white shadow-sm hover:shadow-lg font-semibold transition-all duration-200{% elif variant == 'outline-white' %}border-2 border-white text-white hover:bg-white hover:text-primary-800 focus:ring-white{% elif variant == 'danger' %}bg-gradient-to-r from-error-600 to-error-700 text-white hover:from-error-700 hover:to-error-800 focus:ring-error-500 shadow-sm hover:shadow-lg{% elif variant == 'success' %}bg-gradient-to-r from-success-600 to-success-700 text-white hover:from-success-700 hover:to-success-800 focus:ring-success-500 shadow-sm hover:shadow-lg{% elif variant == 'warning' %}bg-gradient-to-r from-warning-600 to-warning-700 text-white hover:from-warning-700 hover:to-warning-800 focus:ring-warning-500 shadow-sm hover:shadow-lg{% elif variant == 'error' %}bg-gradient-to-r from-error-600 to-error-700 text-white hover:from-error-700 hover:to-error-800 focus:ring-error-500 shadow-sm hover:shadow-lg{% elif variant == 'info' %}bg-gradient-to-r from-info-600 to-info-700 text-white hover:from-info-700 hover:to-info-800 focus:ring-info-500 shadow-sm hover:shadow-lg{% elif variant == 'gradient' %}bg-gradient-primary text-white hover:shadow-lg focus:ring-primary-500{% else %}bg-gradient-to-r from-emerald-600 to-emerald-700 text-white hover:from-emerald-700 hover:to-emerald-800 focus:ring-emerald-500 shadow-sm hover:shadow-lg{% endif %} {% if full_width %}w-full{% endif %} {{ extra_classes }}"
+            {% if disabled %}disabled{% endif %}>
+
+        {% if icon and icon_position == 'left' %}
+            {% if loading %}
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            {% else %}
+                <i class="{{ icon }} mr-2"></i>
+            {% endif %}
+        {% endif %}
+
+        {{ text }}
+
+        {% if icon and icon_position != 'left' %}
+            {% if loading %}
+                <svg class="animate-spin ml-3 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            {% else %}
+                <i class="{{ icon }} ml-2"></i>
+            {% endif %}
+        {% endif %}
+    </button>
+{% endif %}

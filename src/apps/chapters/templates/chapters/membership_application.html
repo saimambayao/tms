@@ -1,0 +1,183 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Join {{ chapter.name }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-900">Join {{ chapter.name }}</h1>
+            <p class="mt-2 text-gray-600">
+                Apply for membership in the {{ chapter.name }} chapter and become part of our community service efforts.
+            </p>
+        </div>
+
+        <div class="bg-white shadow-sm rounded-lg">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Membership Application</h2>
+            </div>
+            
+            <form method="post" class="p-6">
+                {% csrf_token %}
+                
+                <div class="space-y-6">
+                    <!-- Volunteer Information -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Are you interested in volunteering?
+                        </label>
+                        <div class="space-y-2">
+                            {{ form.is_volunteer }}
+                            {% if form.is_volunteer.errors %}
+                                <div class="text-red-600 text-sm">{{ form.is_volunteer.errors }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Volunteer Skills -->
+                    <div>
+                        <label for="{{ form.volunteer_skills.id_for_label }}" 
+                               class="block text-sm font-medium text-gray-700 mb-2">
+                            Volunteer Skills
+                        </label>
+                        <div class="mt-1">
+                            {{ form.volunteer_skills }}
+                            {% if form.volunteer_skills.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.volunteer_skills.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">
+                            List any skills or expertise you can contribute (e.g., teaching, event organization, etc.)
+                        </p>
+                    </div>
+
+                    <!-- Availability -->
+                    <div>
+                        <label for="{{ form.availability.id_for_label }}" 
+                               class="block text-sm font-medium text-gray-700 mb-2">
+                            Availability
+                        </label>
+                        <div class="mt-1">
+                            {{ form.availability }}
+                            {% if form.availability.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.availability.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">
+                            When are you generally available for chapter activities?
+                        </p>
+                    </div>
+
+                    <!-- Committee Interests -->
+                    <div>
+                        <label for="{{ form.committees.id_for_label }}" 
+                               class="block text-sm font-medium text-gray-700 mb-2">
+                            Committee Interests
+                        </label>
+                        <div class="mt-1">
+                            {{ form.committees }}
+                            {% if form.committees.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.committees.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Which committees would you like to participate in? (e.g., Education, Outreach, Events)
+                        </p>
+                    </div>
+
+                    <!-- Additional Notes -->
+                    <div>
+                        <label for="{{ form.notes.id_for_label }}" 
+                               class="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Notes
+                        </label>
+                        <div class="mt-1">
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-red-600 text-sm mt-1">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Any additional information you'd like to share about your interest in joining
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="mt-8 flex items-center justify-between">
+                    <a href="{{ chapter.get_absolute_url }}" 
+                       class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        <i class="fas fa-arrow-left mr-2"></i>
+                        Cancel
+                    </a>
+                    
+                    <button type="submit" 
+                            class="inline-flex items-center px-6 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                        <i class="fas fa-paper-plane mr-2"></i>
+                        Submit Application
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Chapter Information -->
+        <div class="mt-8 bg-gray-50 rounded-lg p-6">
+            <h3 class="text-lg font-medium text-gray-900 mb-4">About {{ chapter.name }}</h3>
+            {% if chapter.description %}
+                <p class="text-gray-700 mb-4">{{ chapter.description }}</p>
+            {% endif %}
+            {% if chapter.mission_statement %}
+                <div class="mb-4">
+                    <h4 class="font-medium text-gray-900">Mission Statement</h4>
+                    <p class="text-gray-700">{{ chapter.mission_statement }}</p>
+                </div>
+            {% endif %}
+            {% if chapter.meeting_schedule %}
+                <div>
+                    <h4 class="font-medium text-gray-900">Meeting Schedule</h4>
+                    <p class="text-gray-700">{{ chapter.meeting_schedule }}</p>
+                    {% if chapter.meeting_location %}
+                        <p class="text-gray-600 text-sm">Location: {{ chapter.meeting_location }}</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+/* Form styling */
+.form-control {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    color: #495057;
+    background-color: #fff;
+    border-color: #86efac;
+    outline: 0;
+    box-shadow: 0 0 0 0.2rem rgba(34, 197, 94, 0.25);
+}
+
+textarea.form-control {
+    min-height: 100px;
+    resize: vertical;
+}
+
+input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin-right: 0.5rem;
+}
+</style>
+{% endblock %}

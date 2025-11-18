@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registration Successful</title>
+    <meta
+      name="description"
+      content="#FahanieCares: Bringing Bangsamoro Public Service Closer to You"
+    />
+    <!-- Compiled TailwindCSS -->
+    
+    <link rel="stylesheet" href="/static/css/output.css">
+    
+    <!-- Modern Color System Integration -->
+    
+
+<!-- Modern #FahanieCares Color Palette -->
+<style>
+/* 
+=================================
+#FAHANIECARES MODERN COLOR SYSTEM
+=================================
+
+Research-Based Color Psychology:
+- Green: Growth, nature, sustainability, trust, prosperity
+- Islamic/Bangsamoro context: Green represents Islam, nature, peace
+- Government services: Trustworthiness, stability, accessibility
+- 2025 trends: Nature-inspired, soft sage, sustainable tones
+
+Accessibility Standards:
+- WCAG AA compliant (4.5:1 contrast minimum)
+- Colorblind friendly (red-green colorblindness considered)
+- High contrast alternatives provided
+- Semantic color usage (never color alone for meaning)
+*/
+
+:root {
+  /* =================================
+     PRIMARY GREEN PALETTE
+     Inspired by modern nature trends and government trust
+     ================================= */
+  
+  /* Sage Green Primary - 2025 Trend Color */
+  --color-primary-50: #f0f9f4;   /* Lightest sage - backgrounds */
+  --color-primary-100: #dcfce7;  /* Light sage - subtle highlights */
+  --color-primary-200: #bbf7d0;  /* Soft sage - hover states */
+  --color-primary-300: #86efac;  /* Medium sage - secondary actions */
+  --color-primary-400: #4ade80;  /* Bright sage - interactive elements */
+  --color-primary-500: #22c55e;  /* Core brand green - main CTAs */
+  --color-primary-600: #16a34a;  /* Professional green - primary buttons */
+  --color-primary-700: #15803d;  /* Deep sage - active states */
+  --color-primary-800: #166534;  /* Forest green - dark text */
+  --color-primary-900: #14532d;  /* Darkest green - headings */
+  
+  /* =================================
+     SECONDARY NATURE PALETTE
+     Complementary earth tones for balance
+     ================================= */
+  
+  /* Blue-Gray Secondary - Government Trust */
+  --color-secondary-50: #f8fafc;   /* Clean backgrounds */
+  --color-secondary-100: #f1f5f9;  /* Section backgrounds */
+  --color-secondary-200: #e2e8f0;  /* Borders, dividers */
+  --color-secondary-300: #cbd5e1;  /* Muted elements */
+  --color-secondary-400: #94a3b8;  /* Secondary text */
+  --color-secondary-500: #64748b;  /* Body text */
+  --color-secondary-600: #475569;  /* Dark text */
+  --color-secondary-700: #334155;  /* Headings */
+  --color-secondary-800: #1e293b;  /* Primary headings */
+  --color-secondary-900: #0f172a;  /* Maximum contrast */
+  
+  /* =================================
+     ACCENT COLORS
+     Warm gold for highlights and important elements
+     ================================= */
+  
+  /* Warm Gold Accent - Prosperity & Achievement */
+  --color-accent-50: #fffbeb;    /* Light gold backgrounds */
+  --color-accent-100: #fef3c7;   /* Soft gold highlights */
+  --color-accent-200: #fde68a;   /* Medium gold accents */
+  --color-accent-300: #fcd34d;   /* Bright gold elements */
+  --color-accent-400: #fbbf24;   /* Active gold */
+  --color-accent-500: #f59e0b;   /* Core gold */
+  --color-accent-600: #d97706;   /* Professional gold */
+  --color-accent-700: #b45309;   /* Deep gold */
+  --color-accent-800: #92400e;   /* Dark gold */
+  --color-accent-900: #78350f;   /* Darkest gold */
+  
+  /* =================================
+     SEMANTIC STATUS COLORS
+     WCAG AA compliant for accessibility
+     ================================= */
+  
+  /* Success - Enhanced Green */
+  --color-success-50: #ecfdf5;   /* Success backgrounds */
+  --color-success-100: #d1fae5;  /* Success highlights */
+  --color-success-500: #10b981;  /* Success messages */
+  --color-success-600: #059669;  /* Success buttons */
+  --color-success-700: #047857;  /* Success active */
+  
+  /* Warning - Accessible Orange */
+  --color-warning-50: #fff7ed;   /* Warning backgrounds */
+  --color-warning-100: #ffedd5;  /* Warning highlights */
+  --color-warning-500: #f97316;  /* Warning messages */
+  --color-warning-600: #ea580c;  /* Warning buttons */
+  --color-warning-700: #c2410c;  /* Warning active */
+  
+  /* Error - High Contrast Red */
+  --color-error-50: #fef2f2;     /* Error backgrounds */
+  --color-error-100: #fee2e2;    /* Error highlights */
+  --color-error-500: #ef4444;    /* Error messages */
+  --color-error-600: #dc2626;    /* Error buttons */
+  --color-error-700: #b91c1c;    /* Error active */
+  
+  /* Info - Professional Blue */
+  --color-info-50: #eff6ff;      /* Info backgrounds */
+  --color-info-100: #dbeafe;     /* Info highlights */
+  --color-info-500: #3b82f6;     /* Info messages */
+  --color-info-600: #2563eb;     /* Info buttons */
+  --color-info-700: #1d4ed8;     /* Info active */
+  
+  /* =================================
+     GRADIENT DEFINITIONS
+     Modern nature-inspired gradients
+     ================================= */
+  
+  /* Primary Gradients */
+  --gradient-primary: linear-gradient(135deg, var(--color-primary-500) 0%, var(--color-primary-600) 100%);
+  --gradient-primary-soft: linear-gradient(135deg, var(--color-primary-100) 0%, var(--color-primary-200) 100%);
+  --gradient-nature: linear-gradient(135deg, var(--color-primary-400) 0%, var(--color-secondary-600) 100%);
+  
+  /* Hero Gradients */
+  --gradient-hero: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-700) 50%, var(--color-secondary-800) 100%);
+  --gradient-hero-overlay: linear-gradient(135deg, var(--color-primary-600) 0%, rgba(34, 197, 94, 0.9) 100%);
+  
+  /* Success Gradients */
+  --gradient-success: linear-gradient(135deg, var(--color-success-500) 0%, var(--color-success-600) 100%);
+  --gradient-warning: linear-gradient(135deg, var(--color-warning-500) 0%, var(--color-warning-600) 100%);
+  --gradient-error: linear-gradient(135deg, var(--color-error-500) 0%, var(--color-error-600) 100%);
+  
+  /* Subtle Background Gradients */
+  --gradient-page: linear-gradient(180deg, var(--color-secondary-50) 0%, var(--color-primary-50) 100%);
+  --gradient-card: linear-gradient(145deg, rgba(255, 255, 255, 0.9) 0%, rgba(240, 249, 244, 0.7) 100%);
+  
+  /* =================================
+     ACCESSIBILITY ENHANCEMENTS
+     High contrast alternatives
+     ================================= */
+  
+  /* High Contrast Mode Support */
+  --color-text-primary: var(--color-secondary-900);
+  --color-text-secondary: var(--color-secondary-700);
+  --color-text-muted: var(--color-secondary-500);
+  --color-text-inverse: #ffffff;
+  
+  /* Focus States - Enhanced Visibility */
+  --color-focus: var(--color-primary-500);
+  --color-focus-ring: rgba(34, 197, 94, 0.2);
+  
+  /* Border Colors */
+  --color-border-light: var(--color-secondary-200);
+  --color-border-medium: var(--color-secondary-300);
+  --color-border-strong: var(--color-secondary-400);
+  
+  /* =================================
+     SURFACE COLORS
+     Background and surface definitions
+     ================================= */
+  
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: var(--color-secondary-50);
+  --color-surface-tertiary: var(--color-primary-50);
+  --color-surface-inverse: var(--color-secondary-900);
+  
+  /* =================================
+     SHADOW DEFINITIONS
+     Consistent elevation system
+     ================================= */
+  
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  
+  /* Green-tinted shadows for depth */
+  --shadow-primary: 0 4px 6px -1px rgba(34, 197, 94, 0.1), 0 2px 4px -1px rgba(34, 197, 94, 0.06);
+  --shadow-primary-lg: 0 10px 15px -3px rgba(34, 197, 94, 0.1), 0 4px 6px -2px rgba(34, 197, 94, 0.05);
+}
+
+/* =================================
+   TAILWIND CSS INTEGRATION
+   Maps CSS variables to Tailwind classes
+   ================================= */
+
+/* Override Tailwind's default green with our custom palette */
+.bg-primary-50 { background-color: var(--color-primary-50) !important; }
+.bg-primary-100 { background-color: var(--color-primary-100) !important; }
+.bg-primary-200 { background-color: var(--color-primary-200) !important; }
+.bg-primary-300 { background-color: var(--color-primary-300) !important; }
+.bg-primary-400 { background-color: var(--color-primary-400) !important; }
+.bg-primary-500 { background-color: var(--color-primary-500) !important; }
+.bg-primary-600 { background-color: var(--color-primary-600) !important; }
+.bg-primary-700 { background-color: var(--color-primary-700) !important; }
+.bg-primary-800 { background-color: var(--color-primary-800) !important; }
+.bg-primary-900 { background-color: var(--color-primary-900) !important; }
+
+/* Gradient Background Classes */
+.bg-gradient-primary { background: var(--gradient-primary); }
+.bg-gradient-hero { background: var(--gradient-hero); }
+.bg-gradient-nature { background: var(--gradient-nature); }
+.bg-gradient-page { background: var(--gradient-page); }
+
+/* Text Color Classes */
+.text-primary-500 { color: var(--color-primary-500) !important; }
+.text-primary-600 { color: var(--color-primary-600) !important; }
+.text-primary-700 { color: var(--color-primary-700) !important; }
+.text-primary-800 { color: var(--color-primary-800) !important; }
+.text-primary-900 { color: var(--color-primary-900) !important; }
+
+/* =================================
+   ACCESSIBILITY UTILITIES
+   ================================= */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-primary-500: #16a34a;
+    --color-primary-600: #15803d;
+    --color-text-primary: #000000;
+    --color-text-secondary: #1e293b;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* Dark mode preparation */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-surface-primary: var(--color-secondary-900);
+    --color-surface-secondary: var(--color-secondary-800);
+    --color-text-primary: #ffffff;
+    --color-text-secondary: var(--color-secondary-200);
+  }
+}
+
+/* =================================
+   COLOR DOCUMENTATION CLASSES
+   For testing and showcase purposes
+   ================================= */
+
+.color-swatch {
+  @apply inline-block w-16 h-16 rounded-lg shadow-md border border-gray-200;
+}
+
+.color-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-10 gap-4;
+}
+
+.color-card {
+  @apply bg-white rounded-lg p-4 shadow-sm border text-center;
+}
+
+.color-name {
+  @apply text-xs font-mono text-gray-600 mt-2;
+}
+
+.color-value {
+  @apply text-xs font-mono text-gray-400;
+}
+</style>
+
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="/static/css/fontawesome.min.css">
+    
+    <!-- Contact Form Fixes -->
+    <link rel="stylesheet" href="/static/css/contact-form-fixes.css">
+    
+    
+    <style>
+      /* Smooth scrolling for anchor links */
+      html {
+        scroll-behavior: smooth;
+      }
+      
+      /* Loading Overlay */
+      #loading-overlay {
+        transition: opacity 0.3s ease-in-out;
+      }
+
+      /* Custom Spinner */
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 5px solid rgba(255, 255, 255, 0.3);
+        border-top-color: #fff; /* White top border for contrast */
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+
+      /* Pulsing effect for the spinner */
+      .loading-spinner::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 20px;
+        height: 20px;
+        background-color: #22c55e; /* primary-500 */
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        animation: pulse 1.5s ease-in-out infinite;
+      }
+
+      /* Keyframes for spinning animation */
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Keyframes for pulsing animation */
+      @keyframes pulse {
+        0% {
+          transform: translate(-50%, -50%) scale(0.8);
+          opacity: 0.7;
+        }
+        50% {
+          transform: translate(-50%, -50%) scale(1.2);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(0.8);
+          opacity: 0.7;
+        }
+      }
+
+      /* Contact Form Custom Styles */
+      .contact-form-select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-size: 1.5em 1.5em;
+      }
+
+      .contact-form-select:focus {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23374151' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      }
+
+      /* Contact Form Input Styling */
+      .contact-form-input {
+        color: #000000 !important;
+      }
+
+      .contact-form-input::placeholder {
+        color: #6b7280 !important;
+        font-size: 11px !important;
+      }
+
+      /* Ensure buttons fill their containers for consistent width with center alignment */
+      [style*="width: 180px"] a {
+        width: 100% !important;
+        justify-content: center !important;
+        text-align: center !important;
+        display: inline-flex !important;
+      }
+
+      /* Hover animations ONLY for specific buttons - very targeted selectors */
+      
+      /* Only target the actual button links in Ways to Get Involved section */
+      a[href="/accounts/register/"],
+      a[href="/chapters/"],
+      a[href="/partner/"],
+      a[href="/donate/"] {
+        transition: all 0.3s ease-in-out !important;
+      }
+
+      a[href="/accounts/register/"]:hover,
+      a[href="/chapters/"]:hover,
+      a[href="/partner/"]:hover,
+      a[href="/donate/"]:hover {
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15) !important;
+        background-color: #f8fafc !important;
+      }
+
+      /* Only target the specific Send Message button */
+      button[type="submit"].bg-primary-600 {
+        transition: all 0.3s ease-in-out !important;
+      }
+
+      button[type="submit"].bg-primary-600:hover {
+        background-color: #15803d !important;
+        transform: translateY(-2px) scale(1.02) !important;
+        box-shadow: 0 8px 25px rgba(21, 128, 61, 0.3) !important;
+      }
+    </style>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Animation Components -->
+    <!-- Alpine.js Animation Components for Scroll-Triggered Effects -->
+<script>
+document.addEventListener('alpine:init', () => {
+    // Scroll Animation Component
+    Alpine.data('scrollAnimation', (options = {}) => ({
+        // Default options
+        delay: options.delay || 0,
+        stagger: options.stagger || 100,
+        threshold: options.threshold || 0.1,
+        animation: options.animation || 'fadeInUp',
+        duration: options.duration || 600,
+        
+        // State
+        isVisible: false,
+        observer: null,
+        
+        init() {
+            // Check for reduced motion preference
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            if (prefersReducedMotion) {
+                this.isVisible = true;
+                return;
+            }
+            
+            // Set up intersection observer
+            this.observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            this.isVisible = true;
+                        }, this.delay);
+                        this.observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: this.threshold,
+                rootMargin: '20px'
+            });
+            
+            this.observer.observe(this.$el);
+        },
+        
+        destroy() {
+            if (this.observer) {
+                this.observer.disconnect();
+            }
+        }
+    }));
+    
+    // Stagger Animation Component for grids
+    Alpine.data('staggerAnimation', (options = {}) => ({
+        staggerDelay: options.staggerDelay || 100,
+        threshold: options.threshold || 0.1,
+        animation: options.animation || 'fadeInUp',
+        
+        isVisible: false,
+        observer: null,
+        
+        init() {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            if (prefersReducedMotion) {
+                this.isVisible = true;
+                return;
+            }
+            
+            // Get all children elements
+            const children = Array.from(this.$el.children);
+            
+            this.observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting) {
+                        // Animate children with stagger
+                        children.forEach((child, index) => {
+                            setTimeout(() => {
+                                child.classList.add('animate-in');
+                            }, index * this.staggerDelay);
+                        });
+                        this.observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: this.threshold,
+                rootMargin: '50px'
+            });
+            
+            this.observer.observe(this.$el);
+        },
+        
+        destroy() {
+            if (this.observer) {
+                this.observer.disconnect();
+            }
+        }
+    }));
+    
+    // Hover Animation Component
+    Alpine.data('hoverAnimation', (options = {}) => ({
+        scale: options.scale || 1.02,
+        shadow: options.shadow || true,
+        transform: options.transform || 'translateY(-2px)',
+        duration: options.duration || 200,
+        
+        isHovered: false,
+        
+        mouseenter() {
+            this.isHovered = true;
+        },
+        
+        mouseleave() {
+            this.isHovered = false;
+        }
+    }));
+    
+    // Counter Animation Component
+    Alpine.data('counterAnimation', (options = {}) => ({
+        target: options.target || 0,
+        duration: options.duration || 2000,
+        
+        current: 0,
+        isVisible: false,
+        observer: null,
+        
+        init() {
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            
+            if (prefersReducedMotion) {
+                this.current = this.target;
+                return;
+            }
+            
+            this.observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting && !this.isVisible) {
+                        this.animateCounter();
+                        this.observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.5
+            });
+            
+            this.observer.observe(this.$el);
+        },
+        
+        animateCounter() {
+            this.isVisible = true;
+            const increment = this.target / (this.duration / 16);
+            const timer = setInterval(() => {
+                this.current += increment;
+                if (this.current >= this.target) {
+                    this.current = this.target;
+                    clearInterval(timer);
+                }
+            }, 16);
+        },
+        
+        destroy() {
+            if (this.observer) {
+                this.observer.disconnect();
+            }
+        }
+    }));
+    
+    // Loading State Animation
+    Alpine.data('loadingAnimation', () => ({
+        isLoading: false,
+        
+        startLoading() {
+            this.isLoading = true;
+        },
+        
+        stopLoading() {
+            this.isLoading = false;
+        }
+    }));
+});
+</script>
+
+<!-- Animation CSS Classes -->
+<style>
+/* Base animation styles */
+@media (prefers-reduced-motion: no-preference) {
+    /* Fade In Up Animation */
+    .animate-fade-in-up {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .animate-fade-in-up.animate-in {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    
+    /* Fade In Left Animation */
+    .animate-fade-in-left {
+        opacity: 0;
+        transform: translateX(-30px);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .animate-fade-in-left.animate-in {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    /* Fade In Right Animation */
+    .animate-fade-in-right {
+        opacity: 0;
+        transform: translateX(30px);
+        transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .animate-fade-in-right.animate-in {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    /* Scale In Animation */
+    .animate-scale-in {
+        opacity: 0;
+        transform: scale(0.9);
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .animate-scale-in.animate-in {
+        opacity: 1;
+        transform: scale(1);
+    }
+    
+    /* Hover animations */
+    .hover-lift {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+    
+    .hover-scale {
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    
+    .hover-scale:hover {
+        transform: scale(1.02);
+    }
+    
+    /* Loading states */
+    .loading-pulse {
+        animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    
+    .loading-shimmer {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+    }
+    
+    @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+    }
+    
+    /* Stagger delay utilities */
+    .stagger-1 { animation-delay: 0.1s; }
+    .stagger-2 { animation-delay: 0.2s; }
+    .stagger-3 { animation-delay: 0.3s; }
+    .stagger-4 { animation-delay: 0.4s; }
+    .stagger-5 { animation-delay: 0.5s; }
+    .stagger-6 { animation-delay: 0.6s; }
+}
+
+/* Ensure animations are disabled for reduced motion users */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+    
+    .animate-fade-in-up,
+    .animate-fade-in-left,
+    .animate-fade-in-right,
+    .animate-scale-in {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+/* Focus styles for accessibility */
+.focus-ring:focus {
+    outline: 2px solid #3B82F6;
+    outline-offset: 2px;
+}
+</style>
+    
+    <!-- Common Behaviors -->
+    
+
+<script>
+document.addEventListener('alpine:init', () => {
+    
+    // Modal Behavior
+    Alpine.data('modal', (options = {}) => ({
+        isOpen: options.initialOpen || false,
+        closeOnEscape: options.closeOnEscape ?? true,
+        closeOnClickAway: options.closeOnClickAway ?? true,
+        
+        open() {
+            this.isOpen = true;
+            if (options.disableBodyScroll ?? true) {
+                document.body.style.overflow = 'hidden';
+            }
+            this.$dispatch('modal-opened');
+        },
+        
+        close() {
+            this.isOpen = false;
+            if (options.disableBodyScroll ?? true) {
+                document.body.style.overflow = '';
+            }
+            this.$dispatch('modal-closed');
+        },
+        
+        toggle() {
+            this.isOpen ? this.close() : this.open();
+        },
+        
+        init() {
+            if (this.closeOnEscape) {
+                this.$watch('isOpen', (value) => {
+                    if (value) {
+                        const handler = (e) => {
+                            if (e.key === 'Escape') {
+                                this.close();
+                                document.removeEventListener('keydown', handler);
+                            }
+                        };
+                        document.addEventListener('keydown', handler);
+                    }
+                });
+            }
+        }
+    }));
+    
+    // Dropdown Behavior
+    Alpine.data('dropdown', (options = {}) => ({
+        isOpen: false,
+        closeOnClickAway: options.closeOnClickAway ?? true,
+        hoverDelay: options.hoverDelay || 150,
+        enableHover: options.enableHover || false,
+        hoverTimer: null,
+        
+        open() {
+            this.isOpen = true;
+            this.$dispatch('dropdown-opened');
+        },
+        
+        close() {
+            this.isOpen = false;
+            this.$dispatch('dropdown-closed');
+        },
+        
+        toggle() {
+            this.isOpen ? this.close() : this.open();
+        },
+        
+        mouseenter() {
+            if (this.enableHover) {
+                clearTimeout(this.hoverTimer);
+                this.hoverTimer = setTimeout(() => {
+                    this.open();
+                }, this.hoverDelay);
+            }
+        },
+        
+        mouseleave() {
+            if (this.enableHover) {
+                clearTimeout(this.hoverTimer);
+                this.hoverTimer = setTimeout(() => {
+                    this.close();
+                }, this.hoverDelay);
+            }
+        }
+    }));
+    
+    // Tabs Behavior
+    Alpine.data('tabs', (options = {}) => ({
+        activeTab: options.defaultTab || 0,
+        
+        setActive(index) {
+            this.activeTab = index;
+            this.$dispatch('tab-changed', { activeTab: index });
+        },
+        
+        isActive(index) {
+            return this.activeTab === index;
+        }
+    }));
+    
+    // Accordion Behavior
+    Alpine.data('accordion', (options = {}) => ({
+        openItems: options.allowMultiple ? [] : null,
+        allowMultiple: options.allowMultiple || false,
+        
+        toggle(index) {
+            if (this.allowMultiple) {
+                const itemIndex = this.openItems.indexOf(index);
+                if (itemIndex > -1) {
+                    this.openItems.splice(itemIndex, 1);
+                } else {
+                    this.openItems.push(index);
+                }
+            } else {
+                this.openItems = this.openItems === index ? null : index;
+            }
+            this.$dispatch('accordion-toggled', { index, isOpen: this.isOpen(index) });
+        },
+        
+        isOpen(index) {
+            if (this.allowMultiple) {
+                return this.openItems.includes(index);
+            }
+            return this.openItems === index;
+        }
+    }));
+    
+    // Toast/Notification Behavior
+    Alpine.data('toast', (options = {}) => ({
+        isVisible: false,
+        message: '',
+        type: 'info', // 'success', 'error', 'warning', 'info'
+        duration: options.duration || 5000,
+        timer: null,
+        
+        show(message, type = 'info', duration = this.duration) {
+            this.message = message;
+            this.type = type;
+            this.isVisible = true;
+            
+            if (duration > 0) {
+                this.timer = setTimeout(() => {
+                    this.hide();
+                }, duration);
+            }
+            
+            this.$dispatch('toast-shown', { message, type });
+        },
+        
+        hide() {
+            this.isVisible = false;
+            if (this.timer) {
+                clearTimeout(this.timer);
+                this.timer = null;
+            }
+            this.$dispatch('toast-hidden');
+        }
+    }));
+    
+    // Form Validation Behavior
+    Alpine.data('formValidation', (options = {}) => ({
+        fields: {},
+        errors: {},
+        isSubmitting: false,
+        
+        addField(name, rules = []) {
+            this.fields[name] = {
+                value: '',
+                rules: rules,
+                touched: false
+            };
+            this.errors[name] = [];
+        },
+        
+        validateField(name) {
+            const field = this.fields[name];
+            if (!field) return;
+            
+            this.errors[name] = [];
+            
+            field.rules.forEach(rule => {
+                const result = rule(field.value);
+                if (result !== true) {
+                    this.errors[name].push(result);
+                }
+            });
+            
+            return this.errors[name].length === 0;
+        },
+        
+        validateAll() {
+            let isValid = true;
+            Object.keys(this.fields).forEach(name => {
+                if (!this.validateField(name)) {
+                    isValid = false;
+                }
+            });
+            return isValid;
+        },
+        
+        hasError(name) {
+            return this.errors[name] && this.errors[name].length > 0;
+        },
+        
+        getError(name) {
+            return this.errors[name] && this.errors[name][0];
+        }
+    }));
+    
+    // Search Behavior
+    Alpine.data('search', (options = {}) => ({
+        query: '',
+        results: [],
+        isLoading: false,
+        debounceTimer: null,
+        debounceDelay: options.debounceDelay || 300,
+        minLength: options.minLength || 2,
+        
+        search() {
+            if (this.query.length < this.minLength) {
+                this.results = [];
+                return;
+            }
+            
+            clearTimeout(this.debounceTimer);
+            this.debounceTimer = setTimeout(() => {
+                this.performSearch();
+            }, this.debounceDelay);
+        },
+        
+        async performSearch() {
+            this.isLoading = true;
+            
+            try {
+                if (options.searchFunction) {
+                    this.results = await options.searchFunction(this.query);
+                } else {
+                    // Default behavior - emit event for external handling
+                    this.$dispatch('search-requested', { query: this.query });
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                this.results = [];
+            } finally {
+                this.isLoading = false;
+            }
+        },
+        
+        clear() {
+            this.query = '';
+            this.results = [];
+            clearTimeout(this.debounceTimer);
+        }
+    }));
+    
+    // Infinite Scroll Behavior
+    Alpine.data('infiniteScroll', (options = {}) => ({
+        isLoading: false,
+        hasMore: true,
+        page: 1,
+        threshold: options.threshold || 100,
+        
+        init() {
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && this.hasMore && !this.isLoading) {
+                        this.loadMore();
+                    }
+                });
+            }, {
+                rootMargin: `${this.threshold}px`
+            });
+            
+            // Observer will be attached to element with x-intersect
+            this.$nextTick(() => {
+                const trigger = this.$el.querySelector('[x-intersect]');
+                if (trigger) {
+                    observer.observe(trigger);
+                }
+            });
+        },
+        
+        async loadMore() {
+            if (this.isLoading || !this.hasMore) return;
+            
+            this.isLoading = true;
+            this.page++;
+            
+            try {
+                if (options.loadFunction) {
+                    const result = await options.loadFunction(this.page);
+                    this.hasMore = result.hasMore;
+                } else {
+                    this.$dispatch('load-more-requested', { page: this.page });
+                }
+            } catch (error) {
+                console.error('Load more error:', error);
+                this.page--;
+            } finally {
+                this.isLoading = false;
+            }
+        }
+    }));
+    
+    // Copy to Clipboard Behavior
+    Alpine.data('clipboard', () => ({
+        copied: false,
+        
+        async copy(text) {
+            try {
+                await navigator.clipboard.writeText(text);
+                this.copied = true;
+                setTimeout(() => {
+                    this.copied = false;
+                }, 2000);
+                this.$dispatch('text-copied', { text });
+            } catch (error) {
+                console.error('Copy failed:', error);
+                this.$dispatch('copy-failed', { error });
+            }
+        }
+    }));
+    
+});
+</script>
+    
+    
+  </head>
+  <body class="font-sans bg-gray-50 flex flex-col min-h-screen">
+    <!-- Loading Overlay -->
+    <div
+      id="loading-overlay"
+      class="fixed inset-0 bg-primary-700 bg-opacity-75 flex items-center justify-center z-50 hidden"
+    >
+      <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Header Navigation -->
+    <!-- Modern #FahanieCares Navbar with Alpine.js and Tailwind CSS -->
+<nav x-data="{
+    mobileMenuOpen: false,
+    servicesDropdownOpen: false,
+    userDropdownOpen: false,
+    servicesHovered: false,
+    userHovered: false,
+    servicesTimer: null,
+    userTimer: null,
+    
+    toggleMobileMenu() {
+        this.mobileMenuOpen = !this.mobileMenuOpen;
+        if (this.mobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+    },
+    
+    closeMobileMenu() {
+        this.mobileMenuOpen = false;
+        document.body.style.overflow = '';
+    },
+    
+    toggleServicesDropdown() {
+        this.servicesDropdownOpen = !this.servicesDropdownOpen;
+        this.userDropdownOpen = false;
+        this.userHovered = false;
+        this.clearAllTimers();
+    },
+    
+    toggleUserDropdown() {
+        this.userDropdownOpen = !this.userDropdownOpen;
+        this.servicesDropdownOpen = false;
+        this.servicesHovered = false;
+        this.clearAllTimers();
+    },
+    
+    closeAllDropdowns() {
+        this.servicesDropdownOpen = false;
+        this.userDropdownOpen = false;
+        this.servicesHovered = false;
+        this.userHovered = false;
+        this.clearAllTimers();
+    },
+    
+    clearAllTimers() {
+        if (this.servicesTimer) clearTimeout(this.servicesTimer);
+        if (this.userTimer) clearTimeout(this.userTimer);
+        this.servicesTimer = null;
+        this.userTimer = null;
+    },
+    
+    onServicesMouseEnter() {
+        this.clearAllTimers();
+        this.servicesHovered = true;
+        this.userHovered = false;
+        this.userDropdownOpen = false;
+    },
+    
+    onServicesMouseLeave() {
+        this.servicesTimer = setTimeout(() => {
+            this.servicesHovered = false;
+        }, 150);
+    },
+    
+    onUserMouseEnter() {
+        this.clearAllTimers();
+        this.userHovered = true;
+        this.servicesHovered = false;
+        this.servicesDropdownOpen = false;
+    },
+    
+    onUserMouseLeave() {
+        this.userTimer = setTimeout(() => {
+            this.userHovered = false;
+        }, 150);
+    },
+    
+    get servicesVisible() {
+        return this.servicesDropdownOpen || this.servicesHovered;
+    },
+    
+    get userVisible() {
+        return this.userDropdownOpen || this.userHovered;
+    }
+}" 
+@keydown.escape="closeMobileMenu(); closeAllDropdowns()"
+class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-md"
+x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) closeMobileMenu() })">
+
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 items-center justify-between">
+            
+            <!-- Logo Section -->
+            <div class="flex items-center">
+                <a href="/" class="group flex items-center gap-3 transition-transform duration-200 hover:scale-105">
+                    <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500 to-primary-600 shadow-md transition-all duration-200 group-hover:shadow-lg group-hover:from-primary-600 group-hover:to-primary-700">
+                        <i class="fas fa-hand-holding-heart text-white text-xl"></i>
+                    </div>
+                    <div class="hidden sm:block">
+                        <span class="text-xl font-bold bg-gradient-to-r from-primary-600 to-primary-700 bg-clip-text text-transparent">#FahanieCares</span>
+                        <p class="text-xs text-gray-500 font-medium">Bringing Bangsamoro Public Service Closer to You</p>
+                    </div>
+                </a>
+            </div>
+
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex items-center gap-8">
+                <!-- Home Link -->
+                <a href="/" 
+                   class="relative px-3 py-2 text-sm font-medium transition-colors duration-200
+                          
+                          text-gray-700 hover:text-primary-600
+                          
+                          after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600 after:scale-x-0 after:transition-transform after:duration-200 hover:after:scale-x-100
+                          ">
+                    Home
+                </a>
+
+                <!-- About Link -->
+                <a href="/about/" 
+                   class="relative px-3 py-2 text-sm font-medium transition-colors duration-200
+                          
+                          text-gray-700 hover:text-primary-600
+                          
+                          after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600 after:scale-x-0 after:transition-transform after:duration-200 hover:after:scale-x-100
+                          ">
+                    About
+                </a>
+
+                <!-- Services Dropdown -->
+                <div class="relative" 
+                     @click.outside="servicesDropdownOpen = false"
+                     @mouseenter="onServicesMouseEnter()"
+                     @mouseleave="onServicesMouseLeave()">
+                    <button @click="toggleServicesDropdown()"
+                            class="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors duration-200
+                                   
+                                   text-gray-700 hover:text-primary-600
+                                   ">
+                        Services
+                        <svg class="h-4 w-4 transition-transform duration-200" 
+                             :class="servicesVisible ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+
+                    <!-- Services Dropdown Menu -->
+                    <div x-show="servicesVisible"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                         class="absolute left-0 mt-2 w-72 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 py-2">
+                        
+                        <a href="/programs/" 
+                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-primary-50/80 hover:text-primary-700 transition-colors duration-150 group">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-primary-100 text-primary-600 group-hover:bg-primary-200 transition-colors duration-150">
+                                <i class="fas fa-heart text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">#FahanieCares Programs</p>
+                                <p class="text-xs text-gray-500">Direct assistance programs</p>
+                            </div>
+                        </a>
+
+                        <!-- TDIF Projects -->
+                        <a href="/tdif-projects/" 
+                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50/80 hover:text-green-700 transition-colors duration-150 group">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors duration-150">
+                                <i class="fas fa-hammer text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">TDIF Projects</p>
+                                <p class="text-xs text-gray-500">Transitional Development Impact Fund</p>
+                            </div>
+                        </a>
+
+                        <!-- Ministry Programs -->
+                        <a href="/accessible-ministry-programs/" 
+                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-green-50/80 hover:text-green-700 transition-colors duration-150 group">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-green-100 text-green-600 group-hover:bg-green-200 transition-colors duration-150">
+                                <i class="fas fa-building text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Ministry Programs</p>
+                                <p class="text-xs text-gray-500">Curated government services</p>
+                            </div>
+                        </a>
+
+                        <!-- Original disabled code preserved for future reference -->
+                        <!-- Ministry Programs - Alpha: Disabled -->
+                        <!-- 
+                        <a href="/ministries-ppas/" 
+                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-primary-50/80 hover:text-primary-700 transition-colors duration-150 group">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600 group-hover:bg-blue-200 transition-colors duration-150">
+                                <i class="fas fa-building text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Ministry Programs</p>
+                                <p class="text-xs text-gray-500">Government services</p>
+                            </div>
+                        </a>
+                        -->
+
+                        <!-- Request a Service / Referral System - Alpha: Disabled -->
+                        <!-- 
+                        <a href="/services/categories/" 
+                           class="flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-orange-50/80 hover:text-orange-700 transition-colors duration-150 group">
+                            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600 group-hover:bg-orange-200 transition-colors duration-150">
+                                <i class="fas fa-hand-point-right text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">Request a Service</p>
+                                <p class="text-xs text-gray-500">Submit a new request</p>
+                            </div>
+                        </a>
+                        -->
+                    </div>
+                </div>
+
+                <!-- Updates Link -->
+                <a href="/updates/" 
+                   class="relative px-3 py-2 text-sm font-medium transition-colors duration-200
+                          
+                          text-gray-700 hover:text-primary-600
+                          
+                          after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600 after:scale-x-0 after:transition-transform after:duration-200 hover:after:scale-x-100
+                          ">
+                    Updates
+                </a>
+
+                <!-- Chapters Link -->
+                <a href="/about-chapters/" 
+                   class="relative px-3 py-2 text-sm font-medium transition-colors duration-200
+                          
+                          text-gray-700 hover:text-primary-600
+                          
+                          after:absolute after:bottom-0 after:left-0 after:right-0 after:h-0.5 after:bg-primary-600 after:scale-x-0 after:transition-transform after:duration-200 hover:after:scale-x-100
+                          ">
+                    Chapters
+                </a>
+            </div>
+
+            <!-- Desktop User Menu -->
+            <div class="hidden md:flex items-center gap-4">
+                
+                    <!-- Login/Register buttons -->
+                    <a href="/accounts/login/" 
+                       class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary-600 transition-colors duration-150">
+                        Login
+                    </a>
+                    <a href="/accounts/register/" 
+                       class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white text-sm font-medium rounded-lg shadow-sm hover:from-primary-700 hover:to-primary-800 hover:shadow-md transition-all duration-150">
+                        <i class="fas fa-user-plus text-xs"></i>
+                        Register
+                    </a>
+                
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button @click="toggleMobileMenu()"
+                    class="md:hidden relative h-10 w-10 rounded-lg bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-150"
+                    :aria-expanded="mobileMenuOpen"
+                    aria-label="Toggle mobile menu">
+                <!-- Hamburger Icon -->
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="w-5 h-5 relative">
+                        <span class="absolute block h-0.5 w-5 bg-gray-600 transform transition-all duration-300"
+                              :class="mobileMenuOpen ? 'rotate-45 translate-y-0' : '-translate-y-1.5'"></span>
+                        <span class="absolute block h-0.5 w-5 bg-gray-600 transition-opacity duration-300"
+                              :class="mobileMenuOpen ? 'opacity-0' : 'opacity-100'"></span>
+                        <span class="absolute block h-0.5 w-5 bg-gray-600 transform transition-all duration-300"
+                              :class="mobileMenuOpen ? '-rotate-45 translate-y-0' : 'translate-y-1.5'"></span>
+                    </div>
+                </div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Menu Overlay -->
+    <div x-show="mobileMenuOpen"
+         x-transition:enter="transition-opacity ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="closeMobileMenu()"
+         class="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 md:hidden"></div>
+
+    <!-- Mobile Menu Panel -->
+    <div x-show="mobileMenuOpen"
+         x-transition
+         class="fixed right-0 top-0 h-screen w-[70%] max-w-sm bg-white shadow-xl z-50 md:hidden overflow-y-auto flex flex-col"
+         style="max-height: 100vh; overscroll-behavior: contain;">
+        
+        <!-- Mobile Menu Header -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center gap-3">
+                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600 shadow-sm">
+                    <i class="fas fa-hand-holding-heart text-white text-sm"></i>
+                </div>
+                <span class="text-lg font-bold text-primary-700">#FahanieCares</span>
+            </div>
+            <button @click="closeMobileMenu()"
+                    class="h-8 w-8 rounded-lg bg-gray-100 hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors duration-150">
+                <i class="fas fa-times text-gray-600 text-sm"></i>
+            </button>
+        </div>
+
+        <!-- Mobile Navigation Links -->
+        <div class="flex-1 px-6 py-6 space-y-2">
+            <a href="/" @click="closeMobileMenu()"
+               class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-150
+                      ">
+                <i class="fas fa-home w-5"></i>
+                Home
+            </a>
+
+            <a href="/about/" @click="closeMobileMenu()"
+               class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-150
+                      ">
+                <i class="fas fa-info-circle w-5"></i>
+                About
+            </a>
+
+            <!-- Mobile Services Section -->
+            <div class="py-2">
+                <div class="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">Services</div>
+                <div class="space-y-1">
+                    <a href="/programs/" @click="closeMobileMenu()"
+                       class="flex items-center gap-3 px-6 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-150
+                              ">
+                        <i class="fas fa-heart w-5"></i>
+                        #FahanieCares Programs
+                    </a>
+                    <!-- Mobile TDIF Projects -->
+                    <a href="/tdif-projects/" @click="closeMobileMenu()"
+                       class="flex items-center gap-3 px-6 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors duration-150
+                              ">
+                        <i class="fas fa-hammer w-5"></i>
+                        TDIF Projects
+                    </a>
+                    
+                    <!-- Mobile Ministry Programs -->
+                    <a href="/accessible-ministry-programs/" @click="closeMobileMenu()"
+                       class="flex items-center gap-3 px-6 py-3 rounded-lg text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors duration-150
+                              ">
+                        <i class="fas fa-building w-5"></i>
+                        Ministry Programs
+                    </a>
+
+                    <!-- Original disabled code preserved for future reference -->
+                    <!-- Mobile Ministry Programs - Alpha: Disabled -->
+                    <!-- 
+                    <a href="/ministries-ppas/" @click="closeMobileMenu()"
+                       class="flex items-center gap-3 px-6 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-150
+                              ">
+                        <i class="fas fa-building w-5"></i>
+                        Ministry Programs
+                    </a>
+                    -->
+                    
+                    <!-- Mobile Request a Service - Alpha: Disabled -->
+                    <!-- 
+                    <a href="/services/categories/" @click="closeMobileMenu()"
+                       class="flex items-center gap-3 px-6 py-3 rounded-lg text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors duration-150
+                              ">
+                        <i class="fas fa-hand-point-right w-5"></i>
+                        Request a Service
+                    </a>
+                    -->
+                </div>
+            </div>
+
+            <a href="/updates/" @click="closeMobileMenu()"
+               class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-150
+                      ">
+                <i class="fas fa-newspaper w-5"></i>
+                Updates
+            </a>
+
+            <a href="/about-chapters/" @click="closeMobileMenu()"
+               class="flex items-center gap-3 px-3 py-3 rounded-lg text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors duration-150
+                      ">
+                <i class="fas fa-users w-5"></i>
+                Chapters
+            </a>
+        </div>
+
+        <!-- Mobile User Section -->
+        <div class="border-t border-gray-200 px-6 py-4 mt-auto">
+            
+                <!-- Login/Register for mobile -->
+                <div class="space-y-3">
+                    <a href="/accounts/login/" @click="closeMobileMenu()"
+                       class="flex items-center justify-center gap-2 w-full px-4 py-3 border border-primary-600 text-primary-600 rounded-lg hover:bg-primary-50 transition-colors duration-150 font-medium">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Login
+                    </a>
+                    <a href="/accounts/register/" @click="closeMobileMenu()"
+                       class="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 transition-all duration-150 font-medium">
+                        <i class="fas fa-user-plus"></i>
+                        Register
+                    </a>
+                </div>
+            
+        </div>
+    </div>
+</nav>
+    
+    <!-- Spacer for fixed navbar -->
+    <div class="h-16"></div>
+    
+    
+     
+    
+    
+
+    <!-- Main Content -->
+    <main class="flex-grow py-12">
+      <div class="container mx-auto px-4">
+        
+<div class="max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-md p-8 border border-gray-100">
+        <div class="text-center py-8">
+            <i class="fas fa-check-circle text-success-600 text-6xl mb-6"></i>
+            <h2 class="text-3xl font-bold text-primary-800 mb-4">Registration Successful!</h2>
+            <p class="text-lg text-gray-600 mb-6">
+                Thank you for registering with #FahanieCares. Your membership application has been submitted successfully.
+            </p>
+            
+            <!-- Login Credentials Reminder -->
+            <div class="bg-warning-50 border border-warning-200 rounded-lg p-6 mb-6">
+                <i class="fas fa-exclamation-triangle text-warning-600 text-3xl mb-3"></i>
+                <h5 class="text-lg font-semibold text-warning-800 mb-3">Important: Save Your Login Credentials</h5>
+                <p class="text-warning-700 mb-2">
+                    Please remember and save your username and password in a secure location.
+                </p>
+                <p class="text-warning-700 text-sm">
+                    You will need these credentials to log in to your account after approval.
+                </p>
+            </div>
+            
+            <div class="bg-info-50 border border-info-200 rounded-lg p-6 mb-8">
+                <h5 class="text-lg font-semibold text-info-800 mb-4">What happens next?</h5>
+                <ul class="text-left text-info-700 space-y-2">
+                    <li class="flex items-center">
+                        <i class="fas fa-check mr-3 text-success-600"></i>
+                        Your application will be reviewed by our team
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check mr-3 text-success-600"></i>
+                        You will receive an email notification once approved
+                    </li>
+                    <li class="flex items-center">
+                        <i class="fas fa-check mr-3 text-success-600"></i>
+                        After approval, you can access all member benefits
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="flex justify-center space-x-4">
+                
+
+
+    <a href="/accounts/login/" 
+       class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2  px-6 py-3 text-lg bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 focus:ring-primary-500 shadow-sm hover:shadow-lg  "
+       >
+        
+        
+            
+                <i class="fas fa-sign-in-alt mr-2"></i>
+            
+        
+        
+        Proceed to Login
+        
+        
+    </a>
+
+                
+
+
+    <a href="/" 
+       class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2  px-6 py-3 text-lg border-2 border-primary-600 text-primary-600 hover:bg-gradient-to-r hover:from-primary-50 hover:to-primary-100 focus:ring-primary-500 transition-all duration-200  "
+       >
+        
+        
+            
+                <i class="fas fa-home mr-2"></i>
+            
+        
+        
+        Return to Home
+        
+        
+    </a>
+
+            </div>
+            
+            <p class="text-sm text-gray-500 mt-4">
+                You will be automatically redirected to the login page in <span id="countdown">20</span> seconds...
+            </p>
+        </div>
+    </div>
+    
+    <div class="bg-white rounded-lg shadow-sm p-6 mt-6 border border-gray-100">
+        <h5 class="text-lg font-semibold text-primary-700 mb-3">Need Help?</h5>
+        <p class="text-gray-600 mb-4">
+            If you have any questions about your application or the #FahanieCares program, 
+            please don't hesitate to contact us:
+        </p>
+        <ul class="space-y-2 text-gray-700">
+            <li class="flex items-center">
+                <i class="fas fa-envelope mr-3 text-primary-600"></i>
+                Email: info@fahaniecares.gov.ph
+            </li>
+            <li class="flex items-center">
+                <i class="fas fa-phone mr-3 text-primary-600"></i>
+                Phone: (064) XXX-XXXX
+            </li>
+            <li class="flex items-center">
+                <i class="fas fa-clock mr-3 text-primary-600"></i>
+                Office Hours: Monday-Friday, 8:00 AM - 5:00 PM
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Auto-redirect to login page after 20 seconds with countdown
+    let countdown = 20;
+    const countdownElement = document.getElementById('countdown');
+    
+    const countdownInterval = setInterval(function() {
+        countdown--;
+        if (countdownElement) {
+            countdownElement.textContent = countdown;
+        }
+        
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+            window.location.href = '/accounts/login/';
+        }
+    }, 1000);
+</script>
+
+      </div>
+    </main>
+
+    
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white py-12">
+    <div class="container mx-auto px-4">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <h3 class="text-xl font-bold mb-4">#FahanieCares</h3>
+                <p class="text-gray-300 mb-4">Bringing Bangsamoro Public Service Closer to You</p>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                <ul class="space-y-2">
+                    <li><a href="/" class="text-gray-300 hover:text-white transition">Home</a></li>
+                    <li><a href="/about/" class="text-gray-300 hover:text-white transition">About Us</a></li>
+                    <li><a href="/chapters-overview/" class="text-gray-300 hover:text-white transition">Our Chapters</a></li>
+                </ul>
+                
+                <h4 class="font-semibold text-lg mt-6 mb-4">Our Services</h4>
+                <ul class="space-y-2">
+                    <li><a href="/programs/" class="text-gray-300 hover:text-white transition">#FahanieCares Programs and Services</a></li>
+                    <li><a href="/tdif-projects/" class="text-gray-300 hover:text-white transition">TDIF Projects</a></li>
+                    <li><a href="/accessible-ministry-programs/" class="text-gray-300 hover:text-white transition">Accessible Ministry Programs</a></li>
+                    
+                    <!-- Original disabled code preserved for future reference -->
+                    <!-- Alpha: Disabled Features -->
+                    <!-- <li><a href="/ministries-ppas/" class="text-gray-300 hover:text-white transition">Ministry Programs and Services</a></li> -->
+                    <!-- <li><a href="/services/categories/" class="text-gray-300 hover:text-white transition">Request a Program or Service</a></li> -->
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg mb-4">Members & Volunteers</h4>
+                <ul class="space-y-2">
+                    <li><a href="/accounts/register/" class="text-gray-300 hover:text-white transition">Membership Registration</a></li>
+                    <li><a href="/chapters-overview/" class="text-gray-300 hover:text-white transition">Join a Chapter</a></li>
+                    <!-- Alpha: Disabled Feature -->
+                    <!-- <li><a href="/referrals/" class="text-gray-300 hover:text-white transition">My Referrals</a></li> -->
+                    <li><a href="/accounts/login/" class="text-gray-300 hover:text-white transition">Member Login</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg mb-4">Contact Us</h4>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <i class="fas fa-map-marker-alt mt-1 mr-3 text-primary-400"></i>
+                        <span class="text-gray-300">Upper Capiton, Datu Odin Sinsuat, Maguindanao del Norte</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-phone mt-1 mr-3 text-primary-400"></i>
+                        <span class="text-gray-300">+63 XXX XXX XXXX</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-envelope mt-1 mr-3 text-primary-400"></i>
+                        <span class="text-gray-300">mp.uy.oyod.bta.barmm@gmail.com</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-clock mt-1 mr-3 text-primary-400"></i>
+                        <span class="text-gray-300">Mon-Fri: 9:00 AM - 5:00 PM</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-700 pt-8 mt-8 text-center sm:text-left sm:flex sm:justify-between sm:items-center">
+            <div class="text-gray-400 mb-4 sm:mb-0">
+                &copy; 2025 #FahanieCares. All rights reserved.
+            </div>
+            <div class="flex justify-center sm:justify-end space-x-4">
+                <a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a>
+                <a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a>
+                <a href="#" class="text-gray-400 hover:text-white transition">Accessibility</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+    <!-- JavaScript -->
+    <script>
+      // Mobile Menu Toggle
+      document.addEventListener("DOMContentLoaded", function () {
+        const menuButton = document.querySelector("button.mobile-menu-button");
+        const mobileMenu = document.querySelector(".mobile-menu");
+
+        if (menuButton && mobileMenu) {
+          menuButton.addEventListener("click", function () {
+            mobileMenu.classList.toggle("hidden");
+          });
+        }
+      });
+    </script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const loadingOverlay = document.getElementById("loading-overlay");
+        let loadingTimeout;
+
+        // Function to show loading overlay with timeout
+        function showLoadingOverlay() {
+          loadingOverlay.classList.remove("hidden");
+          
+          // Clear any existing timeout
+          if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+          }
+          
+          // Set a timeout to hide the overlay after 10 seconds in case of errors
+          loadingTimeout = setTimeout(function() {
+            hideLoadingOverlay();
+          }, 10000); // 10 seconds timeout
+        }
+
+        // Function to hide loading overlay
+        function hideLoadingOverlay() {
+          loadingOverlay.classList.add("hidden");
+          if (loadingTimeout) {
+            clearTimeout(loadingTimeout);
+          }
+        }
+
+        // Always hide loading overlay when DOM is ready (handles validation errors)
+        hideLoadingOverlay();
+
+        // Show loading overlay on link clicks and form submissions
+        document.querySelectorAll("a").forEach((link) => {
+          link.addEventListener("click", function (event) {
+            // Only show for internal links and non-empty hrefs
+            if (
+              this.href &&
+              this.href !== "#" &&
+              !this.href.startsWith("mailto:") &&
+              !this.target &&
+              !this.getAttribute("data-no-loading")
+            ) {
+              showLoadingOverlay();
+            }
+          });
+        });
+
+        document.querySelectorAll("form").forEach((form) => {
+          form.addEventListener("submit", function (event) {
+            // Don't show loading for forms with data-no-loading attribute
+            if (!this.getAttribute("data-no-loading")) {
+              showLoadingOverlay();
+            }
+          });
+        });
+
+        // Hide loading overlay when the page finishes loading
+        window.addEventListener("load", function () {
+          hideLoadingOverlay();
+        });
+
+        // Handle browser back/forward button
+        window.addEventListener("pageshow", function (event) {
+          hideLoadingOverlay();
+        });
+
+        // Hide loading overlay if there are form errors (Django patterns)
+        if (document.querySelector('.errorlist, .alert-danger, .text-red-600, .bg-red-50')) {
+          hideLoadingOverlay();
+        }
+      });
+    </script>
+    
+  </body>
+</html>

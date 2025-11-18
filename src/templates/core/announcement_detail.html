@@ -1,0 +1,169 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ announcement.title }} - #FahanieCares{% endblock %}
+
+{% block extra_head %}
+{% include 'components/design-system/color_palette.html' %}
+{% include 'components/behaviors/common_behaviors.html' %}
+{% include 'components/animations/scroll_animations.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb Navigation -->
+    <nav class="mb-6" aria-label="Breadcrumb">
+        <ol class="flex items-center space-x-2 text-sm text-gray-600">
+            <li><a href="{% url 'home' %}" class="hover:text-primary-600 transition-colors">Home</a></li>
+            <li><i class="fas fa-chevron-right text-gray-400"></i></li>
+            <li><a href="{% url 'announcements' %}" class="hover:text-primary-600 transition-colors">Updates</a></li>
+            <li><i class="fas fa-chevron-right text-gray-400"></i></li>
+            <li class="text-slate-700 truncate">{{ announcement.title }}</li>
+        </ol>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="grid lg:grid-cols-3 gap-8">
+        <!-- Article Content -->
+        <article class="lg:col-span-2">
+            <!-- Header -->
+            <header class="mb-8">
+                <div class="flex items-center mb-4">
+                    {% include 'components/atoms/badge.html' with variant=announcement.get_category_color text=announcement.get_category_display %}
+                    <span class="text-gray-500 text-sm ml-auto">{{ announcement.published_date|date:"F d, Y" }}</span>
+                </div>
+                
+                <h1 class="text-3xl md:text-4xl font-bold text-slate-800 mb-4">{{ announcement.title }}</h1>
+                
+                <p class="text-lg text-slate-600 leading-relaxed">{{ announcement.excerpt }}</p>
+            </header>
+
+            <!-- Featured Image -->
+            {% if announcement.image %}
+            <div class="mb-8">
+                <div class="rounded-lg overflow-hidden shadow-sm border border-gray-100">
+                    <img src="{{ announcement.image.url }}" 
+                         alt="{{ announcement.title }}" 
+                         class="w-full h-64 md:h-96 object-cover">
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Article Body -->
+            <div class="prose prose-lg max-w-none mb-8">
+                {{ announcement.content|safe }}
+            </div>
+
+            <!-- Article Footer -->
+            <footer class="border-t border-gray-200 pt-6">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-500">
+                        Published on {{ announcement.published_date|date:"F d, Y" }}
+                    </div>
+                    
+                    <!-- Social Share Buttons -->
+                    <div class="flex items-center space-x-3">
+                        <span class="text-sm text-gray-600">Share:</span>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u={{ request.build_absolute_uri }}" 
+                           target="_blank" 
+                           class="text-blue-600 hover:text-blue-800 transition-colors">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="https://twitter.com/intent/tweet?url={{ request.build_absolute_uri }}&text={{ announcement.title|urlencode }}" 
+                           target="_blank" 
+                           class="text-blue-400 hover:text-blue-600 transition-colors">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <button onclick="navigator.share ? navigator.share({title: '{{ announcement.title|escapejs }}', url: window.location.href}) : navigator.clipboard.writeText(window.location.href)" 
+                                class="text-gray-600 hover:text-gray-800 transition-colors">
+                            <i class="fas fa-share-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </footer>
+
+            <!-- Navigation to Previous/Next -->
+            <nav class="flex justify-between mt-12 pt-8 border-t border-gray-200">
+                <a href="{% url 'announcements' %}" 
+                   class="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium transition-all duration-300 group">
+                    <i class="fas fa-arrow-left mr-2 transition-transform duration-300 group-hover:-translate-x-1"></i>
+                    Back to All Updates
+                </a>
+                
+                <a href="{% url 'announcements' %}" 
+                   class="inline-flex items-center text-primary-600 hover:text-primary-800 font-medium transition-all duration-300 group">
+                    View More Updates
+                    <i class="fas fa-arrow-right ml-2 transition-transform duration-300 group-hover:translate-x-1"></i>
+                </a>
+            </nav>
+        </article>
+
+        <!-- Sidebar -->
+        <aside class="lg:col-span-1">
+            <!-- Related Announcements -->
+            {% if related_announcements %}
+            <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
+                <h3 class="text-xl font-semibold text-slate-800 mb-4">Related Updates</h3>
+                
+                <div class="space-y-4">
+                    {% for related in related_announcements %}
+                    <article class="border-b border-gray-100 pb-4 last:border-b-0 last:pb-0">
+                        <div class="flex items-start space-x-3">
+                            {% if related.image %}
+                            <div class="flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden">
+                                <img src="{{ related.image.url }}" 
+                                     alt="{{ related.title }}" 
+                                     class="w-full h-full object-cover">
+                            </div>
+                            {% else %}
+                            <div class="flex-shrink-0 w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center">
+                                <i class="fas fa-newspaper text-gray-400"></i>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center mb-1">
+                                    {% include 'components/atoms/badge.html' with variant=related.get_category_color text=related.get_category_display size='sm' %}
+                                </div>
+                                <h4 class="text-sm font-medium text-slate-800 leading-tight mb-1 line-clamp-2">
+                                    <a href="{{ related.get_absolute_url }}" class="hover:text-primary-600 transition-colors">
+                                        {{ related.title }}
+                                    </a>
+                                </h4>
+                                <p class="text-xs text-gray-500">{{ related.published_date|date:"M d, Y" }}</p>
+                            </div>
+                        </div>
+                    </article>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-6">
+                    <a href="{% url 'announcements' %}" 
+                       class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
+                        View All Updates
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Contact CTA -->
+            <div class="bg-primary-600 rounded-lg p-6 text-white">
+                <h3 class="text-xl font-semibold mb-3">Stay Connected</h3>
+                <p class="text-white/90 mb-4 text-sm">Get the latest updates and announcements from #FahanieCares directly to your inbox.</p>
+                
+                <div class="space-y-3">
+                    <a href="{% url 'contact' %}" 
+                       class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-white text-primary-700 hover:bg-slate-50 focus:ring-white">
+                        Contact Us
+                    </a>
+                    
+                    <a href="{% url 'register' %}" 
+                       class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-white text-white hover:bg-white/10 focus:ring-white">
+                        Join #FahanieCares
+                    </a>
+                </div>
+            </div>
+        </aside>
+    </div>
+</div>
+{% endblock %}

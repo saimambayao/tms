@@ -1,0 +1,138 @@
+{% extends 'base/base.html' %}
+{% load i18n %}
+
+{% block title %}{% trans "Completed Programs" %}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-12 sm:px-6 lg:px-8">
+    <!-- Header Section -->
+    <div class="text-center mb-12">
+        <h1 class="text-5xl font-extrabold text-gray-900 mb-4 leading-tight">
+            {% trans "Our Completed Programs" %}
+        </h1>
+    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+        {% trans "Explore the impactful programs and projects that have successfully concluded, leaving a lasting positive change in our communities." %}
+    </p>
+</div>
+
+<!-- Filter and Sort Section -->
+<div class="bg-white rounded-xl shadow-md p-6 mb-8">
+    <form method="GET" action="{% url 'completed_programs' %}" class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end">
+        <!-- Search Input -->
+        <div>
+            <label for="search" class="block text-sm font-medium text-gray-700">{% trans "Search" %}</label>
+            <div class="mt-1 relative rounded-md shadow-sm">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" name="search" id="search" 
+                       class="focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md text-sm" 
+                       placeholder="{% trans "Search programs..." %}"
+                       value="{{ current_filters.search }}">
+            </div>
+        </div>
+
+        <!-- Ministry Filter -->
+        <div>
+            <label for="ministry" class="block text-sm font-medium text-gray-700">{% trans "Ministry" %}</label>
+            <select id="ministry" name="ministry"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+                <option value="">{% trans "All Ministries" %}</option>
+                {% for code, name in ministry_choices %}
+                    <option value="{{ code }}" {% if current_filters.ministry == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Location Filter -->
+        <div>
+            <label for="location" class="block text-sm font-medium text-gray-700">{% trans "Location" %}</label>
+            <select id="location" name="location"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+                <option value="">{% trans "All Locations" %}</option>
+                {% for location in location_choices %}
+                    <option value="{{ location }}" {% if current_filters.location == location %}selected{% endif %}>{{ location }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <!-- Sort By -->
+        <div>
+            <label for="sort" class="block text-sm font-medium text-gray-700">{% trans "Sort By" %}</label>
+            <select id="sort" name="sort"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md">
+                <option value="-end_date" {% if current_filters.sort_by == '-end_date' %}selected{% endif %}>{% trans "Most Recent" %}</option>
+                <option value="end_date" {% if current_filters.sort_by == 'end_date' %}selected{% endif %}>{% trans "Oldest" %}</option>
+                <option value="title" {% if current_filters.sort_by == 'title' %}selected{% endif %}>{% trans "Title (A-Z)" %}</option>
+                <option value="-title" {% if current_filters.sort_by == '-title' %}selected{% endif %}>{% trans "Title (Z-A)" %}</option>
+                <option value="ministry" {% if current_filters.sort_by == 'ministry' %}selected{% endif %}>{% trans "Ministry (A-Z)" %}</option>
+                <option value="-ministry" {% if current_filters.sort_by == '-ministry' %}selected{% endif %}>{% trans "Ministry (Z-A)" %}</option>
+            </select>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="md:col-span-full lg:col-span-1">
+            <button type="submit"
+                    class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                <i class="fas fa-filter mr-2"></i> {% trans "Apply Filters" %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Program Cards Grid -->
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" x-data="staggerAnimation({staggerDelay: 150})">
+    {% for program in completed_programs %}
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary-300 transition-all duration-300 animate-fade-in-up" 
+         x-data="hoverAnimation()">
+        
+        <!-- Program Header -->
+        <div class="p-6 pb-4">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="bg-primary-100 p-3 rounded-full mr-4 flex-shrink-0">
+                        <i class="fas fa-check-circle text-xl text-green-600"></i> {# Using check-circle for completed programs #}
+                    </div>
+                    <div>
+                        <div class="text-sm text-green-700 font-semibold uppercase tracking-wide">{% trans "Completed Program" %}</div>
+                        <div class="text-xs text-gray-500 mt-0.5">{{ program.ministry }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 class="text-xl font-bold text-slate-800 mb-2 line-clamp-2">{{ program.title }}</h3>
+            <p class="text-gray-600 text-base mb-4 line-clamp-3">{{ program.description }}</p>
+            
+            <!-- Program Details -->
+            <div class="space-y-3 text-sm">
+                <div class="flex items-center text-gray-700">
+                    <i class="fas fa-calendar-alt text-primary-500 w-5 mr-3 flex-shrink-0"></i>
+                    <span>{% trans "Completed on:" %} <span class="font-medium">{{ program.end_date|date:"F d, Y" }}</span></span>
+                </div>
+                {% if program.geographic_coverage %}
+                <div class="flex items-center text-gray-700">
+                    <i class="fas fa-map-marker-alt text-red-500 w-5 mr-3 flex-shrink-0"></i>
+                    <span>Coverage: <span class="font-medium">{{ program.geographic_coverage }}</span></span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Program Footer -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div class="flex items-center justify-end"> {# Align to end as there's no apply button #}
+                <a href="{% url 'ministry_program_detail' slug=program.slug %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
+                    {% trans "View Details" %} <i class="fas fa-info-circle ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center py-10">
+        <p class="text-xl text-gray-500">{% trans "No completed programs to display at the moment." %}</p>
+        <p class="text-md text-gray-400 mt-2">{% trans "Please check back later for updates." %}</p>
+    </div>
+    {% endfor %}
+</div>
+</div>
+{% endblock %}

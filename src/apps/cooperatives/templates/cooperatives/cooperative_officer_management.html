@@ -1,0 +1,451 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Manage Officers for {{ cooperative.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .officer-card {
+        transition: all 0.3s ease;
+        border-left: 4px solid #10b981;
+    }
+    .officer-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(16, 185, 129, 0.15);
+    }
+    .action-button {
+        transition: all 0.2s ease;
+    }
+    .action-button:hover {
+        transform: scale(1.05);
+    }
+    .empty-state {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        border: 2px dashed #cbd5e1;
+    }
+    .stats-card {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+    .form-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        border: 1px solid #e5e7eb;
+    }
+    .section-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    /* Form field styling - Enhanced visibility */
+    .form-field, input[type="text"], input[type="email"], input[type="date"], input[type="password"], select, textarea {
+        border: 2px solid #10b981 !important;
+        border-radius: 8px !important;
+        padding: 12px 16px !important;
+        background-color: #ffffff !important;
+        color: #1f2937 !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 4px rgba(16, 185, 129, 0.1) !important;
+    }
+
+    .form-field:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="date"]:focus, select:focus, textarea:focus {
+        outline: none !important;
+        border-color: #059669 !important;
+        box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2) !important;
+        background-color: #f0fdf4 !important;
+    }
+
+    .form-field.error, input.error, select.error, textarea.error {
+        border-color: #ef4444 !important;
+        box-shadow: 0 2px 4px rgba(239, 68, 68, 0.1) !important;
+    }
+
+    .form-field.error:focus, input.error:focus, select.error:focus, textarea.error:focus {
+        border-color: #dc2626 !important;
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.2) !important;
+        background-color: #fef2f2 !important;
+    }
+
+    /* Select dropdown styling */
+    select.form-field {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e") !important;
+        background-position: right 8px center !important;
+        background-repeat: no-repeat !important;
+        background-size: 16px !important;
+        padding-right: 40px !important;
+    }
+
+    /* Checkbox styling */
+    input[type="checkbox"] {
+        width: 16px !important;
+        height: 16px !important;
+        border: 2px solid #d1d5db !important;
+        border-radius: 3px !important;
+        background-color: white !important;
+        cursor: pointer !important;
+    }
+
+    input[type="checkbox"]:checked {
+        background-color: #10b981 !important;
+        border-color: #10b981 !important;
+        background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z'/%3e%3c/svg%3e") !important;
+    }
+
+    /* Button styling - Enhanced visibility and green theme */
+    .btn-primary, button[type="submit"] {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+        color: white !important;
+        border: 2px solid #10b981 !important;
+        padding: 12px 24px !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        min-height: 48px !important;
+    }
+
+    .btn-primary:hover, button[type="submit"]:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 16px rgba(16, 185, 129, 0.4) !important;
+        border-color: #059669 !important;
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%) !important;
+        color: white !important;
+        border: 2px solid #22c55e !important;
+        padding: 12px 24px !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        font-size: 16px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+        min-height: 48px !important;
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #16a34a 0%, #15803d 100%) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 16px rgba(34, 197, 94, 0.4) !important;
+        border-color: #16a34a !important;
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        color: white !important;
+        border: 2px solid #ef4444 !important;
+        padding: 10px 20px !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+        transform: scale(1.05) !important;
+        box-shadow: 0 6px 12px rgba(239, 68, 68, 0.4) !important;
+        border-color: #dc2626 !important;
+    }
+
+    /* Back button styling */
+    a[href*="Back"] {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+        color: #374151 !important;
+        border: 2px solid #d1d5db !important;
+        padding: 10px 20px !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease !important;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    a[href*="Back"]:hover {
+        background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15) !important;
+        border-color: #9ca3af !important;
+    }
+
+    /* Label styling */
+    .field-label {
+        color: #374151 !important;
+        font-weight: 500 !important;
+        margin-bottom: 6px !important;
+        display: block !important;
+    }
+
+    /* Error message styling */
+    .error-message {
+        color: #ef4444 !important;
+        font-size: 14px !important;
+        margin-top: 4px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 4px !important;
+    }
+
+    /* Required field indicator */
+    .required-indicator {
+        color: #ef4444 !important;
+        font-weight: bold !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header Section -->
+        <div class="mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                <div class="flex items-center gap-4">
+                    <a href="{% url 'cooperatives:cooperative-detail' pk=cooperative.pk %}"
+                       class="inline-flex items-center px-6 py-3 border-2 border-green-200 text-sm font-semibold rounded-lg text-green-700 bg-green-50 hover:bg-green-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-200 shadow-sm hover:shadow-md">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                        </svg>
+                        Back to Cooperative
+                    </a>
+                    <div class="h-6 w-px bg-gray-300"></div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900">Manage Officers</h1>
+                            <p class="text-gray-600">{{ cooperative.name }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Card -->
+                <div class="stats-card rounded-lg px-6 py-4 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl font-bold">{{ officers|length }}</div>
+                        <div class="text-sm opacity-90">Active Officers</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 h-full">
+            <!-- Current Officers Section -->
+            <div class="lg:col-span-2 h-fit">
+                <div class="form-section">
+                    <div class="section-header px-6 py-4">
+                        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-3">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                            Current Officers
+                        </h2>
+                    </div>
+
+                    <div class="p-6">
+                        {% if officers %}
+                            <div class="space-y-4">
+                                {% for officer in officers %}
+                                <div class="officer-card bg-white border border-gray-200 rounded-lg p-4">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                        <div class="flex items-center gap-4">
+                                            <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                                                <span class="text-green-600 font-semibold text-lg">
+                                                    {% if officer.fahaniecares_member.first_name %}
+                                                        {{ officer.fahaniecares_member.first_name|first|upper }}
+                                                    {% else %}
+                                                        {{ officer.fahaniecares_member.last_name|first|default:"?"|upper }}
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            <div class="min-w-0 flex-1">
+                                                <h3 class="font-semibold text-gray-900 truncate">
+                                                    {{ officer.fahaniecares_member.get_full_name }}
+                                                </h3>
+                                                <p class="text-sm text-gray-600">{{ officer.position }}</p>
+                                            </div>
+                                        </div>
+
+                                        <div class="flex flex-col sm:items-end gap-2">
+                                            <div class="text-sm text-gray-500">
+                                                {% if officer.term_start and officer.term_end %}
+                                                    {{ officer.term_start|date:"M/d/Y" }} - {{ officer.term_end|date:"M/d/Y" }}
+                                                {% else %}
+                                                    <span class="text-gray-400">No term dates</span>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <a href="{% url 'cooperatives:cooperative-officer-delete' cooperative_pk=cooperative.pk officer_pk=officer.pk %}"
+                                                   class="btn-danger inline-flex items-center text-sm"
+                                                   onclick="return confirm('Are you sure you want to remove this officer?')">
+                                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                    Remove
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="empty-state rounded-lg p-8 text-center">
+                                <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    </svg>
+                                </div>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No Officers Yet</h3>
+                                <p class="text-gray-500 mb-6">Get started by adding officers to this cooperative.</p>
+                                <a href="{% url 'cooperatives:enhanced-officer-register' pk=cooperative.pk %}"
+                                   class="btn-primary inline-flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add First Officer
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Officer Section -->
+            <div class="lg:col-span-1 h-fit">
+                <div class="form-section sticky top-8">
+                    <div class="section-header px-6 py-4">
+                        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                </svg>
+                            </div>
+                            Add New Officer
+                        </h2>
+                    </div>
+
+                    <div class="p-6">
+                        <!-- Register New Member Button -->
+                        <div class="mb-8">
+                            <a href="{% url 'cooperatives:enhanced-officer-register' pk=cooperative.pk %}"
+                               class="btn-secondary w-full inline-flex justify-center items-center group">
+                                <svg class="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                                </svg>
+                                Register New Member as Officer
+                            </a>
+                        </div>
+
+                        <!-- Enhanced Divider -->
+                        <div class="relative my-8">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t-2 border-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
+                            </div>
+                            <div class="relative flex justify-center">
+                                <div class="bg-white px-6 py-2 rounded-full border border-gray-200 shadow-sm">
+                                    <span class="text-gray-500 font-medium text-sm">Or add existing member</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Clean and Modern Add Existing Member Form -->
+                        <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4">
+                                <h3 class="text-white font-semibold text-lg">Add Existing Member</h3>
+                                <p class="text-blue-100 text-sm mt-1">Fill in the details below to add an officer</p>
+                            </div>
+
+                            <form method="post" class="p-6 space-y-6">
+                                {% csrf_token %}
+
+                                <div class="space-y-6">
+                                    {% for field in form %}
+                                        <div class="form-group">
+                                            <label class="block text-sm font-semibold text-gray-800 mb-2">
+                                                {{ field.label }}{% if field.field.required %} <span class="text-red-500">*</span>{% endif %}
+                                            </label>
+
+                                            <div class="mt-1">
+                                                {% if field|slice:":5" == "date_" %}
+                                                    <div class="relative">
+                                                        <input type="{{ field.field.widget.input_type }}"
+                                                               name="{{ field.name }}"
+                                                               class="w-full px-4 py-4 text-lg border-2 border-green-500 rounded-lg focus:border-green-600 focus:ring-4 focus:ring-green-200 transition-all duration-200 bg-white shadow-sm {% if field.errors %}border-red-400{% endif %}"
+                                                               {% if field.value %}value="{{ field.value }}"{% endif %}>
+                                                        <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                            <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                {% elif field.field.widget.input_type == "checkbox" %}
+                                                    <div class="flex items-center space-x-4 p-4 bg-green-50 rounded-lg border-2 border-green-200 shadow-sm">
+                                                        <input type="checkbox"
+                                                               name="{{ field.name }}"
+                                                               class="h-6 w-6 text-green-600 rounded focus:ring-green-500 border-green-300 {% if field.errors %}border-red-400{% endif %}"
+                                                               {% if field.value %}checked{% endif %}>
+                                                        <span class="text-sm font-medium text-gray-700">{{ field.label }}</span>
+                                                    </div>
+                                                {% else %}
+                                                    <div class="relative">
+                                                        {{ field }}
+                                                        {% if field.field.widget.input_type == "select" %}
+                                                            <div class="absolute inset-y-0 right-0 flex items-center pr-4 pointer-events-none">
+                                                                <svg class="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                                                </svg>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+
+                                            {% if field.errors %}
+                                                <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                                                    <div class="flex items-center gap-2">
+                                                        <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                        </svg>
+                                                        <span class="text-sm text-red-700">
+                                                            {% for error in field.errors %}
+                                                                {{ error }}
+                                                            {% endfor %}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+
+                                <div class="pt-6 border-t border-gray-200">
+                                    <button type="submit"
+                                            class="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-4 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                                        <div class="flex items-center justify-center gap-3">
+                                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                            </svg>
+                                            <span class="text-lg">Add Officer</span>
+                                        </div>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

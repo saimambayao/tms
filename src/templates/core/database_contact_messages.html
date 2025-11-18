@@ -1,0 +1,367 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Contact Messages - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-envelope-open-text text-primary-600"></i>
+                    Contact Messages
+                </h1>
+                <p class="mt-2 text-gray-600">Manage all incoming messages from the contact form</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+                <i class="fas fa-user-shield"></i>
+                <span>Authorized Access: {{ user.get_user_type_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <!-- Total Messages -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Messages</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ total_messages|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-inbox text-primary-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Messages -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">New</p>
+                    <p class="text-3xl font-bold text-red-600">{{ new_messages|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-envelope text-red-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Replied Messages -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Replied</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ replied_messages|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-reply-all text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- This Month -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">This Month</p>
+                    <p class="text-3xl font-bold text-green-600">{{ this_month_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-alt text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="p-6">
+            <form method="get" class="space-y-6">
+                <!-- Search Bar -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Messages</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="search" 
+                                   name="search" 
+                                   value="{{ current_filters.search }}"
+                                   placeholder="Search by sender, email, subject, or message content..."
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" 
+                                class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Status Filter -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Statuses</option>
+                            <option value="new" {% if current_filters.status == 'new' %}selected{% endif %}>New</option>
+                            <option value="read" {% if current_filters.status == 'read' %}selected{% endif %}>Read</option>
+                            <option value="in_progress" {% if current_filters.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="replied" {% if current_filters.status == 'replied' %}selected{% endif %}>Replied</option>
+                            <option value="resolved" {% if current_filters.status == 'resolved' %}selected{% endif %}>Resolved</option>
+                            <option value="closed" {% if current_filters.status == 'closed' %}selected{% endif %}>Closed</option>
+                        </select>
+                    </div>
+
+                    <!-- Date From -->
+                    <div>
+                        <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">Date From</label>
+                        <input type="date" 
+                               name="date_from" 
+                               id="date_from" 
+                               value="{{ current_filters.date_from }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Date To -->
+                    <div>
+                        <label for="date_to" class="block text-sm font-medium text-gray-700 mb-2">Date To</label>
+                        <input type="date" 
+                               name="date_to" 
+                               id="date_to" 
+                               value="{{ current_filters.date_to }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit" 
+                            class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-filter"></i>
+                        Apply Filters
+                    </button>
+                    <a href="{% url 'database_contact_messages' %}" 
+                       class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-times"></i>
+                        Clear Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <!-- Results Header -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        Messages ({{ page_obj.paginator.count }} total)
+                    </h3>
+                    {% if current_filters.search or current_filters.status %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        <i class="fas fa-filter mr-1"></i>
+                        Filtered
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Sort Options -->
+                <div class="flex items-center gap-2">
+                    <label for="sort_by" class="text-sm font-medium text-gray-700">Sort by:</label>
+                    <select name="sort_by" id="sort_by" onchange="this.form.submit()" form="filter-form"
+                            class="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <option value="-submitted_at" {% if current_filters.sort_by == '-submitted_at' %}selected{% endif %}>Newest First</option>
+                        <option value="submitted_at" {% if current_filters.sort_by == 'submitted_at' %}selected{% endif %}>Oldest First</option>
+                        <option value="first_name" {% if current_filters.sort_by == 'first_name' %}selected{% endif %}>Sender A-Z</option>
+                        <option value="-first_name" {% if current_filters.sort_by == '-first_name' %}selected{% endif %}>Sender Z-A</option>
+                        <option value="status" {% if current_filters.sort_by == 'status' %}selected{% endif %}>Status</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sender</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message Snippet</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for message in page_obj.object_list %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150 {% if message.status == 'new' %}font-bold text-gray-900{% endif %}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm {% if message.status == 'new' %}font-bold{% else %}font-medium{% endif %} text-gray-900">
+                                {{ message.get_full_name }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ message.email }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ message.subject }}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-700">
+                            {{ message.message|truncatechars:70 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if message.status == 'replied' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-reply mr-1"></i>
+                                Replied
+                            </span>
+                            {% elif message.status == 'read' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-eye mr-1"></i>
+                                Read
+                            </span>
+                            {% elif message.status == 'new' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-envelope mr-1"></i>
+                                New
+                            </span>
+                            {% else %} {# Default to 'in_progress', 'resolved', 'closed' #}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                {{ message.get_status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ message.submitted_at|date:"M d, Y H:i" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="{% url 'database_contact_message_detail' message.pk %}" 
+                                   class="text-primary-600 hover:text-primary-900 transition-colors duration-150"
+                                   title="View Message">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if message.status == 'new' %}
+                                <form method="post" action="{% url 'mark_message_read' message.pk %}" class="inline" onsubmit="return confirm('Mark this message as read?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-green-600 hover:text-green-900 transition-colors duration-150" title="Mark as Read">
+                                        <i class="fas fa-check-circle"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                                {% if message.status == 'new' or message.status == 'read' or message.status == 'in_progress' %}
+                                <a href="mailto:{{ message.email }}?subject=Re: {{ message.subject }}" 
+                                   class="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                                   title="Reply to Message">
+                                    <i class="fas fa-reply"></i>
+                                </a>
+                                {% endif %}
+                                <form method="post" action="{% url 'database_contact_message_delete' message.pk %}" class="inline" onsubmit="return confirm('Are you sure you want to delete this message?');">
+                                    {% csrf_token %}
+                                    <button type="submit" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Delete Message">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No contact messages found</h3>
+                                <p class="text-gray-500">No messages match your current filters.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="px-6 py-4 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-gray-700">
+                    Showing {{ page_obj.start_index }} to {{ page_obj.end_index }} of {{ page_obj.paginator.count }} results
+                </div>
+                <nav class="flex items-center space-x-1">
+                    {% if page_obj.has_previous %}
+                    <a href="?page=1&{{ filter_params.urlencode }}" 
+                       class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-150">
+                        First
+                    </a>
+                    <a href="?page={{ page_obj.previous_page_number }}&{{ filter_params.urlencode }}" 
+                       class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-150">
+                        Previous
+                    </a>
+                    {% endif %}
+                    
+                    <span class="px-3 py-2 text-sm text-gray-700">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&{{ filter_params.urlencode }}" 
+                       class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-150">
+                        Next
+                    </a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}&{{ filter_params.urlencode }}" 
+                       class="px-3 py-2 text-sm text-gray-500 hover:text-gray-700 transition-colors duration-150">
+                        Last
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Hidden form for sort functionality -->
+<form id="filter-form" method="get" style="display: none;">
+    {% for key, value in current_filters.items %}
+    {% if value and key != 'sort_by' %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endif %}
+    {% endfor %}
+</form>
+
+<script>
+// Auto-submit form when sort changes
+document.getElementById('sort_by').addEventListener('change', function() {
+    // Copy current filters to hidden form
+    const filterForm = document.getElementById('filter-form');
+    const sortSelect = this;
+    
+    // Add sort_by to hidden form
+    let sortInput = filterForm.querySelector('input[name="sort_by"]');
+    if (!sortInput) {
+        sortInput = document.createElement('input');
+        sortInput.type = 'hidden';
+        sortInput.name = 'sort_by';
+        filterForm.appendChild(sortInput);
+    }
+    sortInput.value = sortSelect.value;
+    
+    // Submit the form
+    filterForm.submit();
+});
+</script>
+{% endblock %}

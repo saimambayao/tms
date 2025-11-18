@@ -1,0 +1,22 @@
+# Security Policy for #FahanieCares
+# https://fahaniecares.ph/.well-known/security.txt
+
+Contact: security@fahaniecares.ph
+Contact: https://fahaniecares.ph/contact?subject=security
+Expires: 2025-06-08T00:00:00.000Z
+Encryption: https://fahaniecares.ph/pgp-key.txt
+Acknowledgments: https://fahaniecares.ph/security/hall-of-fame
+Preferred-Languages: en, fil
+Canonical: https://fahaniecares.ph/.well-known/security.txt
+Policy: https://fahaniecares.ph/security-policy
+
+# Vulnerability Disclosure Policy
+# We appreciate responsible disclosure of security vulnerabilities.
+# Please report security issues to our security team at security@fahaniecares.ph
+# We aim to respond within 48 hours and resolve critical issues within 7 days.
+
+# Bug Bounty Program
+# We currently do not offer a bug bounty program, but we acknowledge
+# security researchers who responsibly disclose vulnerabilities.
+
+# #FahanieCares - Bringing Public Service Closer to You

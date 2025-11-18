@@ -1,0 +1,156 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}FAQs - #FahanieCares{% endblock %}
+
+{% block hero %}
+<div class="bg-gradient-hero text-white py-12 relative">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <a href="javascript:history.back()" class="absolute top-4 left-4 md:top-6 md:left-6 flex items-center text-white hover:text-white/80 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back
+            </a>
+            <h1 class="text-3xl md:text-4xl font-bold mb-4">Frequently Asked Questions</h1>
+            <p class="text-xl text-white/90">Find answers to common questions about #FahanieCares and the Bangsamoro.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <div class="space-y-4">
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                ANO ANG BANGSAMORO?
+                <span class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 border-b-2 border-r-2 border-primary-600 transform rotate-45 transition-transform duration-200 group-open:-rotate-135"></span>
+            </summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <p class="mb-2">Bangsamoro People — Mga katutubo o orihinal na naninirahan sa Mindanao, Sulu Archipelago, at mga kalapit na isla noong panahon ng pananakop ng mga Kastila, maging sila man ay may halong dugo o ganap na katutubo (regardless of religion, culture, & ethnicity). Sila, pati ang kanilang mga asawa at kaapuhan, ay may karapatang kilahin ang kanilang sarili bilang Bangsamoro.</p>
+                <p class="mt-2 italic">
+                    (English reference: Bangsamoro People — Those who were the native or original inhabitants of Mindanao, the Sulu Archipelago, and nearby islands at the time of Spanish colonization, whether of mixed or full blood, have the right to identify themselves, their spouses, and their descendants as Bangsamoro.)
+                </p>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                ANO ANG #FahanieCares?
+                <span class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 border-b-2 border-r-2 border-primary-600 transform rotate-45 transition-transform duration-200 group-open:-rotate-135"></span>
+            </summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <p class="mb-2">Ang #FahanieCares ay isa sa mga flagship programs ng Office of MP Atty. Sittie Fahanie S. Uy-Oyod. Layunin nitong gawing mas mabilis, maayos, at accessible ang serbisyong pampubliko ng opisina at ng BARMM ministries para sa mga mamamayan ng Bangsamoro, lalo na sa mga nasa komunidad, sa pamamagitan ng pag-register bilang miyembro ng programa.</p>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                ANO ANG MGA TARGET SECTORS NG #FahanieCares?
+                <span class="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-3 border-b-2 border-r-2 border-primary-600 transform rotate-45 transition-transform duration-200 group-open:-rotate-135"></span>
+            </summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <p class="mb-2">Layunin ng #FahanieCares na tulungan ang mga sumusunod na sektor:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="mb-1">Persons With Disability (PWDs)</li>
+                    <li class="mb-1">Solo Parents</li>
+                    <li class="mb-1">Kabataan at Out-of-School Youth</li>
+                    <li class="mb-1">Women and Children</li>
+                    <li class="mb-1">Small Farmers, Fisherfolks, at Urban Poor</li>
+                    <li class="mb-1">Cooperatives at Livelihood Groups</li>
+                    <li class="mb-1">Volunteer Teachers</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                ANO ANG MGA BENEPISYO NG PAGIGING MIYEMBRO NG #FahanieCares?</summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <p class="mb-2">Bilang miyembro ng #FahanieCares, makikinabang ka sa mga sumusunod:</p>
+                <ul class="list-disc list-inside ml-4">
+                    <li class="mb-1">Mas mabilis na access sa mga programa ng opisina</li>
+                    <li class="mb-1">Prayoridad sa medical, financial assistance, at iba pang programa</li>
+                    <li class="mb-1">Livelihood opportunities, skills training, at cooperative o association formation</li>
+                    <li class="mb-1">Mas mabilis na impormasyon at imbitasyon sa Focused Group Discussions (FGDs) at consultations</li>
+                    <li class="mb-1">Pag-follow up at pag-lobby ng inyong mga concern sa tamang ahensya</li>
+                    <li class="mb-1">Mas malapit na koneksyon sa opisina para sa mga kinakailangang serbisyo</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                PAANO MAGPAREHISTRO BILANG MIYEMBRO NG #FahanieCares?</summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <ul class="list-disc list-inside ml-4">
+                    <li class="mb-1">Magtungo sa opisina ni MP Atty. Sittie Fahanie S. Uy-Oyod at mag-fill up ng membership form</li>
+                    <li class="mb-1">Sumali sa registration drives tuwing may caravan o community consultation sa inyong lugar</li>
+                    <li class="mb-1">Online registration via #FahanieCares Portal: <a href="http://www.fahaniecares.ph" class="text-primary-600 hover:underline" target="_blank">www.fahaniecares.ph</a></li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                BAKIT KAILANGAN ANG VOTER'S CERTIFICATE?</summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <ul class="list-disc list-inside ml-4">
+                    <li class="mb-1">Patunay na ikaw ay rehistradong botante sa ilalim ng Bangsamoro Autonomous Region</li>
+                    <li class="mb-1">Makatulong sa profiling ng miyembro para sa tamang serbisyo</li>
+                    <li class="mb-1">Masiguro na ang serbisyo ay naibibigay sa mga lehitimong residente ng BARMM</li>
+                    <li class="mb-1">Ang address sa Voter’s Certificate ay patunay ng pagiging residente sa lugar</li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                LIBRE BA ANG PAGIGING MIYEMBRO?</summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <p class="mb-2">Opo, LIBRE ang membership. Walang babayaran sa pagparehistro.</p>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                MAY WEBSITE O ONLINE PLATFORM BA ANG #FahanieCares?</summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <p class="mb-2">Oo, bisitahin ang: <a href="http://www.fahaniecares.ph" class="text-primary-600 hover:underline" target="_blank">www.fahaniecares.ph</a></p>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                SAAN MATATAGPUAN ANG MGA OPISINA?</summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <p class="mb-2">📍 Main Office:<br>Office of MP Atty. Sittie Fahanie S. Uy-Oyod<br>Brgy. Upper Capiton, Datu Odin Sinsuat, Maguindanao del Norte, BARMM</p>
+                <p class="mb-2">📍 Satellite Office:<br>Office of MP Atty. Sittie Fahanie S. Uy-Oyod<br>Brgy. Buayan, Datu Piang, Maguindanao del Sur, BARMM</p>
+            </div>
+        </details>
+
+        <details class="bg-white shadow-md rounded-lg p-4 border border-primary-200 group hover-lift transition-all duration-300">
+            <summary class="font-semibold text-lg cursor-pointer text-primary-800 hover:text-primary-600 flex justify-between items-center list-none relative pr-8">
+                PAANO MAKAKAKUHA NG UPDATES?</summary>
+            <div class="mt-2 text-gray-700 leading-relaxed">
+                <ul class="list-disc list-inside ml-4">
+                    <li class="mb-1">I-follow ang opisyal na Facebook page ng Office of MP Atty. Sittie Fahanie S. Uy-Oyod</li>
+                    <li class="mb-1">Bisitahin ang #FahanieCares Portal: <a href="http://www.fahaniecares.ph" class="text-primary-600 hover:underline" target="_blank">www.fahaniecares.ph</a></li>
+                </ul>
+            </div>
+        </details>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="bg-primary-50 rounded-lg p-8 mt-12 text-center">
+    <h3 class="text-xl font-semibold text-slate-800 mb-2">Still have questions?</h3>
+    <p class="text-gray-600 mb-6">Our #FahanieCares team is here to assist you.</p>
+    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <a href="{% url 'contact' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500">
+            <i class="fas fa-envelope mr-2"></i>
+            Contact Support
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service Referral - #FahanieCares</title>
+    <meta name="description" content="#FahanieCares: Bringing Bangsamoro Public Service Closer to You">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Header Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <nav class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="index.html" class="text-xl font-bold text-primary-600">#FahanieCares</a>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-primary-600 transition">Home</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                <a href="service_referral.html" class="text-primary-800 font-medium hover:text-primary-600 transition">Services</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Parliament</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+            </div>
+            
+            <!-- Login/Register -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-gray-600 hover:text-primary-600 focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </nav>
+        
+        <!-- Mobile Navigation (Hidden by default) -->
+        <div class="md:hidden hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex flex-col space-y-3 py-3">
+                    <a href="index.html" class="text-gray-600 hover:text-primary-600 transition">Home</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                    <a href="service_referral.html" class="text-primary-800 font-medium hover:text-primary-600 transition">Services</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Parliament</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4 py-3 border-t">
+                    <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                    <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <div class="bg-primary-600 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">Service Referral System</h1>
+                <p class="text-xl text-white/90">Get assistance navigating government services with personalized support from #FahanieCares.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Breadcrumbs -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center text-sm text-gray-600">
+                <a href="index.html" class="hover:text-primary-600 transition">Home</a>
+                <i class="fas fa-chevron-right text-xs mx-2"></i>
+                <a href="#" class="hover:text-primary-600 transition">Services</a>
+                <i class="fas fa-chevron-right text-xs mx-2"></i>
+                <span class="text-gray-800 font-medium">Service Referral</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="py-12">
+        <div class="container mx-auto px-4">
+            <!-- Service Options and Process -->
+            <div class="grid md:grid-cols-3 gap-8 mb-12">
+                <div class="md:col-span-1">
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 sticky top-24">
+                        <h2 class="text-xl font-semibold text-secondary-800 mb-4">How It Works</h2>
+                        <ul class="space-y-6">
+                            <li class="flex">
+                                <div class="flex-shrink-0 bg-primary-100 h-10 w-10 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-primary-700 font-semibold">1</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-secondary-800 mb-1">Select Service Category</h3>
+                                    <p class="text-gray-600 text-sm">Choose the type of government service you need assistance with.</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 bg-primary-100 h-10 w-10 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-primary-700 font-semibold">2</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-secondary-800 mb-1">Complete Referral Form</h3>
+                                    <p class="text-gray-600 text-sm">Provide details about your request and any supporting documents.</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 bg-primary-100 h-10 w-10 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-primary-700 font-semibold">3</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-secondary-800 mb-1">Receive Reference Number</h3>
+                                    <p class="text-gray-600 text-sm">Get a unique ID to track your request through our system.</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 bg-primary-100 h-10 w-10 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-primary-700 font-semibold">4</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-secondary-800 mb-1">Staff Processing</h3>
+                                    <p class="text-gray-600 text-sm">Our team will review your request and connect with the appropriate agency.</p>
+                                </div>
+                            </li>
+                            <li class="flex">
+                                <div class="flex-shrink-0 bg-primary-100 h-10 w-10 rounded-full flex items-center justify-center mr-4">
+                                    <span class="text-primary-700 font-semibold">5</span>
+                                </div>
+                                <div>
+                                    <h3 class="font-medium text-secondary-800 mb-1">Status Updates</h3>
+                                    <p class="text-gray-600 text-sm">Receive notifications as your referral progresses through the system.</p>
+                                </div>
+                            </li>
+                        </ul>
+                        <div class="mt-8">
+                            <h3 class="text-lg font-semibold text-secondary-800 mb-2">Need Help?</h3>
+                            <p class="text-gray-600 text-sm mb-4">Our team is available to assist you with any questions about the referral process.</p>
+                            <a href="#" class="text-primary-600 hover:text-primary-800 flex items-center">
+                                <i class="fas fa-headset mr-2"></i> Contact Support
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="md:col-span-2">
+                    <!-- Service Categories -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                        <h2 class="text-xl font-semibold text-secondary-800 mb-4">Service Categories</h2>
+                        <p class="text-gray-600 mb-6">Select the category that best matches the government service you need assistance with.</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Service Category Cards -->
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-heartbeat text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">Healthcare Services</h3>
+                                        <p class="text-gray-600 text-sm">Medical assistance, health insurance, hospital services</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-graduation-cap text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">Education</h3>
+                                        <p class="text-gray-600 text-sm">Scholarships, school enrollment, educational support</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-id-card text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">ID & Documentation</h3>
+                                        <p class="text-gray-600 text-sm">Birth certificates, IDs, passports, legal documents</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-hand-holding-heart text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">Social Welfare</h3>
+                                        <p class="text-gray-600 text-sm">Financial assistance, food support, housing programs</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-briefcase text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">Employment</h3>
+                                        <p class="text-gray-600 text-sm">Job search, skills training, labor concerns</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-gavel text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">Legal Services</h3>
+                                        <p class="text-gray-600 text-sm">Legal aid, dispute resolution, document processing</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-house-user text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">Housing</h3>
+                                        <p class="text-gray-600 text-sm">Housing programs, land titles, home services</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="border border-gray-200 rounded-lg p-4 hover:border-primary-300 hover:bg-primary-50 transition cursor-pointer">
+                                <div class="flex items-start">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-ellipsis-h text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="font-medium text-secondary-800 mb-1">Other Services</h3>
+                                        <p class="text-gray-600 text-sm">Additional government services not listed above</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Referral Form -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <h2 class="text-xl font-semibold text-secondary-800 mb-4">Referral Request Form</h2>
+                        <p class="text-gray-600 mb-6">Please provide the following information to submit your service referral request.</p>
+                        
+                        <form id="referralForm">
+                            <!-- Selected Service -->
+                            <div class="mb-6 p-4 bg-primary-50 border border-primary-100 rounded-lg">
+                                <div class="flex items-center">
+                                    <div class="bg-primary-100 p-2 rounded-lg mr-4">
+                                        <i class="fas fa-hand-holding-heart text-primary-600"></i>
+                                    </div>
+                                    <div class="flex-grow">
+                                        <h3 class="font-medium text-secondary-800">Social Welfare</h3>
+                                        <p class="text-gray-600 text-sm">Financial assistance, food support, housing programs</p>
+                                    </div>
+                                    <button type="button" class="text-gray-400 hover:text-gray-600">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Personal Information -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-medium text-secondary-800 mb-4">Personal Information</h3>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="firstName">First Name</label>
+                                        <input type="text" id="firstName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="lastName">Last Name</label>
+                                        <input type="text" id="lastName" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="email">Email Address</label>
+                                        <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="phone">Phone Number</label>
+                                        <input type="tel" id="phone" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    </div>
+                                    <div class="md:col-span-2">
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="address">Complete Address</label>
+                                        <input type="text" id="address" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="municipality">Municipality</label>
+                                        <select id="municipality" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                            <option value="">Select your municipality</option>
+                                            <option>Municipality 1</option>
+                                            <option>Municipality 2</option>
+                                            <option>Municipality 3</option>
+                                            <option>Municipality 4</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="idNumber">ID Number (if applicable)</label>
+                                        <input type="text" id="idNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Referral Details -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-medium text-secondary-800 mb-4">Referral Details</h3>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="specificService">Specific Service Needed</label>
+                                        <select id="specificService" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                            <option value="">Select specific service</option>
+                                            <option>Financial Assistance Program</option>
+                                            <option>Food Support Program</option>
+                                            <option>Housing Assistance</option>
+                                            <option>Emergency Relief</option>
+                                            <option>Senior Citizen Support</option>
+                                            <option>Children's Welfare</option>
+                                            <option>Other</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="urgency">Urgency Level</label>
+                                        <select id="urgency" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                                            <option value="">Select urgency level</option>
+                                            <option>Emergency (24-48 hours)</option>
+                                            <option>Urgent (3-5 days)</option>
+                                            <option>Standard (1-2 weeks)</option>
+                                            <option>Low (3+ weeks)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-gray-700 text-sm font-medium mb-2" for="description">Detailed Description</label>
+                                        <textarea id="description" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Please provide details about your request..." required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Document Upload -->
+                            <div class="mb-6">
+                                <h3 class="text-lg font-medium text-secondary-800 mb-4">Supporting Documents</h3>
+                                <p class="text-gray-600 text-sm mb-4">Upload any relevant documents to support your request (ID, certificates, forms, etc.)</p>
+                                
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                    <div class="flex flex-col items-center">
+                                        <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                                        <p class="text-gray-600 mb-4">Drag and drop files here, or click to browse</p>
+                                        <input type="file" class="hidden" id="fileUpload" multiple>
+                                        <button type="button" class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition" onclick="document.getElementById('fileUpload').click()">
+                                            Browse Files
+                                        </button>
+                                    </div>
+                                    <div class="text-xs text-gray-500 mt-4">
+                                        Max file size: 10MB | Accepted formats: PDF, JPG, PNG
+                                    </div>
+                                </div>
+                                
+                                <!-- Uploaded Files Preview (initially empty) -->
+                                <div class="mt-4 space-y-2" id="uploadedFiles">
+                                    <!-- Sample uploaded file (for demonstration) -->
+                                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-md">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-file-pdf text-red-500 mr-3"></i>
+                                            <span class="text-gray-700 text-sm">id_document.pdf</span>
+                                            <span class="text-gray-500 text-xs ml-2">(2.4 MB)</span>
+                                        </div>
+                                        <button type="button" class="text-gray-400 hover:text-gray-600">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Consent and Terms -->
+                            <div class="mb-6">
+                                <div class="flex items-start">
+                                    <div class="flex items-center h-5">
+                                        <input id="consent" type="checkbox" class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500" required>
+                                    </div>
+                                    <div class="ml-3 text-sm">
+                                        <label for="consent" class="text-gray-700">I consent to #FahanieCares processing my personal information for the purpose of this service referral, in accordance with the <a href="#" class="text-primary-600 hover:text-primary-800">Privacy Policy</a>.</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="text-center">
+                                <button type="button" class="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700 transition">
+                                    Submit Referral Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Success Cases -->
+            <div class="mt-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-secondary-800 mb-2">Success Stories</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">See how our referral system has helped community members access essential services.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <!-- Success Story 1 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center mb-4">
+                            <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                <span class="text-gray-400 text-xs">Photo</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-secondary-800">Ahmed Ibrahim</div>
+                                <div class="text-sm text-gray-500">Healthcare Services</div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">"The #FahanieCares team helped me navigate the complex process of enrolling in the healthcare program. Within two weeks, I had my health card and was able to access medical services for my family."</p>
+                        <div class="text-sm text-gray-500">Resolution time: 14 days</div>
+                    </div>
+                    
+                    <!-- Success Story 2 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center mb-4">
+                            <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                <span class="text-gray-400 text-xs">Photo</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-secondary-800">Fatima Yusuf</div>
+                                <div class="text-sm text-gray-500">Education Support</div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">"I applied for education support through the referral system and received guidance on scholarship applications. I'm now enrolled in vocational training with financial support thanks to the team's assistance."</p>
+                        <div class="text-sm text-gray-500">Resolution time: 21 days</div>
+                    </div>
+                    
+                    <!-- Success Story 3 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <div class="flex items-center mb-4">
+                            <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                                <span class="text-gray-400 text-xs">Photo</span>
+                            </div>
+                            <div>
+                                <div class="font-semibold text-secondary-800">Maria Santos</div>
+                                <div class="text-sm text-gray-500">Social Welfare</div>
+                            </div>
+                        </div>
+                        <p class="text-gray-600 mb-4">"After submitting my referral request for emergency food assistance, I received a response within 48 hours. The #FahanieCares team connected me with the right agency and followed up regularly."</p>
+                        <div class="text-sm text-gray-500">Resolution time: 2 days</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- FAQ Section -->
+            <div class="mt-16">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-secondary-800 mb-2">Frequently Asked Questions</h2>
+                    <p class="text-gray-600 max-w-2xl mx-auto">Find answers to common questions about our service referral system.</p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- FAQ Item 1 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-secondary-800 mb-2">How long does the referral process take?</h3>
+                        <p class="text-gray-600">Processing times vary depending on the service requested and urgency level. Emergency requests are processed within 24-48 hours, while standard requests typically take 5-10 business days.</p>
+                    </div>
+                    
+                    <!-- FAQ Item 2 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-secondary-800 mb-2">What documents do I need to provide?</h3>
+                        <p class="text-gray-600">Required documents depend on the specific service requested. Common documents include valid ID, proof of residence, income verification, and any supporting documentation related to your specific case.</p>
+                    </div>
+                    
+                    <!-- FAQ Item 3 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-secondary-800 mb-2">How will I be updated about my referral status?</h3>
+                        <p class="text-gray-600">You'll receive updates via your preferred communication method (email or SMS). You can also check your referral status anytime by logging into your account and entering your reference number.</p>
+                    </div>
+                    
+                    <!-- FAQ Item 4 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-secondary-800 mb-2">Can I submit multiple referral requests?</h3>
+                        <p class="text-gray-600">Yes, you can submit multiple requests for different services. However, we recommend focusing on your most urgent needs first to ensure efficient processing.</p>
+                    </div>
+                    
+                    <!-- FAQ Item 5 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-secondary-800 mb-2">What if my request is denied?</h3>
+                        <p class="text-gray-600">If your referral cannot be processed, our team will provide a detailed explanation and suggest alternative services or options that may better suit your needs.</p>
+                    </div>
+                    
+                    <!-- FAQ Item 6 -->
+                    <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                        <h3 class="text-lg font-semibold text-secondary-800 mb-2">Is there a fee for using the referral service?</h3>
+                        <p class="text-gray-600">No, the #FahanieCares service referral system is completely free. There are no charges for submitting requests or receiving assistance from our team.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CTA Section -->
+    <section class="py-12 bg-primary-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-4">Need Assistance with Other Services?</h2>
+            <p class="text-white/80 max-w-2xl mx-auto mb-8">Explore our full range of services or contact our team for personalized support.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition text-center">View All Services</a>
+                <a href="#" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white/10 transition text-center">Contact Support</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-secondary-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">#FahanieCares</h3>
+                    <p class="text-gray-300 mb-4">Bringing Public Service Closer to You</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition">Home</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">About</a></li>
+                        <li><a href="service_referral.html" class="text-gray-300 hover:text-white transition">Services</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Chapters</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Parliament</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Services</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Service Referral</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Chapter Membership</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Direct Assistance</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Events & Outreach</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Parliamentary Updates</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Feedback & Consultation</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Contact Us</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">123 Parliament Street, City, Province, ZIP</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">(123) 456-7890</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">contact@fahaniecares.gov</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-clock mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">Mon-Fri: 9:00 AM - 5:00 PM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-8 mt-8 text-center sm:text-left sm:flex sm:justify-between sm:items-center">
+                <div class="text-gray-400 mb-4 sm:mb-0">
+                    &copy; 2023 #FahanieCares. All rights reserved.
+                </div>
+                <div class="flex justify-center sm:justify-end space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Accessibility</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.querySelector('button');
+            const mobileMenu = document.querySelector('.md\\:hidden.hidden');
+            
+            menuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

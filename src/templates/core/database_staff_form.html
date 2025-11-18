@@ -1,0 +1,231 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-user-plus text-primary-600"></i>
+                    {{ title }}
+                </h1>
+                <p class="mt-2 text-gray-600">Enter staff member information below</p>
+            </div>
+            <a href="{% url 'database_staff' %}" 
+               class="inline-flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+                <i class="fas fa-arrow-left"></i>
+                Back to Database
+            </a>
+        </div>
+    </div>
+
+    <!-- Form Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-900">Staff Information</h3>
+        </div>
+        
+        <form method="post" class="p-6 space-y-6">
+            {% csrf_token %}
+            
+            <!-- Display Form Errors -->
+            {% if form.non_field_errors %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <div class="flex">
+                        <i class="fas fa-exclamation-triangle text-red-400 mt-0.5"></i>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-red-800">Please correct the following errors:</h3>
+                            <div class="mt-2 text-sm text-red-700">
+                                {{ form.non_field_errors }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Basic Information Section -->
+            <div class="space-y-6">
+                <h4 class="text-md font-semibold text-gray-900 border-b border-gray-200 pb-2">Basic Information</h4>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Full Name -->
+                    <div>
+                        <label for="{{ form.full_name.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.full_name.label }}
+                        </label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.full_name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Position -->
+                    <div>
+                        <label for="{{ form.position.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.position.label }}
+                        </label>
+                        {{ form.position }}
+                        {% if form.position.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.position.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.email.label }}
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div>
+                        <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.phone_number.label }}
+                        </label>
+                        {{ form.phone_number }}
+                        {% if form.phone_number.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.phone_number.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div>
+                    <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.address.label }}
+                    </label>
+                    {{ form.address }}
+                    {% if form.address.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Organizational Information Section -->
+            <div class="space-y-6">
+                <h4 class="text-md font-semibold text-gray-900 border-b border-gray-200 pb-2">Organizational Information</h4>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Division -->
+                    <div>
+                        <label for="{{ form.division.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.division.label }}
+                        </label>
+                        {{ form.division }}
+                        {% if form.division.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.division.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Office -->
+                    <div>
+                        <label for="{{ form.office.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.office.label }}
+                        </label>
+                        {{ form.office }}
+                        {% if form.office.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.office.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Employment Status -->
+                    <div>
+                        <label for="{{ form.employment_status.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.employment_status.label }}
+                        </label>
+                        {{ form.employment_status }}
+                        {% if form.employment_status.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.employment_status.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Date Hired -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="{{ form.date_hired.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                            {{ form.date_hired.label }}
+                        </label>
+                        {{ form.date_hired }}
+                        {% if form.date_hired.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.date_hired.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Active Status -->
+                    <div class="flex items-center pt-6">
+                        <div class="flex items-center h-5">
+                            {{ form.is_active }}
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ form.is_active.id_for_label }}" class="font-medium text-gray-700">
+                                {{ form.is_active.label }}
+                            </label>
+                            <p class="text-gray-500">Staff member is currently active</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Details Section -->
+            <div class="space-y-6">
+                <h4 class="text-md font-semibold text-gray-900 border-b border-gray-200 pb-2">Job Details</h4>
+                
+                <!-- Duties & Responsibilities -->
+                <div>
+                    <label for="{{ form.duties_responsibilities.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.duties_responsibilities.label }}
+                    </label>
+                    {{ form.duties_responsibilities }}
+                    {% if form.duties_responsibilities.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.duties_responsibilities.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Staff Workflow -->
+                <div>
+                    <label for="{{ form.staff_workflow.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.staff_workflow.label }}
+                    </label>
+                    {{ form.staff_workflow }}
+                    {% if form.staff_workflow.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.staff_workflow.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Bio -->
+                <div>
+                    <label for="{{ form.bio.id_for_label }}" class="block text-sm font-medium text-gray-700">
+                        {{ form.bio.label }}
+                    </label>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.bio.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end gap-4 pt-6 border-t border-gray-200">
+                <a href="{% url 'database_staff' %}" 
+                   class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                    Cancel
+                </a>
+                <button type="submit" 
+                        class="px-6 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                    <i class="fas fa-save"></i>
+                    {{ action }} Staff Member
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

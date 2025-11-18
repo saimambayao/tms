@@ -1,0 +1,198 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Log In - #FahanieCares{% endblock %}
+
+
+
+{% block content %}
+<div class="container mx-auto py-12 px-4">
+    <div class="max-w-md mx-auto">
+        <!-- Login Card with Enhanced Design -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 relative overflow-hidden" style="border: 1px solid #a7f3d0;">
+            <!-- Decorative Elements -->
+            <div class="absolute top-0 right-0 w-32 h-32 rounded-full -translate-y-16 translate-x-16" style="background-color: rgba(16, 185, 129, 0.1);"></div>
+            <div class="absolute bottom-0 left-0 w-24 h-24 rounded-full translate-y-12 -translate-x-12" style="background-color: rgba(52, 211, 153, 0.1);"></div>
+
+            <div class="relative z-10">
+                <!-- Header -->
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background-color: #10b981;">
+                        <i class="fas fa-user text-white text-2xl"></i>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2" style="color: #065f46;">Log In to #FahanieCares</h2>
+                    <p style="color: #059669;">Access your personalized dashboard and community features</p>
+                </div>
+
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+
+                    <!-- Error Messages -->
+                    {% if form.non_field_errors %}
+                    <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                        {% for error in form.non_field_errors %}
+                        <p class="flex items-center">
+                            <i class="fas fa-exclamation-circle mr-2"></i>
+                            {{ error }}
+                        </p>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Username/Email Field -->
+                    <div>
+                        <label class="block text-sm font-semibold mb-2" for="id_username" style="color: #047857;">
+                            <i class="fas fa-user mr-2"></i>Username
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="text"
+                                name="username"
+                                id="id_username"
+                                value="{{ form.username.value|default:'' }}"
+                                class="w-full pl-10 pr-4 py-3 border-2 rounded-lg shadow-sm bg-white transition-all duration-300"
+                                style="border-color: #86efac;"
+                                onmouseover="this.style.borderColor='#4ade80'"
+                                onmouseout="this.style.borderColor='#86efac'"
+                                onfocus="this.style.borderColor='#22c55e'; this.style.boxShadow='0 0 0 3px rgba(34, 197, 94, 0.1)'; this.style.outline='none';"
+                                placeholder="Enter your username or email"
+                                required
+                            />
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-envelope" style="color: #34d399;"></i>
+                            </div>
+                        </div>
+                        {% if form.username.errors %}
+                        <p class="text-red-600 text-sm mt-1 flex items-center">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ form.username.errors.0 }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Password Field -->
+                    <div>
+                        <label class="block text-sm font-semibold mb-2" for="id_password" style="color: #047857;">
+                            <i class="fas fa-lock mr-2"></i>Password
+                        </label>
+                        <div class="relative">
+                            <input
+                                type="password"
+                                name="password"
+                                id="id_password"
+                                class="w-full pl-10 pr-10 py-3 border-2 rounded-lg shadow-sm bg-white transition-all duration-300"
+                                style="border-color: #86efac;"
+                                onmouseover="this.style.borderColor='#4ade80'"
+                                onmouseout="this.style.borderColor='#86efac'"
+                                onfocus="this.style.borderColor='#22c55e'; this.style.boxShadow='0 0 0 3px rgba(34, 197, 94, 0.1)'; this.style.outline='none';"
+                                placeholder="Enter your password"
+                                required
+                            />
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-key" style="color: #34d399;"></i>
+                            </div>
+                            <button
+                                type="button"
+                                class="absolute inset-y-0 right-0 pr-3 flex items-center"
+                                id="togglePassword"
+                                style="color: #10b981;"
+                            >
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}
+                        <p class="text-red-600 text-sm mt-1 flex items-center">
+                            <i class="fas fa-exclamation-circle mr-1"></i>
+                            {{ form.password.errors.0 }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+
+
+                    <!-- Submit Button -->
+                    <button
+                        type="submit"
+                        style="width: 100%; display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 600; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';"
+                    >
+                        <i class="fas fa-sign-in-alt mr-2"></i>
+                        Sign In
+                    </button>
+                </form>
+
+                <!-- Divider -->
+                <div class="my-8">
+                    <div class="relative">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full" style="border-top: 1px solid #a7f3d0;"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-4 font-medium" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); color: #059669;">New to #FahanieCares?</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Links -->
+                <div class="text-center space-y-3">
+                    <a
+                        href="{% url 'register' %}"
+                        style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem 1.5rem; background: white; color: #047857; font-weight: 600; border: 2px solid #10b981; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='#f9fafb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';"
+                    >
+                        <i class="fas fa-user-plus mr-2"></i>
+                        Create New Account
+                    </a>
+
+                    <p class="text-sm" style="color: #059669;">
+                        Are you an Admin?
+                        <a
+                            href="/admin/login/"
+                            class="font-semibold transition-colors"
+                            style="color: #047857;"
+                            onmouseover="this.style.color='#064e3b'"
+                            onmouseout="this.style.color='#047857'"
+                        >
+                            Login here
+                        </a>
+                    </p>
+                </div>
+
+                <!-- Security Notice -->
+                <div class="mt-8 p-4 rounded-lg" style="background-color: #ecfdf5; border: 1px solid #a7f3d0;">
+                    <div class="flex items-start">
+                        <i class="fas fa-shield-alt mt-1 mr-3" style="color: #059669;"></i>
+                        <div>
+                            <h4 class="text-sm font-semibold mb-1" style="color: #065f46;">Secure Login</h4>
+                            <p class="text-xs" style="color: #047857;">Your connection is protected with industry-standard encryption.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password Toggle Functionality
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('id_password');
+
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            this.querySelector('i').classList.toggle('fa-eye');
+            this.querySelector('i').classList.toggle('fa-eye-slash');
+        });
+    }
+
+    // Auto-focus on username field
+    const usernameField = document.getElementById('id_username');
+    if (usernameField) {
+        usernameField.focus();
+    }
+});
+</script>
+{% endblock %}

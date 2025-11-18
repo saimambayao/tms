@@ -1,0 +1,433 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block title %}{% trans "#FahanieCares" %} - {% trans "Bringing Bangsamoro Public Service Closer to You" %}{% endblock %}
+
+{% block extra_head %}
+<!-- Include component styles and behaviors -->
+{% include 'components/design-system/color_palette.html' %}
+{% include 'components/behaviors/common_behaviors.html' %}
+{% include 'components/animations/scroll_animations.html' %}
+{% endblock %}
+
+{% block hero %}
+<!-- Hero Section -->
+<section class="relative overflow-hidden" style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%); position: relative;">
+    <!-- Minimal background elements -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-emerald-500 rounded-full blur-2xl animate-pulse"></div>
+    </div>
+
+    <!-- Dark gradient overlay for text area (top left) -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.7) 20%, rgba(6, 95, 70, 0.4) 40%, rgba(4, 120, 87, 0.2) 60%, transparent 80%);"></div>
+
+    <!-- Essential circle patterns - reduced number but bigger -->
+  
+
+    <!-- Dark gradient overlay for bottom right -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(17, 24, 39, 0.9) 0%, rgba(31, 41, 55, 0.8) 20%, rgba(6, 95, 70, 0.6) 40%, rgba(4, 120, 87, 0.4) 60%, rgba(5, 150, 105, 0.2) 80%, transparent 100%);"></div>
+
+    <!-- Additional darkening at bottom right corner -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(17, 24, 39, 0.7) 0%, rgba(6, 95, 70, 0.5) 30%, transparent 70%);"></div>
+
+    <!-- Subtle cross gradient for texture -->
+    <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, transparent 40%, rgba(6, 95, 70, 0.3) 100%);"></div>
+
+    <div class="container mx-auto px-4 py-16 md:py-24 relative z-10">
+        <div class="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+                <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold mb-2 text-white drop-shadow-lg">{% trans "#FahanieCares" %}</h1>
+                <h2 class="text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold mb-4 text-white drop-shadow-md">{% trans "Bringing Bangsamoro Public Service Closer to You" %}</h2>
+                <p class="text-base sm:text-lg mb-8 text-white/90 drop-shadow-sm">{% trans "MP Atty. Sittie Fahanie S. Uy-Oyod's initiative to improve access to government services and community support for the Bangsamoro." %}</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="{% url 'register' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; background: white; color: #047857; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);" onmouseover="this.style.backgroundColor='#f9fafb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';">{% trans "Register for Assistance" %}</a>
+                    <a href="{% url 'login' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; border: 2px solid white; color: white; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px rgba(255, 255, 255, 0.5)';">{% trans "Login" %}</a>
+                    <a href="{% url 'programs' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; border: 2px solid white; color: white; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px rgba(255, 255, 255, 0.5)';">{% trans "Learn More" %}</a>
+                </div>
+            </div>
+            <div class="hidden md:block relative" 
+                 x-data="{ 
+                     activeSlide: 0, 
+                     images: ['IMG1.jpg', 'IMG2.jpg', 'IMG3.jpg', 'IMG4.jpg', 'IMG5.jpg', 'IMG6.jpg', 'IMG7.jpg', 'IMG8.jpg', 'IMG9.jpg', 'IMG10.jpg', 'IMG11.jpg', 'IMG12.jpg', 'IMG13.jpg', 'IMG14.jpg', 'IMG15.jpg', 'IMG16.jpg', 'IMG17.jpg', 'IMG18.jpg', 'IMG19.jpg', 'IMG20.jpg', 'IMG21.jpg', 'IMG22.jpg', 'IMG23.jpg', 'IMG24.jpg', 'IMG25.jpg'], 
+                     interval: null,
+                     nextSlide() {
+                         this.activeSlide = (this.activeSlide + 1) % this.images.length;
+                     },
+                     prevSlide() {
+                         this.activeSlide = (this.activeSlide - 1 + this.images.length) % this.images.length;
+                     },
+                     goToSlide(index) {
+                         this.activeSlide = index;
+                     },
+                     getPrevImage() {
+                         const prevIndex = (this.activeSlide - 1 + this.images.length) % this.images.length;
+                         return '{% static 'HeroB/' %}' + this.images[prevIndex];
+                     },
+                     getCurrentImage() {
+                         return '{% static 'HeroB/' %}' + this.images[this.activeSlide];
+                     },
+                     getNextImage() {
+                         const nextIndex = (this.activeSlide + 1) % this.images.length;
+                         return '{% static 'HeroB/' %}' + this.images[nextIndex];
+                     }
+                 }" 
+                 x-init="interval = setInterval(() => { nextSlide(); }, 3000);">
+                <div class="relative w-full h-96 rounded-xl overflow-hidden shadow-2xl">
+                    <template x-for="(image, index) in images" :key="index">
+                        <img :src="'{% static 'HeroB/' %}' + image" 
+                             :alt="'Hero Image ' + index" 
+                             class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"
+                             :class="{ 'opacity-100': activeSlide === index, 'opacity-0': activeSlide !== index }">
+                    </template>
+                </div>
+
+                <!-- Navigation Buttons -->
+                <button @click="prevSlide()" class="absolute left-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white/75 text-gray-800 p-2 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button @click="nextSlide()" class="absolute right-4 top-1/2 -translate-y-1/2 bg-white/50 hover:bg-white/75 text-gray-800 p-2 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
+
+                <!-- Navigation Dots -->
+                <div class="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+                    <template x-for="(image, index) in images" :key="index">
+                        <button @click="goToSlide(index)" 
+                                :class="{ 'bg-white': activeSlide === index, 'bg-white/50': activeSlide !== index }"
+                                class="w-3 h-3 rounded-full focus:outline-none focus:ring-2 focus:ring-white transition-all duration-300"></button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+    <!-- Am I a Member? Section -->
+    <section class="py-12 mb-8 relative overflow-hidden" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);">
+        <!-- Background decorative elements -->
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute top-6 left-6 w-12 h-12 rounded-full blur-lg" style="background-color: #34d399;"></div>
+            <div class="absolute bottom-6 right-6 w-10 h-10 rounded-full blur-md" style="background-color: #10b981;"></div>
+        </div>
+
+        <div class="container mx-auto px-4">
+            <div class="max-w-3xl mx-auto">
+                <div class="text-center mb-8">
+                    <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full shadow-lg mb-4" style="border: 4px solid #a7f3d0;">
+                        <i class="fas fa-user-check text-2xl" style="color: #059669;"></i>
+                    </div>
+                    <h2 class="text-3xl md:text-4xl font-bold mb-3" style="color: #065f46;">Am I a Member?</h2>
+                    <p class="text-lg mb-6 max-w-2xl mx-auto" style="color: #059669;">
+                        Check your membership status by searching your name in our database.
+                        Get instant access to your registration details and current status.
+                    </p>
+                </div>
+
+                <!-- Search Form Card -->
+                <div class="bg-white rounded-xl shadow-lg p-6 mb-6 relative" style="border: 1px solid #a7f3d0;">
+                    <form method="GET" action="{% url 'check_membership' %}" class="max-w-xl mx-auto">
+                        <div class="flex flex-col sm:flex-row gap-3 items-end">
+                            <div class="flex-1">
+                                <label for="search-query" class="block text-sm font-medium text-gray-700 mb-2">
+                                    <i class="fas fa-search mr-1" style="color: #059669;"></i>
+                                    Full Name
+                                </label>
+                                <input type="text"
+                                       id="search-query"
+                                       name="q"
+                                       placeholder="Enter your full name"
+                                       class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white shadow-sm"
+                                       required>
+                            </div>
+                            <div class="sm:w-auto">
+                                <button type="submit"
+                                        class="inline-flex items-center justify-center px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-colors"
+                                        style="background-color: #059669; display: inline-flex; align-items: center; justify-content: center;"
+                                        onmouseover="this.style.backgroundColor='#047857'; this.style.boxShadow='0 0 25px rgba(5, 150, 105, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';"
+                                        onmouseout="this.style.backgroundColor='#059669'; this.style.boxShadow='none';">
+                                    <i class="fas fa-search mr-2"></i>
+                                    Check Status
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Quick Info -->
+                    <div class="flex flex-wrap justify-center gap-4 mt-6 text-sm">
+                        <div class="flex items-center" style="color: #047857;">
+                            <i class="fas fa-clock mr-1" style="color: #059669;"></i>
+                            <span>Instant Results</span>
+                        </div>
+                        <div class="flex items-center" style="color: #047857;">
+                            <i class="fas fa-shield-alt mr-1" style="color: #059669;"></i>
+                            <span>Secure & Private</span>
+                        </div>
+                        <div class="flex items-center" style="color: #047857;">
+                            <i class="fas fa-info-circle mr-1" style="color: #059669;"></i>
+                            <span>Complete Details</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-16 bg-gradient-subtle rounded-xl shadow-sm mb-12 border border-emerald-100">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Our Services</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Access government services, request assistance, and participate in community programs through our digital platform.</p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8" x-data="staggerAnimation({staggerDelay: 150})">
+                <!-- Service Card 1: Join #FahanieCares -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover-lift focus-ring transition-all duration-300 flex flex-col"
+                     x-data="hoverAnimation()" tabindex="0">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div style="background: #d1fae5; padding: 0.75rem; border-radius: 9999px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;" :class="{ 'transform scale-110': isHovered }">
+                                <i style="color: #059669; font-size: 1.25rem;" class="fas fa-users"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Join #FahanieCares</h3>
+                        <p class="text-gray-600 mb-4 flex-grow">Register as a member to access all #FahanieCares programs and services. Membership is free and open to all constituents.</p>
+                        <div class="mt-auto">
+                            <a href="{% url 'register' %}" class="inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Register Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Card 2: Explore Programs -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover-lift focus-ring transition-all duration-300 flex flex-col"
+                     x-data="hoverAnimation()" tabindex="0">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div style="background: #d1fae5; padding: 0.75rem; border-radius: 9999px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;" :class="{ 'transform scale-110': isHovered }">
+                                <i style="color: #059669; font-size: 1.25rem;" class="fas fa-clipboard-list"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Explore #FahanieCares Programs</h3>
+                        <p class="text-gray-600 mb-4 flex-grow">Discover and access programs and services directly provided by #FahanieCares to address community needs.</p>
+                        <div class="mt-auto">
+                            <a href="{% url 'programs' %}" class="inline-flex items-center justify-content-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Explore Programs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Card 3: TDIF Projects -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover-lift focus-ring transition-all duration-300 flex flex-col"
+                     x-data="hoverAnimation()" tabindex="0">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div style="background: #d1fae5; padding: 0.75rem; border-radius: 9999px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;" :class="{ 'transform scale-110': isHovered }">
+                                <i style="color: #059669; font-size: 1.25rem;" class="fas fa-hammer"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">TDIF Projects</h3>
+                        <p class="text-gray-600 mb-4 flex-grow">Access Transitional Development Impact Fund projects focused on infrastructure and community development.</p>
+                        <div class="mt-auto">
+                            <a href="{% url 'tdif_projects' %}" class="inline-flex items-center justify-content-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Explore Projects
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Service Card 4: Ministry Programs -->
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover-lift focus-ring transition-all duration-300 flex flex-col"
+                     x-data="hoverAnimation()" tabindex="0">
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center justify-between mb-4">
+                            <div style="background: #d1fae5; padding: 0.75rem; border-radius: 9999px; width: 56px; height: 56px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;" :class="{ 'transform scale-110': isHovered }">
+                                <i style="color: #059669; font-size: 1.25rem;" class="fas fa-building"></i>
+                            </div>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">Ministry Programs</h3>
+                        <p class="text-gray-600 mb-4 flex-grow">Discover curated ministry programs designed for efficient access and streamlined service delivery.</p>
+                        <div class="mt-auto">
+                            <a href="{% url 'accessible_ministry_programs' %}" class="inline-flex items-center justify-content-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Discover Programs
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Announcements Section -->
+    <section class="py-16 bg-white rounded-xl shadow-sm mb-12 border border-slate-200">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Latest Updates</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Stay informed about the latest activities, programs, and parliamentary updates from MP Uy-Oyod.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8" x-data="staggerAnimation({staggerDelay: 200})">
+                {% for announcement in announcements %}
+                <!-- Announcement {{ forloop.counter }} -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100 animate-fade-in-up hover-lift focus-ring flex flex-col" 
+                     tabindex="0"
+                     x-data="hoverAnimation()">
+                    <div class="h-48 bg-gray-200 relative overflow-hidden">
+                        {% if announcement.image %}
+                        <img src="{{ announcement.image.url }}" alt="{{ announcement.title }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <span class="text-gray-400 flex items-center justify-center w-full h-full">Announcement Image</span>
+                        {% endif %}
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 transition-opacity duration-300"
+                             :class="{ 'opacity-100': isHovered }"
+                             @mouseenter="mouseenter()"
+                             @mouseleave="mouseleave()"></div>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow">
+                        <div class="flex items-center mb-3">
+                            {% include 'components/atoms/badge.html' with variant=announcement.get_category_color text=announcement.get_category_display %}
+                            <span class="text-gray-500 text-sm ml-auto">{{ announcement.published_date|date:"M d, Y" }}</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-slate-800 mb-2">{{ announcement.title }}</h3>
+                        <p class="text-slate-600 mb-4 flex-grow">{{ announcement.excerpt|default:announcement.content|truncatechars:200 }}</p>
+                        <a href="{{ announcement.get_absolute_url }}" style="display: inline-flex; align-items: center; color: #059669; font-weight: 500; transition: all 0.3s ease; margin-top: auto;" onmouseover="this.style.color='#047857';" onmouseout="this.style.color='#059669';" class="group">
+                            Read More
+                            <i style="margin-left: 0.5rem; transition: transform 0.3s ease;" class="fas fa-arrow-right group-hover:translate-x-1"></i>
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="text-center mt-10">
+                <a href="{% url 'announcements' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; padding: 0.75rem 1.5rem; font-size: 1.125rem; background-color: #10b981; color: white; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.boxShadow='none';">View All Updates</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Stats Section -->
+    <section class="py-16 text-white rounded-xl relative overflow-hidden" style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%); position: relative;">
+        <!-- Minimal background elements for Impact section -->
+        <div class="absolute inset-0 opacity-8">
+            <div class="absolute top-1/2 left-1/2 w-20 h-20 bg-emerald-400 rounded-full blur-lg animate-pulse"></div>
+        </div>
+
+        <!-- Gradient overlay for depth -->
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(16, 185, 129, 0.3) 0%, rgba(5, 150, 105, 0.4) 40%, transparent 70%);"></div>
+        <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(6, 95, 70, 0.5) 0%, rgba(4, 120, 87, 0.3) 50%, transparent 100%);"></div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-2">#FahanieCares Impact</h2>
+                <p class="text-white/80 max-w-2xl mx-auto">Together, we're making a difference in our communities through dedicated service and support.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" x-data="staggerAnimation({staggerDelay: 100})">
+                <div class="text-center animate-fade-in-up" x-data="counterAnimation({target: 3615, duration: 2500})">
+                    <div class="text-4xl md:text-5xl font-bold mb-2" x-html="Math.floor(current).toLocaleString() + '&nbsp;<i class=\'fas fa-arrow-up text-sm ml-1\'></i>'"></div>
+                    <p class="text-white/80">Registered Members</p>
+                </div>
+                
+                <div class="text-center animate-fade-in-up" x-data="counterAnimation({target: 4000, duration: 2500})">
+                    <div class="text-4xl md:text-5xl font-bold mb-2" x-html="Math.floor(current).toLocaleString() + '+&nbsp;<i class=\'fas fa-arrow-up text-sm ml-1\'></i>'"></div>
+                    <p class="text-white/80">Individuals Reached</p>
+                </div>
+                
+                <div class="text-center animate-fade-in-up" x-data="counterAnimation({target: 15, duration: 2500})">
+                    <div class="text-4xl md:text-5xl font-bold mb-2" x-html="Math.floor(current).toLocaleString() + '+&nbsp;<i class=\'fas fa-arrow-up text-sm ml-1\'></i>'"></div>
+                    <p class="text-white/80">Community Events</p>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block cta %}
+<!-- CTA Section with Contact Form -->
+<section class="py-16" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+    <div class="container mx-auto px-4">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold mb-4">Ready to Get Involved?</h2>
+            <p class="text-white/80 max-w-2xl mx-auto">Join #FahanieCares today and be part of our mission to bring public service closer to every constituent.</p>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8 max-w-5xl mx-auto md:items-stretch">
+            <div class="flex-1 flex flex-col">
+                {% include 'components/forms/unified_contact_form.html' with title="Contact Us" subtitle="" form=contact_form message=message message_type=message_type %}
+            </div>
+
+            <div class="flex-1 bg-white rounded-lg p-6 flex flex-col shadow-lg">
+                <h3 class="text-2xl font-semibold mb-6 text-slate-800">Ways to Get Involved</h3>
+
+                <div class="space-y-6">
+                    <div class="flex items-start">
+                        <div style="background: #d1fae5; padding: 0.5rem; border-radius: 9999px; margin-right: 1rem;">
+                            <svg style="width: 24px; height: 24px; color: #059669;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-medium mb-1 text-slate-800">Register as a Member</h4>
+                            <p class="text-gray-700 mb-2">Join our growing network of members to access exclusive services and programs.</p>
+                            <a href="{% url 'register' %}" class="inline-flex items-center justify-content-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Register Now
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div style="background: #d1fae5; padding: 0.5rem; border-radius: 9999px; margin-right: 1rem;">
+                            <svg style="width: 24px; height: 24px; color: #059669;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-medium mb-1 text-slate-800">Volunteer with a Chapter</h4>
+                            <p class="text-gray-700 mb-2">Join a local chapter to help deliver programs directly to your community.</p>
+                            <a href="{% url 'chapters_public' %}" class="inline-flex items-center justify-content-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Find Chapters
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div style="background: #d1fae5; padding: 0.5rem; border-radius: 9999px; margin-right: 1rem;">
+                            <svg style="width: 24px; height: 24px; color: #059669;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-medium mb-1 text-slate-800">Partner with Us</h4>
+                            <p class="text-gray-700 mb-2">Collaborate with #FahanieCares to expand our reach and impact in the community.</p>
+                            <a href="{% url 'partner' %}" class="inline-flex items-center justify-content-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Become a Partner
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="flex items-start">
+                        <div style="background: #d1fae5; padding: 0.5rem; border-radius: 9999px; margin-right: 1rem;">
+                            <svg style="width: 24px; height: 24px; color: #059669;" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4 class="text-xl font-medium mb-1 text-slate-800">Donate Now</h4>
+                            <p class="text-gray-700 mb-2">Support our programs and initiatives to help us serve more Bangsamoro communities.</p>
+                            <a href="{% url 'donate' %}" class="inline-flex items-center justify-content-center px-4 py-2 text-sm font-medium text-white rounded-lg shadow-md transition-all duration-200 min-h-[44px]" style="background-color: #10b981; display: inline-flex; align-items: center; justify-content: center;" onmouseover="this.style.backgroundColor='#059669'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 0 25px rgba(16, 185, 129, 1), 0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='#10b981'; this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                                Make a Donation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

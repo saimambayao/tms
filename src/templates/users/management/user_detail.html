@@ -1,0 +1,288 @@
+{% extends 'base/base.html' %}
+{% load permission_tags %}
+
+{% block title %}{{ user_obj.get_full_name }} - User Detail - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex items-center space-x-4">
+                <a href="{% url 'users:user-management-list' %}" 
+                   class="text-primary-600 hover:text-primary-800">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Users
+                </a>
+                <h1 class="text-3xl font-bold text-gray-900">{{ user_obj.get_full_name }}</h1>
+                {% role_badge user_obj %}
+            </div>
+            
+            {% if has_role request.user 'chief_of_staff' %}
+            <div class="space-x-3">
+                <a href="{% url 'users:user-role-update' user_obj.pk %}" 
+                   class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700">
+                    <i class="fas fa-user-cog mr-2"></i>
+                    Update Role
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- User Information -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Basic Information -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Username</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ user_obj.username }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Email</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ user_obj.email }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Phone Number</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ user_obj.phone_number|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Municipality</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ user_obj.municipality|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Address</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ user_obj.address|default:"Not provided" }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Date Joined</label>
+                        <p class="mt-1 text-sm text-gray-900">{{ user_obj.date_joined|date:"M d, Y g:i A" }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role & Permissions -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Role & Permissions</h2>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Current Role</label>
+                            <div class="mt-1">
+                                {% role_badge user_obj %}
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Role Hierarchy Level</label>
+                            <p class="mt-1 text-sm text-gray-900">Level {{ user_obj.get_role_hierarchy_level }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Chapter Assignment</label>
+                            <p class="mt-1 text-sm text-gray-900">
+                                {% if user_obj.chapter_id %}
+                                    {{ user_obj.chapter_id }}
+                                {% else %}
+                                    <span class="text-gray-400">No chapter assigned</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700">Role Assigned By</label>
+                            <p class="mt-1 text-sm text-gray-900">
+                                {% if user_obj.role_assigned_by %}
+                                    {{ user_obj.role_assigned_by.get_full_name }}
+                                    <span class="text-gray-500">({{ user_obj.role_assigned_at|date:"M d, Y" }})</span>
+                                {% else %}
+                                    <span class="text-gray-400">System</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Permissions Display -->
+                    {% if user_permissions %}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">User Permissions</label>
+                        <div class="flex flex-wrap gap-2">
+                            {% for permission in user_permissions %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ permission }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Role Transition History -->
+            {% if role_history %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-semibold text-gray-900 mb-4">Role History</h2>
+                <div class="space-y-3">
+                    {% for transition in role_history %}
+                    <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exchange-alt text-blue-500"></i>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-sm">
+                                <span class="font-medium">{{ transition.from_role|default:"New User" }}</span>
+                                <i class="fas fa-arrow-right mx-2 text-gray-400"></i>
+                                <span class="font-medium">{{ transition.to_role }}</span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                {{ transition.changed_at|date:"M d, Y g:i A" }} by {{ transition.changed_by.get_full_name }}
+                            </div>
+                            {% if transition.reason %}
+                            <div class="text-xs text-gray-600 mt-1">{{ transition.reason }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Status Card -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Account Status</h3>
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Approved</span>
+                        {% if user_obj.is_approved %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>Yes
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-clock mr-1"></i>Pending
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Active</span>
+                        {% if user_obj.is_active %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>Yes
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times-circle mr-1"></i>No
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">Staff</span>
+                        {% if user_obj.is_staff %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-check-circle mr-1"></i>Yes
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-times-circle mr-1"></i>No
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm text-gray-600">MFA Enabled</span>
+                        {% if user_obj.mfa_enabled %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-shield-alt mr-1"></i>Yes
+                            </span>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-exclamation-triangle mr-1"></i>No
+                            </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+                <div class="space-y-2">
+                    {% if has_role request.user 'chief_of_staff' %}
+                    <a href="{% url 'users:user-role-update' user_obj.pk %}" 
+                       class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                        <i class="fas fa-user-cog mr-2 text-blue-500"></i>
+                        Update Role
+                    </a>
+                    {% endif %}
+                    
+                    {% if not user_obj.is_approved and has_role_or_higher request.user 'admin' %}
+                    <form method="POST" action="{% url 'users:user-approval' user_obj.pk %}" class="block">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="approve">
+                        <button type="submit" 
+                                class="w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md">
+                            <i class="fas fa-check mr-2 text-green-500"></i>
+                            Approve User
+                        </button>
+                    </form>
+                    {% endif %}
+                    
+                    <button type="button" 
+                            class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                            onclick="sendMessage()">
+                        <i class="fas fa-envelope mr-2 text-purple-500"></i>
+                        Send Message
+                    </button>
+                    
+                    <button type="button" 
+                            class="block w-full text-left px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md"
+                            onclick="viewActivity()">
+                        <i class="fas fa-history mr-2 text-orange-500"></i>
+                        View Activity Log
+                    </button>
+                </div>
+            </div>
+
+            <!-- System Information -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">System Info</h3>
+                <div class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">User ID:</span>
+                        <span class="text-gray-900">{{ user_obj.id }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Last Login:</span>
+                        <span class="text-gray-900">
+                            {% if user_obj.last_login %}
+                                {{ user_obj.last_login|timesince }} ago
+                            {% else %}
+                                Never
+                            {% endif %}
+                        </span>
+                    </div>
+                    {% if user_obj.notion_id %}
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Notion ID:</span>
+                        <span class="text-gray-900 font-mono text-xs">{{ user_obj.notion_id|truncatechars:12 }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function sendMessage() {
+    // TODO: Implement messaging functionality
+    alert('Messaging functionality coming soon!');
+}
+
+function viewActivity() {
+    // TODO: Implement activity log viewing
+    alert('Activity log viewing coming soon!');
+}
+</script>
+{% endblock %}

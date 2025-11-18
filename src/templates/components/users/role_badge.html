@@ -1,0 +1,41 @@
+{% comment %}
+Role Badge Component
+Displays a user's role as a styled badge with optional icon.
+
+Parameters:
+- role_display: Human-readable role name
+- role_color: Tailwind color class for the badge
+- role_icon: Font Awesome icon class
+- show_icon: Whether to show the icon (default: True)
+- size: Badge size ('sm', 'md', 'lg')
+{% endcomment %}
+
+{% if size == 'sm' %}
+    {% with padding="px-2 py-1" text_size="text-xs" icon_size="" %}
+        <span class="inline-flex items-center {{ padding }} {{ text_size }} font-medium rounded-full text-white {{ role_color }}">
+            {% if show_icon %}
+                <i class="{{ role_icon }} {{ icon_size }} mr-1"></i>
+            {% endif %}
+            {{ role_display }}
+        </span>
+    {% endwith %}
+{% elif size == 'lg' %}
+    {% with padding="px-4 py-2" text_size="text-base" icon_size="text-lg" %}
+        <span class="inline-flex items-center {{ padding }} {{ text_size }} font-medium rounded-full text-white {{ role_color }} shadow-sm">
+            {% if show_icon %}
+                <i class="{{ role_icon }} {{ icon_size }} mr-2"></i>
+            {% endif %}
+            {{ role_display }}
+        </span>
+    {% endwith %}
+{% else %}
+    {% comment %}Default medium size{% endcomment %}
+    {% with padding="px-3 py-1.5" text_size="text-sm" icon_size="" %}
+        <span class="inline-flex items-center {{ padding }} {{ text_size }} font-medium rounded-full text-white {{ role_color }}">
+            {% if show_icon %}
+                <i class="{{ role_icon }} {{ icon_size }} mr-1.5"></i>
+            {% endif %}
+            {{ role_display }}
+        </span>
+    {% endwith %}
+{% endif %}

@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Case Tracking - #FahanieCares</title>
+    <meta name="description" content="#FahanieCares: Bringing Bangsamoro Public Service Closer to You">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        },
+                        status: {
+                            pending: '#f59e0b',
+                            inprogress: '#3b82f6',
+                            review: '#8b5cf6',
+                            approved: '#10b981',
+                            completed: '#059669',
+                            rejected: '#ef4444'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Header Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <nav class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="index.html" class="text-xl font-bold text-primary-600">#FahanieCares</a>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-primary-600 transition">Home</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                <a href="service_referral.html" class="text-primary-800 font-medium hover:text-primary-600 transition">Services</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Parliament</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+            </div>
+            
+            <!-- Login/Register -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-gray-600 hover:text-primary-600 focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </nav>
+        
+        <!-- Mobile Navigation (Hidden by default) -->
+        <div class="md:hidden hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex flex-col space-y-3 py-3">
+                    <a href="index.html" class="text-gray-600 hover:text-primary-600 transition">Home</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                    <a href="service_referral.html" class="text-primary-800 font-medium hover:text-primary-600 transition">Services</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Parliament</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4 py-3 border-t">
+                    <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                    <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <div class="bg-primary-600 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">Track Your Case</h1>
+                <p class="text-xl text-white/90">Monitor the status of your service referral request and receive updates on its progress.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Breadcrumbs -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center text-sm text-gray-600">
+                <a href="index.html" class="hover:text-primary-600 transition">Home</a>
+                <i class="fas fa-chevron-right text-xs mx-2"></i>
+                <a href="service_referral.html" class="hover:text-primary-600 transition">Services</a>
+                <i class="fas fa-chevron-right text-xs mx-2"></i>
+                <span class="text-gray-800 font-medium">Case Tracking</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="py-12">
+        <div class="container mx-auto px-4">
+            <!-- Case Lookup Form -->
+            <div class="max-w-xl mx-auto bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-12">
+                <h2 class="text-xl font-semibold text-secondary-800 mb-4">Look Up Your Case</h2>
+                <p class="text-gray-600 mb-6">Enter your reference number and email address to track the status of your request.</p>
+                
+                <form>
+                    <div class="mb-4">
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="reference">Reference Number</label>
+                        <input type="text" id="reference" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="e.g. REF-12345678" value="REF-87654321" required>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label class="block text-gray-700 text-sm font-medium mb-2" for="trackingEmail">Email Address</label>
+                        <input type="email" id="trackingEmail" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Enter the email used in your request" value="maria.santos@example.com" required>
+                    </div>
+                    
+                    <div class="text-center">
+                        <button type="button" class="bg-primary-600 text-white px-6 py-3 rounded-md font-medium hover:bg-primary-700 transition">
+                            Track Case Status
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Case Details (This would normally be shown after lookup) -->
+            <div class="max-w-5xl mx-auto">
+                <!-- Reference and Basic Info -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-secondary-800">Case #REF-87654321</h2>
+                            <p class="text-gray-600">Submitted on June 10, 2023</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-status-inprogress/10 text-status-inprogress">
+                                <span class="h-2 w-2 rounded-full bg-status-inprogress mr-2"></span>
+                                In Progress
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Service Category</h3>
+                            <p class="text-secondary-800 font-medium">Social Welfare</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Specific Service</h3>
+                            <p class="text-secondary-800 font-medium">Financial Assistance Program</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Urgency Level</h3>
+                            <p class="text-secondary-800 font-medium">Standard (1-2 weeks)</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Assigned Staff</h3>
+                            <p class="text-secondary-800 font-medium">Sarah Johnson</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Agency</h3>
+                            <p class="text-secondary-800 font-medium">Department of Social Welfare</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">Estimated Completion</h3>
+                            <p class="text-secondary-800 font-medium">June 24, 2023</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Progress Tracker -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                    <h2 class="text-xl font-semibold text-secondary-800 mb-6">Case Progress</h2>
+                    
+                    <div class="relative">
+                        <!-- Progress Bar -->
+                        <div class="overflow-hidden h-2 mb-4 text-xs flex rounded bg-gray-200">
+                            <div class="w-3/5 shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-500"></div>
+                        </div>
+                        
+                        <!-- Progress Steps -->
+                        <div class="relative">
+                            <!-- Step 1: Submitted -->
+                            <div class="grid grid-cols-12 mb-8">
+                                <div class="col-span-12 md:col-span-3 flex md:justify-end">
+                                    <div class="flex flex-col">
+                                        <span class="text-secondary-800 font-medium">Submitted</span>
+                                        <span class="text-sm text-gray-500">June 10, 2023</span>
+                                    </div>
+                                </div>
+                                <div class="col-span-12 md:col-span-9 mt-3 md:mt-0 md:pl-8 relative">
+                                    <div class="absolute left-0 md:top-1 transform md:translate-x-0 -translate-y-1/2 md:translate-y-0 z-10">
+                                        <div class="h-6 w-6 bg-status-completed rounded-full flex items-center justify-center">
+                                            <i class="fas fa-check text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="border-l-2 border-gray-200 ml-3 md:ml-0 pl-6 pb-8 md:pt-1 relative">
+                                        <p class="text-gray-600 mb-2">Your service referral request has been successfully submitted to our system.</p>
+                                        <div class="flex items-center text-gray-500 text-sm">
+                                            <i class="fas fa-user-circle mr-2"></i>
+                                            <span>System</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 2: Received -->
+                            <div class="grid grid-cols-12 mb-8">
+                                <div class="col-span-12 md:col-span-3 flex md:justify-end">
+                                    <div class="flex flex-col">
+                                        <span class="text-secondary-800 font-medium">Received</span>
+                                        <span class="text-sm text-gray-500">June 11, 2023</span>
+                                    </div>
+                                </div>
+                                <div class="col-span-12 md:col-span-9 mt-3 md:mt-0 md:pl-8 relative">
+                                    <div class="absolute left-0 md:top-1 transform md:translate-x-0 -translate-y-1/2 md:translate-y-0 z-10">
+                                        <div class="h-6 w-6 bg-status-completed rounded-full flex items-center justify-center">
+                                            <i class="fas fa-check text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="border-l-2 border-gray-200 ml-3 md:ml-0 pl-6 pb-8 md:pt-1 relative">
+                                        <p class="text-gray-600 mb-2">Your request has been reviewed and assigned to Sarah Johnson from our service team.</p>
+                                        <div class="flex items-center text-gray-500 text-sm">
+                                            <i class="fas fa-user-circle mr-2"></i>
+                                            <span>Admin Team</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 3: In Progress -->
+                            <div class="grid grid-cols-12 mb-8">
+                                <div class="col-span-12 md:col-span-3 flex md:justify-end">
+                                    <div class="flex flex-col">
+                                        <span class="text-secondary-800 font-medium">In Progress</span>
+                                        <span class="text-sm text-gray-500">June 13, 2023</span>
+                                    </div>
+                                </div>
+                                <div class="col-span-12 md:col-span-9 mt-3 md:mt-0 md:pl-8 relative">
+                                    <div class="absolute left-0 md:top-1 transform md:translate-x-0 -translate-y-1/2 md:translate-y-0 z-10">
+                                        <div class="h-6 w-6 bg-status-inprogress rounded-full flex items-center justify-center">
+                                            <i class="fas fa-sync-alt text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="border-l-2 border-gray-200 ml-3 md:ml-0 pl-6 pb-8 md:pt-1 relative">
+                                        <p class="text-gray-600 mb-2">Your referral has been submitted to the Department of Social Welfare. We're working with them to process your request for financial assistance.</p>
+                                        <div class="flex items-center text-gray-500 text-sm">
+                                            <i class="fas fa-user-circle mr-2"></i>
+                                            <span>Sarah Johnson</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 4: Agency Review -->
+                            <div class="grid grid-cols-12 mb-8">
+                                <div class="col-span-12 md:col-span-3 flex md:justify-end">
+                                    <div class="flex flex-col">
+                                        <span class="text-secondary-800 font-medium">Agency Review</span>
+                                        <span class="text-sm text-gray-500">Pending</span>
+                                    </div>
+                                </div>
+                                <div class="col-span-12 md:col-span-9 mt-3 md:mt-0 md:pl-8 relative">
+                                    <div class="absolute left-0 md:top-1 transform md:translate-x-0 -translate-y-1/2 md:translate-y-0 z-10">
+                                        <div class="h-6 w-6 bg-gray-300 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-hourglass-half text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="border-l-2 border-gray-200 ml-3 md:ml-0 pl-6 pb-8 md:pt-1 relative">
+                                        <p class="text-gray-600 mb-2">Your application will be reviewed by the agency for eligibility and required documentation.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Step 5: Completion -->
+                            <div class="grid grid-cols-12">
+                                <div class="col-span-12 md:col-span-3 flex md:justify-end">
+                                    <div class="flex flex-col">
+                                        <span class="text-secondary-800 font-medium">Completion</span>
+                                        <span class="text-sm text-gray-500">Pending</span>
+                                    </div>
+                                </div>
+                                <div class="col-span-12 md:col-span-9 mt-3 md:mt-0 md:pl-8 relative">
+                                    <div class="absolute left-0 md:top-1 transform md:translate-x-0 -translate-y-1/2 md:translate-y-0 z-10">
+                                        <div class="h-6 w-6 bg-gray-300 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-flag-checkered text-white text-xs"></i>
+                                        </div>
+                                    </div>
+                                    <div class="border-l-2 border-transparent ml-3 md:ml-0 pl-6 md:pt-1 relative">
+                                        <p class="text-gray-600 mb-2">Final processing of your request and confirmation of service provision.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Activity Log -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-xl font-semibold text-secondary-800">Activity Log</h2>
+                        <span class="text-sm text-gray-500">All times in local timezone</span>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <!-- Activity Item 1 -->
+                        <div class="flex">
+                            <div class="flex-shrink-0 mr-4">
+                                <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                                    <i class="fas fa-comment-dots text-primary-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h3 class="font-medium text-secondary-800">Note Added</h3>
+                                    <span class="text-sm text-gray-500">June 15, 2023 10:30 AM</span>
+                                </div>
+                                <p class="text-gray-600 mb-2">Additional documentation is required for your application. Please upload a proof of income and residence certificate.</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-user-circle mr-2"></i>
+                                    <span>Sarah Johnson</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity Item 2 -->
+                        <div class="flex">
+                            <div class="flex-shrink-0 mr-4">
+                                <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                                    <i class="fas fa-file-upload text-primary-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h3 class="font-medium text-secondary-800">Document Uploaded</h3>
+                                    <span class="text-sm text-gray-500">June 13, 2023 3:45 PM</span>
+                                </div>
+                                <p class="text-gray-600 mb-2">Application form and ID documents were successfully uploaded to your case file.</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-user-circle mr-2"></i>
+                                    <span>System</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity Item 3 -->
+                        <div class="flex">
+                            <div class="flex-shrink-0 mr-4">
+                                <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                                    <i class="fas fa-user-check text-primary-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h3 class="font-medium text-secondary-800">Staff Assigned</h3>
+                                    <span class="text-sm text-gray-500">June 11, 2023 9:15 AM</span>
+                                </div>
+                                <p class="text-gray-600 mb-2">Sarah Johnson has been assigned to your case and will assist you throughout the process.</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-user-circle mr-2"></i>
+                                    <span>Admin Team</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Activity Item 4 -->
+                        <div class="flex">
+                            <div class="flex-shrink-0 mr-4">
+                                <div class="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
+                                    <i class="fas fa-clipboard-check text-primary-600"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow">
+                                <div class="flex items-center justify-between mb-1">
+                                    <h3 class="font-medium text-secondary-800">Request Submitted</h3>
+                                    <span class="text-sm text-gray-500">June 10, 2023 2:30 PM</span>
+                                </div>
+                                <p class="text-gray-600 mb-2">Your service referral request for Financial Assistance Program has been received.</p>
+                                <div class="flex items-center text-sm text-gray-500">
+                                    <i class="fas fa-user-circle mr-2"></i>
+                                    <span>System</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Required Actions -->
+                <div class="bg-accent-50 rounded-lg shadow-sm p-6 border border-accent-200 mb-8">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-4">
+                            <div class="h-10 w-10 rounded-full bg-accent-100 flex items-center justify-center">
+                                <i class="fas fa-exclamation-circle text-accent-600"></i>
+                            </div>
+                        </div>
+                        <div class="flex-grow">
+                            <h3 class="text-lg font-semibold text-secondary-800 mb-2">Required Action</h3>
+                            <p class="text-gray-700 mb-4">Please upload the following documents to proceed with your application:</p>
+                            <ul class="list-disc pl-5 mb-4 text-gray-700 space-y-1">
+                                <li>Proof of income (latest pay slip or income statement)</li>
+                                <li>Certificate of residence</li>
+                            </ul>
+                            
+                            <div class="flex flex-col sm:flex-row items-center gap-4 mt-6">
+                                <button type="button" class="bg-accent-600 text-white px-6 py-3 rounded-md font-medium hover:bg-accent-700 transition w-full sm:w-auto">
+                                    Upload Documents
+                                </button>
+                                <button type="button" class="bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-md font-medium hover:bg-gray-50 transition w-full sm:w-auto">
+                                    Contact Case Officer
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact and Support -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <h2 class="text-xl font-semibold text-secondary-800 mb-4">Need Assistance?</h2>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="flex flex-col">
+                            <h3 class="font-medium text-secondary-800 mb-2">Contact Your Case Officer</h3>
+                            <p class="text-gray-600 mb-4">Have questions about your specific case? Contact your assigned staff member directly.</p>
+                            <div class="flex items-center text-primary-600 hover:text-primary-800">
+                                <i class="fas fa-envelope mr-2"></i>
+                                <a href="mailto:sarah.johnson@fahaniecares.gov">sarah.johnson@fahaniecares.gov</a>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <h3 class="font-medium text-secondary-800 mb-2">Service Hotline</h3>
+                            <p class="text-gray-600 mb-4">Call our service hotline for immediate assistance with your referral.</p>
+                            <div class="flex items-center text-primary-600 hover:text-primary-800">
+                                <i class="fas fa-phone-alt mr-2"></i>
+                                <a href="tel:+1234567890">(123) 456-7890</a>
+                            </div>
+                        </div>
+                        
+                        <div class="flex flex-col">
+                            <h3 class="font-medium text-secondary-800 mb-2">Visit Our Office</h3>
+                            <p class="text-gray-600 mb-4">For in-person assistance, visit our constituency office during business hours.</p>
+                            <div class="flex items-center text-primary-600 hover:text-primary-800">
+                                <i class="fas fa-map-marker-alt mr-2"></i>
+                                <a href="#">Find Office Locations</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CTA Section -->
+    <section class="py-12 bg-primary-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-4">Submit Another Service Request</h2>
+            <p class="text-white/80 max-w-2xl mx-auto mb-8">Need assistance with additional government services? Submit a new request through our referral system.</p>
+            <a href="service_referral.html" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition inline-block">Start New Request</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-secondary-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">#FahanieCares</h3>
+                    <p class="text-gray-300 mb-4">Bringing Public Service Closer to You</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition">Home</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">About</a></li>
+                        <li><a href="service_referral.html" class="text-gray-300 hover:text-white transition">Services</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Chapters</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Parliament</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Services</h4>
+                    <ul class="space-y-2">
+                        <li><a href="service_referral.html" class="text-gray-300 hover:text-white transition">Service Referral</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Chapter Membership</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Direct Assistance</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Events & Outreach</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Parliamentary Updates</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Feedback & Consultation</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Contact Us</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">123 Parliament Street, City, Province, ZIP</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">(123) 456-7890</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">contact@fahaniecares.gov</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-clock mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">Mon-Fri: 9:00 AM - 5:00 PM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-8 mt-8 text-center sm:text-left sm:flex sm:justify-between sm:items-center">
+                <div class="text-gray-400 mb-4 sm:mb-0">
+                    &copy; 2023 #FahanieCares. All rights reserved.
+                </div>
+                <div class="flex justify-center sm:justify-end space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Accessibility</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.querySelector('button');
+            const mobileMenu = document.querySelector('.md\\:hidden.hidden');
+            
+            menuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

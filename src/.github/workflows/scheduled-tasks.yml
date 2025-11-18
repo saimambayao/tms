@@ -1,0 +1,116 @@
+name: Scheduled Tasks
+
+on:
+  schedule:
+    # Run database backup daily at 2:00 AM UTC
+    - cron: '0 2 * * *'
+    # Run health checks every hour
+    - cron: '0 * * * *'
+  workflow_dispatch:
+
+jobs:
+  database-backup:
+    name: Database Backup
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      working-directory: ./fahanie_cares_django
+      run: |
+        python -m pip install --upgrade pip
+        pip install psycopg2-binary boto3 python-dotenv
+    
+    - name: Run database backup
+      working-directory: ./fahanie_cares_django
+      env:
+        DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_S3_BACKUP_BUCKET: ${{ secrets.AWS_S3_BACKUP_BUCKET }}
+      run: |
+        python scripts/backup_database.py
+    
+    - name: Verify backup
+      run: |
+        echo "Backup completed at $(date)"
+    
+    - name: Notify backup status
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Database backup ${{ job.status }}!'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: always()
+
+  health-check:
+    name: Production Health Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check application health
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://fahaniecares.ph/health/)
+        if [ $response -eq 200 ]; then
+          echo "Health check passed"
+        else
+          echo "Health check failed with status code: $response"
+          exit 1
+        fi
+    
+    - name: Check application readiness
+      run: |
+        response=$(curl -s -o /dev/null -w "%{http_code}" https://fahaniecares.ph/ready/)
+        if [ $response -eq 200 ]; then
+          echo "Readiness check passed"
+        else
+          echo "Readiness check failed with status code: $response"
+          exit 1
+        fi
+    
+    - name: Check Notion API connectivity
+      run: |
+        curl -s https://fahaniecares.ph/health/detailed/ | jq '.services.notion'
+    
+    - name: Notify health check failure
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Production health check failed! 🚨'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: failure()
+
+  performance-monitoring:
+    name: Performance Monitoring
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 * * * *'
+    
+    steps:
+    - name: Run performance tests
+      run: |
+        # Run basic performance checks
+        response_time=$(curl -s -w "%{time_total}" -o /dev/null https://fahaniecares.ph/)
+        echo "Homepage response time: ${response_time}s"
+        
+        if (( $(echo "$response_time > 2.0" | bc -l) )); then
+          echo "Performance degradation detected!"
+          exit 1
+        fi
+    
+    - name: Check metrics endpoint
+      run: |
+        curl -s https://fahaniecares.ph/metrics/ | jq '.'
+    
+    - name: Notify performance issues
+      uses: 8398a7/action-slack@v3
+      with:
+        status: ${{ job.status }}
+        text: 'Performance degradation detected! Response time exceeded threshold.'
+        webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+      if: failure()

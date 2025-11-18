@@ -1,0 +1,690 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Database Management - Unified Database System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .databases-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 0.5rem 0;
+    }
+
+    .databases-header {
+        background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+        color: white;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(16, 185, 129, 0.25), 0 0 0 1px rgba(16, 185, 129, 0.1);
+        position: relative;
+        overflow: hidden;
+        text-align: center;
+    }
+
+    .databases-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        transform: translate(40%, -40%);
+    }
+
+    .databases-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 1rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .databases-header p {
+        font-size: 1.125rem;
+        margin: 0;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .databases-card {
+        background: var(--color-surface-primary);
+        border-radius: 16px;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        border: 1px solid var(--color-border-light);
+        margin-bottom: 2rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1rem;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        min-height: 120px;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    }
+
+    .stat-content {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    .stat-info {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+    }
+
+    .stat-info h3 {
+        color: #6b7280;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.75rem;
+        line-height: 1.2;
+    }
+
+    .stat-number {
+        color: #1f2937;
+        font-size: 2rem;
+        font-weight: 700;
+        line-height: 1;
+        margin-top: auto;
+        min-height: 2rem;
+        display: flex;
+        align-items: baseline;
+    }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    .stat-icon::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: 10px;
+        background: linear-gradient(135deg, currentColor 0%, transparent 100%);
+        opacity: 0.1;
+    }
+
+    .stat-icon svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: white;
+        position: relative;
+        z-index: 2;
+    }
+
+    .icon-cooperatives {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+
+    .icon-active {
+        background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    }
+
+    .icon-members {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    }
+
+    .icon-pending {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--color-primary-600);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--color-text-muted);
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .filters-section {
+        background: var(--gradient-card);
+        padding: 1.5rem 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        border: 1px solid var(--color-border-light);
+    }
+
+    .databases-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .database-card {
+        background: var(--color-surface-primary);
+        border-radius: 12px;
+        box-shadow: var(--shadow-md);
+        overflow: hidden;
+        border: 1px solid var(--color-border-light);
+        transition: all 0.2s ease;
+    }
+
+    .database-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .database-header {
+        background: var(--gradient-primary);
+        color: var(--color-text-inverse);
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .database-type {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: inline-block;
+        margin-bottom: 0.75rem;
+    }
+
+    .database-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .database-description {
+        opacity: 0.9;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .database-content {
+        padding: 1.5rem;
+    }
+
+    .database-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .database-stats {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--color-primary-600);
+    }
+
+    .stat-label-small {
+        font-size: 0.75rem;
+        color: var(--color-text-muted);
+    }
+
+    .database-actions {
+        display: flex;
+        gap: 0.75rem;
+        margin-top: 1rem;
+    }
+
+    .action-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-align: center;
+        transition: all 0.2s ease;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #e5e7eb 0%, #d1d5db 100%);
+        transform: translateY(-1px);
+    }
+
+    .btn-danger {
+        background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+        color: white;
+    }
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+        transform: translateY(-1px);
+    }
+
+    .no-databases {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--color-text-muted);
+    }
+
+    .no-databases-icon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1.5rem;
+        opacity: 0.5;
+    }
+
+    .create-first-db {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        text-decoration: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .create-first-db:hover {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .databases-header h1 {
+            font-size: 2rem;
+        }
+
+        .databases-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .database-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="databases-container">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <!-- Header Section -->
+        <div class="databases-header">
+            <h1>
+                <svg class="w-10 h-10 inline mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                Database Management
+            </h1>
+            <p>
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+                Comprehensive management system for all #FahanieCares database operations
+            </p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <!-- Total Databases -->
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>Total Databases</h3>
+                        <div class="stat-number">{{ total_databases }}</div>
+                    </div>
+                    <div class="stat-icon icon-cooperatives">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Entries -->
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>Total Entries</h3>
+                        <div class="stat-number">{{ total_entries }}</div>
+                    </div>
+                    <div class="stat-icon icon-active">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Custom Databases -->
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>Custom Databases</h3>
+                        <div class="stat-number">{{ type_counts.custom|default:0 }}</div>
+                    </div>
+                    <div class="stat-icon icon-members">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Event Databases -->
+            <div class="stat-card">
+                <div class="stat-content">
+                    <div class="stat-info">
+                        <h3>Event Databases</h3>
+                        <div class="stat-number">{{ type_counts.events|default:0 }}</div>
+                    </div>
+                    <div class="stat-icon icon-pending">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="databases-card">
+            <!-- Filters Section -->
+            <div class="filters-section">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-800">Your Databases</h2>
+                    <button type="button"
+                            onclick="window.location.href='{% url 'unified_db:database_create' %}'"
+                            style="background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%) !important; color: white !important; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)'; this.style.transform='translateY(-3px) scale(1.05)'; this.style.boxShadow='0 12px 28px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.3)';"
+                            onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)';">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Create Database
+                    </button>
+                </div>
+
+                <!-- Filter Form -->
+                <form method="get" class="flex gap-4 items-end">
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                        <input type="text" name="search" value="{{ current_filters.search }}" placeholder="Search databases..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                        <select name="type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent">
+                            <option value="">All Types</option>
+                            <option value="events" {% if current_filters.type == 'events' %}selected{% endif %}>Events</option>
+                            <option value="attendance" {% if current_filters.type == 'attendance' %}selected{% endif %}>Attendance</option>
+                            <option value="training" {% if current_filters.type == 'training' %}selected{% endif %}>Training</option>
+                            <option value="custom" {% if current_filters.type == 'custom' %}selected{% endif %}>Custom</option>
+                        </select>
+                    </div>
+                    <button type="submit" style="background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%) !important; color: white !important; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)'; this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 12px 28px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.3)';"
+                            onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)';">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                        </svg>
+                        Filter
+                    </button>
+                </form>
+            </div>
+
+            <!-- Databases Hierarchy -->
+            {% if root_databases %}
+                <div class="databases-hierarchy p-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-8 h-8 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-lg flex items-center justify-center">
+                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-bold text-gray-800">Database Structure</h3>
+                    </div>
+
+                    {% for db_slug, db_data in database_hierarchy.items %}
+                    <div class="database-card {% if db_data.children %}has-children{% endif %} mb-6 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+                        <div class="database-header" style="background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%); color: white; padding: 1.5rem; position: relative; overflow: hidden;">
+                            <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="database-type bg-white/20 backdrop-blur-sm text-white px-3 py-1 rounded-full text-sm font-medium border border-white/30">
+                                        {{ db_data.database_type|title }}
+                                    </div>
+                                    <div class="flex items-center gap-2 text-white/80 text-sm">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        {{ db_data.created_at|date:"M d, Y" }}
+                                    </div>
+                                </div>
+                                <h3 class="database-title text-xl font-bold mb-2 flex items-center gap-2">
+                                    {% if db_data.children %}
+                                        <svg class="w-6 h-6 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    {% endif %}
+                                    {{ db_data.name }}
+                                </h3>
+                                <p class="database-description text-white/90 text-sm leading-relaxed">{{ db_data.description|default:"No description provided." }}</p>
+                            </div>
+                        </div>
+
+                        <div class="database-content p-6">
+                            <!-- Stats Row -->
+                            <div class="grid grid-cols-2 gap-4 mb-6">
+                                <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-lg border border-emerald-200">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-2xl font-bold text-emerald-700">{{ db_data.entry_count }}</div>
+                                            <div class="text-sm text-emerald-600 font-medium">Entries</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="text-2xl font-bold text-blue-700">{{ db_data.sub_db_count }}</div>
+                                            <div class="text-sm text-blue-600 font-medium">Sub-DBs</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="flex flex-wrap gap-3">
+                                <a href="{% url 'unified_db:database_detail' db_data.slug %}"
+                                   style="background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%) !important; color: white !important; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); flex: 1 1 0%; min-width: 0;"
+                                   onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%)'; this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 12px 28px rgba(16, 185, 129, 0.5), 0 0 0 1px rgba(16, 185, 129, 0.3)';"
+                                   onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)';">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                    View Database
+                                </a>
+
+                                <a href="{% url 'unified_db:database_create' %}?parent={{ db_data.slug }}"
+                                   style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%) !important; color: white !important; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); flex: 1 1 0%; min-width: 0;"
+                                   onmouseover="this.style.background='linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%)'; this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 12px 28px rgba(59, 130, 246, 0.5), 0 0 0 1px rgba(59, 130, 246, 0.3)';"
+                                   onmouseout="this.style.background='linear-gradient(135deg, #3b82f6 0%, #2563eb 50%, #1d4ed8 100%)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.3)';">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Add Sub-DB
+                                </a>
+
+                                <a href="{% url 'unified_db:database_delete' db_data.slug %}"
+                                   style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%) !important; color: white !important; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); flex: 1 1 0%; min-width: 0;"
+                                   onmouseover="this.style.background='linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%)'; this.style.transform='translateY(-2px) scale(1.05)'; this.style.boxShadow='0 12px 28px rgba(239, 68, 68, 0.5), 0 0 0 1px rgba(239, 68, 68, 0.3)';"
+                                   onmouseout="this.style.background='linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%)'; this.style.transform='translateY(0) scale(1)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)';"
+                                   onclick="return confirm('Are you sure you want to delete this database? This action cannot be undone.')">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Delete
+                                </a>
+                            </div>
+
+                            <!-- Sub-databases -->
+                            {% if db_data.children %}
+                            <div class="mt-6 pt-6 border-t border-gray-200">
+                                <h4 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                    </svg>
+                                    Sub-Databases ({{ db_data.children|length }})
+                                </h4>
+                                <div class="space-y-3">
+                                    {% for sub_db in db_data.children %}
+                                    <div class="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg border border-gray-200 hover:from-gray-100 hover:to-gray-200 transition-all duration-200">
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-3 mb-2">
+                                                    <div class="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                                        <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                                                        </svg>
+                                                    </div>
+                                                    <div>
+                                                        <h5 class="font-semibold text-gray-800">{{ sub_db.name }}</h5>
+                                                        <p class="text-sm text-gray-600">{{ sub_db.get_database_type_display }}</p>
+                                                    </div>
+                                                </div>
+                                                {% if sub_db.description %}
+                                                <p class="text-sm text-gray-600 ml-11">{{ sub_db.description|truncatechars:80 }}</p>
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex gap-2 ml-4">
+                                                <a href="{% url 'unified_db:database_detail' sub_db.slug %}"
+                                                   class="bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 flex items-center gap-1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                    View
+                                                </a>
+                                                <a href="{% url 'unified_db:database_create' %}?parent={{ sub_db.slug }}"
+                                                   class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 flex items-center gap-1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                                    </svg>
+                                                    Sub-DB
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <!-- No Databases -->
+                <div class="no-databases">
+                    <svg class="no-databases-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                    </svg>
+                    <h3 class="text-xl font-semibold text-gray-600 mb-2">No databases found</h3>
+                    <p class="text-gray-500 mb-6">Get started by creating your first custom database for events, attendance, or other data collection needs.</p>
+                    <a href="{% url 'unified_db:database_create' %}" class="create-first-db">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Create Your First Database
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

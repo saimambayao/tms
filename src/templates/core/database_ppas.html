@@ -1,0 +1,726 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Database of PPAs - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-clipboard-list text-primary-600"></i>
+                    Database of PPAs
+                </h1>
+                <p class="mt-2 text-gray-600">Comprehensive management system for all Programs, Projects, and Activities (Updated)</p>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+                <i class="fas fa-user-shield"></i>
+                <span>Authorized Access: {{ user.get_user_type_display }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+        <!-- Total PPAs -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total PPAs</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ total_ppas|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-clipboard-list text-primary-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Programs -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Active</p>
+                    <p class="text-3xl font-bold text-green-600">{{ active_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-play-circle text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Planning Stage -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Planning</p>
+                    <p class="text-3xl font-bold text-yellow-600">{{ planning_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-drafting-compass text-yellow-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- This Year -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">This Year</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ this_year_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-calendar-check text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Budget -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Budget</p>
+                    <p class="text-2xl font-bold text-purple-600">{{ total_budget_display|default:"₱0" }}</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-coins text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ministry Breakdown (if there are ministry stats) -->
+    {% if ministry_stats %}
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-6">
+        <h3 class="text-lg font-semibold text-gray-900 mb-4">Ministry Breakdown</h3>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            {% for code, stats in ministry_stats.items %}
+            <div class="text-center">
+                <p class="text-sm font-medium text-gray-600">{{ stats.name }}</p>
+                <p class="text-2xl font-bold text-primary-600">{{ stats.count }}</p>
+                <p class="text-xs text-gray-500">{{ stats.budget_display }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Filters and Search Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="p-6">
+            <form method="get" class="space-y-6">
+                <!-- Search Bar -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search PPAs</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="search" 
+                                   name="search" 
+                                   value="{{ current_filters.search }}"
+                                   placeholder="Search by title, description, location..."
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" 
+                                class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Ministry Filter -->
+                    <div>
+                        <label for="ministry" class="block text-sm font-medium text-gray-700 mb-2">Ministry</label>
+                        <select name="ministry" id="ministry" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Ministries</option>
+                            {% for code, name in ministry_choices %}
+                            <option value="{{ code }}" {% if current_filters.ministry == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- PPA Type Filter -->
+                    <div>
+                        <label for="ppa_type" class="block text-sm font-medium text-gray-700 mb-2">PPA Type</label>
+                        <select name="ppa_type" id="ppa_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Types</option>
+                            {% for code, name in ppa_type_choices %}
+                            <option value="{{ code }}" {% if current_filters.ppa_type == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Program Source Filter -->
+                    <div>
+                        <label for="program_source" class="block text-sm font-medium text-gray-700 mb-2">Program Source</label>
+                        <select name="program_source" id="program_source" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Sources</option>
+                            {% for code, name in program_source_choices %}
+                            <option value="{{ code }}" {% if current_filters.program_source == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                        <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Statuses</option>
+                            {% for code, name in status_choices %}
+                            <option value="{{ code }}" {% if current_filters.status == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Priority Filter -->
+                    <div>
+                        <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">Priority</label>
+                        <select name="priority" id="priority" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Priorities</option>
+                            {% for code, name in priority_choices %}
+                            <option value="{{ code }}" {% if current_filters.priority == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Budget Range -->
+                    <div>
+                        <label for="budget_range" class="block text-sm font-medium text-gray-700 mb-2">Budget Range</label>
+                        <select name="budget_range" id="budget_range" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Budgets</option>
+                            {% for code, name in budget_ranges %}
+                            <option value="{{ code }}" {% if current_filters.budget_range == code %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Date From -->
+                    <div>
+                        <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">Start Date From</label>
+                        <input type="date" 
+                               name="date_from" 
+                               id="date_from" 
+                               value="{{ current_filters.date_from }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+
+                    <!-- Date To -->
+                    <div>
+                        <label for="date_to" class="block text-sm font-medium text-gray-700 mb-2">End Date To</label>
+                        <input type="date" 
+                               name="date_to" 
+                               id="date_to" 
+                               value="{{ current_filters.date_to }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit" 
+                            class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-filter"></i>
+                        Apply Filters
+                    </button>
+                    <a href="{% url 'database_ppas' %}" 
+                       class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-times"></i>
+                        Clear Filters
+                    </a>
+                    {% if can_export %}
+                    <button type="button"
+                            onclick="exportData()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        Export Data
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <!-- Results Header -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        Programs, Projects & Activities ({{ ppas|length }} shown)
+                    </h3>
+                    {% if current_filters.search or current_filters.ministry or current_filters.status %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        <i class="fas fa-filter mr-1"></i>
+                        Filtered
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <div class="flex items-center gap-4">
+                    <!-- Add New PPA Button -->
+                    {% if can_edit %}
+                    <button type="button" onclick="openCreateModal()"
+                            class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-plus-circle"></i>
+                        Add New PPA
+                    </button>
+                    {% endif %}
+                    
+                    <!-- Sort Options -->
+                    <div class="flex items-center gap-2">
+                        <label for="sort_by" class="text-sm font-medium text-gray-700">Sort by:</label>
+                        <select name="sort_by" id="sort_by" onchange="this.form.submit()" form="filter-form"
+                                class="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="-created_at" {% if current_filters.sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                            <option value="created_at" {% if current_filters.sort_by == 'created_at' %}selected{% endif %}>Oldest First</option>
+                            <option value="title" {% if current_filters.sort_by == 'title' %}selected{% endif %}>Title A-Z</option>
+                            <option value="-title" {% if current_filters.sort_by == '-title' %}selected{% endif %}>Title Z-A</option>
+                            <option value="-total_budget" {% if current_filters.sort_by == '-total_budget' %}selected{% endif %}>Budget (High to Low)</option>
+                            <option value="total_budget" {% if current_filters.sort_by == 'total_budget' %}selected{% endif %}>Budget (Low to High)</option>
+                            <option value="-priority_level" {% if current_filters.sort_by == '-priority_level' %}selected{% endif %}>Priority (High to Low)</option>
+                            <option value="start_date" {% if current_filters.sort_by == 'start_date' %}selected{% endif %}>Start Date (Earliest)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PPAs Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program/Project</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ministry</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Priority</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Budget</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timeline</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for ppa in ppas %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                        {% if ppa.ppa_type == 'Program' %}
+                                        <i class="fas fa-clipboard-list text-primary-600"></i>
+                                        {% elif ppa.ppa_type == 'Project' %}
+                                        <i class="fas fa-project-diagram text-primary-600"></i>
+                                        {% else %}
+                                        <i class="fas fa-tasks text-primary-600"></i>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ ppa.title|truncatechars:50 }}
+                                        {% if ppa.is_featured %}
+                                        <span class="ml-1 text-yellow-500">
+                                            <i class="fas fa-star text-xs" title="Featured"></i>
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ ppa.beneficiaries|truncatechars:40 }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                {% if ppa.ministry == 'moh' %}bg-red-100 text-red-800
+                                {% elif ppa.ministry == 'mssd' %}bg-pink-100 text-pink-800
+                                {% elif ppa.ministry == 'mafar' %}bg-green-100 text-green-800
+                                {% elif ppa.ministry == 'mtit' %}bg-orange-100 text-orange-800
+                                {% elif ppa.ministry == 'mpwh' %}bg-yellow-100 text-yellow-800
+                                {% elif ppa.ministry == 'mle' %}bg-blue-100 text-blue-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ ppa.ministry_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {{ ppa.ppa_type_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if ppa.program_source == 'fahaniecares' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                                <i class="fas fa-heart mr-1"></i>
+                                #FahanieCares
+                            </span>
+                            {% elif ppa.program_source == 'tdif' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                <i class="fas fa-project-diagram mr-1"></i>
+                                TDIF Project
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-building mr-1"></i>
+                                Ministry Program
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if ppa.status == 'active' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-play-circle mr-1"></i>
+                                {{ ppa.status_display }}
+                            </span>
+                            {% elif ppa.status == 'draft' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-drafting-compass mr-1"></i>
+                                {{ ppa.status_display }}
+                            </span>
+                            {% elif ppa.status == 'completed' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                {{ ppa.status_display }}
+                            </span>
+                            {% elif ppa.status == 'suspended' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-pause-circle mr-1"></i>
+                                {{ ppa.status_display }}
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                {{ ppa.status_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if ppa.priority_level == 'critical' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                {{ ppa.priority_display }}
+                            </span>
+                            {% elif ppa.priority_level == 'high' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                {{ ppa.priority_display }}
+                            </span>
+                            {% elif ppa.priority_level == 'medium' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {{ ppa.priority_display }}
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                {{ ppa.priority_display }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            <div class="font-medium text-gray-900">{{ ppa.budget_display }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {% if ppa.start_date %}
+                                {{ ppa.start_date|date:"M Y" }} - {% if ppa.end_date %}{{ ppa.end_date|date:"M Y" }}{% else %}Ongoing{% endif %}
+                                <div class="text-xs text-gray-400">{{ ppa.duration }}</div>
+                            {% else %}
+                                TBD
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            {{ ppa.location|truncatechars:30 }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="{% url 'fahaniecares_program_detail' ppa.slug %}" 
+                                   class="text-primary-600 hover:text-primary-900 transition-colors duration-150"
+                                   title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if can_edit %}
+                                <button type="button" 
+                                        onclick="openEditModal({{ ppa.id }})"
+                                        class="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                                        title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" 
+                                        onclick="confirmDelete({{ ppa.id }}, '{{ ppa.title|escapejs }}')"
+                                        class="text-red-600 hover:text-red-900 transition-colors duration-150"
+                                        title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Note -->
+        <div class="px-6 py-4 border-t border-gray-200">
+            <div class="text-sm text-gray-700">
+                Showing up to 100 results. Use filters to refine your search.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden form for sort functionality -->
+<form id="filter-form" method="get" style="display: none;">
+    {% for key, value in current_filters.items %}
+    {% if value and key != 'sort_by' %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endif %}
+    {% endfor %}
+</form>
+
+<!-- Create/Edit PPA Modal -->
+<div id="ppaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative mx-auto p-5 w-full max-w-4xl">
+        <div class="bg-white rounded-lg shadow-xl mt-8">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 id="modalTitle" class="text-xl font-semibold text-gray-900">Add New PPA</h3>
+                <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            
+            <form id="ppaForm" method="post" action="{% url 'database_ppas' %}" class="p-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" id="formAction" value="create">
+                <input type="hidden" name="ppa_id" id="ppaId" value="">
+                <input type="hidden" name="slug" id="ppaSlug" value="">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Title -->
+                    <div class="col-span-2">
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Program Title *</label>
+                        <input type="text" name="title" id="title" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                               placeholder="Enter program title">
+                    </div>
+                    
+                    <!-- Ministry -->
+                    <div>
+                        <label for="ministry" class="block text-sm font-medium text-gray-700 mb-2">Ministry *</label>
+                        <select name="ministry" id="ministry" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <option value="">Select Ministry</option>
+                            {% for code, name in ministry_choices %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Program Source -->
+                    <div>
+                        <label for="program_source" class="block text-sm font-medium text-gray-700 mb-2">Program Source *</label>
+                        <select name="program_source" id="program_source" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            {% for code, name in program_source_choices %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- PPA Type -->
+                    <div>
+                        <label for="ppa_type" class="block text-sm font-medium text-gray-700 mb-2">PPA Type *</label>
+                        <select name="ppa_type" id="ppa_type" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            {% for code, name in ppa_type_choices %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Status -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status *</label>
+                        <select name="status" id="status" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            {% for code, name in status_choices %}
+                            <option value="{{ code }}" {% if code == 'active' %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Priority Level -->
+                    <div>
+                        <label for="priority_level" class="block text-sm font-medium text-gray-700 mb-2">Priority Level *</label>
+                        <select name="priority_level" id="priority_level" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            {% for code, name in priority_choices %}
+                            <option value="{{ code }}" {% if code == 'medium' %}selected{% endif %}>{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Total Budget -->
+                    <div>
+                        <label for="total_budget" class="block text-sm font-medium text-gray-700 mb-2">Total Budget</label>
+                        <input type="number" name="total_budget" id="total_budget" step="0.01" min="0"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                               placeholder="0.00">
+                    </div>
+                    
+                    <!-- Start Date -->
+                    <div>
+                        <label for="start_date" class="block text-sm font-medium text-gray-700 mb-2">Start Date *</label>
+                        <input type="date" name="start_date" id="start_date" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    </div>
+                    
+                    <!-- End Date -->
+                    <div>
+                        <label for="end_date" class="block text-sm font-medium text-gray-700 mb-2">End Date *</label>
+                        <input type="date" name="end_date" id="end_date" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    </div>
+                    
+                    <!-- Geographic Coverage -->
+                    <div class="col-span-2">
+                        <label for="geographic_coverage" class="block text-sm font-medium text-gray-700 mb-2">Geographic Coverage *</label>
+                        <input type="text" name="geographic_coverage" id="geographic_coverage" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                               placeholder="e.g., BARMM Region, Maguindanao Province">
+                    </div>
+                    
+                    <!-- Target Beneficiaries -->
+                    <div class="col-span-2">
+                        <label for="target_beneficiaries" class="block text-sm font-medium text-gray-700 mb-2">Target Beneficiaries *</label>
+                        <input type="text" name="target_beneficiaries" id="target_beneficiaries" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                               placeholder="e.g., Farmers, Students, PWDs">
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="col-span-2">
+                        <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description *</label>
+                        <textarea name="description" id="description" rows="3" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  placeholder="Brief program description..."></textarea>
+                    </div>
+                    
+                    <!-- Objectives -->
+                    <div class="col-span-2">
+                        <label for="objectives" class="block text-sm font-medium text-gray-700 mb-2">Objectives *</label>
+                        <textarea name="objectives" id="objectives" rows="2" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  placeholder="Program objectives..."></textarea>
+                    </div>
+                    
+                    <!-- Expected Outcomes -->
+                    <div class="col-span-2">
+                        <label for="expected_outcomes" class="block text-sm font-medium text-gray-700 mb-2">Expected Outcomes *</label>
+                        <textarea name="expected_outcomes" id="expected_outcomes" rows="2" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  placeholder="Expected outcomes..."></textarea>
+                    </div>
+
+                    <!-- Key Performance Indicators -->
+                    <div class="col-span-2">
+                        <label for="key_performance_indicators" class="block text-sm font-medium text-gray-700 mb-2">Key Performance Indicators *</label>
+                        <textarea name="key_performance_indicators" id="key_performance_indicators" rows="2" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  placeholder="KPIs for monitoring and evaluation..."></textarea>
+                    </div>
+
+                    <!-- Implementation Strategy -->
+                    <div class="col-span-2">
+                        <label for="implementation_strategy" class="block text-sm font-medium text-gray-700 mb-2">Implementation Strategy *</label>
+                        <textarea name="implementation_strategy" id="implementation_strategy" rows="3" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  placeholder="How the program will be implemented..."></textarea>
+                    </div>
+
+                    <!-- Implementing Units -->
+                    <div class="col-span-2">
+                        <label for="implementing_units" class="block text-sm font-medium text-gray-700 mb-2">Implementing Units *</label>
+                        <textarea name="implementing_units" id="implementing_units" rows="2" required
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                                  placeholder="Responsible implementing units/offices..."></textarea>
+                    </div>
+
+                    <!-- Funding Source -->
+                    <div class="col-span-2">
+                        <label for="funding_source" class="block text-sm font-medium text-gray-700 mb-2">Funding Source *</label>
+                        <select name="funding_source" id="funding_source" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <option value="">Select Funding Source</option>
+                            {% for code, name in funding_sources_choices %}
+                            <option value="{{ code }}">{{ name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="mt-6 flex items-center justify-end space-x-3">
+                    <button type="button" onclick="closeModal()"
+                            class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-save"></i>
+                        Save PPA
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3 text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                <i class="fas fa-exclamation-triangle text-red-600"></i>
+            </div>
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mt-4">Delete PPA</h3>
+            <div class="mt-2 px-7 py-3">
+                <p class="text-sm text-gray-600">
+                    Are you sure you want to delete "<span id="deletePpaTitle"></span>"? This action cannot be undone.
+                </p>
+                <form id="deleteForm" method="post" action="{% url 'database_ppas' %}" class="mt-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="delete">
+                    <input type="hidden" name="ppa_id" id="deletePpaId" value="">
+                    <input type="hidden" name="reason" value="Deleted via database PPAs page">
+                </form>
+            </div>
+            <div class="items-center px-4 py-3">
+                <button type="button" onclick="closeDeleteModal()"
+                        class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-md hover:bg-gray-300 focus:outline-none mr-2">
+                    Cancel
+                </button>
+                <button type="button" onclick="submitDelete()"
+                        class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-md hover:bg-red-700 focus:outline-none">
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for ppa in ppas %}
+    <script id="ppa-data-{{ ppa.id }}" type="application/json">
+        {{ ppa.to_json|safe }}
+    </script>
+{% endfor %}
+
+<script src="{% static 'js/database_ppas.js' %}"></script>
+{% endblock %}

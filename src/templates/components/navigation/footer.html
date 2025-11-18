@@ -1,0 +1,88 @@
+<footer style="background: #065f46;" class="text-white py-12 relative overflow-hidden">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
+        <div class="absolute bottom-0 right-0 w-24 h-24 bg-white rounded-full translate-x-12 translate-y-12"></div>
+        <div class="absolute top-1/2 left-1/3 w-16 h-16 bg-white rounded-full"></div>
+    </div>
+
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <h3 class="text-xl font-bold mb-4 text-emerald-200">#FahanieCares</h3>
+                <p class="text-white/90 mb-4 leading-relaxed">Bringing Bangsamoro Public Service Closer to You</p>
+                <div class="flex space-x-4">
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';"><i class="fab fa-twitter"></i></a>
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';"><i class="fab fa-instagram"></i></a>
+                    <a href="#" style="color: rgba(255, 255, 255, 0.8); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.8)';"><i class="fab fa-youtube"></i></a>
+                </div>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                <ul class="space-y-2">
+                    <li><a href="{% url 'home' %}" class="text-gray-300 hover:text-white transition">Home</a></li>
+                    <li><a href="{% url 'about' %}" class="text-gray-300 hover:text-white transition">About Us</a></li>
+                    <li><a href="{% url 'chapters_overview' %}" class="text-gray-300 hover:text-white transition">Our Chapters</a></li>
+                </ul>
+                
+                <h4 class="font-semibold text-lg mt-6 mb-4">Our Services</h4>
+                <ul class="space-y-2">
+                    <li><a href="{% url 'programs' %}" class="text-gray-300 hover:text-white transition">#FahanieCares Programs and Services</a></li>
+                    <li><a href="{% url 'tdif_projects' %}" class="text-gray-300 hover:text-white transition">TDIF Projects</a></li>
+                    <li><a href="{% url 'accessible_ministry_programs' %}" class="text-gray-300 hover:text-white transition">Accessible Ministry Programs</a></li>
+                    
+                    <!-- Original disabled code preserved for future reference -->
+                    <!-- Alpha: Disabled Features -->
+                    <!-- <li><a href="{% url 'ministries_ppas' %}" class="text-gray-300 hover:text-white transition">Ministry Programs and Services</a></li> -->
+                    <!-- <li><a href="{% url 'category_list' %}" class="text-gray-300 hover:text-white transition">Request a Program or Service</a></li> -->
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg mb-4">Members & Volunteers</h4>
+                <ul class="space-y-2">
+                    <li><a href="{% url 'register' %}" class="text-gray-300 hover:text-white transition">Membership Registration</a></li>
+                    <li><a href="{% url 'chapters_overview' %}" class="text-gray-300 hover:text-white transition">Join a Chapter</a></li>
+                    <!-- Alpha: Disabled Feature -->
+                    <!-- <li><a href="{% url 'referral_list' %}" class="text-gray-300 hover:text-white transition">My Referrals</a></li> -->
+                    <li><a href="{% url 'login' %}" class="text-gray-300 hover:text-white transition">Member Login</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="font-semibold text-lg mb-4 text-emerald-200">Contact Us</h4>
+                <ul class="space-y-3">
+                    <li class="flex items-start">
+                        <i class="fas fa-map-marker-alt mt-1 mr-3 text-emerald-400"></i>
+                        <span class="text-white/90">Upper Capiton, Datu Odin Sinsuat, Maguindanao del Norte</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-phone mt-1 mr-3 text-emerald-400"></i>
+                        <span class="text-white/90">09691916629</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-envelope mt-1 mr-3 text-emerald-400"></i>
+                        <span class="text-white/90">fahaniecares@gmail.com</span>
+                    </li>
+                    <li class="flex items-start">
+                        <i class="fas fa-clock mt-1 mr-3 text-emerald-400"></i>
+                        <span class="text-white/90">Mon-Fri: 9:00 AM - 5:00 PM</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="border-t border-white/20 pt-8 mt-8 text-center sm:text-left sm:flex sm:justify-between sm:items-center">
+            <div class="text-white/80 mb-4 sm:mb-0">
+                &copy; {% now "Y" %} #FahanieCares. All rights reserved.
+            </div>
+            <div class="flex justify-center sm:justify-end space-x-4">
+                <a href="#" style="color: rgba(255, 255, 255, 0.6); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.6)';">Privacy Policy</a>
+                <a href="#" style="color: rgba(255, 255, 255, 0.6); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.6)';">Terms of Service</a>
+                <a href="#" style="color: rgba(255, 255, 255, 0.6); transition: color 0.3s ease;" onmouseover="this.style.color='white';" onmouseout="this.style.color='rgba(255, 255, 255, 0.6)';">Accessibility</a>
+            </div>
+        </div>
+    </div>
+</footer>

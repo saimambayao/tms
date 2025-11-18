@@ -1,0 +1,115 @@
+<!-- Rounded Square Radio Button Group Component -->
+<div class="radio-button-group">
+    <div class="flex flex-col gap-y-3">
+        {% for radio in field %}
+            <div class="radio-option">
+                <label class="inline-flex items-center cursor-pointer">
+                    <input 
+                        type="radio" 
+                        id="{{ radio.id_for_label }}" 
+                        name="{{ field.name }}" 
+                        value="{{ radio.choice_value }}"
+                        {% if radio.is_checked %}checked{% endif %}
+                        class="rounded-square-radio"
+                    >
+                    <span class="ml-3 text-gray-700 font-medium">{{ radio.choice_label }}</span>
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+/* Rounded Square Radio Button Styles */
+.rounded-square-radio {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #9ca3af;
+    border-radius: 6px; /* Rounded corners for square look */
+    background-color: #ffffff;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease-in-out;
+    flex-shrink: 0;
+}
+
+.rounded-square-radio:hover {
+    border-color: #16a34a;
+    background-color: #f0f9f4;
+    transform: scale(1.05);
+}
+
+.rounded-square-radio:checked {
+    border-color: #16a34a;
+    background-color: #16a34a;
+}
+
+.rounded-square-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: #ffffff;
+    border-radius: 2px;
+}
+
+.rounded-square-radio:focus {
+    outline: none;
+    ring: 2px solid #22c55e;
+    ring-offset: 2px;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #22c55e;
+}
+
+.rounded-square-radio:focus-visible {
+    outline: 2px solid #22c55e;
+    outline-offset: 2px;
+}
+
+/* Label hover effect */
+.radio-option:hover .rounded-square-radio {
+    border-color: #16a34a;
+    background-color: #f0f9f4;
+}
+
+/* Smooth transitions */
+.rounded-square-radio,
+.radio-option span {
+    transition: all 0.2s ease-in-out;
+}
+
+.radio-option:hover span {
+    color: #16a34a;
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .rounded-square-radio {
+        transition: none;
+        transform: none;
+    }
+    
+    .rounded-square-radio:hover {
+        transform: none;
+    }
+}
+
+/* Better spacing and alignment */
+.radio-button-group .radio-option {
+    display: flex;
+    align-items: center;
+    min-height: 28px;
+}
+
+.radio-button-group .radio-option label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+}
+</style>

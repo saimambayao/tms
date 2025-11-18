@@ -1,0 +1,164 @@
+<!-- Enhanced radio button group with better visual feedback -->
+<div class="radio-group space-y-2">
+    {% for choice in field %}
+        <div class="radio-item">
+            <input 
+                type="radio" 
+                id="{{ choice.id_for_label }}" 
+                name="{{ field.html_name }}" 
+                value="{{ choice.choice_value }}"
+                {% if choice.is_checked %}checked{% endif %}
+                {% if field.field.required %}required{% endif %}
+                class="radio-enhanced"
+            >
+            <label for="{{ choice.id_for_label }}" class="radio-label">
+                {{ choice.choice_label }}
+            </label>
+        </div>
+    {% endfor %}
+</div>
+
+<style>
+/* Enhanced radio button styling for better feedback and responsiveness */
+.radio-group .radio-item {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.15s ease;
+}
+
+.radio-group .radio-item:hover {
+    background-color: #f9fafb;
+}
+
+.radio-enhanced {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #d1d5db;
+    border-radius: 50%;
+    background-color: #ffffff;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.15s ease;
+    flex-shrink: 0;
+    margin: 0;
+}
+
+.radio-enhanced:hover {
+    border-color: #16a34a;
+    background-color: #f0fdf4;
+    transform: scale(1.1);
+}
+
+.radio-enhanced:checked {
+    border-color: #16a34a;
+    background-color: #16a34a;
+    animation: radioCheck 0.2s ease;
+}
+
+.radio-enhanced:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 8px;
+    height: 8px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    animation: radioDot 0.2s ease;
+}
+
+.radio-enhanced:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.2);
+}
+
+.radio-enhanced:active {
+    transform: scale(0.95);
+}
+
+.radio-label {
+    margin-left: 0.75rem;
+    font-size: 0.875rem;
+    color: #374151;
+    cursor: pointer;
+    user-select: none;
+    transition: color 0.15s ease;
+}
+
+.radio-item:hover .radio-label {
+    color: #111827;
+}
+
+/* Animations for visual feedback */
+@keyframes radioCheck {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.15);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes radioDot {
+    0% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+    .radio-enhanced,
+    .radio-enhanced:checked,
+    .radio-enhanced:checked::after {
+        animation: none;
+        transition: none;
+    }
+    
+    .radio-enhanced:hover,
+    .radio-enhanced:active {
+        transform: none;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .radio-enhanced {
+        border-width: 3px;
+    }
+    
+    .radio-enhanced:checked {
+        border-color: #000;
+        background-color: #000;
+    }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+    .radio-enhanced {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .radio-enhanced:checked::after {
+        width: 10px;
+        height: 10px;
+    }
+    
+    .radio-item {
+        padding: 0.75rem 0.5rem;
+    }
+}
+</style>

@@ -1,0 +1,577 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Unified Person Search - Database System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .search-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .search-header {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(5, 150, 105, 0.15);
+        text-align: center;
+    }
+
+    .search-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 1rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-header p {
+        font-size: 1.125rem;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .search-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 2rem;
+    }
+
+    .search-form {
+        padding: 2rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .search-input-group {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .search-btn {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        border: none;
+        font-size: 1.125rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3), 0 0 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .search-btn:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4), 0 0 30px rgba(16, 185, 129, 0.6);
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 1rem 1.5rem 1rem 3rem;
+        font-size: 1.125rem;
+        border: 2px solid #d1d5db;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        background: #f9fafb;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #10b981;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), 0 0 20px rgba(16, 185, 129, 0.3);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 0.75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6b7280;
+        font-size: 1.25rem;
+        z-index: 10;
+    }
+
+    .search-filters {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e5e7eb;
+        box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.1);
+    }
+
+    .filter-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .filter-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .filter-label {
+        color: #374151;
+        font-weight: 500;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .filter-select {
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        background: white;
+        font-size: 0.875rem;
+    }
+
+    .results-header {
+        padding: 2rem 2rem 1rem 2rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .results-title {
+        color: #1f2937;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .results-count {
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    .no-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #6b7280;
+    }
+
+    .no-results-icon {
+        width: 4rem;
+        height: 4rem;
+        margin: 0 auto 1.5rem;
+        opacity: 0.5;
+    }
+
+    .result-item {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f3f4f6;
+        transition: background-color 0.2s ease;
+    }
+
+    .result-item:hover {
+        background: #f9fafb;
+    }
+
+    .result-item:last-child {
+        border-bottom: none;
+    }
+
+    .result-type {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+    }
+
+    .result-type.fahanie-cares {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+    }
+
+    .result-type.constituent {
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        color: white;
+    }
+
+    .result-type.database {
+        background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+        color: white;
+    }
+
+    .result-title {
+        color: #1f2937;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .result-subtitle {
+        color: #10b981;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .result-description {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0 0 1rem 0;
+    }
+
+    .result-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.75rem;
+        color: #9ca3af;
+    }
+
+    .relevance-badge {
+        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .result-actions {
+        margin-top: 1rem;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view:hover {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        transform: translateY(-1px);
+    }
+
+    .search-tips {
+        background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        border: 1px solid #a7f3d0;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .search-tips h3 {
+        color: #065f46;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+    }
+
+    .search-tips ul {
+        color: #065f46;
+        margin: 0;
+        padding-left: 1.5rem;
+    }
+
+    .search-tips li {
+        margin-bottom: 0.5rem;
+    }
+
+    @media (max-width: 768px) {
+        .search-header h1 {
+            font-size: 2rem;
+        }
+
+        .search-header p {
+            font-size: 1rem;
+        }
+
+        .search-form, .results-header {
+            padding: 1.5rem;
+        }
+
+        .result-item {
+            padding: 1rem 1.5rem;
+        }
+
+        .filter-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-container">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <!-- Header Section -->
+        <div class="search-header">
+            <h1>
+                Unified Person Search
+            </h1>
+            <p>Search across all databases to find people and their associated records</p>
+        </div>
+
+        <!-- Search Card -->
+        <div class="search-card">
+            <!-- Search Form -->
+            <form method="get" class="search-form">
+                <div class="search-input-group">
+                    <div class="relative flex-1">
+                        <input
+                            type="text"
+                            name="q"
+                            class="search-input"
+                            placeholder="Enter name, email, phone number, or member ID..."
+                            value="{{ search_query }}"
+                            autofocus
+                        >
+                    </div>
+                    <button type="submit" class="search-btn">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Search
+                    </button>
+                </div>
+
+                        <!-- Advanced Filters -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <!-- Database Type Filter -->
+                            <div>
+                                <label for="database_type" class="block text-sm font-medium text-gray-700 mb-2">Database Type</label>
+                                <select name="database_type" id="database_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="">All Databases</option>
+                                    <option value="fahanie_cares" {% if current_filters.database_type == 'fahanie_cares' %}selected{% endif %}>FahanieCares Members</option>
+                                    <option value="constituents" {% if current_filters.database_type == 'constituents' %}selected{% endif %}>Constituents</option>
+                                    <option value="custom" {% if current_filters.database_type == 'custom' %}selected{% endif %}>Custom Databases</option>
+                                </select>
+                            </div>
+
+                            <!-- Location Filter -->
+                            <div>
+                                <label for="location" class="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                                <select name="location" id="location" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="">All Locations</option>
+                                    <option value="maguindanao" {% if current_filters.location == 'maguindanao' %}selected{% endif %}>Maguindanao del Sur</option>
+                                </select>
+                            </div>
+
+                            <!-- Sort By Filter -->
+                            <div>
+                                <label for="sort_by" class="block text-sm font-medium text-gray-700 mb-2">Sort By</label>
+                                <select name="sort_by" id="sort_by" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                    <option value="relevance" {% if current_filters.sort_by == 'relevance' %}selected{% endif %}>Relevance</option>
+                                    <option value="name" {% if current_filters.sort_by == 'name' %}selected{% endif %}>Name (A-Z)</option>
+                                    <option value="recent" {% if current_filters.sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                                </select>
+                            </div>
+                        </div>
+
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Search Results -->
+            {% if search_query %}
+                <div class="results-header">
+                    <h2 class="results-title">
+                        Search Results
+                        {% if has_results %}
+                            <span class="text-emerald-600">({{ result_count }} found)</span>
+                        {% endif %}
+                    </h2>
+                    {% if search_query %}
+                        <p class="results-count">Searched for: <strong>"{{ search_query }}"</strong></p>
+                    {% endif %}
+                </div>
+
+                {% if has_results %}
+                    <!-- Constituents Section (Full Width) -->
+                    {% if grouped_results.constituents %}
+                    <div class="px-6 py-4 bg-blue-50 border-l-4 border-blue-400">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-3">
+                            <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                            </svg>
+                            Constituents ({{ grouped_results.constituents|length }})
+                        </h3>
+                        {% for result in grouped_results.constituents %}
+                        <div class="result-item">
+                            <div class="result-type constituent">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                                {{ result.matched_field }}
+                            </div>
+                            <h4 class="result-title">{{ result.title }}</h4>
+                            <p class="result-subtitle">{{ result.subtitle }}</p>
+                            <p class="result-description">{{ result.description }}</p>
+                            <div class="result-actions">
+                                <a href="{{ result.url }}" class="btn-view">View Details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Side-by-Side Layout for FahanieCares Members and Custom Database Entries -->
+                    {% if grouped_results.fahanie_cares_members or grouped_results.database_entries %}
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <!-- FahanieCares Members (Left Side) -->
+                        {% if grouped_results.fahanie_cares_members %}
+                        <div class="px-6 py-4 bg-green-50 border-l-4 border-green-400">
+                            <h3 class="text-lg font-semibold text-green-800 mb-3">
+                                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                </svg>
+                                FahanieCares Members ({{ grouped_results.fahanie_cares_members|length }})
+                            </h3>
+                            {% for result in grouped_results.fahanie_cares_members %}
+                            <div class="result-item">
+                                <div class="result-type fahanie-cares">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {{ result.matched_field }}
+                                </div>
+                                <h4 class="result-title">
+                                    {{ result.title }}
+                                    <span class="relevance-badge">{{ result.relevance_score|floatformat:0 }}% match</span>
+                                </h4>
+                                <p class="result-subtitle">{{ result.subtitle }}</p>
+                                <p class="result-description">{{ result.description }}</p>
+                                <div class="result-actions">
+                                    <a href="{{ result.url }}" class="btn-view">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        View Details
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <!-- Custom Database Entries (Right Side) -->
+                        {% if grouped_results.database_entries %}
+                        <div class="px-6 py-4 bg-purple-50 border-l-4 border-purple-400">
+                            <h3 class="text-lg font-semibold text-purple-800 mb-3">
+                                <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                Custom Database Entries ({{ grouped_results.database_entries|length }})
+                            </h3>
+                            {% for result in grouped_results.database_entries %}
+                            <div class="result-item">
+                                <div class="result-type database">
+                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11.707 4.707a1 1 0 00-1.414-1.414L10 9.586 8.707 8.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                {{ result.matched_field }}
+                            </div>
+                            <h4 class="result-title">{{ result.title }}</h4>
+                            <p class="result-subtitle">{{ result.subtitle }}</p>
+                            <p class="result-description">{{ result.description }}</p>
+                            <div class="result-actions">
+                                <a href="{{ result.url }}" class="btn-view">View Details</a>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endif %}
+
+                {% else %}
+                    <!-- No Results -->
+                    <div class="no-results">
+                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z"></path>
+                        </svg>
+                        <h3 class="text-xl font-semibold text-gray-600 mb-2">No results found</h3>
+                        <p class="text-gray-500 mb-4">Try adjusting your search terms or filters</p>
+
+                        <!-- Search Tips -->
+                        <div class="search-tips">
+                            <h4 class="font-semibold mb-2">Search Tips:</h4>
+                            <ul class="text-sm space-y-1">
+                                <li>• Use partial names (e.g., "garcia" instead of "garcia, juan")</li>
+                                <li>• Try searching by email address or phone number</li>
+                                <li>• Check spelling and remove extra spaces</li>
+                                <li>• Use member ID for exact matches</li>
+                            </ul>
+                        </div>
+                    </div>
+                {% endif %}
+            {% endif %}
+        </div>
+
+        <!-- Getting Started (when no search performed) -->
+        {% if not search_query %}
+        <div class="search-card">
+            <div class="text-center py-12">
+                <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+                <h3 class="text-xl font-semibold text-gray-600 mb-2">Start Your Search</h3>
+                <p class="text-gray-500 mb-6">Enter a name, email, phone number, or member ID to find people across all databases</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-800">FahanieCares Members</h4>
+                        <p class="text-sm text-gray-600">Search program registrants by name or member ID</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-800">Constituents</h4>
+                        <p class="text-sm text-gray-600">Find constituent profiles and voter information</p>
+                    </div>
+                    <div class="text-center">
+                        <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                            </svg>
+                        </div>
+                        <h4 class="font-semibold text-gray-800">Custom Databases</h4>
+                        <p class="text-sm text-gray-600">Search entries from custom databases and events</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

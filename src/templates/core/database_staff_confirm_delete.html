@@ -1,0 +1,111 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+            <i class="fas fa-exclamation-triangle text-red-600"></i>
+            {{ title }}
+        </h1>
+        <p class="mt-2 text-gray-600">This action cannot be undone</p>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-red-200">
+        <div class="px-6 py-4 border-b border-red-200 bg-red-50">
+            <h3 class="text-lg font-semibold text-red-900 flex items-center gap-2">
+                <i class="fas fa-warning"></i>
+                Confirm Deletion
+            </h3>
+        </div>
+        
+        <div class="p-6">
+            <!-- Staff Information -->
+            <div class="mb-6">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="flex-shrink-0 h-16 w-16">
+                        <div class="h-16 w-16 bg-primary-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-primary-600 text-2xl"></i>
+                        </div>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-lg font-semibold text-gray-900">{{ object.full_name }}</h4>
+                        <p class="text-sm text-gray-600">{{ object.position|default:"Staff Member" }}</p>
+                        <p class="text-sm text-gray-500">{{ object.email }}</p>
+                        {% if object.division %}
+                        <p class="text-sm text-gray-500">
+                            {% if object.division == 'legislative_affairs' %}
+                                Legislative Affairs
+                            {% elif object.division == 'administrative_affairs' %}
+                                Administrative Affairs
+                            {% elif object.division == 'communications' %}
+                                Communications
+                            {% elif object.division == 'it_unit' %}
+                                IT Unit
+                            {% elif object.division == 'mp_office' %}
+                                MP Office
+                            {% else %}
+                                {{ object.division|title }}
+                            {% endif %}
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning Message -->
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                <div class="flex">
+                    <i class="fas fa-exclamation-triangle text-red-400 mt-0.5"></i>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-medium text-red-800">Warning</h4>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p>You are about to permanently delete this staff member from the database.</p>
+                            <ul class="list-disc list-inside mt-2 space-y-1">
+                                <li>All staff information will be permanently removed</li>
+                                <li>This action cannot be undone</li>
+                                <li>Consider marking the staff member as inactive instead</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirmation Form -->
+            <form method="post">
+                {% csrf_token %}
+                <div class="flex items-center justify-end gap-4">
+                    <a href="{% url 'database_staff' %}" 
+                       class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-trash"></i>
+                        Delete Staff Member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Alternative Actions -->
+    <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div class="flex">
+            <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+            <div class="ml-3">
+                <h4 class="text-sm font-medium text-blue-800">Alternative Action</h4>
+                <p class="mt-1 text-sm text-blue-700">
+                    Instead of deleting, you can 
+                    <a href="{% url 'database_staff_edit' object.pk %}" class="underline font-medium">edit the staff member</a> 
+                    and mark them as inactive to preserve their data while removing them from active duty.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

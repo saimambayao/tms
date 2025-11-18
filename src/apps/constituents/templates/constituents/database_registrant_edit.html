@@ -1,0 +1,467 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Edit {{ object.get_full_name }} - Database of Registrants{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-6">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'database_registrant_detail' object.pk %}" 
+                   class="text-gray-500 hover:text-gray-700 transition-colors duration-150">
+                    <i class="fas fa-arrow-left text-xl"></i>
+                </a>
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900">Edit Registration</h1>
+                    <p class="text-gray-600">{{ object.get_full_name }}</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 text-sm text-gray-500">
+                <i class="fas fa-user-shield"></i>
+                <span>Authorized Edit Access</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Warning Notice -->
+    <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400 mt-0.5"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-yellow-800">Important Notice</h3>
+                <p class="mt-1 text-sm text-yellow-700">
+                    You are editing sensitive registrant information. Please ensure all changes are accurate and properly documented.
+                    Changes will be logged for audit purposes.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <form method="post" class="space-y-8" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Form Sections -->
+            <div class="lg:col-span-2 space-y-6">
+                
+                <!-- Personal Information -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-user text-primary-600"></i>
+                            Personal Information
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    First Name *
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.first_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Last Name *
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.last_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.middle_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Middle Name
+                                </label>
+                                {{ form.middle_name }}
+                                {% if form.middle_name.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.middle_name.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                            <div>
+                                <label for="{{ form.age.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Age *
+                                </label>
+                                {{ form.age }}
+                                {% if form.age.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.age.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.sex.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Gender *
+                                </label>
+                                {{ form.sex }}
+                                {% if form.sex.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.sex.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.sector.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Sector *
+                                </label>
+                                {{ form.sector }}
+                                {% if form.sector.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.sector.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-phone text-primary-600"></i>
+                            Contact Information
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Email Address *
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.email.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.contact_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Contact Number *
+                                </label>
+                                {{ form.contact_number }}
+                                {% if form.contact_number.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.contact_number.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Address -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-home text-primary-600"></i>
+                            Current Address
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="{{ form.address_barangay.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Barangay *
+                                </label>
+                                {{ form.address_barangay }}
+                                {% if form.address_barangay.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.address_barangay.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.address_municipality.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Municipality *
+                                </label>
+                                {{ form.address_municipality }}
+                                {% if form.address_municipality.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.address_municipality.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.address_province.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Province *
+                                </label>
+                                {{ form.address_province }}
+                                {% if form.address_province.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.address_province.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Voter Registration Address -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-vote-yea text-primary-600"></i>
+                            Voter Registration Address
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="{{ form.voter_address_barangay.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Barangay *
+                                </label>
+                                {{ form.voter_address_barangay }}
+                                {% if form.voter_address_barangay.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.voter_address_barangay.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.voter_address_municipality.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Municipality *
+                                </label>
+                                {{ form.voter_address_municipality }}
+                                {% if form.voter_address_municipality.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.voter_address_municipality.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.voter_address_province.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Province *
+                                </label>
+                                {{ form.voter_address_province }}
+                                {% if form.voter_address_province.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.voter_address_province.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education Information -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-graduation-cap text-primary-600"></i>
+                            Education Information
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <label for="{{ form.highest_education.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Highest Education *
+                                </label>
+                                {{ form.highest_education }}
+                                {% if form.highest_education.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.highest_education.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.school_graduated.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    School Graduated
+                                </label>
+                                {{ form.school_graduated }}
+                                {% if form.school_graduated.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.school_graduated.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.eligibility.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Eligibility
+                                </label>
+                                {{ form.eligibility }}
+                                {% if form.eligibility.errors %}
+                                <div class="mt-1 text-sm text-red-600">
+                                    {{ form.eligibility.errors }}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Verification Documents -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-file-alt text-primary-600"></i>
+                            Verification Documents
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div>
+                            <label for="{{ form.voter_id_photo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                {{ form.voter_id_photo.label }}
+                            </label>
+                            {% if object.voter_id_photo %}
+                            <div class="mb-4">
+                                <p class="text-sm text-gray-600 mb-2">Current Photo:</p>
+                                <img src="{{ object.voter_id_photo.url }}" alt="Voter ID Photo" class="max-w-xs h-auto rounded-lg shadow-md">
+                                <a href="{{ object.voter_id_photo.url }}" target="_blank" class="text-primary-600 hover:underline text-sm mt-2 inline-block">View Current Photo</a>
+                            </div>
+                            {% endif %}
+                            {{ form.voter_id_photo }}
+                            <p class="mt-1 text-sm text-gray-500">{{ form.voter_id_photo.help_text }}</p>
+                            {% if form.voter_id_photo.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.voter_id_photo.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Sidebar -->
+            <div class="space-y-6">
+                <!-- Approval Status -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-clipboard-check text-primary-600"></i>
+                            Registration Status
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div>
+                            <label for="{{ form.status.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                                Status
+                            </label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                            <div class="mt-1 text-sm text-red-600">
+                                {{ form.status.errors }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Current Status</h4>
+                            {% if object.status == 'approved' %}
+                            <div class="flex items-center text-green-700">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span class="text-sm">Approved on {{ object.approved_date|date:"F d, Y" }}</span>
+                            </div>
+                            {% if object.approved_by %}
+                            <p class="text-xs text-gray-600 mt-1">
+                                By: {{ object.approved_by.get_full_name|default:object.approved_by.username }}
+                            </p>
+                            {% endif %}
+                            {% elif object.status == 'pending' %}
+                            <div class="flex items-center text-yellow-700">
+                                <i class="fas fa-clock mr-2"></i>
+                                <span class="text-sm">Pending Approval</span>
+                            </div>
+                            {% elif object.status == 'denied' %}
+                            <div class="flex items-center text-red-700">
+                                <i class="fas fa-times-circle mr-2"></i>
+                                <span class="text-sm">Denied</span>
+                            </div>
+                            {% elif object.status == 'incomplete' %}
+                            <div class="flex items-center text-orange-700">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>
+                                <span class="text-sm">Incomplete</span>
+                            </div>
+                            {% else %}
+                            <div class="flex items-center text-gray-700">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <span class="text-sm">{{ object.get_status_display }}</span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Save Actions -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div class="px-6 py-4 border-b border-gray-200">
+                        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                            <i class="fas fa-save text-primary-600"></i>
+                            Save Changes
+                        </h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="space-y-3">
+                            <button type="submit" 
+                                    class="w-full inline-flex items-center justify-center px-4 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-lg font-medium transition-colors duration-200">
+                                <i class="fas fa-save mr-2"></i>
+                                Save Changes
+                            </button>
+                            
+                            <a href="{% url 'database_registrant_detail' object.pk %}" 
+                               class="w-full inline-flex items-center justify-center px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors duration-200">
+                                <i class="fas fa-times mr-2"></i>
+                                Cancel
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Change Log Notice -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-info-circle text-blue-400 mt-0.5"></i>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">Audit Trail</h3>
+                            <p class="mt-1 text-sm text-blue-700">
+                                All changes to registrant information are automatically logged for audit purposes.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Apply form styling to all form fields
+document.addEventListener('DOMContentLoaded', function() {
+    // Style all text inputs, selects, and textareas
+    const formFields = document.querySelectorAll('input[type="text"], input[type="email"], input[type="number"], select, textarea');
+    formFields.forEach(field => {
+        field.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-gray-300', 'rounded-lg', 
+                           'focus:ring-2', 'focus:ring-primary-500', 'focus:border-primary-500');
+    });
+    
+    // Style checkboxes
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('h-4', 'w-4', 'text-primary-600', 'focus:ring-primary-500', 
+                              'border-gray-300', 'rounded');
+    });
+});
+</script>
+{% endblock %}

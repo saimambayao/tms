@@ -1,0 +1,419 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Database of Staff - #FahanieCares{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Header Section -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                    <i class="fas fa-users text-primary-600"></i>
+                    Database of Staff
+                </h1>
+                <p class="mt-2 text-gray-600">Comprehensive management system for all #FahanieCares staff members</p>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="{% url 'database_staff_create' %}" 
+                   class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 shadow-sm hover:shadow-md">
+                    <i class="fas fa-plus"></i>
+                    Add New Staff
+                </a>
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Authorized Access: {{ user.get_user_type_display }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
+        <!-- Total Staff -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Staff</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ total_staff|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-users text-primary-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Staff -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Active</p>
+                    <p class="text-3xl font-bold text-green-600">{{ active_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contractual -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Contractual</p>
+                    <p class="text-3xl font-bold text-blue-600">{{ contractual_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-file-contract text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coterminous -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Coterminous</p>
+                    <p class="text-3xl font-bold text-purple-600">{{ coterminous_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-tie text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Hires -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Recent Hires</p>
+                    <p class="text-3xl font-bold text-orange-600">{{ recent_hires_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <i class="fas fa-user-plus text-orange-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters and Search Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+        <div class="p-6">
+            <form method="get" class="space-y-6">
+                <!-- Search Bar -->
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">Search Staff</label>
+                        <div class="relative">
+                            <input type="text" 
+                                   id="search" 
+                                   name="search" 
+                                   value="{{ current_filters.search }}"
+                                   placeholder="Search by name, email, position, phone..."
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" 
+                                class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                            <i class="fas fa-search"></i>
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Advanced Filters -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Division Filter -->
+                    <div>
+                        <label for="division" class="block text-sm font-medium text-gray-700 mb-2">Division</label>
+                        <select name="division" id="division" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Divisions</option>
+                            {% for value, label in division_choices %}
+                            <option value="{{ value }}" {% if current_filters.division == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Employment Status Filter -->
+                    <div>
+                        <label for="employment_status" class="block text-sm font-medium text-gray-700 mb-2">Employment Status</label>
+                        <select name="employment_status" id="employment_status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All Statuses</option>
+                            {% for value, label in employment_status_choices %}
+                            <option value="{{ value }}" {% if current_filters.employment_status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Active Status Filter -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Active Status</label>
+                        <select name="status" id="status" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">All</option>
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}" {% if current_filters.status == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Date Range -->
+                    <div>
+                        <label for="date_from" class="block text-sm font-medium text-gray-700 mb-2">Hired From</label>
+                        <input type="date" 
+                               name="date_from" 
+                               id="date_from" 
+                               value="{{ current_filters.date_from }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                </div>
+
+                <!-- Filter Actions -->
+                <div class="flex flex-wrap gap-3">
+                    <button type="submit" 
+                            class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-filter"></i>
+                        Apply Filters
+                    </button>
+                    <a href="{% url 'database_staff' %}" 
+                       class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-times"></i>
+                        Clear Filters
+                    </a>
+                    {% if can_export %}
+                    <button type="button"
+                            onclick="exportData()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-download"></i>
+                        Export Data
+                    </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <!-- Results Header -->
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        Staff Members ({{ staff_members.count|default:0 }} total)
+                    </h3>
+                    {% if current_filters.search or current_filters.division or current_filters.employment_status %}
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
+                        <i class="fas fa-filter mr-1"></i>
+                        Filtered
+                    </span>
+                    {% endif %}
+                </div>
+                
+                <!-- Sort Options -->
+                <div class="flex items-center gap-2">
+                    <label for="sort_by" class="text-sm font-medium text-gray-700">Sort by:</label>
+                    <select name="sort_by" id="sort_by" onchange="this.form.submit()" form="filter-form"
+                            class="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                        <option value="-date_hired" {% if current_filters.sort_by == '-date_hired' %}selected{% endif %}>Newest Hires</option>
+                        <option value="date_hired" {% if current_filters.sort_by == 'date_hired' %}selected{% endif %}>Oldest Hires</option>
+                        <option value="full_name" {% if current_filters.sort_by == 'full_name' %}selected{% endif %}>Name A-Z</option>
+                        <option value="-full_name" {% if current_filters.sort_by == '-full_name' %}selected{% endif %}>Name Z-A</option>
+                        <option value="position" {% if current_filters.sort_by == 'position' %}selected{% endif %}>Position A-Z</option>
+                        <option value="division" {% if current_filters.sort_by == 'division' %}selected{% endif %}>Division</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Table -->
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff Member</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Position</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Division</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employment</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date Hired</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for staff in staff_members %}
+                    <tr class="hover:bg-gray-50 transition-colors duration-150">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-user text-primary-600"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {{ staff.full_name }}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        {{ staff.email }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ staff.position }}</div>
+                            {% if staff.phone_number %}
+                            <div class="text-sm text-gray-500">{{ staff.phone_number }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {% if staff.division == 'legislative_affairs' %}
+                                    Legislative Affairs
+                                {% elif staff.division == 'administrative_affairs' %}
+                                    Administrative Affairs
+                                {% elif staff.division == 'communications' %}
+                                    Communications
+                                {% elif staff.division == 'it_unit' %}
+                                    IT Unit
+                                {% elif staff.division == 'mp_office' %}
+                                    MP Office
+                                {% else %}
+                                    {{ staff.division|title|default:"Not Assigned" }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {% if staff.employment_status == 'contractual' %}
+                                    Contractual
+                                {% elif staff.employment_status == 'coterminous' %}
+                                    Coterminous
+                                {% elif staff.employment_status == 'consultant' %}
+                                    Consultant
+                                {% elif staff.employment_status == 'intern' %}
+                                    Intern
+                                {% elif staff.employment_status == 'volunteer' %}
+                                    Volunteer
+                                {% else %}
+                                    {{ staff.employment_status|title|default:"Not Set" }}
+                                {% endif %}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if staff.status == 'active' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check-circle mr-1"></i>
+                                Active
+                            </span>
+                            {% elif staff.status == 'inactive' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                <i class="fas fa-pause mr-1"></i>
+                                Inactive
+                            </span>
+                            {% elif staff.status == 'terminated' %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <i class="fas fa-times-circle mr-1"></i>
+                                Terminated
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                <i class="fas fa-question-circle mr-1"></i>
+                                {{ staff.status|title }}
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ staff.date_hired|date:"M d, Y"|default:"Not Set" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <div class="flex items-center space-x-2">
+                                <a href="#" 
+                                   class="text-primary-600 hover:text-primary-900 transition-colors duration-150"
+                                   title="View Details">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if user_role in 'superuser,mp,chief_of_staff,admin,coordinator' %}
+                                <a href="{% url 'database_staff_edit' staff.pk %}" 
+                                   class="text-blue-600 hover:text-blue-900 transition-colors duration-150"
+                                   title="Edit Staff">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                {% endif %}
+                                {% if user_role in 'superuser,mp,chief_of_staff' %}
+                                <a href="{% url 'database_staff_delete' staff.pk %}" 
+                                   class="text-red-600 hover:text-red-900 transition-colors duration-150"
+                                   title="Delete Staff"
+                                   onclick="return confirm('Are you sure you want to delete this staff member?')">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center">
+                                <i class="fas fa-users text-gray-400 text-4xl mb-4"></i>
+                                <h3 class="text-lg font-medium text-gray-900 mb-2">No staff members found</h3>
+                                <p class="text-gray-500">Staff data will be displayed here once available.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination placeholder -->
+        {% if staff_members.count > 50 %}
+        <div class="px-6 py-4 border-t border-gray-200">
+            <div class="text-sm text-gray-700">
+                Showing {{ staff_members.count }} staff members
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Hidden form for sort functionality -->
+<form id="filter-form" method="get" style="display: none;">
+    {% for key, value in current_filters.items %}
+    {% if value and key != 'sort_by' %}
+    <input type="hidden" name="{{ key }}" value="{{ value }}">
+    {% endif %}
+    {% endfor %}
+</form>
+
+<script>
+function exportData() {
+    // Implementation for data export functionality
+    alert('Export functionality will be implemented based on requirements.');
+}
+
+// Auto-submit form when sort changes
+document.getElementById('sort_by').addEventListener('change', function() {
+    // Copy current filters to hidden form
+    const filterForm = document.getElementById('filter-form');
+    const sortSelect = this;
+    
+    // Add sort_by to hidden form
+    let sortInput = filterForm.querySelector('input[name="sort_by"]');
+    if (!sortInput) {
+        sortInput = document.createElement('input');
+        sortInput.type = 'hidden';
+        sortInput.name = 'sort_by';
+        filterForm.appendChild(sortInput);
+    }
+    sortInput.value = sortSelect.value;
+    
+    // Submit the form
+    filterForm.submit();
+});
+</script>
+{% endblock %}

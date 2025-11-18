@@ -1,0 +1,84 @@
+version: '3.9'
+
+services:
+  # Dedicated Frontend Build Service
+  frontend:
+    image: node:20-alpine
+    container_name: fahaniecares_frontend
+    working_dir: /app
+    volumes:
+      - ../../../src:/app
+      - /app/node_modules  # Prevent node_modules from being overwritten
+    command: sh -c "
+      echo 'Installing frontend dependencies...' &&
+      npm install &&
+      echo 'Building CSS with TailwindCSS...' &&
+      npm run build-css &&
+      echo 'Watching for changes...' &&
+      npm run watch-css"
+    environment:
+      NODE_ENV: development
+    networks:
+      - fahaniecares_network
+
+  # Updated Django Web Application (without frontend build)
+  web:
+    build:
+      context: ../../../src
+      dockerfile: ../deployment/docker/Dockerfile.django
+    container_name: fahaniecares_web
+    restart: unless-stopped
+    command: sh -c "
+      python manage.py wait_for_db &&
+      python manage.py migrate &&
+      python manage.py collectstatic --noinput &&
+      python manage.py create_developer_superusers &&
+      echo 'Starting development server...' &&
+      python manage.py runserver 0.0.0.0:3000"
+    volumes:
+      - ../../../src:/app
+      - ./static:/app/staticfiles
+      - ./media:/app/media
+      - ./logs:/app/logs
+    ports:
+      - "3000:3000"
+    environment:
+      # Django settings
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DEBUG: ${DEBUG:-True}
+      SECRET_KEY: ${SECRET_KEY:-your-secret-key-here}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,[::1]}
+      
+      # Database settings
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-fahaniecares_db}
+      DB_USER: ${DB_USER:-fahaniecares_user}
+      DB_PASSWORD: ${DB_PASSWORD:-changeme}
+      DB_HOST: db
+      DB_PORT: 5432
+      
+      # Redis settings
+      REDIS_URL: redis://redis:6379/0
+      CACHE_BACKEND: django_redis.cache.RedisCache
+      
+      
+      # Email settings (development)
+      EMAIL_BACKEND: django.core.mail.backends.console.EmailBackend
+      
+      # Other settings
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    networks:
+      - fahaniecares_network
+
+networks:
+  fahaniecares_network:
+    external: true

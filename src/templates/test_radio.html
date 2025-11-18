@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Django Radio Button Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .form-group { margin: 20px 0; }
+        .radio-option { margin: 10px 0; }
+        input[type="radio"] { margin-right: 8px; }
+        button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
+        .result { background: #f0f8ff; padding: 15px; margin: 20px 0; border-left: 4px solid #007cba; }
+        .django-radio { background: #f9f9f9; padding: 10px; margin: 10px 0; border: 1px solid #ddd; }
+        .manual-radio { background: #fff5f5; padding: 10px; margin: 10px 0; border: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <h1>Django vs Manual Radio Button Test</h1>
+    
+    {% if form %}
+        <h2>Testing Django Form Radio Buttons</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="django-radio">
+                <h3>Django Sex Field:</h3>
+                <label>{{ form.sex.label }}:</label><br>
+                {{ form.sex }}
+                {% if form.sex.errors %}
+                    <p style="color: red;">{{ form.sex.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="django-radio">
+                <h3>Django Sector Field:</h3>
+                <label>{{ form.sector.label }}:</label><br>
+                {{ form.sector }}
+                {% if form.sector.errors %}
+                    <p style="color: red;">{{ form.sector.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="django-radio">
+                <h3>Django Education Field:</h3>
+                <label>{{ form.highest_education.label }}:</label><br>
+                {{ form.highest_education }}
+                {% if form.highest_education.errors %}
+                    <p style="color: red;">{{ form.highest_education.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="django-radio">
+                <h3>Django Eligibility Field:</h3>
+                <label>{{ form.eligibility.label }}:</label><br>
+                {{ form.eligibility }}
+                {% if form.eligibility.errors %}
+                    <p style="color: red;">{{ form.eligibility.errors.0 }}</p>
+                {% endif %}
+            </div>
+            
+            <button type="submit">Submit Django Form Test</button>
+        </form>
+    {% endif %}
+    
+    <h2>Manual Radio Buttons (for comparison)</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="manual-radio">
+            <label><strong>Manual Sex:</strong></label><br>
+            <div class="radio-option">
+                <input type="radio" name="manual_sex" value="male" id="manual_male" {% if request.POST.manual_sex == 'male' %}checked{% endif %}>
+                <label for="manual_male">Male</label>
+            </div>
+            <div class="radio-option">
+                <input type="radio" name="manual_sex" value="female" id="manual_female" {% if request.POST.manual_sex == 'female' %}checked{% endif %}>
+                <label for="manual_female">Female</label>
+            </div>
+        </div>
+        
+        <button type="submit">Submit Manual Test</button>
+    </form>
+    
+    {% if submitted_data or post_data %}
+        <div class="result">
+            <h3>Form Submission Results:</h3>
+            {% if submitted_data %}
+                <h4>Radio Fields:</h4>
+                <p><strong>Sex:</strong> "{{ submitted_data.sex|default:'(not submitted)' }}"</p>
+                <p><strong>Sector:</strong> "{{ submitted_data.sector|default:'(not submitted)' }}"</p>
+                <p><strong>Highest Education:</strong> "{{ submitted_data.highest_education|default:'(not submitted)' }}"</p>
+                <p><strong>Eligibility:</strong> "{{ submitted_data.eligibility|default:'(not submitted)' }}"</p>
+            {% endif %}
+            
+            <h4>All POST Data:</h4>
+            <pre>{{ post_data|pprint }}</pre>
+            
+            {% if form.errors %}
+                <h4>Form Errors:</h4>
+                {{ form.errors }}
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <script>
+        // Add debugging to see what's happening
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const formData = new FormData(this);
+                console.log('Form submission data:');
+                for (let [key, value] of formData.entries()) {
+                    console.log(key + ': ' + value);
+                }
+            });
+        });
+        
+        // Monitor radio button changes
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                console.log('Radio changed:', this.name, '=', this.value);
+            });
+        });
+        
+        // Debug: Show all radio buttons found on page
+        console.log('All radio buttons found:', document.querySelectorAll('input[type="radio"]'));
+    </script>
+</body>
+</html>

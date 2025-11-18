@@ -1,0 +1,188 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Performance Overview - Staff Management{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-primary-800">Performance Overview</h1>
+            <p class="text-gray-600 mt-1">Track and evaluate staff performance</p>
+        </div>
+        <div class="flex gap-3">
+            {% include 'components/atoms/button.html' with variant='primary' text='Create Evaluation' href='/staff/performance/create/' %}
+            {% include 'components/atoms/button.html' with variant='outline' text='Export Report' href='/staff/performance/export/' %}
+        </div>
+    </div>
+
+    <!-- Performance Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100">
+                    <i class="fas fa-chart-bar text-blue-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ total_evaluations|default:0 }}</p>
+                    <p class="text-gray-600">Total Evaluations</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100">
+                    <i class="fas fa-star text-green-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ average_rating|floatformat:1|default:"N/A" }}</p>
+                    <p class="text-gray-600">Average Rating</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100">
+                    <i class="fas fa-calendar text-purple-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ quarterly_evaluations|default:0 }}</p>
+                    <p class="text-gray-600">This Quarter</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-orange-100">
+                    <i class="fas fa-clock text-orange-600 text-xl"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-2xl font-bold text-gray-900">{{ pending_evaluations|default:0 }}</p>
+                    <p class="text-gray-600">Pending</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Division Performance -->
+    {% if division_performance %}
+    <div class="bg-white rounded-lg shadow p-6 mb-8">
+        <h3 class="text-lg font-semibold mb-4">Performance by Division</h3>
+        <div class="space-y-4">
+            {% for division in division_performance %}
+            <div class="flex justify-between items-center p-4 border rounded-lg">
+                <div>
+                    <h4 class="font-medium">
+                        {% if division.staff__division == 'legislative_affairs' %}
+                            Legislative Affairs
+                        {% elif division.staff__division == 'administrative_affairs' %}
+                            Administrative Affairs
+                        {% elif division.staff__division == 'communications' %}
+                            Communications
+                        {% elif division.staff__division == 'it_unit' %}
+                            IT Unit
+                        {% elif division.staff__division == 'mp_office' %}
+                            MP Uy-Oyod's Office
+                        {% else %}
+                            {{ division.staff__division|title }}
+                        {% endif %}
+                    </h4>
+                    <p class="text-sm text-gray-600">{{ division.count }} evaluations</p>
+                </div>
+                <div class="text-right">
+                    <div class="text-xl font-bold text-primary-600">{{ division.avg_rating|floatformat:1 }}</div>
+                    <div class="text-xs text-gray-500">Average Rating</div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Latest Evaluations -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b">
+            <h3 class="text-lg font-semibold">Latest Evaluations</h3>
+        </div>
+        
+        {% if latest_evaluations %}
+            <div class="divide-y divide-gray-200">
+                {% for evaluation in latest_evaluations %}
+                <div class="p-6">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <div class="flex items-center space-x-3">
+                                <h4 class="text-lg font-medium text-gray-900">{{ evaluation.staff.full_name }}</h4>
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {% if evaluation.overall_rating >= 4 %}bg-green-100 text-green-800
+                                    {% elif evaluation.overall_rating >= 3 %}bg-yellow-100 text-yellow-800
+                                    {% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ evaluation.overall_rating }}/5
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-600 mt-1">{{ evaluation.staff.position }} • {{ evaluation.staff.get_division_display }}</p>
+                            <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mt-3 text-sm">
+                                <div>
+                                    <span class="text-gray-500">Quality:</span>
+                                    <span class="font-medium">{{ evaluation.quality_of_work }}/5</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Punctuality:</span>
+                                    <span class="font-medium">{{ evaluation.punctuality }}/5</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Teamwork:</span>
+                                    <span class="font-medium">{{ evaluation.teamwork }}/5</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Communication:</span>
+                                    <span class="font-medium">{{ evaluation.communication }}/5</span>
+                                </div>
+                                <div>
+                                    <span class="text-gray-500">Initiative:</span>
+                                    <span class="font-medium">{{ evaluation.initiative }}/5</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="ml-4 text-right">
+                            <div class="text-sm text-gray-500">
+                                {{ evaluation.evaluation_period|title }}
+                            </div>
+                            <div class="text-sm text-gray-500">
+                                {{ evaluation.evaluation_date|date:"M d, Y" }}
+                            </div>
+                            <div class="mt-2">
+                                <a href="/staff/performance/{{ evaluation.id }}/" class="text-primary-600 hover:text-primary-900 text-sm">
+                                    View Details
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if evaluation.comments %}
+                    <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                        <p class="text-sm text-gray-700">{{ evaluation.comments|truncatewords:20 }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No performance evaluations</h3>
+                <p class="text-gray-600">Start by creating performance evaluations for staff members.</p>
+                <div class="mt-4">
+                    {% include 'components/atoms/button.html' with variant='primary' text='Create First Evaluation' href='/staff/performance/create/' %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

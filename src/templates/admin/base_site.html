@@ -1,0 +1,40 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | #FahanieCares Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    #header { background: #16a34a; }
+    .module h2, .module caption, .inline-group h2 { background: #22c55e; }
+    #branding h1 { color: #fff; }
+    #branding h1 a:link, #branding h1 a:visited { color: #fff; }
+    .button, input[type=submit], input[type=button], .submit-row input, a.button { background: #16a34a; }
+    .button:hover, input[type=submit]:hover, input[type=button]:hover { background: #15803d; }
+    .monitoring-link { 
+        display: inline-block; 
+        margin-left: 20px; 
+        padding: 5px 15px; 
+        background: rgba(255,255,255,0.2); 
+        border-radius: 4px; 
+        color: #fff !important;
+        text-decoration: none;
+        font-size: 13px;
+    }
+    .monitoring-link:hover { background: rgba(255,255,255,0.3); }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">#FahanieCares Administration</a>
+    {% if user.is_authenticated and user.is_staff %}
+    <a href="{% url 'monitoring_dashboard' %}" class="monitoring-link" target="_blank">
+        <i class="fas fa-chart-line"></i> System Monitoring
+    </a>
+    {% endif %}
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

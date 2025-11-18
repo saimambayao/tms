@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#FahanieCares Prototype Launcher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <header class="bg-primary-700 text-white py-8">
+        <div class="container mx-auto px-4 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold mb-2">#FahanieCares Portal Prototype</h1>
+            <p class="text-xl text-white/90">#FahanieCares: Bringing Bangsamoro Public Service Closer to You</p>
+        </div>
+    </header>
+
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <div class="max-w-3xl mx-auto">
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">Welcome to the Prototype</h2>
+                <p class="text-gray-600 mb-6">This is a prototype of the #FahanieCares Portal, designed to showcase the key features and design of the digital platform that will support the #FahanieCares mission of "Bringing Public Service Closer to You."</p>
+                
+                <p class="text-gray-600 mb-6">Please select a page to explore below:</p>
+                
+                <div class="grid md:grid-cols-4 gap-4">
+                    <a href="templates/index.html" class="block bg-primary-50 hover:bg-primary-100 transition rounded-lg p-5 border border-primary-100">
+                        <div class="text-primary-600 text-2xl mb-2">
+                            <i class="fas fa-home"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Landing Page</h3>
+                        <p class="text-sm text-gray-600">Main portal with services overview</p>
+                    </a>
+                    
+                    <a href="templates/service_referral.html" class="block bg-primary-50 hover:bg-primary-100 transition rounded-lg p-5 border border-primary-100">
+                        <div class="text-primary-600 text-2xl mb-2">
+                            <i class="fas fa-hands-helping"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Service Referral</h3>
+                        <p class="text-sm text-gray-600">Request assistance with services</p>
+                    </a>
+                    
+                    <a href="templates/case_tracking.html" class="block bg-primary-50 hover:bg-primary-100 transition rounded-lg p-5 border border-primary-100">
+                        <div class="text-primary-600 text-2xl mb-2">
+                            <i class="fas fa-tasks"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Case Tracking</h3>
+                        <p class="text-sm text-gray-600">Track status of service requests</p>
+                    </a>
+                    
+                    <a href="templates/ministries_ppas.html" class="block bg-primary-50 hover:bg-primary-100 transition rounded-lg p-5 border border-primary-100">
+                        <div class="text-primary-600 text-2xl mb-2">
+                            <i class="fas fa-landmark"></i>
+                        </div>
+                        <h3 class="font-semibold text-gray-800 mb-1">Ministries PPAS</h3>
+                        <p class="text-sm text-gray-600">Explore Bangsamoro Ministries' Programs</p>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                <h2 class="text-xl font-bold text-gray-800 mb-4">About This Prototype</h2>
+                
+                <div class="mb-4">
+                    <h3 class="font-semibold text-gray-800 mb-2">Design Features</h3>
+                    <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                        <li>Modern, clean design aligned with government service standards</li>
+                        <li>Fully responsive layout (works on mobile, tablet, and desktop)</li>
+                        <li>Accessible interface with clear navigation</li>
+                        <li>Customizable color scheme to match MP's branding</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-4">
+                    <h3 class="font-semibold text-gray-800 mb-2">Core Functionality</h3>
+                    <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                        <li>Service referral system with category selection</li>
+                        <li>Case tracking with status visualization</li>
+                        <li>Document upload capability</li>
+                        <li>Chapter membership information</li>
+                        <li>Parliamentary work showcase</li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="font-semibold text-gray-800 mb-2">Next Steps</h3>
+                    <ul class="list-disc pl-5 text-gray-600 space-y-1">
+                        <li>Gather feedback on design and functionality</li>
+                        <li>Refine prototype based on MP's preferences</li>
+                        <li>Develop additional pages as needed</li>
+                        <li>Begin implementation with Django backend</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-gray-800 text-white py-6">
+        <div class="container mx-auto px-4 text-center">
+            <p class="mb-2">Prototype developed for MP Atty. Sittie Fahanie S. Uy-Oyod's #FahanieCares initiative</p>
+            <p class="text-sm text-gray-400">This is a demonstration prototype only. Final implementation may vary.</p>
+        </div>
+    </footer>
+</body>
+</html>

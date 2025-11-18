@@ -1,0 +1,102 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ feature_name }} - Coming Soon | #FahanieCares{% endblock %}
+
+{% block extra_head %}
+{% include 'components/behaviors/common_behaviors.html' %}
+{% include 'components/animations/scroll_animations.html' %}
+{% endblock %}
+
+{% block content %}
+<section class="py-16 min-h-screen flex items-center">
+    <div class="container mx-auto px-4">
+        <div class="max-w-4xl mx-auto text-center">
+            <!-- Icon -->
+            <div class="mb-8" x-data="hoverAnimation()">
+                <div class="inline-flex items-center justify-center w-24 h-24 bg-primary-100 rounded-full transition-transform duration-300"
+                     :class="{ 'scale-110': isHovered }"
+                     @mouseenter="mouseenter()"
+                     @mouseleave="mouseleave()">
+                    <i class="fas fa-rocket text-primary-600 text-3xl"></i>
+                </div>
+            </div>
+            
+            <!-- Heading -->
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-800 mb-6 animate-fade-in-up">
+                {{ feature_name }}
+                <span class="block text-2xl md:text-3xl text-primary-600 mt-2">Coming Soon</span>
+            </h1>
+            
+            <!-- Description -->
+            <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto animate-fade-in-up">
+                {{ feature_description }}
+            </p>
+            
+            <!-- Alpha Version Notice -->
+            <div class="bg-primary-50 border border-primary-200 rounded-lg p-6 mb-8 animate-fade-in-up">
+                <div class="flex items-center justify-center mb-4">
+                    <div class="bg-primary-100 p-2 rounded-full mr-3">
+                        <i class="fas fa-info-circle text-primary-600"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold text-primary-800">Alpha Version Notice</h3>
+                </div>
+                <p class="text-primary-700 mb-4">
+                    You're currently using the Alpha version of the #FahanieCares platform. This feature will be available in the {{ expected_release }}.
+                </p>
+                <div class="text-sm text-primary-600">
+                    <strong>Available in Alpha:</strong> Member Registration, Chapter Information, Announcements, Staff Directory
+                </div>
+            </div>
+            
+            <!-- Available Features -->
+            <div class="grid md:grid-cols-3 gap-6 mb-12 animate-fade-in-up">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="bg-green-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-users text-green-600"></i>
+                    </div>
+                    <h4 class="font-semibold text-slate-800 mb-2">Join #FahanieCares</h4>
+                    <p class="text-gray-600 text-sm mb-4">Register as a member and access available programs.</p>
+                    <a href="{% url 'register' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500">
+                        Register Now
+                    </a>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-clipboard-list text-blue-600"></i>
+                    </div>
+                    <h4 class="font-semibold text-slate-800 mb-2">Explore Programs</h4>
+                    <p class="text-gray-600 text-sm mb-4">Discover current #FahanieCares programs and services.</p>
+                    <a href="{% url 'programs' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500">
+                        View Programs
+                    </a>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                    <div class="bg-purple-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-users text-purple-600"></i>
+                    </div>
+                    <h4 class="font-semibold text-slate-800 mb-2">Find Chapters</h4>
+                    <p class="text-gray-600 text-sm mb-4">Connect with local chapters in your area.</p>
+                    <a href="{% url 'chapters_overview' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500">
+                        Find Chapters
+                    </a>
+                </div>
+            </div>
+            
+            <!-- Call to Action -->
+            <div class="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in-up">
+                <a href="{% url 'home' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 text-lg bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500">
+                    <i class="fas fa-home mr-2"></i>
+                    Return to Home
+                </a>
+                <a href="{% url 'about' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 text-lg border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    Learn More About Us
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

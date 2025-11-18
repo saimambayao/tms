@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bangsamoro Ministries PPAS - #FahanieCares</title>
+    <meta name="description" content="Discover Programs, Projects, Activities, and Services (PPAS) from Bangsamoro Ministries">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Header Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <nav class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <a href="index.html" class="text-xl font-bold text-primary-600">#FahanieCares</a>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex space-x-8">
+                <a href="index.html" class="text-gray-600 hover:text-primary-600 transition">Home</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                <a href="service_referral.html" class="text-gray-600 hover:text-primary-600 transition">Services</a>
+                <a href="ministries_ppas.html" class="text-primary-800 font-medium hover:text-primary-600 transition">Ministries PPAS</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+            </div>
+            
+            <!-- Login/Register -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button class="md:hidden text-gray-600 hover:text-primary-600 focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </nav>
+        
+        <!-- Mobile Navigation (Hidden by default) -->
+        <div class="md:hidden hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex flex-col space-y-3 py-3">
+                    <a href="index.html" class="text-gray-600 hover:text-primary-600 transition">Home</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                    <a href="service_referral.html" class="text-gray-600 hover:text-primary-600 transition">Services</a>
+                    <a href="ministries_ppas.html" class="text-primary-800 font-medium hover:text-primary-600 transition">Ministries PPAS</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4 py-3 border-t">
+                    <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                    <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Page Header -->
+    <div class="bg-primary-700 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto text-center">
+                <h1 class="text-3xl md:text-4xl font-bold mb-4">Bangsamoro Ministries PPAS</h1>
+                <p class="text-xl text-white/90">Discover Programs, Projects, Activities, and Services (PPAS) from Bangsamoro Ministries</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Breadcrumbs -->
+    <div class="bg-white border-b">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center text-sm text-gray-600">
+                <a href="index.html" class="hover:text-primary-600 transition">Home</a>
+                <i class="fas fa-chevron-right text-xs mx-2"></i>
+                <span class="text-gray-800 font-medium">Ministries PPAS</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="py-12">
+        <div class="container mx-auto px-4">
+            <!-- Ministry Filters -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                <h2 class="text-xl font-semibold text-secondary-800 mb-4">Filter by Ministry</h2>
+                <p class="text-gray-600 mb-6">Select a ministry to view their specific Programs, Projects, Activities, and Services.</p>
+                
+                <div class="flex flex-wrap gap-2">
+                    <button class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">All Ministries</button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition">Ministry of Health</button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition">Ministry of Education</button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition">Ministry of Social Services</button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition">Ministry of Agriculture</button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition">Ministry of Finance</button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition">Ministry of Public Works</button>
+                    <button class="bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition">More...</button>
+                </div>
+                
+                <div class="mt-6">
+                    <h3 class="text-lg font-medium text-secondary-800 mb-3">Additional Filters</h3>
+                    <div class="grid md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="sector">Sector</label>
+                            <select id="sector" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <option value="">All Sectors</option>
+                                <option>Health</option>
+                                <option>Education</option>
+                                <option>Agriculture</option>
+                                <option>Social Welfare</option>
+                                <option>Infrastructure</option>
+                                <option>Economic Development</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="type">Type</label>
+                            <select id="type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <option value="">All Types</option>
+                                <option>Program</option>
+                                <option>Project</option>
+                                <option>Activity</option>
+                                <option>Service</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="location">Location</label>
+                            <select id="location" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <option value="">All Locations</option>
+                                <option>Cotabato City</option>
+                                <option>Maguindanao</option>
+                                <option>Lanao del Sur</option>
+                                <option>Basilan</option>
+                                <option>Sulu</option>
+                                <option>Tawi-Tawi</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Ministry Overview (example for Ministry of Health) -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                <div class="flex flex-col md:flex-row md:items-center gap-6">
+                    <div class="bg-gray-100 h-32 w-32 flex-shrink-0 rounded-lg flex items-center justify-center">
+                        <span class="text-gray-400">Ministry Logo</span>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-secondary-800 mb-2">Ministry of Health</h2>
+                        <p class="text-gray-600 mb-4">The Ministry of Health is responsible for providing quality healthcare services to all Bangsamoro citizens, implementing health programs, and developing healthcare infrastructure in the region.</p>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Healthcare</span>
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Medical Services</span>
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Public Health</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- PPAS Listings -->
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- PPAS Card 1 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">Program Image</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Program</span>
+                            <span class="text-sm text-gray-500">Ministry of Health</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-secondary-800 mb-2">Bangsamoro Healthcare Assistance Program</h3>
+                        <p class="text-gray-600 mb-4">Provides financial assistance for medical expenses, hospitalization, and medicines to qualified Bangsamoro residents.</p>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Available in all Bangsamoro provinces</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-users text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">For low-income families and individuals</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Ongoing program</span>
+                            </div>
+                        </div>
+                        <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition text-center block">Request Information</a>
+                    </div>
+                </div>
+                
+                <!-- PPAS Card 2 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">Project Image</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Project</span>
+                            <span class="text-sm text-gray-500">Ministry of Health</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-secondary-800 mb-2">Rural Health Units Construction</h3>
+                        <p class="text-gray-600 mb-4">Construction and upgrading of rural health units to enhance healthcare access in remote areas of the Bangsamoro region.</p>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Various municipalities in BARMM</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-users text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Communities in remote areas</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">2023-2025</span>
+                            </div>
+                        </div>
+                        <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition text-center block">Request Information</a>
+                    </div>
+                </div>
+                
+                <!-- PPAS Card 3 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">Activity Image</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Activity</span>
+                            <span class="text-sm text-gray-500">Ministry of Health</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-secondary-800 mb-2">Mobile Health Clinic Caravan</h3>
+                        <p class="text-gray-600 mb-4">Regular mobile health clinics offering free check-ups, consultations, and basic medicines to underserved communities.</p>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Rotating locations across BARMM</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-users text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">All residents in target areas</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Monthly schedule</span>
+                            </div>
+                        </div>
+                        <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition text-center block">Request Schedule</a>
+                    </div>
+                </div>
+                
+                <!-- PPAS Card 4 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">Service Image</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Service</span>
+                            <span class="text-sm text-gray-500">Ministry of Health</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-secondary-800 mb-2">Maternal and Child Health Services</h3>
+                        <p class="text-gray-600 mb-4">Comprehensive healthcare services for pregnant women and children under 5, including prenatal care, immunizations, and nutrition support.</p>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">All health centers in BARMM</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-users text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Pregnant women and young children</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Year-round service</span>
+                            </div>
+                        </div>
+                        <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition text-center block">Access Service</a>
+                    </div>
+                </div>
+                
+                <!-- PPAS Card 5 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">Program Image</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Program</span>
+                            <span class="text-sm text-gray-500">Ministry of Health</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-secondary-800 mb-2">Medical Scholarship Program</h3>
+                        <p class="text-gray-600 mb-4">Scholarships for medical students who commit to serving in the Bangsamoro healthcare system after graduation.</p>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">BARMM residents</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-users text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Qualified medical students</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Annual application period</span>
+                            </div>
+                        </div>
+                        <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition text-center block">Apply Now</a>
+                    </div>
+                </div>
+                
+                <!-- PPAS Card 6 -->
+                <div class="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-100">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center">
+                        <span class="text-gray-400">Project Image</span>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="bg-primary-100 text-primary-800 text-xs px-2 py-1 rounded font-medium">Project</span>
+                            <span class="text-sm text-gray-500">Ministry of Health</span>
+                        </div>
+                        <h3 class="text-xl font-semibold text-secondary-800 mb-2">Bangsamoro Health Information System</h3>
+                        <p class="text-gray-600 mb-4">Digital infrastructure project to integrate health records and improve healthcare delivery across the Bangsamoro region.</p>
+                        <div class="mb-4">
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-map-marker-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">All BARMM health facilities</span>
+                            </div>
+                            <div class="flex items-center mb-1">
+                                <i class="fas fa-users text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">Healthcare providers and patients</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i class="fas fa-calendar-alt text-gray-400 w-5"></i>
+                                <span class="text-gray-600 text-sm">2023-2026</span>
+                            </div>
+                        </div>
+                        <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md font-medium hover:bg-primary-700 transition text-center block">Learn More</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="flex justify-center mb-8">
+                <nav class="inline-flex rounded-md shadow-sm">
+                    <a href="#" class="px-3 py-2 text-gray-500 bg-white border border-gray-300 rounded-l-md hover:bg-gray-50">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a href="#" class="px-3 py-2 text-white bg-primary-600 border border-primary-600">1</a>
+                    <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">2</a>
+                    <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">3</a>
+                    <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">4</a>
+                    <a href="#" class="px-3 py-2 text-gray-700 bg-white border border-gray-300 hover:bg-gray-50">5</a>
+                    <a href="#" class="px-3 py-2 text-gray-500 bg-white border border-gray-300 rounded-r-md hover:bg-gray-50">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </nav>
+            </div>
+            
+            <!-- Notion Form Integration Placeholder -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+                <h2 class="text-xl font-semibold text-secondary-800 mb-4">Request Information</h2>
+                <p class="text-gray-600 mb-6">Interested in a specific PPAS? Fill out the form below and we'll connect you with the right ministry.</p>
+                
+                <div class="bg-gray-100 p-8 rounded-lg border border-gray-200 flex items-center justify-center">
+                    <div class="text-center">
+                        <div class="text-3xl text-gray-400 mb-2">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <p class="text-gray-600 mb-4">Notion Form Embed Will Appear Here</p>
+                        <p class="text-sm text-gray-500">The actual implementation will include an embedded Notion Form for information requests</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CTA Section -->
+    <section class="py-12 bg-primary-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-2xl font-bold mb-4">Become a #FahanieCares Member</h2>
+            <p class="text-white/80 max-w-2xl mx-auto mb-8">Register as a #FahanieCares member to access our full range of services and receive updates about Bangsamoro Ministries' PPAS.</p>
+            <a href="#" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition inline-block">Register Now</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-secondary-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">#FahanieCares</h3>
+                    <p class="text-gray-300 mb-4">Bringing Bangsamoro Public Service Closer to You</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition">Home</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">About</a></li>
+                        <li><a href="service_referral.html" class="text-gray-300 hover:text-white transition">Services</a></li>
+                        <li><a href="ministries_ppas.html" class="text-gray-300 hover:text-white transition">Ministries PPAS</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Chapters</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Ministries</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Ministry of Health</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Ministry of Education</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Ministry of Social Services</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Ministry of Agriculture</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Ministry of Finance</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">All Ministries</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Contact Us</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">123 Parliament Street, City, Province, ZIP</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">(123) 456-7890</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">contact@fahaniecares.gov</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-clock mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">Mon-Fri: 9:00 AM - 5:00 PM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-8 mt-8 text-center sm:text-left sm:flex sm:justify-between sm:items-center">
+                <div class="text-gray-400 mb-4 sm:mb-0">
+                    &copy; 2023 #FahanieCares. All rights reserved.
+                </div>
+                <div class="flex justify-center sm:justify-end space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Accessibility</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.querySelector('button');
+            const mobileMenu = document.querySelector('.md\\:hidden.hidden');
+            
+            menuButton.addEventListener('click', function() {
+                mobileMenu.classList.toggle('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

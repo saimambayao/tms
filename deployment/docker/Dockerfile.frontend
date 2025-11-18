@@ -1,0 +1,70 @@
+# Optimized Dockerfile for Django with proper static file handling
+FROM node:20-alpine AS frontend-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy static source files
+COPY static/css/input.css static/css/
+COPY tailwind.config.js ./
+
+# Build CSS with Font Awesome included
+RUN npm run build-css
+
+# Copy Font Awesome webfonts
+RUN cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/
+
+
+FROM python:3.12-slim-bookworm
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
+
+# Set work directory
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libjpeg-dev \
+    libopenjp2-7-dev \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY requirements.txt .
+RUN pip install --upgrade pip && \
+    pip install -r requirements.txt
+
+# Copy project files
+COPY . /app
+
+# Copy built static files from frontend stage
+COPY --from=frontend-builder /app/static /app/static
+
+# Create required directories
+RUN mkdir -p staticfiles logs media
+
+# Collect static files
+RUN python manage.py collectstatic --noinput
+
+# Create user to run the application
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Run the application
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "config.wsgi:application"]
+
+EXPOSE 8000

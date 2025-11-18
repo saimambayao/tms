@@ -1,0 +1,266 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} - #FahanieCares{% endblock %}
+
+{% block extra_head %}
+{% include 'components/behaviors/common_behaviors.html' %}
+{% include 'components/animations/scroll_animations.html' %}
+{% endblock %}
+
+{% block hero %}
+<!-- Hero Section -->
+<section class="relative overflow-hidden" style="background: var(--gradient-hero);">
+    <div class="container mx-auto px-4 py-16 md:py-20">
+        <div class="text-center text-white">
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">TDIF Projects</h1>
+            <p class="text-xl md:text-2xl mb-2 text-white/90">Transitional Development Impact Fund</p>
+            <p class="text-lg mb-8 text-white/80 max-w-3xl mx-auto">{{ description }}</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<!-- Program Filters (Adapted for TDIF Projects) -->
+<div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
+    <h2 class="text-xl font-semibold text-slate-800 mb-4">Browse TDIF Projects</h2>
+    <p class="text-gray-600 mb-6">Filter TDIF projects by sector to find the right development initiatives for your needs.</p>
+    
+    <div class="flex flex-wrap gap-2" x-data="staggerAnimation({staggerDelay: 50})">
+        <a href="{% url 'tdif_projects' %}" 
+           class="{% if not current_sector %}bg-green-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+            <i class="fas fa-th-large mr-2"></i>
+            All Projects
+        </a>
+        {% for sector in sectors %}
+        <a href="{% url 'tdif_projects' %}?sector={{ sector.code }}" 
+           class="{% if current_sector == sector.code %}bg-green-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+            <i class="{{ sector.icon }} text-{{ sector.color }}-500 mr-2"></i>
+            {{ sector.name }}
+            <span class="ml-2 text-xs {% if current_sector == sector.code %}text-white/80{% else %}text-gray-500{% endif %}">({{ sector.count }})</span>
+        </a>
+        {% endfor %}
+    </div>
+    
+    <div class="mt-6">
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-medium text-slate-800">Current Projects ({{ total_programs }})</h3>
+            <div class="flex items-center space-x-3">
+                <span class="text-sm text-gray-600">Sort by:</span>
+                <select class="text-sm border border-gray-300 rounded-md px-2 py-1 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent" 
+                        onchange="updateSort(this.value)">
+                    <option value="-start_date" {% if current_sort == "-start_date" %}selected{% endif %}>Newest First</option>
+                    <option value="start_date" {% if current_sort == "start_date" %}selected{% endif %}>Oldest First</option>
+                    <option value="-end_date" {% if current_sort == "-end_date" %}selected{% endif %}>Latest Deadline</option>
+                    <option value="end_date" {% if current_sort == "end_date" %}selected{% endif %}>Earliest Deadline</option>
+                    <option value="title" {% if current_sort == "title" %}selected{% endif %}>A-Z</option>
+                    <option value="-title" {% if current_sort == "-title" %}selected{% endif %}>Z-A</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Program Statistics -->
+        <div class="flex items-center gap-4 text-sm text-gray-600">
+            <span><i class="fas fa-chart-bar text-green-600 mr-1"></i> Total: {{ program_stats.total }}</span>
+            <span><i class="fas fa-check-circle text-green-600 mr-1"></i> Active: {{ program_stats.active }}</span>
+            <span><i class="fas fa-star text-yellow-600 mr-1"></i> Featured: {{ program_stats.featured }}</span>
+        </div>
+    </div>
+</div>
+
+<!-- Programs List (Adapted for TDIF Projects) -->
+{% if programs %}
+<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8" x-data="staggerAnimation({staggerDelay: 150})">
+    {% for program in programs %}
+    <div class="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden hover:shadow-lg hover:border-primary-300 transition-all duration-300 animate-fade-in-up" 
+         x-data="hoverAnimation()">
+        
+        <!-- Program Header -->
+        <div class="p-6 pb-4">
+            <div class="flex items-start justify-between mb-4">
+                <div class="flex items-center">
+                    <div class="bg-primary-100 p-3 rounded-full mr-4 flex-shrink-0">
+                        <i class="fas fa-hand-holding-heart text-xl text-primary-600"></i>
+                    </div>
+                    <div>
+                        <div class="text-sm text-primary-700 font-semibold uppercase tracking-wide">{{ program.category }}</div>
+                        <div class="text-xs text-gray-500 mt-0.5">{{ program.ministry }}</div>
+                    </div>
+                </div>
+                {% if program.is_featured %}
+                <span class="bg-orange-500 text-white text-xs px-3 py-1 rounded-full font-bold flex items-center shadow-sm">
+                    <i class="fas fa-star mr-1.5 text-yellow-300"></i>Featured
+                </span>
+                {% endif %}
+            </div>
+            
+            <h3 class="text-xl font-bold text-slate-800 mb-2 line-clamp-2">{{ program.title }}</h3>
+            <p class="text-gray-600 text-base mb-4 line-clamp-3">{{ program.description }}</p>
+            
+            <!-- Program Details -->
+            <div class="space-y-3 text-sm">
+                {% if program.application_deadline %}
+                <div class="flex items-center text-gray-700">
+                    <i class="fas fa-clock text-primary-500 w-5 mr-3 flex-shrink-0"></i>
+                    <span>Deadline: <span class="font-medium">{{ program.application_deadline|date:"M d, Y" }}</span></span>
+                </div>
+                {% endif %}
+                {% if program.eligibility %}
+                <div class="flex items-start text-gray-700">
+                    <i class="fas fa-users text-indigo-500 w-5 mr-3 flex-shrink-0 mt-0.5"></i>
+                    <span class="line-clamp-2">{{ program.eligibility }}</span>
+                </div>
+                {% endif %}
+                {% if program.geographic_coverage %}
+                <div class="flex items-center text-gray-700">
+                    <i class="fas fa-map-marker-alt text-red-500 w-5 mr-3 flex-shrink-0"></i>
+                    <span>Coverage: <span class="font-medium">{{ program.geographic_coverage }}</span></span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Program Footer -->
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="text-xs px-3 py-1.5 rounded-full font-semibold 
+                        {% if 'Active' in program.status %}bg-success-100 text-success-700
+                        {% elif 'Pending' in program.status %}bg-warning-100 text-warning-700
+                        {% else %}bg-gray-200 text-gray-700{% endif %}">
+                        {{ program.status }}
+                    </span>
+                    {% if program.priority %}
+                    <span class="ml-3 text-xs text-gray-600 font-medium">{{ program.priority }} Priority</span>
+                    {% endif %}
+                </div>
+                <div class="flex space-x-3">
+                    <a href="{% url 'application_form' %}" 
+                       class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500"
+                       onclick="return checkAuthAndApply(event)">
+                        Apply <i class="fas fa-external-link-alt ml-2"></i>
+                    </a>
+                    <a href="{% url 'tdif_project_detail' program.slug %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
+                        Details <i class="fas fa-info-circle ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<!-- Empty State -->
+{% include 'components/molecules/empty_state.html' with icon='fas fa-hammer' title='No TDIF Projects Available Yet' description='We are currently updating our TDIF project portfolio. Please check back soon for new development initiatives.' cta_text='View #FahanieCares Programs' cta_href=programs_url %}
+{% endif %}
+
+<!-- Frequently Asked Questions (Adapted for TDIF Projects) -->
+<div class="bg-white rounded-lg shadow-sm p-8 border border-gray-100 mb-8">
+    <h2 class="text-2xl font-bold text-slate-800 mb-6">Frequently Asked Questions about TDIF Projects</h2>
+    
+    <div class="space-y-4">
+        <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
+                <span>What is the Transitional Development Impact Fund (TDIF)?</span>
+                <i class="fas fa-chevron-down text-gray-400"></i>
+            </button>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <p class="text-gray-600">The TDIF is a fund dedicated to supporting sustainable development and community empowerment projects in the Bangsamoro region, focusing on initiatives that create lasting positive change.</p>
+            </div>
+        </div>
+        
+        <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
+                <span>How are TDIF projects selected?</span>
+                <i class="fas fa-chevron-down text-gray-400"></i>
+            </button>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <p class="text-gray-600">Projects are selected based on their alignment with regional development goals, potential for community impact, sustainability, and feasibility, often involving community consultations.</p>
+            </div>
+        </div>
+        
+        <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
+                <span>Can organizations or individuals propose TDIF projects?</span>
+                <i class="fas fa-chevron-down text-gray-400"></i>
+            </button>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <p class="text-gray-600">Information on project proposal mechanisms and guidelines for organizations or individuals interested in proposing TDIF projects can be obtained by contacting our office directly.</p>
+            </div>
+        </div>
+        
+        <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
+                <span>How can I track the progress of a TDIF project?</span>
+                <i class="fas fa-chevron-down text-gray-400"></i>
+            </button>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                <p class="text-gray-600">Updates on project progress are periodically shared on this page and through official reports. For specific project inquiries, please use the contact form or details provided.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block cta %}
+<!-- CTA Section (Adapted for TDIF Projects) -->
+<section class="py-12 bg-green-600 text-white">
+    <div class="container mx-auto px-4 text-center">
+        <h2 class="text-2xl font-bold mb-4">Partner with TDIF for Sustainable Development</h2>
+        <p class="text-white/80 max-w-2xl mx-auto mb-8">Join us in building a brighter future for the Bangsamoro region through impactful development initiatives.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+            <a href="{% url 'about' %}" class="bg-white text-green-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition inline-block">Learn More About TDIF</a>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update sort function
+    function updateSort(sortValue) {
+        const url = new URL(window.location);
+        url.searchParams.set('sort', sortValue);
+        window.location.href = url.toString();
+    }
+    
+    // Toggle FAQ accordions
+    document.addEventListener('DOMContentLoaded', function() {
+        const faqButtons = document.querySelectorAll('.border.border-gray-200.rounded-lg button');
+        
+        faqButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('.fas');
+                
+                // Toggle visibility
+                if (content.style.maxHeight) {
+                    content.style.maxHeight = null;
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                } else {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                }
+            });
+        });
+        
+        // Initialize - hide all content
+        document.querySelectorAll('.border.border-gray-200.rounded-lg > div').forEach(div => {
+            div.style.maxHeight = null;
+        });
+        
+        // Sector filter analytics (optional)
+        const filterLinks = document.querySelectorAll('a[href*="sector="]');
+        filterLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                const sector = new URL(this.href).searchParams.get('sector');
+                console.log('Filtering TDIF projects by sector:', sector);
+                // Can add analytics tracking here
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>#FahanieCares - Bringing Public Service Closer to You</title>
+    <meta name="description" content="The digital platform for MP Atty. Sittie Fahanie S. Uy-Oyod's public service initiative">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom styles -->
+    <style>
+        .hero-pattern {
+            background-color: #16a34a;
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+    </style>
+</head>
+<body class="font-sans bg-gray-50">
+    <!-- Header Navigation -->
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <nav class="container mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center">
+                <div class="text-xl font-bold text-primary-600">#FahanieCares</div>
+            </div>
+            
+            <!-- Desktop Navigation -->
+            <div class="hidden md:flex space-x-8">
+                <a href="#" class="text-primary-800 font-medium hover:text-primary-600 transition">Home</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Services</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Parliament</a>
+                <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+            </div>
+            
+            <!-- Login/Register -->
+            <div class="hidden md:flex items-center space-x-4">
+                <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+            </div>
+            
+            <!-- Mobile Menu Button -->
+            <button id="mobile-menu-button" class="md:hidden text-gray-600 hover:text-primary-600 focus:outline-none">
+                <i class="fas fa-bars text-xl"></i>
+            </button>
+        </nav>
+        
+        <!-- Mobile Navigation (Hidden by default) -->
+        <div class="md:hidden hidden bg-white border-t">
+            <div class="container mx-auto px-4 py-2">
+                <div class="flex flex-col space-y-3 py-3">
+                    <a href="#" class="text-primary-800 font-medium hover:text-primary-600 transition">Home</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">About</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Services</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Chapters</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Parliament</a>
+                    <a href="#" class="text-gray-600 hover:text-primary-600 transition">Contact</a>
+                </div>
+                <div class="flex items-center space-x-4 py-3 border-t">
+                    <a href="#" class="text-primary-600 hover:text-primary-800 transition">Login</a>
+                    <a href="#" class="bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition">Register</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-pattern text-white">
+        <div class="container mx-auto px-4 py-16 md:py-24">
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">#FahanieCares: Bringing Bangsamoro Public Service Closer to You</h1>
+                    <p class="text-lg mb-8 text-white/90">MP Atty. Sittie Fahanie S. Uy-Oyod's initiative to improve access to government services and community support for all constituents.</p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <a href="#" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition text-center">Register for Assistance</a>
+                        <a href="#" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white/10 transition text-center">Learn More</a>
+                    </div>
+                </div>
+                <div class="hidden md:block">
+                    <!-- Placeholder for MP's photo or illustration -->
+                    <div class="bg-white/20 rounded-lg h-96 flex items-center justify-center">
+                        <span class="text-white/50 text-lg">MP's Photo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-secondary-800 mb-2">Our Services</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Access government services, request assistance, and participate in community programs through our digital platform.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Service Card 1 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 border border-gray-100">
+                    <div class="bg-primary-100 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                        <i class="fas fa-users text-primary-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-2">Join #FahanieCares</h3>
+                    <p class="text-gray-600 mb-4">Register as a member to access all #FahanieCares programs and services. Membership is free and open to all constituents.</p>
+                    <a href="#" class="text-primary-600 hover:text-primary-800 font-medium flex items-center">
+                        Register Now <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Service Card 2 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 border border-gray-100">
+                    <div class="bg-primary-100 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                        <i class="fas fa-clipboard-list text-primary-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-2">Explore #FahanieCares Programs</h3>
+                    <p class="text-gray-600 mb-4">Discover and access programs and services directly provided by #FahanieCares to address community needs.</p>
+                    <a href="#" class="text-primary-600 hover:text-primary-800 font-medium flex items-center">
+                        View Programs <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+                
+                <!-- Service Card 3 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 border border-gray-100">
+                    <div class="bg-primary-100 p-3 rounded-full w-14 h-14 flex items-center justify-center mb-4">
+                        <i class="fas fa-landmark text-primary-600 text-xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-2">Bangsamoro Ministries PPAS</h3>
+                    <p class="text-gray-600 mb-4">Explore the Programs, Projects, Activities, and Services (PPAS) offered by Bangsamoro Ministries.</p>
+                    <a href="#" class="text-primary-600 hover:text-primary-800 font-medium flex items-center">
+                        Discover PPAS <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Announcements Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-secondary-800 mb-2">Latest Updates</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Stay informed about the latest activities, programs, and parliamentary updates from MP Uy-Oyod.</p>
+            </div>
+            
+            
+            <div id="updates-container" class="grid md:grid-cols-3 gap-8">
+                <!-- Update Card 1 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 border border-gray-100">
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-2">Community Outreach Program in Maguindanao</h3>
+                    <p class="text-gray-600 mb-4">MP Uy-Oyod's team successfully conducted a comprehensive community outreach program in various municipalities of Maguindanao, providing essential services and aid to over 1,500 constituents.</p>
+                    <button type="button" class="read-more-btn text-primary-600 hover:text-primary-800 font-medium flex items-center"
+                            data-title="Community Outreach Program in Maguindanao"
+                            data-details="MP Uy-Oyod's team successfully conducted a comprehensive community outreach program in various municipalities of Maguindanao, providing essential services and aid to over 1,500 constituents. The program focused on healthcare, educational support, and livelihood assistance, reaching remote areas and underserved communities. Volunteers from local chapters played a crucial role in the successful execution of the event.">
+                        Read More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Update Card 2 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 border border-gray-100">
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-2">New Bill on Youth Empowerment Filed</h3>
+                    <p class="text-gray-600 mb-4">MP Uy-Oyod has officially filed a new bill aimed at empowering the youth through enhanced educational opportunities and entrepreneurship support. The bill seeks to establish dedicated funding and mentorship programs.</p>
+                    <button type="button" class="read-more-btn text-primary-600 hover:text-primary-800 font-medium flex items-center"
+                            data-title="New Bill on Youth Empowerment Filed"
+                            data-details="MP Uy-Oyod has officially filed a new bill aimed at empowering the youth through enhanced educational opportunities and entrepreneurship support. The bill seeks to establish dedicated funding and mentorship programs for young entrepreneurs and students, ensuring they have the resources to succeed in a competitive environment. Public consultations are scheduled for next month.">
+                        Read More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+                
+                <!-- Update Card 3 -->
+                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition p-6 border border-gray-100">
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-2">Partnership with Local NGOs for Disaster Relief</h3>
+                    <p class="text-gray-600 mb-4">#FahanieCares has forged a strategic partnership with several local non-governmental organizations to streamline disaster relief efforts across the region. This collaboration aims to provide faster and more efficient aid during emergencies.</p>
+                    <button type="button" class="read-more-btn text-primary-600 hover:text-primary-800 font-medium flex items-center"
+                            data-title="Partnership with Local NGOs for Disaster Relief"
+                            data-details="FahanieCares has forged a strategic partnership with several local non-governmental organizations to streamline disaster relief efforts across the region. This collaboration aims to provide faster and more efficient aid during emergencies, leveraging the combined resources and expertise of all involved parties. Initial efforts will focus on developing a rapid response protocol and pre-positioning relief goods.">
+                        Read More <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="text-center mt-10">
+                <a href="#" class="inline-block border border-primary-600 text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-primary-50 transition">View All Updates</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Impact Stats Section -->
+    <section class="py-16 bg-primary-700 text-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-2">#FahanieCares Impact</h2>
+                <p class="text-white/80 max-w-2xl mx-auto">Together, we're making a difference in our communities through dedicated service and support.</p>
+            </div>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold mb-2">5,000+</div>
+                    <p class="text-white/80">Constituents Served</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold mb-2">24</div>
+                    <p class="text-white/80">Active Chapters</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold mb-2">3,200+</div>
+                    <p class="text-white/80">Referrals Processed</p>
+                </div>
+                
+                <div class="text-center">
+                    <div class="text-4xl md:text-5xl font-bold mb-2">15</div>
+                    <p class="text-white/80">Community Programs</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Chapter Map Section -->
+    <section class="py-16 bg-white">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-secondary-800 mb-2">Find Your Local Chapter</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Join the #FahanieCares community in your municipality and help us bring public service closer to every constituent.</p>
+            </div>
+            
+            <div class="bg-gray-100 rounded-lg p-4 h-96 flex items-center justify-center mb-8">
+                <span class="text-gray-400 text-lg">Interactive Municipality Map</span>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-4">Chapter Benefits</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Direct access to constituency services</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Community involvement opportunities</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Regular updates on local initiatives</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Volunteer and leadership development</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Priority access to programs and events</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-4">Chapter Activities</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-calendar-check text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Community outreach programs</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-calendar-check text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Skills training and workshops</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-calendar-check text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Local service drives</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-calendar-check text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Consultation meetings</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-calendar-check text-primary-600 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Environmental initiatives</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+                    <h3 class="text-xl font-semibold text-secondary-800 mb-4">Join a Chapter</h3>
+                    <form>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="municipality">Municipality</label>
+                            <select id="municipality" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                                <option>Select your municipality</option>
+                                <option>Municipality 1</option>
+                                <option>Municipality 2</option>
+                                <option>Municipality 3</option>
+                                <option>Municipality 4</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-medium mb-2" for="email">Email Address</label>
+                            <input type="email" id="email" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" placeholder="Your email address">
+                        </div>
+                        <button type="submit" class="w-full bg-primary-600 text-white px-4 py-2 rounded-md hover:bg-primary-700 transition font-medium">Request Chapter Information</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="container mx-auto px-4">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-secondary-800 mb-2">Constituent Voices</h2>
+                <p class="text-gray-600 max-w-2xl mx-auto">Hear from community members who have experienced the impact of #FahanieCares services.</p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Testimonial 1 -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                            <span class="text-gray-400 text-xs">Photo</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-secondary-800">Maria Santos</div>
+                            <div class="text-sm text-gray-500">Municipality 1</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"The assistance I received through #FahanieCares helped me navigate the process of obtaining essential healthcare services for my family. The staff was supportive throughout the entire process."</p>
+                    <div class="flex text-accent-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                            <span class="text-gray-400 text-xs">Photo</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-secondary-800">Ahmed Rahman</div>
+                            <div class="text-sm text-gray-500">Municipality 3</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"Being part of my local #FahanieCares chapter has given me the opportunity to contribute to meaningful projects in my community. It's empowering to see the direct impact of our efforts."</p>
+                    <div class="flex text-accent-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100">
+                    <div class="flex items-center mb-4">
+                        <div class="h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center mr-4">
+                            <span class="text-gray-400 text-xs">Photo</span>
+                        </div>
+                        <div>
+                            <div class="font-semibold text-secondary-800">Elena Reyes</div>
+                            <div class="text-sm text-gray-500">Municipality 2</div>
+                        </div>
+                    </div>
+                    <p class="text-gray-600 mb-4">"The educational support program organized by #FahanieCares has made a significant difference in my children's academic journey. I'm grateful for the resources and guidance provided."</p>
+                    <div class="flex text-accent-400">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-16 bg-primary-600 text-white">
+        <div class="container mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold mb-4">Ready to Get Involved?</h2>
+            <p class="text-white/80 max-w-2xl mx-auto mb-8">Join #FahanieCares today and be part of our mission to bring public service closer to every constituent.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition text-center">Register Now</a>
+                <a href="#" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white/10 transition text-center">Contact Us</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-secondary-800 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">#FahanieCares</h3>
+                    <p class="text-gray-300 mb-4">Bringing Public Service Closer to You</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-white"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Home</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">About</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Services</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Chapters</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Parliament</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Services</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Service Referral</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Chapter Membership</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Direct Assistance</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Events & Outreach</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Parliamentary Updates</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition">Feedback & Consultation</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-4">Contact Us</h4>
+                    <ul class="space-y-3">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">123 Parliament Street, City, Province, ZIP</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">(123) 456-7890</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">contact@fahaniecares.gov</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-clock mt-1 mr-3 text-primary-400"></i>
+                            <span class="text-gray-300">Mon-Fri: 9:00 AM - 5:00 PM</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-8 mt-8 text-center sm:text-left sm:flex sm:justify-between sm:items-center">
+                <div class="text-gray-400 mb-4 sm:mb-0">
+                    &copy; 2023 #FahanieCares. All rights reserved.
+                </div>
+                <div class="flex justify-center sm:justify-end space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-white transition">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white transition">Accessibility</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <!-- Modal Structure -->
+    <div id="updateModal" class="fixed inset-0 bg-gray-900 bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-xl p-6 m-4 max-w-xl w-full relative">
+            <button id="closeModal" class="absolute top-3 right-3 text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+            <h3 id="modalTitle" class="text-2xl font-bold text-secondary-800 mb-4"></h3>
+            <p id="modalDetails" class="text-gray-700 leading-relaxed"></p>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                        },
+                        secondary: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            300: '#cbd5e1',
+                            400: '#94a3b8',
+                            500: '#64748b',
+                            600: '#475569',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        },
+                        accent: {
+                            50: '#fffbeb',
+                            100: '#fef3c7',
+                            200: '#fde68a',
+                            300: '#fcd34d',
+                            400: '#fbbf24',
+                            500: '#f59e0b',
+                            600: '#d97706',
+                            700: '#b45309',
+                            800: '#92400e',
+                            900: '#78350f',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        serif: ['Merriweather', 'serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <script>
+        // Mobile Menu Toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.querySelector('.md\\:hidden.hidden');
+            
+            if (menuButton && mobileMenu) {
+                menuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                });
+            }
+
+            // Modal functionality
+            const readMoreButtons = document.querySelectorAll('.read-more-btn');
+            const updateModal = document.getElementById('updateModal');
+            const closeModalButton = document.getElementById('closeModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDetails = document.getElementById('modalDetails');
+
+            console.log('Read More Buttons found:', readMoreButtons.length); // Debugging line
+
+            readMoreButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const title = this.getAttribute('data-title');
+                    const details = this.getAttribute('data-details');
+                    
+                    modalTitle.textContent = title;
+                    modalDetails.textContent = details;
+                    updateModal.classList.remove('hidden');
+                });
+            });
+
+            closeModalButton.addEventListener('click', function() {
+                updateModal.classList.add('hidden');
+            });
+
+            // Close modal when clicking outside
+            updateModal.addEventListener('click', function(e) {
+                if (e.target === updateModal) {
+                    updateModal.classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

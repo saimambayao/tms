@@ -1,0 +1,160 @@
+FROM python:3.12-slim-bookworm
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=config.settings.production
+ENV DOCKER_CONTAINER=true
+# Set DJANGO_ENV for the admin creation script
+ENV DJANGO_ENV=production
+
+# Set work directory
+WORKDIR /app
+
+# Declare /app/media as a volume for persistent storage
+VOLUME /app/media
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+    libffi-dev \
+    libssl-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libjpeg-dev \
+    libopenjp2-7-dev \
+    curl \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install Python dependencies
+COPY src /app
+
+RUN cat > /app/entrypoint.sh << 'EOF'
+#!/bin/bash
+set -e
+
+echo "🚀 Starting #FahanieCares Production Server"
+echo "================================================"
+
+# Function to wait for database
+wait_for_db() {
+echo "⏳ Waiting for database connection..."
+python manage.py wait_for_db
+echo "✅ Database connected"
+}
+
+# Function to run migrations
+run_migrations() {
+echo "⏳ Running database migrations..."
+python manage.py migrate --noinput
+echo "✅ Migrations completed"
+}
+
+# Function to optimize database
+optimize_db() {
+echo "⏳ Optimizing database..."
+python manage.py optimize_database
+echo "✅ Database optimized"
+}
+
+# Function to collect static files
+collect_static() {
+echo "⏳ Collecting static files..."
+python manage.py collectstatic --noinput --clear
+echo "✅ Static files collected"
+}
+
+# Function to create cache table
+create_cache() {
+echo "⏳ Creating cache table..."
+python manage.py createcachetable
+echo "✅ Cache table created"
+}
+
+# Function to setup roles
+setup_roles() {
+echo "⏳ Setting up user roles..."
+python manage.py setup_roles
+echo "✅ User roles configured"
+}
+
+# Function to create superuser
+create_superuser() {
+echo "⏳ Creating development superusers..."
+python manage.py create_developer_superusers
+echo "✅ Superusers created"
+}
+
+# Function to reset production stats
+reset_stats() {
+if [ "$RESET_PRODUCTION_STATS" = "true" ]; then
+echo "⏳ Resetting production statistics..."
+python manage.py reset_production_stats
+echo "✅ Production statistics reset"
+fi
+}
+
+# Function to warm cache
+warm_cache() {
+echo "⏳ Warming application cache..."
+python manage.py warm_cache || echo "⚠️  Cache warming skipped (command not found)"
+echo "✅ Cache warmed"
+}
+
+# Function to fix media permissions
+fix_media_permissions() {
+echo "⏳ Setting up media directories and permissions..."
+# Ensure media directories exist
+mkdir -p /app/media/voter_id_photos /app/media/constituents/voter_id_photos /app/media/temp /app/media/announcements /app/media/documents 2>/dev/null || true
+
+# Set ownership for the appuser to the media directory
+chown -R appuser:appuser /app/media 2>/dev/null || true
+
+# Explicitly set permissions for media and staticfiles
+chmod -R 777 /app/media 2>/dev/null || true
+chmod -R 775 /app/staticfiles 2>/dev/null || true
+
+echo "✅ Media and staticfiles permissions configured"
+}
+
+# Run deployment steps
+wait_for_db
+run_migrations
+optimize_db
+fix_media_permissions # <-- Added this call
+collect_static
+create_cache
+setup_roles
+python /app/grant_developer_admin_access.py # Execute the admin creation script
+create_superuser
+reset_stats
+warm_cache
+
+# Use production-ready Gunicorn settings with proper timeouts for form submissions
+# Execute Gunicorn as appuser after root operations are complete
+exec su appuser -c "gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --max-requests 1000 --max-requests-jitter 50 --worker-class sync --worker-connections 1000 --preload config.wsgi:application"
+
+echo "================================================"
+echo "🎉 #FahanieCares Production Server Ready!"
+echo "================================================"
+
+# Execute the main command
+exec "$@"
+EOF
+
+# Make entrypoint script executable
+RUN chmod +x /app/entrypoint.sh
+
+# Install all dependencies
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
+
+# Create user to run the application
+RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
+
+# Post-deployment tasks
+ENTRYPOINT ["/app/entrypoint.sh"]
+
+EXPOSE 8000

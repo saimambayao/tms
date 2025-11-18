@@ -1,0 +1,86 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}{{ staff_member.full_name }} - Staff Details{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-primary-800">{{ staff_member.full_name }}</h1>
+            <p class="text-gray-600 mt-1">{{ staff_member.position }}</p>
+        </div>
+        <div class="flex gap-3">
+            {% include 'components/atoms/button.html' with variant='outline' text='Edit Profile' href='/staff/edit/' %}
+            {% include 'components/atoms/button.html' with variant='primary' text='Back to List' href='/staff/list/' %}
+        </div>
+    </div>
+
+    <!-- Staff Information -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Personal Information</h3>
+            <div class="space-y-3">
+                <div><strong>Email:</strong> {{ staff_member.email|default:"Not provided" }}</div>
+                <div><strong>Phone:</strong> {{ staff_member.phone_number|default:"Not provided" }}</div>
+                <div><strong>Division:</strong> {{ staff_member.get_division_display|default:"Not assigned" }}</div>
+                <div><strong>Employment Status:</strong> {{ staff_member.get_employment_status_display|default:"Not set" }}</div>
+                <div><strong>Date Hired:</strong> {{ staff_member.date_hired|date:"M d, Y"|default:"Not set" }}</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold mb-4">Recent Attendance</h3>
+            {% if recent_attendance %}
+                <div class="space-y-2">
+                    {% for attendance in recent_attendance %}
+                    <div class="flex justify-between items-center py-2 border-b">
+                        <span>{{ attendance.date|date:"M d, Y" }}</span>
+                        <span class="attendance-status status-{{ attendance.status }}">
+                            {{ attendance.get_status_display }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-gray-500">No recent attendance records</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Evaluations if available -->
+    {% if recent_evaluations %}
+    <div class="bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-4">Recent Performance Evaluations</h3>
+        <div class="space-y-4">
+            {% for evaluation in recent_evaluations %}
+            <div class="border-l-4 border-blue-400 pl-4">
+                <div class="font-medium">{{ evaluation.evaluation_period|title }} Evaluation</div>
+                <div class="text-sm text-gray-600">
+                    Period: {{ evaluation.period_start|date:"M d, Y" }} - {{ evaluation.period_end|date:"M d, Y" }}
+                </div>
+                <div class="text-sm text-gray-600">
+                    Overall Rating: {{ evaluation.overall_rating }}/5
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.attendance-status {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+}
+.status-present { background-color: #d1fae5; color: #065f46; }
+.status-absent { background-color: #fee2e2; color: #991b1b; }
+.status-late { background-color: #fef3c7; color: #92400e; }
+.status-leave { background-color: #e0e7ff; color: #3730a3; }
+</style>
+{% endblock %}

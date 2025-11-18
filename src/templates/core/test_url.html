@@ -1,0 +1,18 @@
+{% extends 'base/base.html' %}
+
+{% block title %}URL Test Page{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto p-8">
+    <h1 class="text-2xl font-bold text-primary-800 mb-4">Testing URL Reversal</h1>
+    <p class="text-gray-700 mb-4">
+        This page is for testing if Django's {% verbatim %}`{% url %}`{% endverbatim %} tag is working correctly in your environment.
+    </p>
+    <p class="text-gray-700 mb-4">
+        Link to member profile: <a href="{% url 'member_profile' %}" class="text-blue-600 hover:underline">Go to Profile</a>
+    </p>
+    <p class="text-gray-700">
+        If you see this page without a `TemplateSyntaxError`, it means the `{% url %}` tag itself is likely fine.
+    </p>
+</div>
+{% endblock %}

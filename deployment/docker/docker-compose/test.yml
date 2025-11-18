@@ -1,0 +1,157 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database for Testing
+  db_test:
+    image: postgres:15-alpine
+    container_name: fahaniecares_db_test
+    restart: unless-stopped
+    volumes:
+      - postgres_test_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_NAME:-fahaniecares_test_db}
+      POSTGRES_USER: ${DB_USER:-fahaniecares_test_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test_password}
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fahaniecares_test_user}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - fahaniecares_test_network
+
+  # Redis Cache for Testing
+  redis_test:
+    image: redis:7-alpine
+    container_name: fahaniecares_redis_test
+    restart: unless-stopped
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_test_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    networks:
+      - fahaniecares_test_network
+
+  # Django Test Runner
+  test_runner:
+    build:
+      context: ../../../src
+      dockerfile: ../deployment/docker/Dockerfile.django
+    container_name: fahaniecares_test_runner
+    command: sh -c "
+      echo '🧪 Setting up test environment...' &&
+      python manage.py wait_for_db &&
+      python manage.py migrate --settings=config.settings.development &&
+      python manage.py setup_roles --settings=config.settings.development &&
+      echo '🏃 Running comprehensive test suite...' &&
+      python manage.py test --settings=config.settings.development --verbosity=2 &&
+      echo '📊 Generating test coverage report...' &&
+      coverage run --source='.' manage.py test --settings=config.settings.development &&
+      coverage report &&
+      coverage html &&
+      echo '✅ All tests completed!'"
+    volumes:
+      - ../../../src:/app
+      - test_reports:/app/htmlcov
+    environment:
+      # Django settings
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DEBUG: "True"
+      SECRET_KEY: test-secret-key-for-testing-only
+      ALLOWED_HOSTS: localhost,127.0.0.1,[::1],testserver
+      
+      # Database settings
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-fahaniecares_test_db}
+      DB_USER: ${DB_USER:-fahaniecares_test_user}
+      DB_PASSWORD: ${DB_PASSWORD:-test_password}
+      DB_HOST: db_test
+      DB_PORT: 5432
+      
+      # Redis settings
+      REDIS_URL: redis://redis_test:6379/0
+      CACHE_BACKEND: django_redis.cache.RedisCache
+      
+      # Test settings
+      TESTING: "True"
+      EMAIL_BACKEND: django.core.mail.backends.locmem.EmailBackend
+      
+      # Other settings
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      
+    depends_on:
+      db_test:
+        condition: service_healthy
+      redis_test:
+        condition: service_healthy
+    networks:
+      - fahaniecares_test_network
+
+  # Performance Test Runner
+  performance_test:
+    build:
+      context: ../../../src
+      dockerfile: ../deployment/docker/Dockerfile.django
+    container_name: fahaniecares_performance_test
+    command: sh -c "
+      echo '⚡ Running performance tests...' &&
+      python manage.py wait_for_db &&
+      python manage.py migrate --settings=config.settings.development &&
+      python deployment/scripts/performance_benchmark.sh &&
+      echo '🚀 Performance tests completed!'"
+    volumes:
+      - ../../../src:/app
+      - ../scripts:/app/deployment/scripts
+      - performance_reports:/app/performance_reports
+    environment:
+      # Django settings
+      DJANGO_SETTINGS_MODULE: config.settings.development
+      DEBUG: "False"  # Performance testing should be closer to production
+      SECRET_KEY: perf-test-secret-key
+      ALLOWED_HOSTS: localhost,127.0.0.1,[::1]
+      
+      # Database settings
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME:-fahaniecares_test_db}
+      DB_USER: ${DB_USER:-fahaniecares_test_user}
+      DB_PASSWORD: ${DB_PASSWORD:-test_password}
+      DB_HOST: db_test
+      DB_PORT: 5432
+      
+      # Redis settings
+      REDIS_URL: redis://redis_test:6379/1
+      
+      # Performance test settings
+      PERFORMANCE_TESTING: "True"
+      
+    depends_on:
+      db_test:
+        condition: service_healthy
+      redis_test:
+        condition: service_healthy
+    networks:
+      - fahaniecares_test_network
+
+volumes:
+  postgres_test_data:
+    name: fahaniecares_postgres_test_data
+  redis_test_data:
+    name: fahaniecares_redis_test_data
+  test_reports:
+    name: fahaniecares_test_reports
+  performance_reports:
+    name: fahaniecares_performance_reports
+
+networks:
+  fahaniecares_test_network:
+    name: fahaniecares_test_network
+    driver: bridge

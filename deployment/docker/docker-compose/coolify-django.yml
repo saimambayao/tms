@@ -1,0 +1,294 @@
+version: '3.9'
+
+services:
+  # PostgreSQL Database - Production Ready
+  db:
+    image: postgres:15-alpine
+    container_name: fahaniecares_db_prod
+    restart: unless-stopped
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./deployment/init-db.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - fahaniecares_network
+    command: >
+      postgres
+      -c log_statement=all
+      -c log_min_duration_statement=1000
+      -c shared_preload_libraries=pg_stat_statements
+      -c max_connections=200
+      -c shared_buffers=256MB
+      -c effective_cache_size=1GB
+
+  # Redis Cache - Production Configuration
+  redis:
+    image: redis:7-alpine
+    container_name: fahaniecares_redis_prod
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD}
+      --appendonly yes
+      --appendfsync everysec
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    healthcheck:
+      test: ["CMD", "redis-cli", "--no-auth-warning", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - fahaniecares_network
+
+  # Django Web Application - Production
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: fahaniecares_web_prod
+    restart: unless-stopped
+    command: >
+      sh -c "
+      echo 'Starting production deployment...' &&
+      python manage.py wait_for_db &&
+      python manage.py migrate &&
+      python manage.py optimize_database &&
+      python manage.py collectstatic --noinput &&
+      python manage.py createcachetable &&
+      python manage.py setup_roles &&
+      python manage.py create_developer_superusers &&
+      echo 'Starting Gunicorn server...' &&
+      gunicorn config.wsgi:application
+        --bind 0.0.0.0:8000
+        --workers ${GUNICORN_WORKERS:-3}
+        --worker-class gevent
+        --worker-connections 1000
+        --max-requests 1000
+        --max-requests-jitter 50
+        --timeout 30
+        --keep-alive 5
+        --preload
+        --access-logfile -
+        --error-logfile -
+        --log-level info
+      "
+    volumes:
+      - static_files:/app/staticfiles
+      - media_files:/app/media
+      - ./logs:/app/logs
+    ports:
+      - "8000:8000"
+    environment:
+      # Django Core Settings
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      
+      # Database Configuration
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      
+      # Redis Configuration
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CACHE_BACKEND: django_redis.cache.RedisCache
+      CACHE_TIMEOUT: ${CACHE_TIMEOUT:-3600}
+      
+      # Security Settings
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-True}
+      SECURE_HSTS_SECONDS: ${SECURE_HSTS_SECONDS:-31536000}
+      SECURE_HSTS_INCLUDE_SUBDOMAINS: ${SECURE_HSTS_INCLUDE_SUBDOMAINS:-True}
+      SECURE_HSTS_PRELOAD: ${SECURE_HSTS_PRELOAD:-True}
+      
+      # Email Configuration
+      EMAIL_BACKEND: ${EMAIL_BACKEND:-django.core.mail.backends.smtp.EmailBackend}
+      EMAIL_HOST: ${EMAIL_HOST}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_USE_TLS: ${EMAIL_USE_TLS:-True}
+      EMAIL_HOST_USER: ${EMAIL_HOST_USER}
+      EMAIL_HOST_PASSWORD: ${EMAIL_HOST_PASSWORD}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL}
+      
+      # AWS Configuration (Optional)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_STORAGE_BUCKET_NAME: ${AWS_STORAGE_BUCKET_NAME}
+      AWS_S3_REGION_NAME: ${AWS_S3_REGION_NAME:-ap-southeast-1}
+      
+      # Sentry Configuration
+      SENTRY_DSN: ${SENTRY_DSN}
+      SENTRY_ENVIRONMENT: ${SENTRY_ENVIRONMENT:-production}
+      
+      # Production Optimization
+      PYTHONUNBUFFERED: 1
+      PYTHONDONTWRITEBYTECODE: 1
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
+      
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fahaniecares_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Nginx Reverse Proxy
+  nginx:
+    image: nginx:alpine
+    container_name: fahaniecares_nginx_prod
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deployment/nginx-coolify.conf:/etc/nginx/nginx.conf:ro
+      - static_files:/app/static:ro
+      - media_files:/app/media:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      web:
+        condition: service_healthy
+    networks:
+      - fahaniecares_network
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Celery Worker (Optional - for background tasks)
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: fahaniecares_celery_prod
+    restart: unless-stopped
+    command: >
+      sh -c "
+      python manage.py wait_for_db &&
+      celery -A config worker
+        --loglevel=info
+        --concurrency=2
+        --max-tasks-per-child=1000
+        --time-limit=300
+        --soft-time-limit=240
+      "
+    volumes:
+      - media_files:/app/media
+      - ./logs:/app/logs
+    environment:
+      # Same environment as web service
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/2
+      SENTRY_DSN: ${SENTRY_DSN}
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fahaniecares_network
+    profiles:
+      - celery
+
+  # Celery Beat (Optional - for scheduled tasks)
+  celery-beat:
+    build:
+      context: .
+      dockerfile: Dockerfile.production
+    container_name: fahaniecares_celery_beat_prod
+    restart: unless-stopped
+    command: >
+      sh -c "
+      python manage.py wait_for_db &&
+      celery -A config beat
+        --loglevel=info
+        --schedule=/tmp/celerybeat-schedule
+        --pidfile=/tmp/celerybeat.pid
+      "
+    volumes:
+      - ./logs:/app/logs
+    environment:
+      # Same environment as web service
+      DJANGO_SETTINGS_MODULE: config.settings.production
+      DEBUG: "False"
+      SECRET_KEY: ${SECRET_KEY}
+      DB_ENGINE: django.db.backends.postgresql
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: db
+      DB_PORT: 5432
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/0
+      CELERY_BROKER_URL: redis://:${REDIS_PASSWORD}@redis:6379/1
+      CELERY_RESULT_BACKEND: redis://:${REDIS_PASSWORD}@redis:6379/2
+      SENTRY_DSN: ${SENTRY_DSN}
+      PYTHONUNBUFFERED: 1
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - fahaniecares_network
+    profiles:
+      - celery
+
+volumes:
+  postgres_data:
+    name: fahaniecares_postgres_data_prod
+    driver: local
+  redis_data:
+    name: fahaniecares_redis_data_prod
+    driver: local
+  static_files:
+    name: fahaniecares_static_files_prod
+    driver: local
+  media_files:
+    name: fahaniecares_media_files_prod
+    driver: local
+
+networks:
+  fahaniecares_network:
+    name: fahaniecares_network_prod
+    driver: bridge

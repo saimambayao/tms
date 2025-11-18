@@ -1,0 +1,475 @@
+# #FahanieCares Website System Product Requirements
+
+## Executive Summary
+
+This document outlines the product requirements for the #FahanieCares website, the digital platform supporting MP Atty. Sittie Fahanie S. Uy-Oyod's public service initiative. The system will leverage Notion as its primary database infrastructure, integrated with modern web technologies (Python/Django backend) to deliver the #FahanieCares mission of "Bringing Bangsamoro Public Service Closer to You." The website will serve as the primary digital touchpoint for constituent engagement, membership management, service delivery, chapter coordination, and information dissemination about Bangsamoro Ministries' Programs, Projects, Activities, and Services (PPAS).
+
+The system architecture will implement a modular design approach aligned with both parliamentary function requirements and the specific goals of the #FahanieCares initiative, while utilizing Notion's powerful database and collaboration features as its foundation.
+
+## System Overview
+
+### Purpose and Vision
+
+The #FahanieCares website will provide a centralized digital platform to operationalize MP Uy-Oyod's representation function by:
+
+1. Managing membership registration through integrated Notion Forms
+2. Supporting Direct Service Delivery through digital access to #FahanieCares Programs and Services for registered members
+3. Providing information about Bangsamoro Ministries' Programs, Projects, Activities, and Services (PPAS)
+4. Facilitating an efficient system connecting constituents to appropriate government agencies
+5. Enabling meaningful community consultation through digital engagement channels
+6. Organizing #FahanieCares chapter members and activities across municipalities
+7. Providing transparent information about parliamentary activities and service initiatives
+
+### Target Users
+
+1. **Constituents**: General public seeking information
+2. **Registered Members**: Individuals registered with #FahanieCares who can access programs and services
+3. **Chapter Members**: Registered beneficiaries organized by municipality
+4. **Chapter Coordinators**: Local leaders managing municipal chapters
+5. **Parliamentary Office Staff**: Administrators managing member requests and constituent services
+6. **MP Uy-Oyod**: Primary stakeholder overseeing the platform
+
+### Core Functions
+
+1. Public-facing portal for #FahanieCares initiative
+2. Membership registration and management through Notion Forms
+3. Digital access to #FahanieCares Programs and Services for registered members
+4. Information portal for Bangsamoro Ministries' PPAS
+5. Efficient digital service connection system
+6. Constituent case management
+7. Chapter membership and organization
+8. Mobile-friendly service access
+9. Reporting and analytics dashboard
+10. Document repository for parliamentary work
+11. Communication management system
+
+## Technical Architecture
+
+### System Architecture
+
+The #FahanieCares website will utilize a Django-based architecture with Notion integration:
+
+1. **Front-End**: Responsive design using Django templates with modern JavaScript
+2. **Back-End**: Python/Django framework
+3. **Primary Database**: Notion databases for all content, constituent, and case management data
+4. **Notion API Integration**: Extensive use of Notion API for data management and retrieval
+5. **Authentication**: Django's authentication system with extended user profiles
+6. **Cloud Infrastructure**: Deployed on AWS with auto-scaling capabilities
+7. **Content Delivery Network (CDN)**: For optimized delivery of static assets
+8. **API Layer**: Django REST Framework API with Notion API connectivity as the data access layer
+
+### System Components
+
+1. **Web Application**: The primary interface for all users
+2. **Mobile-Responsive Design**: Optimized for field use during community outreach
+3. **Admin Dashboard**: Secure interface for staff operations
+4. **Notion Database System**: Core database infrastructure for all system data
+5. **Document Management Module**: Integration with Notion file storage capabilities
+6. **Communication Engine**: Email, SMS, and notification system
+7. **Analytics Module**: Data visualization and reporting tools using Notion data
+8. **Integration Framework**: Connects Notion with external government systems
+
+## Notion as Database System
+
+The #FahanieCares system will utilize Notion as its primary database platform, leveraging its collaborative features, flexible database capabilities, and API connectivity to build a comprehensive constituent management system. This approach provides rapid implementation while allowing for future migration to dedicated database systems as needs evolve.
+
+### Database Architecture
+
+1. **Core Database Structure**:
+   - **Constituent Database**: Master record of all constituents with essential demographic information
+   - **Chapter Member Database**: Related to constituents with chapter-specific information 
+   - **Case/Request Database**: Tracking referrals and service requests with relations to constituents
+   - **Program Database**: Catalog of #FahanieCares Programs, Projects, and Activities (PPAs)
+   - **Event Database**: Calendar of outreach events, consultations, and activities
+   - **Agency Database**: Directory of government agencies for referrals
+
+2. **Relation Structure**:
+   - Constituent ID as primary key across related databases
+   - Case/Request database linked to both constituents and agencies
+   - Chapter membership linked to constituents and geographic regions
+   - Event participation tracking via relations to constituents
+   - Program eligibility tracking with relations to constituent profiles
+
+3. **View Strategy**:
+   - Purpose-specific filtered views to maintain performance
+   - Status-based views for efficient case management workflow
+   - Geographic filters for chapter-based operations
+   - Custom views for different staff roles and responsibilities
+   - Calendar views for schedule and deadline management
+
+### API Integration
+
+1. **Data Access Patterns**:
+   - Implementing pagination for database queries over 100 records
+   - Rate limiting application requests to respect API constraints (3 req/sec)
+   - Caching frequently accessed data to reduce API calls
+   - Batching updates to minimize individual API requests
+   - Using webhooks where possible for efficient updates
+
+2. **Synchronization Approach**:
+   - Regular scheduled synchronization for non-critical data
+   - Real-time updates for priority constituent interactions
+   - Queue-based approach for handling high-volume periods
+   - Retrying mechanisms for handling API rate limits
+   - Conflict resolution strategy for simultaneous updates
+
+## Detailed Module Specifications
+
+### 1. Core Portal Module
+
+The main public-facing component of the website delivering #FahanieCares information and services.
+
+#### Features
+
+1. **Homepage**:
+   - Mission statement and MP profile
+   - Latest announcements and activities
+   - Quick access to service referral forms
+   - Success stories and impact metrics
+   - Calendar of upcoming events and outreach activities
+
+2. **About Section**:
+   - MP Uy-Oyod's profile and commitment
+   - #FahanieCares mission and objectives
+   - Parliamentary agenda and accomplishments
+   - Team structure and contact information
+
+3. **News and Updates**:
+   - Latest parliamentary activities
+   - #FahanieCares initiatives and accomplishments
+   - Media coverage and press releases
+   - Photo and video gallery of events
+
+4. **Resources**:
+   - Informational materials on government services
+   - Downloadable forms and templates
+   - Legislative updates and parliamentary reports
+   - Educational content on civic participation
+
+5. **Contact and Feedback**:
+   - General inquiry form
+   - Office location and hours
+   - Emergency contact information
+   - Suggestion and feedback mechanism
+
+### 2. Service Referral System Module
+
+The primary mechanism for connecting constituents with government services, implementing the #FahanieCares core strategy of an efficient Referral System.
+
+#### Features
+
+1. **Service Directory**:
+   - Notion database of government services
+   - Categorization by ministry, agency, and service type
+   - Eligibility criteria and requirements
+   - Application procedures and timelines
+   - Contact information for direct inquiries
+
+2. **Referral Request System**:
+   - Online referral application forms
+   - Document upload capabilities
+   - Case tracking with unique reference numbers
+   - Status notifications via email and SMS
+   - Follow-up mechanism for pending cases
+
+3. **Agency Connection Portal**:
+   - Secure referral transmission to agencies
+   - Case status updates from agency representatives
+   - Document exchange between offices
+   - Communication thread for case coordination
+   - Performance metrics for agency responsiveness
+
+4. **Self-Service Tools**:
+   - Eligibility assessment wizards
+   - Document requirement checklists
+   - Automated application guidance
+   - FAQ and troubleshooting guides
+   - Video tutorials on application procedures
+
+### 3. Constituent Management Module
+
+System for tracking constituent profiles, service history, and engagement, supporting both the Referral System and Direct Service Delivery strategies.
+
+#### Features
+
+1. **Constituent Profiles**:
+   - Primary Notion database with comprehensive demographic information
+   - Contact details and preferences
+   - Service history and interaction log
+   - Membership status and chapter affiliation
+   - Related database for document tracking and management
+   - Custom views for different demographic segments
+
+2. **Case Management**:
+   - Notion database for service request tracking and categorization
+   - Staff assignment through relation properties
+   - Status tracking with select properties and timeline views
+   - Follow-up scheduling with date properties and calendar views
+   - Resolution documentation with rich text capabilities
+   - Feedback collection through linked form submissions
+
+3. **Engagement Tracking**:
+   - Event participation tracked through relation databases
+   - Communication history logged in related databases
+   - Survey responses linked to constituent profiles
+   - Volunteer activities and contributions tracking
+   - Relationship strength assessment through formula properties
+   - Dashboard views for engagement overview
+
+4. **Special Sector Management**:
+   - Specialized properties for vulnerable sector identification
+   - Accessibility needs and accommodations tracking
+   - Guardian or caretaker information in related databases
+   - Special assistance requirements with multi-select properties
+   - Program eligibility scoring through formula properties
+   - Filtered views for sector-specific service coordination
+
+### 4. Chapter Management Module
+
+System for organizing and coordinating #FahanieCares chapters across municipalities, supporting the Membership and Chapter Development strategy.
+
+#### Features
+
+1. **Chapter Profiles**:
+   - Notion database of chapter information and leadership
+   - Member directory and roles
+   - Activity calendar and history
+   - Resources and documents
+   - Performance metrics and goals
+
+2. **Membership Management**:
+   - Member registration and approval workflow
+   - ID generation and validation
+   - Membership renewal processing
+   - Member communication tools
+   - Skills and interest inventory
+
+3. **Activity Coordination**:
+   - Event planning and scheduling
+   - Volunteer assignment and tracking
+   - Resource allocation and distribution
+   - Attendance recording and reporting
+   - Outcome documentation and impact assessment
+
+4. **Local Service Coordination**:
+   - Municipality-specific service directory
+   - Local agency contact management
+   - Community needs assessment tools
+   - Service gap identification
+   - Local referral tracking and analysis
+
+### 5. Direct Service Module
+
+System for managing #FahanieCares Programs, Projects, and Activities (PPAs) provided directly to constituents.
+
+#### Features
+
+1. **Service Catalog**:
+   - Notion database of direct services
+   - Eligibility criteria and application process
+   - Supporting document requirements
+   - Service schedule and availability
+   - Beneficiary capacity and limitations
+
+2. **Application Management**:
+   - Online application forms connected to Notion
+   - Document upload and verification
+   - Application review and approval workflow
+   - Status tracking and notifications
+   - Appointment scheduling for service delivery
+
+3. **Resource Allocation**:
+   - Budget allocation and tracking
+   - Resource inventory management
+   - Service quota monitoring
+   - Beneficiary prioritization tools
+   - Impact assessment and optimization
+
+4. **Mobile Service Support**:
+   - Caravan scheduling and planning
+   - Location-based service deployment
+   - Field registration and intake
+   - Offline service delivery recording
+   - Post-activity reporting and analysis
+
+### 6. Communication Module
+
+System for managing constituent engagement and public information dissemination, supporting the Digital Engagement strategy.
+
+#### Features
+
+1. **Multi-channel Communication**:
+   - Email campaign management
+   - SMS notification system
+   - Social media integration
+   - Website announcements
+   - Push notifications for mobile users
+
+2. **Content Management**:
+   - Message template library in Notion
+   - Audience segmentation and targeting
+   - Scheduled message delivery
+   - Personalization and customization
+   - A/B testing for message effectiveness
+
+3. **Engagement Analytics**:
+   - Delivery and open rate tracking
+   - Click-through and conversion analysis
+   - Response monitoring and management
+   - Engagement scoring and trending
+   - Optimization recommendations
+
+4. **Feedback Collection**:
+   - Survey and poll creation
+   - Response collection and analysis
+   - Sentiment analysis and categorization
+   - Feedback routing and assignment
+   - Impact tracking and implementation reporting
+
+### 7. Analytics and Reporting Module
+
+Comprehensive data analysis and visualization system for monitoring #FahanieCares performance and impact.
+
+#### Features
+
+1. **Dashboard System**:
+   - Executive dashboard for MP and leadership
+   - Operational dashboards for staff
+   - Public-facing impact metrics
+   - Chapter performance visualization
+   - Custom report generation
+
+2. **Performance Metrics**:
+   - Service delivery statistics
+   - Referral effectiveness tracking
+   - Constituent satisfaction measurement
+   - Response time and resolution rates
+   - Chapter growth and engagement metrics
+
+3. **Impact Assessment**:
+   - Beneficiary outcome tracking
+   - Geographic service distribution
+   - Demographic reach analysis
+   - Service gap identification
+   - Comparative analysis against goals
+
+4. **Strategic Planning Support**:
+   - Trend analysis and forecasting
+   - Resource optimization recommendations
+   - Service improvement opportunities
+   - Geographic targeting suggestions
+   - Budget allocation optimization
+
+### 8. Parliamentary Work Module
+
+System for managing and sharing MP Uy-Oyod's legislative and oversight activities, connecting constituents to her parliamentary functions.
+
+#### Features
+
+1. **Legislative Tracker**:
+   - Notion database of bills and resolutions sponsored or supported
+   - Legislative status and progress updates
+   - Committee involvement and contributions
+   - Voting record and position statements
+   - Legislative impact assessment
+
+2. **Oversight Activities**:
+   - Government program monitoring
+   - Agency performance tracking
+   - Budget utilization analysis
+   - Implementation status of enacted laws
+   - Issue investigation and resolution
+
+3. **Public Hearings and Consultations**:
+   - Upcoming schedule and locations
+   - Topic information and background
+   - Registration for participation
+   - Input submission mechanisms
+   - Documentation and outcome reporting
+
+4. **Parliamentary Resources**:
+   - Speech and statement archive
+   - Policy position papers
+   - Committee reports and findings
+   - Research studies and analysis
+   - Educational materials on parliamentary procedures
+
+## Development Requirements
+
+### Technology Stack
+
+1. **Backend Framework**: Python/Django 4.2+
+2. **API Framework**: Django REST Framework
+3. **Frontend**: Django Templates with TailwindCSS
+4. **JavaScript**: Vanilla JS with selected libraries as needed
+5. **Database**: Notion API
+6. **Authentication**: Django Authentication + social auth providers
+7. **Hosting**: AWS (EC2, S3, CloudFront)
+8. **CI/CD**: GitHub Actions
+9. **Monitoring**: Sentry
+
+### Development Tools
+
+1. **Claude Code**: For AI-assisted development
+2. **Claude Desktop App**: For project management and documentation
+3. **Notion**: For database management and content storage
+4. **GitHub**: For version control and project management
+5. **VS Code**: Primary development environment
+
+### Security Requirements
+
+1. **Authentication**: Secure user authentication with MFA for admin users
+2. **Authorization**: Role-based access control for different user types
+3. **Data Protection**: Proper handling of sensitive constituent information
+4. **API Security**: Secure API endpoints with proper authentication
+5. **CSRF Protection**: Protection against cross-site request forgery
+6. **Input Validation**: Thorough validation of all user inputs
+7. **Regular Audits**: Security auditing and penetration testing
+
+### Third-Party Integrations
+
+1. **Notion API**: Primary database integration
+2. **Email Service**: For outbound communications
+3. **SMS Gateway**: For mobile notifications
+4. **Social Media APIs**: For social media integration
+5. **Google Maps API**: For location-based services
+6. **Payment Gateway**: For donations and contributions (future phase)
+
+## Implementation Timeline
+
+The project will be implemented in phases:
+
+### Phase 1: Foundation 
+- Setup project infrastructure
+- Develop core data models
+- Create basic templates
+- Implement Notion API integration
+- Develop authentication system
+
+### Phase 2: Core Functionality 
+- Implement Service Referral System
+- Develop Constituent Management
+- Create Chapter Management
+- Build basic dashboards
+- Implement user roles and permissions
+
+### Phase 3: Enhanced Features 
+- Develop Direct Service Module
+- Implement Communication System
+- Create Parliamentary Work Module
+- Build advanced search features
+- Implement notification system
+
+### Phase 4: Analytics and Optimization 
+- Develop reporting and analytics
+- Implement advanced dashboards
+- Create data visualization components
+- Optimize performance
+- Enhance mobile experience
+
+### Phase 5: Testing and Launch 
+- Comprehensive testing
+- Staff training
+- Content population
+- System launch
+- Post-launch support

@@ -1,0 +1,213 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Font Awesome Icon Test{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-6">
+    <h1 class="text-3xl font-bold mb-6">Font Awesome Icon Test</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Document and Verification Icons -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Document Icons</h2>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-certificate text-blue-600 text-2xl"></i>
+                    <span>Voter's Certificate</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-id-card text-green-600 text-2xl"></i>
+                    <span>Voter's ID</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-upload text-primary-600 text-2xl"></i>
+                    <span>Document Upload</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-shield-alt text-primary-600 text-2xl"></i>
+                    <span>Verification Status</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Icons -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Navigation Icons</h2>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-user text-gray-600 text-2xl"></i>
+                    <span>User Profile</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-tachometer-alt text-gray-600 text-2xl"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-cog text-gray-600 text-2xl"></i>
+                    <span>Settings</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-search text-gray-600 text-2xl"></i>
+                    <span>Search</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Icons -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Status Icons</h2>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+                    <span>Completed</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-clock text-yellow-600 text-2xl"></i>
+                    <span>Pending</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-spinner fa-spin text-blue-600 text-2xl"></i>
+                    <span>In Progress</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-ban text-red-600 text-2xl"></i>
+                    <span>Cancelled</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Icons -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Service Icons</h2>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-heartbeat text-red-500 text-2xl"></i>
+                    <span>Health Services</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-graduation-cap text-blue-600 text-2xl"></i>
+                    <span>Education</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-seedling text-green-600 text-2xl"></i>
+                    <span>Agriculture</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-hands-helping text-purple-600 text-2xl"></i>
+                    <span>Social Services</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Icons -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Action Icons</h2>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-edit text-blue-600 text-2xl"></i>
+                    <span>Edit</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-trash text-red-600 text-2xl"></i>
+                    <span>Delete</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-download text-green-600 text-2xl"></i>
+                    <span>Download</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-print text-gray-600 text-2xl"></i>
+                    <span>Print</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Priority Icons -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-xl font-semibold mb-4">Priority Icons</h2>
+            <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-exclamation text-red-600 text-2xl"></i>
+                    <span>High Priority</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-minus text-yellow-600 text-2xl"></i>
+                    <span>Medium Priority</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-angle-down text-gray-600 text-2xl"></i>
+                    <span>Low Priority</span>
+                </div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-info-circle text-blue-600 text-2xl"></i>
+                    <span>Information</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Icon Sizes Demo -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Icon Sizes</h2>
+        <div class="flex items-center gap-6">
+            <i class="fas fa-home text-xs text-primary-600"></i>
+            <i class="fas fa-home text-sm text-primary-600"></i>
+            <i class="fas fa-home text-base text-primary-600"></i>
+            <i class="fas fa-home text-lg text-primary-600"></i>
+            <i class="fas fa-home text-xl text-primary-600"></i>
+            <i class="fas fa-home text-2xl text-primary-600"></i>
+            <i class="fas fa-home text-3xl text-primary-600"></i>
+            <i class="fas fa-home text-4xl text-primary-600"></i>
+            <i class="fas fa-home text-5xl text-primary-600"></i>
+        </div>
+    </div>
+
+    <!-- Interactive Icon Buttons -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Interactive Icon Buttons</h2>
+        <div class="flex flex-wrap gap-4">
+            <button class="group flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-lg hover:from-primary-700 hover:to-primary-800 shadow-sm hover:shadow-lg transition-all duration-200">
+                <i class="fas fa-plus group-hover:rotate-90 transition-transform duration-200"></i>
+                <span>Add New</span>
+            </button>
+            <button class="group flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i class="fas fa-save"></i>
+                <span>Save</span>
+            </button>
+            <button class="group flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                <i class="fas fa-times"></i>
+                <span>Cancel</span>
+            </button>
+            <button class="group flex items-center gap-2 px-4 py-2 border-2 border-primary-600 text-primary-600 rounded-lg hover:bg-gradient-to-r hover:from-primary-600 hover:to-primary-700 hover:text-white hover:border-transparent transition-all duration-200">
+                <i class="fas fa-filter"></i>
+                <span>Filter</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Icon with Backgrounds -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h2 class="text-xl font-semibold mb-4">Icons with Backgrounds</h2>
+        <div class="flex flex-wrap gap-4">
+            <div class="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-check text-primary-600 text-xl"></i>
+            </div>
+            <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-bell text-blue-600 text-xl"></i>
+            </div>
+            <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-full flex items-center justify-center">
+                <i class="fas fa-star text-yellow-600 text-xl"></i>
+            </div>
+            <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-cog text-gray-600"></i>
+            </div>
+            <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-magic text-purple-600"></i>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
