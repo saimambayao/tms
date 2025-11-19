@@ -1,4 +1,4 @@
-<!-- Modern #FahanieCares Navbar with Alpine.js and Tailwind CSS -->
+<!-- Modern BM Parliament Navbar with Alpine.js and Tailwind CSS -->
 {% load i18n %}
 {% load static %}
 <nav x-data="{
@@ -130,44 +130,26 @@
     }
 }" 
 @keydown.escape="closeMobileMenu(); closeAllDropdowns()"
-class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-md"
+class="fixed top-0 left-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200 shadow-md"
 x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) closeMobileMenu() })">
     {% csrf_token %}
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="flex h-16 items-center justify-between">
+    <div class="flex h-16 items-center justify-between mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
             
             <!-- Logo Section -->
             <div class="flex items-center">
                 <a href="{% url 'home' %}" class="group flex items-center gap-3 transition-transform duration-200 hover:scale-105">
-                    <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #059669 0%, #047857 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.2s ease; color: white; font-weight: bold; font-size: 14px;" onmouseover='this.style.boxShadow="0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"; this.style.transform="scale(1.05)";' onmouseout='this.style.boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"; this.style.transform="scale(1)";'>#FC</div>
+                    <div style="width: 40px; height: 40px; border-radius: 12px; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transition: all 0.2s ease; color: white; font-weight: bold; font-size: 14px;" onmouseover='this.style.boxShadow="0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)"; this.style.transform="scale(1.05)";' onmouseout='this.style.boxShadow="0 4px 6px -1px rgba(0, 0, 0, 0.1)"; this.style.transform="scale(1)";'><i class="fas fa-building"></i></div>
                     <div class="hidden sm:block">
-                        <span style="font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #047857 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #059669;">#FahanieCares</span>
-                        <p class="text-sm text-gray-500 font-medium">Bringing Bangsamoro Public Service Closer to You</p>
+                        <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                            <span style="font-size: 1.125rem; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #047857 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #059669;">Bangsamoro</span>
+                            <span style="font-size: 1.125rem; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #047857 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #059669;">Parliament</span>
+                        </div>
                     </div>
                 </a>
             </div>
 
             <!-- Desktop Navigation -->
-            <div class="hidden md:flex items-center gap-4">
-                <!-- Home Link -->
-                <a href="{% url 'home' %}"
-                   {% if request.resolver_match.url_name == 'home' %}
-                   style="position: relative; padding: 0.75rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: color 0.2s ease; color: #047857;"
-                   {% else %}
-                   style="position: relative; padding: 0.75rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: color 0.2s ease; color: #374151;"
-                   onmouseover="this.style.color='#059669';"
-                   onmouseout="this.style.color='#374151';"
-                   {% endif %}>
-                    {% trans "Home" %}
-                    <span {% if request.resolver_match.url_name == 'home' %}
-                          style="position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #059669; transform: scaleX(1); transition: transform 0.2s ease;"
-                          {% else %}
-                          style="position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #059669; transform: scaleX(0); transition: transform 0.2s ease;"
-                          {% endif %}
-                          onmouseover="this.style.transform='scaleX(1)';"
-                          onmouseout="{% if request.resolver_match.url_name != 'home' %}this.style.transform='scaleX(0)';{% endif %}"></span>
-                </a>
-
+            <div class="flex items-center gap-4">
                 <!-- About Link -->
                 <a href="{% url 'about' %}"
                    {% if request.resolver_match.url_name == 'about' %}
@@ -220,11 +202,11 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                         
                         <a href="{% url 'programs' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                            <div style="width: 32px; height: 32px; background: #d1fae5; color: #059669; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='#a7f3d0'; this.style.transform='scale(1.05)';" onmouseout="this.style.backgroundColor='#d1fae5'; this.style.transform='scale(1)';">
-                                <i class="fas fa-heart text-sm"></i>
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-heart text-xs text-white"></i>
                             </div>
                             <div>
-                                <p class="font-medium">#FahanieCares Programs</p>
+                                <p class="font-medium">Our Programs</p>
                                 <p class="text-sm text-gray-500">Direct assistance programs</p>
                             </div>
                         </a>
@@ -232,8 +214,8 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                         <!-- TDIF Projects -->
                         <a href="{% url 'tdif_projects' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                            <div style="width: 32px; height: 32px; background: #d1fae5; color: #059669; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='#a7f3d0'; this.style.transform='scale(1.05)';" onmouseout="this.style.backgroundColor='#d1fae5'; this.style.transform='scale(1)';">
-                                <i class="fas fa-hammer text-sm"></i>
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-hammer text-xs text-white"></i>
                             </div>
                             <div>
                                 <p class="font-medium">TDIF Projects</p>
@@ -244,8 +226,8 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                         <!-- Ministry Programs -->
                         <a href="{% url 'accessible_ministry_programs' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                            <div style="width: 32px; height: 32px; background: #d1fae5; color: #059669; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='#a7f3d0'; this.style.transform='scale(1.05)';" onmouseout="this.style.backgroundColor='#d1fae5'; this.style.transform='scale(1)';">
-                                <i class="fas fa-building text-sm"></i>
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-building text-xs text-white"></i>
                             </div>
                             <div>
                                 <p class="font-medium">Ministry Programs</p>
@@ -256,8 +238,8 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                         <!-- Completed Programs -->
                         <a href="{% url 'completed_programs' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                            <div style="width: 32px; height: 32px; background: #d1fae5; color: #059669; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='#a7f3d0'; this.style.transform='scale(1.05)';" onmouseout="this.style.backgroundColor='#d1fae5'; this.style.transform='scale(1)';">
-                                <i class="fas fa-check-circle text-sm"></i>
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-check-circle text-xs text-white"></i>
                             </div>
                             <div>
                                 <p class="font-medium">Completed Programs</p>
@@ -334,7 +316,139 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                          onmouseout="{% if 'chapter' not in request.resolver_match.url_name %}this.style.transform='scaleX(0)';{% endif %}"></span>
                 </a>
 
+                <!-- Database Dropdown (Staff Only) -->
+                {% if user.is_authenticated and user.user_type in 'superuser,mp,chief_of_staff,admin,coordinator' or user.is_superuser %}
+                <div class="relative"
+                     @click.outside="userDropdownOpen = false; servicesDropdownOpen = false;"
+                     x-data="{ databaseDropdownOpen: false, databaseHovered: false, databaseTimer: null }"
+                     @mouseenter="databaseHovered = true; clearTimeout(databaseTimer);"
+                     @mouseleave="databaseTimer = setTimeout(() => { databaseHovered = false; }, 150);">
+                    <button @click="databaseDropdownOpen = !databaseDropdownOpen; servicesDropdownOpen = false; userDropdownOpen = false;"
+                            style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: color 0.2s ease; color: #374151;"
+                            onmouseover="this.style.color='#059669';"
+                            onmouseout="this.style.color='#374151';">
+                        {% trans "Database" %}
+                        <svg class="h-4 w-4 transition-transform duration-200"
+                             :class="databaseDropdownOpen || databaseHovered ? 'rotate-180' : ''"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
 
+                    <!-- Database Dropdown Menu -->
+                    <div x-show="databaseDropdownOpen || databaseHovered"
+                         x-transition:enter="transition ease-out duration-200"
+                         x-transition:enter-start="opacity-0 scale-95 translate-y-1"
+                         x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave="transition ease-in duration-150"
+                         x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+                         x-transition:leave-end="opacity-0 scale-95 translate-y-1"
+                         class="absolute left-0 mt-2 w-72 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 py-2">
+
+                        <!-- Member & Registrant Data -->
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">{% trans "Member Data" %}</div>
+                        <a href="{% url 'database_registrants' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-users text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Registrants" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Member registrations" %}</p>
+                            </div>
+                        </a>
+
+                        <!-- Service Data -->
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; margin-top: 0.5rem;">{% trans "Service Data" %}</div>
+                        <a href="{% url 'service_applications' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-file-alt text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Applications" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Service applications" %}</p>
+                            </div>
+                        </a>
+
+                        <!-- Organization Data -->
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; margin-top: 0.5rem;">{% trans "Organization Data" %}</div>
+                        <a href="{% url 'database_ppas' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-folder-tree text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of PPAs" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Peoples' organizations" %}</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'database_chapters' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-users w-4 text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Chapters" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Local chapters" %}</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'database_partners' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-handshake text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Partners" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Partner organizations" %}</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'cooperatives:cooperative-dashboard' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-sitemap text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Cooperatives" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Cooperative networks" %}</p>
+                            </div>
+                        </a>
+
+                        <!-- Resource Data -->
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; margin-top: 0.5rem;">{% trans "Resources" %}</div>
+                        <a href="{% url 'database_donors' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-hand-holding-usd text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Donors" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Donor information" %}</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'database_contact_messages' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-envelope-open-text text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Contact Messages" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "User inquiries" %}</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'database_updates' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-newspaper text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Updates" %}</p>
+                                <p class="text-sm text-gray-500">{% trans "Updates and announcements" %}</p>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
 
             </div>
 
@@ -365,7 +479,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                          @mouseleave="onUserMouseLeave()">
                         <button @click="toggleUserDropdown()"
                                 class="flex items-center gap-3 px-3 py-2 rounded-xl text-gray-700 hover:bg-gray-50/80 transition-colors duration-150 group">
-                            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: box-shadow 0.15s ease;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)'; this.style.transform='scale(1.05)';" onmouseout="this.style.boxShadow='0 1px 2px 0 rgba(0, 0, 0, 0.05)'; this.style.transform='scale(1)';">
+                            <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); border-radius: 9999px; display: flex; align-items: center; justify-content: center; color: white; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: box-shadow 0.15s ease;" onmouseover="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)'; this.style.transform='scale(1.05)';" onmouseout="this.style.boxShadow='0 1px 2px 0 rgba(0, 0, 0, 0.05)'; this.style.transform='scale(1)';">
                                 <i class="fas fa-user text-sm"></i>
                             </div>
                             <span class="text-sm font-medium">{{ user.first_name|default:user.username }}</span>
@@ -448,66 +562,6 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                 {% endif %}
                             {% endif %}
 
-                            {% if user.user_type in 'superuser,mp,chief_of_staff,admin,coordinator' or user.is_superuser %}
-                                <div class="border-t border-gray-100 my-2"></div>
-                                <div class="px-4 py-2">
-                                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">{% trans "Database Access" %}</p>
-                                </div>
-                                <a href="{% url 'database_ppas' %}"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-folder-tree w-4" style="color: #059669;"></i>
-                                    {% trans "Database of PPAs" %}
-                                </a>
-                                <a href="{% url 'database_registrants' %}"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-database w-4" style="color: #059669;"></i>
-                                    {% trans "Database of Registrants" %}
-                                </a>
-                                <a href="{% url 'service_applications' %}"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-file-alt w-4" style="color: #059669;"></i>
-                                    {% trans "Database of Applications" %}
-                                </a>
-                                <a href="{% url 'database_chapters' %}"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-users w-4" style="color: #059669;"></i>
-                                    {% trans "Database of Chapters" %}
-                                </a>
-                                <a href="{% url 'database_partners' %}"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-handshake w-4" style="color: #059669;"></i>
-                                    {% trans "Database of Partners" %}
-                                </a>
-                                <a href="{% url 'cooperatives:cooperative-dashboard' %}"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-sitemap w-4" style="color: #059669;"></i>
-                                    {% trans "Database of Cooperatives" %}
-                                </a>
-                                <a href="{% url 'database_donors' %}" @click="closeMobileMenu()"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-hand-holding-usd w-4" style="color: #059669;"></i>
-                                    {% trans "Database of Donors" %}
-                                </a>
-                                <a href="{% url 'database_contact_messages' %}" @click="closeMobileMenu()"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-envelope-open-text w-4" style="color: #059669;"></i>
-                                    {% trans "Contact Messages" %}
-                                </a>
-
-
-
-
-
-                            {% endif %}
-
-                    {% if user.user_type in 'superuser,mp,chief_of_staff,admin,coordinator,information_officer' or user.is_superuser %}
-                        <a href="{% url 'database_updates' %}" @click="closeMobileMenu()"
-                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem; border-radius: 0.5rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                            <i class="fas fa-newspaper w-5" style="color: #059669;"></i>
-                            {% trans "Database of Updates" %}
-                        </a>
-                    {% endif %}
-
                     <!-- Ministry Programs Admin - Alpha: Disabled -->
                     <!--
                     {% if user.user_type == 'mp' or user.user_type == 'staff' or user.is_superuser %}
@@ -555,23 +609,22 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
             {% else %}
                 <!-- Login/Register for desktop -->
                 <div class="flex items-center gap-4">
-                    <a href="{% url 'login' %}"
-                       style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
-                       onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.4)';"
-                       onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)';">
-                        <i class="fas fa-sign-in-alt"></i>
-                        {% trans "Login" %}
-                    </a>
                     <a href="{% url 'register' %}"
-                       style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);"
-                       onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(16, 185, 129, 0.4)';"
-                       onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)';">
+                       style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);"
+                       onmouseover="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(30, 64, 175, 0.4)';"
+                       onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 64, 175, 0.3)';">
                         <i class="fas fa-user-plus"></i>
                        {% trans "Register" %}
                     </a>
+                    <a href="{% url 'login' %}"
+                       style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem; font-weight: 600; font-size: 0.875rem; border: none; cursor: pointer; transition: all 0.3s ease; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);"
+                       onmouseover="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(30, 64, 175, 0.4)';"
+                       onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 64, 175, 0.3)';">
+                        <i class="fas fa-sign-in-alt"></i>
+                        {% trans "Login" %}
+                    </a>
                 </div>
             {% endif %}
-        </div>
     </div>
 
     <!-- Mobile Menu Overlay -->
@@ -602,7 +655,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
             <a href="{% url 'home' %}" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;" @click="closeMobileMenu()">
                 <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #059669 0%, #047857 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); color: white; font-weight: bold; font-size: 16px;">#FC</div>
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #047857 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #059669; line-height: 1.2;">#FahanieCares</span>
+                    <span style="font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #047857 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #059669; line-height: 1.2;">BM Parliament</span>
                     <span style="font-size: 0.75rem; color: #6b7280; font-weight: 500;">Bangsamoro Public Service</span>
                 </div>
             </a>
@@ -648,15 +701,15 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
-                            <i class="fas fa-heart" style="width: 1rem; color: #10b981;"></i>
-                            <span>#FahanieCares Programs</span>
+                            <i class="fas fa-heart" style="width: 1rem; color: #059669;"></i>
+                            <span>BM Parliament Programs</span>
                         </a>
                         <a href="{% url 'tdif_projects' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
-                            <i class="fas fa-hammer" style="width: 1rem; color: #10b981;"></i>
+                            <i class="fas fa-hammer" style="width: 1rem; color: #059669;"></i>
                             <span>TDIF Projects</span>
                         </a>
                         <a href="{% url 'accessible_ministry_programs' %}"
@@ -664,7 +717,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
-                            <i class="fas fa-building" style="width: 1rem; color: #10b981;"></i>
+                            <i class="fas fa-building" style="width: 1rem; color: #059669;"></i>
                             <span>Ministry Programs</span>
                         </a>
                         <a href="{% url 'completed_programs' %}"
@@ -672,7 +725,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
-                            <i class="fas fa-check-circle" style="width: 1rem; color: #10b981;"></i>
+                            <i class="fas fa-check-circle" style="width: 1rem; color: #059669;"></i>
                             <span>Completed Programs</span>
                         </a>
                     </div>
@@ -692,7 +745,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
-                            <i class="fas fa-bullhorn" style="width: 1rem; color: #10b981;"></i>
+                            <i class="fas fa-bullhorn" style="width: 1rem; color: #059669;"></i>
                             <span>{% trans "Updates" %}</span>
                         </a>
                         <a href="{% url 'chapters_public' %}"
@@ -700,11 +753,89 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
-                            <i class="fas fa-map-marker-alt" style="width: 1rem; color: #10b981;"></i>
+                            <i class="fas fa-map-marker-alt" style="width: 1rem; color: #059669;"></i>
                             <span>{% trans "Chapters" %}</span>
                         </a>
                     </div>
                 </div>
+
+                <!-- Database Access Section (Staff Only) -->
+                {% if user.is_authenticated and user.user_type in 'superuser,mp,chief_of_staff,admin,coordinator' or user.is_superuser %}
+                <div style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; padding-left: 1rem; margin-bottom: 1rem;">
+                        <div style="display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 0.5rem; background-color: #d1fae5; color: #047857;">
+                            <i class="fas fa-database" style="font-size: 0.875rem;"></i>
+                        </div>
+                        <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827;">{% trans "Database Access" %}</h3>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.25rem; margin-left: 1rem;">
+                        <a href="{% url 'database_registrants' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-users" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "Registrants" %}</span>
+                        </a>
+                        <a href="{% url 'service_applications' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-file-alt" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "Applications" %}</span>
+                        </a>
+                        <a href="{% url 'database_ppas' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-folder-tree" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "PPAs" %}</span>
+                        </a>
+                        <a href="{% url 'database_chapters' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-users" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "Chapters" %}</span>
+                        </a>
+                        <a href="{% url 'database_partners' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-handshake" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "Partners" %}</span>
+                        </a>
+                        <a href="{% url 'cooperatives:cooperative-dashboard' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-sitemap" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "Cooperatives" %}</span>
+                        </a>
+                        <a href="{% url 'database_donors' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-hand-holding-usd" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "Donors" %}</span>
+                        </a>
+                        <a href="{% url 'database_contact_messages' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           @click="closeMobileMenu()">
+                            <i class="fas fa-envelope-open-text" style="width: 1rem; color: #059669;"></i>
+                            <span>{% trans "Messages" %}</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
 
                 <!-- Account & Actions Section -->
                 <div style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
@@ -712,7 +843,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                         <!-- User Profile Section -->
                         <div style="margin-bottom: 1.5rem;">
                             <div style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem 1rem; background: linear-gradient(90deg, #ecfdf5 0%, #d1fae5 100%); border-radius: 0.75rem; border: 1px solid #a7f3d0;">
-                                <div style="display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: 9999px; background: linear-gradient(90deg, #10b981 0%, #059669 100%); color: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);">
+                                <div style="display: flex; align-items: center; justify-content: center; width: 3rem; height: 3rem; border-radius: 9999px; background: linear-gradient(90deg, #1e40af 0%, #059669 100%); color: white; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);">
                                     <i class="fas fa-user" style="font-size: 1.125rem;"></i>
                                 </div>
                                 <div style="flex: 1; min-width: 0;">
@@ -771,25 +902,25 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                 <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827;">{% trans "Account" %}</h3>
                             </div>
                             <div style="display: flex; flex-direction: column; gap: 0.75rem; padding-left: 1rem; padding-right: 1rem;">
-                                <a href="{% url 'login' %}"
-                                   style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: white; background: linear-gradient(90deg, #10b981 0%, #059669 100%); transition: all 0.2s ease; min-height: 48px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"
-                                   onmouseover="this.style.background='linear-gradient(90deg, #059669 0%, #047857 100%)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';"
-                                   onmouseout="this.style.background='linear-gradient(90deg, #10b981 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';"
-                                   @click="closeMobileMenu()">
-                                    <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: rgba(255, 255, 255, 0.2); color: white;">
-                                        <i class="fas fa-sign-in-alt" style="font-size: 0.875rem;"></i>
-                                    </div>
-                                    <span>{% trans "Login" %}</span>
-                                </a>
                                 <a href="{% url 'register' %}"
-                                   style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: white; background: linear-gradient(90deg, #10b981 0%, #059669 100%); transition: all 0.2s ease; min-height: 48px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"
-                                   onmouseover="this.style.background='linear-gradient(90deg, #059669 0%, #047857 100%)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';"
-                                   onmouseout="this.style.background='linear-gradient(90deg, #10b981 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';"
+                                   style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: white; background: linear-gradient(90deg, #1e40af 0%, #059669 100%); transition: all 0.2s ease; min-height: 48px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"
+                                   onmouseover="this.style.background='linear-gradient(90deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';"
+                                   onmouseout="this.style.background='linear-gradient(90deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';"
                                    @click="closeMobileMenu()">
                                     <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: rgba(255, 255, 255, 0.2); color: white;">
                                         <i class="fas fa-user-plus" style="font-size: 0.875rem;"></i>
                                     </div>
                                     <span>{% trans "Register" %}</span>
+                                </a>
+                                <a href="{% url 'login' %}"
+                                   style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: white; background: linear-gradient(90deg, #1e40af 0%, #059669 100%); transition: all 0.2s ease; min-height: 48px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"
+                                   onmouseover="this.style.background='linear-gradient(90deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';"
+                                   onmouseout="this.style.background='linear-gradient(90deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';"
+                                   @click="closeMobileMenu()">
+                                    <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: rgba(255, 255, 255, 0.2); color: white;">
+                                        <i class="fas fa-sign-in-alt" style="font-size: 0.875rem;"></i>
+                                    </div>
+                                    <span>{% trans "Login" %}</span>
                                 </a>
                             </div>
                         </div>
