@@ -176,25 +176,6 @@
         </div>
     </div>
 {% endif %}
-
-<!-- Frequently Asked Questions -->
-<div class="bg-white rounded-lg shadow-sm p-8 border border-gray-100 mb-8">
-    <h2 class="text-2xl font-bold text-slate-800 mb-6">Frequently Asked Questions about Ministry Programs</h2>
-
-    <div class="space-y-4">
-        {% for faq in page_faqs %}
-        <div class="border border-gray-200 rounded-lg overflow-hidden faq-item">
-            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors faq-button" type="button">
-                <span>{{ faq.question }}</span>
-                <i class="fas fa-chevron-down text-gray-400 faq-icon"></i>
-            </button>
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 faq-content" style="max-height: 0px; overflow: hidden; transition: max-height 0.3s ease;">
-                <p class="text-gray-600">{{ faq.answer }}</p>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-</div>
 {% endblock %}
 
 {% block cta %}
@@ -229,52 +210,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
-
-    // FAQ accordion functionality - only one open at a time
-    const faqButtons = document.querySelectorAll('.faq-button');
-    let currentlyOpenButton = null;
-
-    faqButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const content = this.nextElementSibling;
-            const icon = this.querySelector('.faq-icon');
-
-            // Close the currently open button if it's different
-            if (currentlyOpenButton && currentlyOpenButton !== this) {
-                const previousContent = currentlyOpenButton.nextElementSibling;
-                const previousIcon = currentlyOpenButton.querySelector('.faq-icon');
-
-                if (previousContent && previousIcon) {
-                    previousContent.style.maxHeight = '0px';
-                    previousIcon.classList.remove('fa-chevron-up');
-                    previousIcon.classList.add('fa-chevron-down');
-                }
-            }
-
-            // Toggle the clicked button
-            if (content && icon) {
-                if (content.style.maxHeight && content.style.maxHeight !== '0px') {
-                    content.style.maxHeight = '0px';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
-                    currentlyOpenButton = null;
-                } else {
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
-                    currentlyOpenButton = this;
-                }
-            }
-        });
-    });
-
-    // Initialize all content to be completely hidden
-    const faqContents = document.querySelectorAll('.faq-content');
-    faqContents.forEach(content => {
-        content.style.maxHeight = '0px';
-        content.style.overflow = 'hidden';
-    });
 });
 </script>
 {% endblock %}
