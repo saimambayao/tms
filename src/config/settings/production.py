@@ -144,21 +144,18 @@ database_config['OPTIONS'] = {
     # Connection timeouts
     'connect_timeout': 30,  # 30 seconds to establish connection
     'options': '-c statement_timeout=30000',  # 30 second query timeout
-    
+
     # SSL Configuration for secure connections
     'sslmode': os.getenv('DB_SSL_MODE', 'require'),  # require, prefer, allow, disable
     'sslcert': os.getenv('DB_SSL_CERT', None),
     'sslkey': os.getenv('DB_SSL_KEY', None),
     'sslrootcert': os.getenv('DB_SSL_ROOT_CERT', None),
-    
+
     # Performance optimizations
     'application_name': f'bmparliament_production_{os.getenv("INSTANCE_ID", "main")}',
     'keepalives_idle': '600',  # Keep alive every 10 minutes
     'keepalives_interval': '30',  # Check every 30 seconds
     'keepalives_count': '3',  # 3 failed checks before considering connection dead
-    
-    # Connection pool settings
-    'ATOMIC_REQUESTS': True,  # Wrap requests in transactions
 }
 
 # Additional database optimizations
@@ -166,7 +163,8 @@ database_config.update({
     # Enable connection pooling with health checks
     'CONN_HEALTH_CHECKS': True,
     'CONN_MAX_AGE': 600,  # 10 minutes
-    
+    'ATOMIC_REQUESTS': True,  # Wrap requests in transactions
+
     # Database engine specific settings
     'ENGINE': 'django.db.backends.postgresql',
     
