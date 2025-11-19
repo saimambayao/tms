@@ -531,7 +531,7 @@ LOGGING = {
         },
         'django.security.csrf': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'WARNING',  # Only log CSRF failures, not every check
             'propagate': False,
         },
     },
