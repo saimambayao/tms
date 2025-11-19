@@ -48,8 +48,8 @@ class DatabaseIntegrationTestCase(TestCase):
             email='mp@test.com',
             password='testpass123',
             user_type='mp',
-            first_name='Fahanie',
-            last_name='Gayak'
+            first_name='Parliament',
+            last_name='MP'
         )
         
         # Chief of Staff

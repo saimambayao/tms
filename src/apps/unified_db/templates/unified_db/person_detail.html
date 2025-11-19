@@ -529,7 +529,7 @@
                 <div class="person-card">
                     <div class="card-header">
                         <div class="card-icon">
-                            {% if record.type == 'fahanie_cares_member' %}
+                            {% if record.type == 'bm_parliament_member' %}
                                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
@@ -549,8 +549,8 @@
                         {% endif %}
                     </div>
                     <div class="card-content">
-                        {% if record.type == 'fahanie_cares_member' %}
-                            {% include 'unified_db/partials/fahanie_cares_member_info.html' with member=record.data %}
+                        {% if record.type == 'bm_parliament_member' %}
+                            {% include 'unified_db/partials/bm_parliament_member_info.html' with member=record.data %}
                         {% elif record.type == 'constituent' %}
                             {% include 'unified_db/partials/constituent_info.html' with constituent=record.data %}
                         {% else %}

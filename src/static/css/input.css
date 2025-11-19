@@ -3,6 +3,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Alpine.js cloak - hide elements until Alpine is loaded */
+[x-cloak] {
+  display: none !important;
+}
+
 /* Font Awesome Icons from node_modules */
 @import '../../node_modules/@fortawesome/fontawesome-free/css/all.min.css';
 
@@ -47,5 +52,20 @@
 
   .form-label {
     @apply block text-sm font-medium text-gray-700 mb-1;
+  }
+}
+
+/* Custom utility classes to override Tailwind Preflight heading reset */
+@layer utilities {
+  .hero-heading-h1 {
+    font-size: clamp(2.5rem, 8vw, 3.5rem) !important;
+    font-family: 'Great Vibes', cursive !important;
+    line-height: 1.1 !important;
+  }
+
+  .hero-heading-h2 {
+    font-size: clamp(1.5rem, 5vw, 2.25rem) !important;
+    font-family: 'Great Vibes', cursive !important;
+    line-height: 1.2 !important;
   }
 }

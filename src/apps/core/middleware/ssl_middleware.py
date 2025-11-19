@@ -76,6 +76,7 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
                 "font-src 'self' https://fonts.gstatic.com data:",
                 "img-src 'self' data: https: blob:",
                 "connect-src 'self' https://api.notion.com wss: https://cloudflareinsights.com",
+                "frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com",
                 "frame-ancestors 'none'",
                 "form-action 'self'",
                 "base-uri 'self'",

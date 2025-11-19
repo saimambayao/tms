@@ -1,11 +1,17 @@
 {
   "build": {
-    "builder": "nixpacks",
-    "buildCommand": "pip install -r requirements.txt && python src/manage.py collectstatic --noinput"
+    "builder": "dockerfile",
+    "dockerfile": "deployment/docker/Dockerfile.railway"
   },
   "deploy": {
-    "startCommand": "cd src && gunicorn config.wsgi",
+    "startCommand": "sh /app/entrypoint.sh",
     "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 10
+    "restartPolicyMaxRetries": 10,
+    "healthCheck": {
+      "command": "curl -f http://localhost:${PORT:-8000}/health || exit 1",
+      "interval": 30,
+      "timeout": 10,
+      "retries": 3
+    }
   }
 }

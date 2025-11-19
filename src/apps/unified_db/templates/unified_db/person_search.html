@@ -363,7 +363,7 @@
                                 <label for="database_type" class="block text-sm font-medium text-gray-700 mb-2">Database Type</label>
                                 <select name="database_type" id="database_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                                     <option value="">All Databases</option>
-                                    <option value="fahanie_cares" {% if current_filters.database_type == 'fahanie_cares' %}selected{% endif %}>BM Parliament Members</option>
+                                    <option value="bm_parliament" {% if current_filters.database_type == 'bm_parliament' %}selected{% endif %}>BM Parliament Members</option>
                                     <option value="constituents" {% if current_filters.database_type == 'constituents' %}selected{% endif %}>Constituents</option>
                                     <option value="custom" {% if current_filters.database_type == 'custom' %}selected{% endif %}>Custom Databases</option>
                                 </select>
@@ -438,18 +438,18 @@
                     {% endif %}
 
                     <!-- Side-by-Side Layout for BM Parliament Members and Custom Database Entries -->
-                    {% if grouped_results.fahanie_cares_members or grouped_results.database_entries %}
+                    {% if grouped_results.bm_parliament_members or grouped_results.database_entries %}
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- BM Parliament Members (Left Side) -->
-                        {% if grouped_results.fahanie_cares_members %}
+                        {% if grouped_results.bm_parliament_members %}
                         <div class="px-6 py-4 bg-green-50 border-l-4 border-green-400">
                             <h3 class="text-lg font-semibold text-green-800 mb-3">
                                 <svg class="w-5 h-5 inline mr-2" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                                 </svg>
-                                BM Parliament Members ({{ grouped_results.fahanie_cares_members|length }})
+                                BM Parliament Members ({{ grouped_results.bm_parliament_members|length }})
                             </h3>
-                            {% for result in grouped_results.fahanie_cares_members %}
+                            {% for result in grouped_results.bm_parliament_members %}
                             <div class="result-item">
                                 <div class="result-type bm-parliament">
                                     <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">

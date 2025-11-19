@@ -81,8 +81,8 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
         normalized_query = self.normalize_name(query)
 
         # Search BMParliamentMember first (highest priority)
-        fahanie_results = self.search_fahanie_cares_members(query, normalized_query)
-        results.extend(fahanie_results)
+        member_results = self.search_bm_parliament_members(query, normalized_query)
+        results.extend(member_results)
 
         # Search Constituents
         constituent_results = self.search_constituents(query, normalized_query)
@@ -96,7 +96,7 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
         unique_results = self.deduplicate_results(results)
         return sorted(unique_results, key=lambda x: x['relevance_score'], reverse=True)
 
-    def search_fahanie_cares_members(self, query, normalized_query):
+    def search_bm_parliament_members(self, query, normalized_query):
         """Search BMParliamentMember records"""
         results = []
 
@@ -125,7 +125,7 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
             logger.info(f"Processing BMParliamentMember: ID={member.id}, Name='{full_name}', First='{member.first_name}', Last='{member.last_name}', Middle='{member.middle_name}'")
 
             results.append({
-                'type': 'fahanie_cares_member',
+                'type': 'bm_parliament_member',
                 'id': member.id,
                 'title': f"BM Parliament Member: {full_name}",
                 'subtitle': f"Member ID: {member.member_id} | Sector: {member.get_sector_display()}",
@@ -293,8 +293,8 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
 
         for result in results:
             # Create a unique identifier for each person
-            if result['type'] == 'fahanie_cares_member':
-                person_id = f"fahanie_{result['data'].id}"
+            if result['type'] == 'bm_parliament_member':
+                person_id = f"parliament_{result['data'].id}"
             elif result['type'] == 'constituent':
                 person_id = f"constituent_{result['data'].id}"
             else:
@@ -311,7 +311,7 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
         # This would implement more sophisticated person matching
         # For now, return results as-is with basic grouping
         return {
-            'fahanie_cares_members': [r for r in results if r['type'] == 'fahanie_cares_member'],
+            'bm_parliament_members': [r for r in results if r['type'] == 'bm_parliament_member'],
             'constituents': [r for r in results if r['type'] == 'constituent'],
             'database_entries': [r for r in results if r['type'] == 'database_entry'],
         }
@@ -330,7 +330,7 @@ class UnifiedPersonDetailView(HighAccessRequiredMixin, DetailView):
         person_type = self.kwargs.get('person_type')
         person_id = self.kwargs.get('person_id')
 
-        if person_type == 'fahanie_cares_member':
+        if person_type == 'bm_parliament_member':
             return BMParliamentMember.objects.select_related('user').get(id=person_id)
         elif person_type == 'constituent':
             return Constituent.objects.select_related('user').get(id=person_id)
@@ -358,7 +358,7 @@ class UnifiedPersonDetailView(HighAccessRequiredMixin, DetailView):
 
         if isinstance(person_obj, BMParliamentMember):
             records.append({
-                'type': 'fahanie_cares_member',
+                'type': 'bm_parliament_member',
                 'title': 'BM Parliament Member',
                 'data': person_obj,
                 'url': reverse('database_registrant_detail', args=[person_obj.id]),
@@ -399,7 +399,7 @@ class UnifiedPersonDetailView(HighAccessRequiredMixin, DetailView):
     def get_person_links(self, person_obj):
         """Get PersonLink objects for this person"""
         if isinstance(person_obj, BMParliamentMember):
-            return PersonLink.objects.filter(fahanie_cares_member=person_obj)
+            return PersonLink.objects.filter(bm_parliament_member=person_obj)
         elif isinstance(person_obj, Constituent):
             return PersonLink.objects.filter(constituent=person_obj)
         else:

@@ -159,14 +159,19 @@
             </div>
             
             <!-- Mobile Menu Button -->
-            <button class="md:hidden text-gray-600 hover:text-primary-600 focus:outline-none mobile-menu-button">
-                <i class="fas fa-bars text-2xl"></i>
+            <button id="mobile-menu-button" class="md:hidden text-gray-600 hover:text-primary-600 focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-lg p-2 transition-all duration-200" aria-controls="mobile-menu" aria-expanded="false" aria-label="Toggle mobile menu">
+                <svg id="hamburger-icon" class="w-6 h-6 block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+                <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
             </button>
         </div>
     </nav>
     
     <!-- Mobile Navigation -->
-    <div class="md:hidden hidden bg-white border-t mobile-menu">
+    <div id="mobile-menu" class="md:hidden hidden bg-white border-t shadow-lg transition-all duration-300 ease-in-out max-h-0 overflow-hidden" aria-hidden="true">
         <div class="px-4 py-2">
             <!-- Mobile Main Menu -->
             <div class="space-y-1 py-3">

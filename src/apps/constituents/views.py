@@ -450,9 +450,9 @@ class ExcelNameCheckView(DatabaseAccessMixin, View):
                 combined_query |= query
 
             # Search BMParliamentMember database
-            fahanie_queryset = BMParliamentMember.objects.filter(combined_query).distinct()
+            member_queryset = BMParliamentMember.objects.filter(combined_query).distinct()
 
-            for member in fahanie_queryset[:10]:  # Allow more matches since we're more precise
+            for member in member_queryset[:10]:  # Allow more matches since we're more precise
                 # Additional validation - check if names actually match closely
                 if self.names_match_closely(member.first_name, member.middle_name, member.last_name, first_name, middle_name, last_name):
                     match_info = {
@@ -482,9 +482,9 @@ class ExcelNameCheckView(DatabaseAccessMixin, View):
             for query in constituent_search_queries[1:]:
                 constituent_combined_query |= query
 
-            constituent_queryset = Constituent.objects.select_related('user').filter(constituent_combined_query).distinct()
+            member_queryset = Constituent.objects.select_related('user').filter(constituent_combined_query).distinct()
 
-            for constituent in constituent_queryset[:10]:
+            for constituent in member_queryset[:10]:
                 # Additional validation for constituents
                 if self.names_match_closely(constituent.user.first_name, '', constituent.user.last_name, first_name, middle_name, last_name):
                     match_info = {

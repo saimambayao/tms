@@ -459,7 +459,7 @@ SMS_PROVIDER = os.environ.get('SMS_PROVIDER', 'console')  # Options: 'console', 
 # Semaphore SMS (Recommended Philippine SMS Gateway)
 # Government contract rates: ~₱0.15-0.30 per SMS with bulk discounts
 SEMAPHORE_API_KEY = os.environ.get('SEMAPHORE_API_KEY', '')
-SEMAPHORE_SENDER_NAME = os.environ.get('SEMAPHORE_SENDER_NAME', 'FAHANIECARES')
+SEMAPHORE_SENDER_NAME = os.environ.get('SEMAPHORE_SENDER_NAME', 'BMPARLIAMENT')
 
 # Twilio SMS (International backup option)
 # Higher rates but reliable: ~₱1.50-2.00 per SMS to PH numbers

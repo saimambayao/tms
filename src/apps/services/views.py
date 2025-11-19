@@ -81,7 +81,7 @@ class ServiceProgramDetailView(DetailView):
         # Check if user has existing application
         if self.request.user.is_authenticated:
             try:
-                constituent = self.request.user.fahanie_cares_member
+                constituent = self.request.user.bm_parliament_member
                 context['existing_application'] = ServiceApplication.objects.filter(
                     service_program=program, # Changed from 'program' to 'service_program'
                     constituent=constituent
@@ -137,10 +137,10 @@ class ApplicationFormView(View):
             return redirect(settings.LOGIN_URL)
         
         # Ensure the user has a BMParliamentMember profile
-        if not hasattr(request.user, 'fahanie_cares_member'):
+        if not hasattr(request.user, 'bm_parliament_member'):
             messages.warning(request, "Please complete your member registration before applying for a program.")
             return redirect('member_registration') # Redirect to your member registration page
-            
+
         return super().dispatch(request, *args, **kwargs)
 
     def get(self, request, *args, **kwargs):
@@ -186,7 +186,7 @@ class ApplicationFormView(View):
 
             # Create a new ServiceApplication instance
             application = ServiceApplication(
-                constituent=request.user.fahanie_cares_member, # Use fahanie_cares_member
+                constituent=request.user.bm_parliament_member,
                 reason_for_application=form.cleaned_data['message'],
             )
             if program_type == 'service':
@@ -223,16 +223,16 @@ class ServiceApplicationCreateView(LoginRequiredMixin, CreateView):
         if not self.program.is_accepting_applications():
             messages.error(request, "This program is not currently accepting applications.")
             return redirect('service_program_detail', slug=self.program.slug)
-        
+
         # Ensure the user has a BMParliamentMember profile
-        if not hasattr(request.user, 'fahanie_cares_member'):
+        if not hasattr(request.user, 'bm_parliament_member'):
             messages.warning(request, "Please complete your member registration before applying for a program.")
             return redirect('member_registration') # Redirect to your member registration page
-            
+
         # Check if user already has an application
         existing = ServiceApplication.objects.filter(
             service_program=self.program, # Changed from 'program' to 'service_program'
-            constituent=request.user.fahanie_cares_member
+            constituent=request.user.bm_parliament_member
         ).first()
         
         if existing:
@@ -244,7 +244,7 @@ class ServiceApplicationCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         application = form.save(commit=False)
         application.service_program = self.program # Assign to service_program
-        application.constituent = self.request.user.fahanie_cares_member
+        application.constituent = self.request.user.bm_parliament_member
         application.full_clean() # Validate that only one program is set
         application.save()
         
@@ -299,9 +299,9 @@ class ServiceApplicationDetailView(LoginRequiredMixin, DetailView): # Removed Us
         if request.user.is_staff_or_above():
             return super().dispatch(request, *args, **kwargs)
         
-        # Regular users can only view their own applications if they have a fahanie_cares_member profile
-        if hasattr(request.user, 'fahanie_cares_member') and \
-           request.user.fahanie_cares_member == application.constituent:
+        # Regular users can only view their own applications if they have a bm_parliament_member profile
+        if hasattr(request.user, 'bm_parliament_member') and \
+           request.user.bm_parliament_member == application.constituent:
             return super().dispatch(request, *args, **kwargs)
         
         # If none of the above, deny access
@@ -343,7 +343,7 @@ class ServiceApplicationListView(LoginRequiredMixin, ListView):
     
     def get_queryset(self):
         queryset = ServiceApplication.objects.filter(
-            constituent=self.request.user.fahanie_cares_member
+            constituent=self.request.user.bm_parliament_member
         )
         
         # Filter by status
@@ -440,7 +440,7 @@ class StaffApplicationListView(LoginRequiredMixin, UserPassesTestMixin, ListView
         
         # Permission flags for the template
         user = self.request.user
-        context['can_add_application'] = user.is_authenticated and hasattr(user, 'fahanie_cares_member') # Assuming any logged-in member can add
+        context['can_add_application'] = user.is_authenticated and hasattr(user, 'bm_parliament_member') # Assuming any logged-in member can add
         context['can_edit_application'] = user.is_staff_or_above() # Or more granular permission
         context['can_delete_application'] = user.is_staff_or_above() # Or more granular permission
         

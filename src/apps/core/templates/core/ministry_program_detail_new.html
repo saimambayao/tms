@@ -95,7 +95,7 @@
                     <a href="{% url 'accessible_ministry_programs' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
                         <i class="fas fa-arrow-left mr-2"></i> Back to Ministry Programs
                     </a>
-                {% elif program.program_source == 'fahaniecares' %}
+                {% elif program.program_source == 'bm_parliament' %}
                     <a href="{% url 'programs' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
                         <i class="fas fa-arrow-left mr-2"></i> Back to BM Parliament Programs
                     </a>
@@ -109,7 +109,7 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-8">
                 <h3 class="text-xl font-semibold text-slate-800 mb-4">Key Contacts</h3>
                 <div class="space-y-3 text-gray-700 text-base">
-                    <p><i class="fas fa-envelope text-primary-600 w-6 mr-2"></i> <a href="mailto:info@fahaniecares.org" class="hover:text-primary-600 transition-colors">info@fahaniecares.org</a></p>
+                    <p><i class="fas fa-envelope text-primary-600 w-6 mr-2"></i> <a href="mailto:info@bmparliament.gov.ph" class="hover:text-primary-600 transition-colors">info@bmparliament.gov.ph</a></p>
                     <p><i class="fas fa-phone-alt text-primary-600 w-6 mr-2"></i> <a href="tel:+1234567890" class="hover:text-primary-600 transition-colors">+1 (234) 567-890</a></p>
                     <p><i class="fas fa-map-marker-alt text-primary-600 w-6 mr-2"></i> 123 Program St, City, Country</p>
                 </div>
@@ -151,7 +151,7 @@
                                     {% endwith %}
                                 </div>
                                 <h4 class="text-sm font-medium text-slate-800 leading-tight mb-1 line-clamp-2">
-                                    <a href="{% url 'fahaniecares_program_detail' related_program.slug %}" class="hover:text-primary-600 transition-colors">
+                                    <a href="{% url 'ministry_program_detail' related_program.slug %}" class="hover:text-primary-600 transition-colors">
                                         {{ related_program.title }}
                                     </a>
                                 </h4>
@@ -164,12 +164,12 @@
                 
                 <div class="mt-6">
                     {% if program.program_source == 'ministry' %}
-                        <a href="{% url 'accessible_ministry_programs' %}" 
+                        <a href="{% url 'accessible_ministry_programs' %}"
                            class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
                             View All Ministry Programs
                         </a>
-                    {% elif program.program_source == 'fahaniecares' %}
-                        <a href="{% url 'programs' %}" 
+                    {% elif program.program_source == 'bm_parliament' %}
+                        <a href="{% url 'programs' %}"
                            class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
                             View All BM Parliament Programs
                         </a>

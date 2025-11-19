@@ -137,7 +137,7 @@ class PersonLinkAdmin(admin.ModelAdmin):
             'fields': ('primary_name', 'normalized_name', 'confidence_score')
         }),
         ('Linked Records', {
-            'fields': ('fahanie_cares_member', 'constituent', 'database_entries')
+            'fields': ('bm_parliament_member', 'constituent', 'database_entries')
         }),
         ('External Links', {
             'fields': ('external_id', 'external_system'),
@@ -153,7 +153,7 @@ class PersonLinkAdmin(admin.ModelAdmin):
         }),
     )
     filter_horizontal = ['database_entries']
-    raw_id_fields = ['fahanie_cares_member', 'constituent', 'verified_by']
+    raw_id_fields = ['bm_parliament_member', 'constituent', 'verified_by']
 
 
 # Import here to avoid circular imports

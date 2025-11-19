@@ -33,13 +33,13 @@ DEVELOPERS = [
     {
         'username': 'saidamen.m',
         'full_name': 'Saidamen Mambayao',
-        'email': 'bmsaimambayao@gmail.com',
+        'email': 'developer1@bmparliament.gov.ph',
         'role': 'SLSO I / OIC Legislative Affairs / System Developer'
     },
     {
-        'username': 'farissnoor.e', 
+        'username': 'farissnoor.e',
         'full_name': 'Farissnoor Edza',
-        'email': 'farissnooredza99@gmail.com',
+        'email': 'developer2@bmparliament.gov.ph',
         'role': 'IT Staff / Lead Developer'
     },
     {
@@ -75,7 +75,7 @@ DEVELOPERS = [
     {
         'username': 'sittie.f',
         'full_name': 'Amiroddin Gayak',
-        'email': 'sittie.fahanie@example.com', # Assuming a generic email for now
+        'email': 'sittie.gayak@example.com', # Assuming a generic email for now
         'role': 'System Superuser'
     },
         {

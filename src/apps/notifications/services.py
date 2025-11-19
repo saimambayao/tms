@@ -231,7 +231,7 @@ class EmailNotificationSender:
                 'user': user,
                 'notification': notification,
                 'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
-                'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
+                'site_url': getattr(settings, 'SITE_URL', 'https://bmparliament.gov.ph'),
             }
             
             if context:

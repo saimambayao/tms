@@ -301,12 +301,12 @@ class E2EMPUserJourneyTest(TestCase):
         
         # Create MP user
         self.mp_user = User.objects.create_user(
-            username='mp_fahanie',
+            username='mp_parliament',
             email='mp@bmparliament.ph',
             password='MPSecure123!',
             user_type='mp',
-            first_name='Fahanie',
-            last_name='Gayak'
+            first_name='Parliament',
+            last_name='MP'
         )
         
         # Create test data across all databases
@@ -391,7 +391,7 @@ class E2EMPUserJourneyTest(TestCase):
     def test_mp_comprehensive_oversight_workflow(self):
         """Test MP's comprehensive oversight across all databases."""
         # 1. Login as MP
-        self.client.login(username='mp_fahanie', password='MPSecure123!')
+        self.client.login(username='mp_parliament', password='MPSecure123!')
         self.bypass_mfa()
         
         # 2. Review overall statistics on home page

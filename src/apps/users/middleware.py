@@ -37,7 +37,8 @@ class SecurityHeadersMiddleware:
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
             "font-src 'self' https://fonts.gstatic.com; "
             "img-src 'self' data: https:; "
-            "connect-src 'self' https://api.notion.com;"
+            "connect-src 'self' https://api.notion.com; "
+            "frame-src 'self' https://www.google.com https://maps.google.com https://*.google.com;"
         )
         
         return response

@@ -36,11 +36,16 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>#FC</text></svg>" sizes="180x180">
     <link rel="manifest" href="{% static 'site.webmanifest' %}?v=2">
     <style>
+      /* Alpine.js x-cloak - CRITICAL: Hide elements until Alpine loads */
+      [x-cloak] {
+        display: none !important;
+      }
+
       /* Smooth scrolling for anchor links */
       html {
         scroll-behavior: smooth;
       }
-      
+
 
       /* Contact Form Custom Styles */
       .contact-form-select {
@@ -167,20 +172,6 @@
     <!-- Floating Facebook Widget -->
     {% include 'components/widgets/floating_facebook.html' %}
 
-    <!-- JavaScript -->
-    <script>
-      // Mobile Menu Toggle
-      document.addEventListener("DOMContentLoaded", function () {
-        const menuButton = document.querySelector("button.mobile-menu-button");
-        const mobileMenu = document.querySelector(".mobile-menu");
-
-        if (menuButton && mobileMenu) {
-          menuButton.addEventListener("click", function () {
-            mobileMenu.classList.toggle("hidden");
-          });
-        }
-      });
-    </script>
     {% block extra_js %}{% endblock %}
   </body>
 </html>

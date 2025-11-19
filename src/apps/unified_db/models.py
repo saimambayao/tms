@@ -545,7 +545,7 @@ class PersonLink(models.Model):
     """
 
     LINK_TYPES = (
-        ('fahanie_cares_member', 'BM Parliament Member'),
+        ('bm_parliament_member', 'BM Parliament Member'),
         ('constituent', 'Constituent Profile'),
         ('database_entry', 'Database Entry'),
         ('external', 'External System'),
@@ -556,7 +556,7 @@ class PersonLink(models.Model):
     normalized_name = models.CharField(max_length=255, help_text="Normalized name for matching")
 
     # Linked records
-    fahanie_cares_member = models.ForeignKey(
+    bm_parliament_member = models.ForeignKey(
         'constituents.BMParliamentMember',
         on_delete=models.CASCADE,
         null=True,
@@ -613,8 +613,8 @@ class PersonLink(models.Model):
         """Get all database entries linked to this person"""
         entries = set()
 
-        if self.fahanie_cares_member:
-            entries.add(('fahanie_cares_member', self.fahanie_cares_member))
+        if self.bm_parliament_member:
+            entries.add(('bm_parliament_member', self.bm_parliament_member))
 
         if self.constituent:
             entries.add(('constituent', self.constituent))

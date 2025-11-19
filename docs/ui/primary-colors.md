@@ -2,31 +2,58 @@
 
 ## Overview
 
-The BM Parliament platform uses a comprehensive, accessible primary color system based on green and blue gradients. The system is designed to reflect the Bangsamoro identity through professional, trustworthy colors that meet WCAG accessibility standards.
+The BM Parliament platform uses a comprehensive, accessible color system. **The primary brand identity is the Bangsamoro Gradient** - a blue-green gradient that combines Professional Blue (#1e40af) with Bangsamoro Emerald (#059669). This gradient is the defining visual element representing the platform's identity and values.
+
+The system also includes a green-based primary color palette for UI elements, buttons, and interactive components. The system is designed to reflect the Bangsamoro identity through professional, trustworthy colors that meet WCAG accessibility standards.
+
+---
+
+## Brand Identity: The Bangsamoro Gradient
+
+### Primary Brand Identity
+**The Bangsamoro Gradient is the PRIMARY BRAND IDENTITY** of BM Parliament, not a single color.
+
+**Gradient Specification:**
+- **Start Color**: Professional Blue `#1e40af` (RGB: 30, 64, 175)
+- **End Color**: Bangsamoro Emerald `#059669` (RGB: 5, 150, 105)
+- **Direction**: 135 degrees (diagonal, bottom-right)
+- **CSS**: `linear-gradient(135deg, #1e40af 0%, #059669 100%)`
+
+**Usage:**
+- Hero sections across all pages
+- Primary brand representation
+- Main visual identity element
+- Overlays should use blue-green gradient colors, not just green
+
+**See [Bangsamoro Gradient Documentation](./BANGSAMORO_GRADIENT.md) for complete details.**
 
 ---
 
 ## Color Philosophy
 
 ### Design Principles
-- **Green Base**: Represents growth, sustainability, trust, and nature
+- **Bangsamoro Gradient (Blue-Green)**: The primary brand identity combining professionalism (blue) with growth and heritage (emerald)
+- **Green Base**: Represents growth, sustainability, trust, and nature for UI elements
 - **Bangsamoro Context**: Green holds cultural significance in Islamic traditions and symbolizes peace and prosperity
 - **Government Trust**: Professional, stable, and accessible government services
 - **2025 Trends**: Nature-inspired, sustainable, soft sage tones
 - **Accessibility First**: WCAG AA compliant (4.5:1 contrast minimum)
 
 ### Psychological Impact
-- **Primary Green (#16a34a)**: Conveys stability, growth, and trustworthiness
-- **Secondary Blue (#1e40af)**: Adds professionalism and authority
-- **Emerald Accent (#059669)**: Provides vibrancy and energy
+- **Bangsamoro Gradient**: Combines authority (blue) with growth (emerald) - the complete brand identity
+- **Primary Green (#16a34a)**: Conveys stability, growth, and trustworthiness for UI elements
+- **Professional Blue (#1e40af)**: Adds professionalism and authority (part of brand gradient)
+- **Bangsamoro Emerald (#059669)**: Provides vibrancy and energy (part of brand gradient)
 - **Forest Tones**: Creates depth and visual hierarchy
 
 ---
 
-## Primary Color Palette
+## Primary Color Palette (UI Elements)
+
+**Note:** This palette is for UI elements (buttons, badges, links). The **brand identity** is the Bangsamoro Gradient (blue-green), documented above.
 
 ### Core Green Palette
-The primary palette uses a sage green spectrum, inspired by modern nature design trends.
+The primary UI palette uses a sage green spectrum, inspired by modern nature design trends. This is used for interactive elements, buttons, and UI components.
 
 ```
 #f0f9f4  - Primary 50   (Lightest sage - backgrounds)
@@ -58,10 +85,12 @@ The primary palette uses a sage green spectrum, inspired by modern nature design
 
 ---
 
-## Bangsamoro Gradient
+## Bangsamoro Gradient (Brand Identity)
 
 ### Specification
-The Bangsamoro gradient is the signature gradient of the BM Parliament platform, combining professional blue with emerald green.
+**The Bangsamoro gradient IS the primary brand identity** of the BM Parliament platform, combining professional blue with emerald green. This is not just a design element - it is the defining visual identity.
+
+**Important:** All hero sections, overlays, and brand elements should use this blue-green gradient, not just green colors.
 
 **Gradient Definition:**
 ```
@@ -284,12 +313,18 @@ color_palette.html (line 209):
 </section>
 ```
 
-### Primary Button
+### Primary Button (Uses Bangsamoro Gradient)
+Primary buttons use the Bangsamoro gradient to match the brand identity:
 ```html
-<button class="bg-primary-600 text-white px-6 py-2 rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all">
+<button style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);" 
+        onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" 
+        onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"
+        class="text-white px-6 py-2 rounded-lg shadow-md transition-all duration-300">
   Primary Action
 </button>
 ```
+
+**Note:** The green UI palette (`bg-primary-600`, `bg-primary-700`) is for secondary buttons, badges, and other UI elements. Primary action buttons should always use the Bangsamoro gradient.
 
 ### Card with Hero Gradient
 ```html

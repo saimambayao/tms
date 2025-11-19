@@ -1,22 +1,22 @@
-# Security Policy for #FahanieCares
-# https://fahaniecares.ph/.well-known/security.txt
+# Security Policy for BM Parliament
+# https://bmparliament.gov.ph/.well-known/security.txt
 
-Contact: security@fahaniecares.ph
-Contact: https://fahaniecares.ph/contact?subject=security
+Contact: security@bmparliament.gov.ph
+Contact: https://bmparliament.gov.ph/contact?subject=security
 Expires: 2025-06-08T00:00:00.000Z
-Encryption: https://fahaniecares.ph/pgp-key.txt
-Acknowledgments: https://fahaniecares.ph/security/hall-of-fame
+Encryption: https://bmparliament.gov.ph/pgp-key.txt
+Acknowledgments: https://bmparliament.gov.ph/security/hall-of-fame
 Preferred-Languages: en, fil
-Canonical: https://fahaniecares.ph/.well-known/security.txt
-Policy: https://fahaniecares.ph/security-policy
+Canonical: https://bmparliament.gov.ph/.well-known/security.txt
+Policy: https://bmparliament.gov.ph/security-policy
 
 # Vulnerability Disclosure Policy
 # We appreciate responsible disclosure of security vulnerabilities.
-# Please report security issues to our security team at security@fahaniecares.ph
+# Please report security issues to our security team at security@bmparliament.gov.ph
 # We aim to respond within 48 hours and resolve critical issues within 7 days.
 
 # Bug Bounty Program
 # We currently do not offer a bug bounty program, but we acknowledge
 # security researchers who responsibly disclose vulnerabilities.
 
-# #FahanieCares - Bringing Public Service Closer to You
+# BM Parliament - Bringing Public Service Closer to You

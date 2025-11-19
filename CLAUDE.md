@@ -271,30 +271,50 @@ The platform uses a green-based color system with WCAG AA accessibility complian
 
 ## Production Deployment
 
-### Automated Fork Sync Process
-The production site at https://bmparliament.gov.ph is deployed from a **forked repository** that automatically syncs with this main repository.
+### Railway Deployment (Current)
+The production site at https://bmparliament.gov.ph is deployed on **Railway.app**, a modern cloud platform with automatic GitHub integration.
 
 **Deployment Workflow**:
-1. Push changes to `main` branch in this repository
-2. Fork automatically syncs from main repository
-3. Production rebuild triggers automatically
-4. Changes go live at https://bmparliament.gov.ph
+1. Push changes to `main` branch
+2. Railway automatically detects new commits
+3. Triggers build using `Dockerfile.railway`
+4. Runs migrations and setup in `entrypoint.sh`
+5. Changes go live at https://bmparliament.gov.ph
 
 **To Deploy Changes**:
 ```bash
 git add -A
 git commit -m "Your change description"
 git push origin main
-# Fork sync and production deployment happen automatically
+# Railway automatically builds and deploys
 ```
 
-**Important**: No manual deployment scripts needed - just push to main for immediate production deployment.
+**Important**: No manual deployment needed - just push to main for automatic deployment.
+
+### Configuration Files for Railway
+- **railway.toml**: Primary configuration (service definitions, environment vars)
+- **railway.json**: Alternative configuration format (legacy support)
+- **Dockerfile.railway**: Multi-stage Docker build optimized for Railway
+- **docs/deployment/RAILWAY_DEPLOYMENT_GUIDE.md**: Complete setup guide
 
 ### Production Environment
 - **Live Site**: https://bmparliament.gov.ph
-- **CDN**: CloudFront for static file caching
-- **Container**: Docker production build via Coolify
-- **Database**: PostgreSQL with Redis caching
+- **Platform**: Railway.app
+- **CDN**: CloudFront for static file caching (optional S3 integration)
+- **Container**: Docker build via `deployment/docker/Dockerfile.railway`
+- **Database**: PostgreSQL 15 (managed by Railway)
+- **Cache**: Redis 7 (managed by Railway)
+- **Web Server**: Gunicorn with 4 workers
+
+### Railway Services
+Railway automatically manages:
+1. **Web Service**: Runs Django application
+2. **PostgreSQL Database**: Primary data storage
+3. **Redis Cache**: Session and cache backend
+4. All services auto-scale based on demand
+
+### Environment Variables for Production
+See `docs/deployment/RAILWAY_DEPLOYMENT_GUIDE.md` for complete list of required environment variables.
 
 ## Known Issues & Fixes
 

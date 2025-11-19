@@ -175,11 +175,20 @@ color: #ffffff;
 
 ### Buttons
 
-**Primary Button**
+**Primary Button (Uses Bangsamoro Gradient)**
+Primary buttons use the Bangsamoro gradient to match the brand identity:
 ```html
-<button class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200">
+<button style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);" 
+        onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" 
+        onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"
+        class="text-white px-6 py-3 rounded-lg shadow-md transition-all duration-300">
   Action
 </button>
+```
+
+**Alternative: Using Button Component**
+```html
+{% include 'components/atoms/button.html' with variant='primary' text='Action' %}
 ```
 
 **Secondary Button**

@@ -9,7 +9,7 @@ import django
 from django.conf import settings
 
 # Add the project directory to the Python path
-sys.path.append('/Users/macbookpro/Documents/fahanie-cares/src')
+sys.path.append('/Users/macbookpro/Documents/bm-parliament/src')
 
 # Set up Django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
@@ -28,7 +28,7 @@ STAFF_DATA = [
     {
         'full_name': 'Mae Anne C. Lidasan',
         'position': 'Administrative Coordinator',
-        'email': 'maeanne.lidasan@fahanie.gov.ph',
+        'email': 'maeanne.lidasan@bmparliament.gov.ph',
         'phone_number': '09366186579',
         'address': 'RH IV, Cotabato City',
         'division': 'administrative_affairs',
@@ -39,7 +39,7 @@ STAFF_DATA = [
     {
         'full_name': 'Farissnoor Edza',
         'position': 'IT Staff',
-        'email': 'farissnoor.edza@fahanie.gov.ph',
+        'email': 'farissnoor.edza@bmparliament.gov.ph',
         'phone_number': '09302574952',
         'address': 'RH IV, Cotabato City',
         'division': 'it_unit',
@@ -59,7 +59,7 @@ STAFF_DATA = [
     {
         'full_name': 'MP Amiroddin Gayak',
         'position': 'Member of Parliament',
-        'email': 'mp.uyoyod@fahanie.gov.ph',
+        'email': 'mp.uyoyod@bmparliament.gov.ph',
         'phone_number': '09123456789',
         'address': 'RH IV, Cotabato City',
         'division': 'mp_office',
@@ -72,7 +72,7 @@ STAFF_DATA = [
     {
         'full_name': 'John A. Doe',
         'position': 'Legislative Assistant',
-        'email': 'john.doe@fahanie.gov.ph',
+        'email': 'john.doe@bmparliament.gov.ph',
         'phone_number': '09234567890',
         'address': 'RH IV, Cotabato City',
         'division': 'legislative_affairs',
@@ -83,7 +83,7 @@ STAFF_DATA = [
     {
         'full_name': 'Jane B. Smith',
         'position': 'Communications Officer',
-        'email': 'jane.smith@fahanie.gov.ph',
+        'email': 'jane.smith@bmparliament.gov.ph',
         'phone_number': '09345678901',
         'address': 'RH IV, Cotabato City',
         'division': 'communications',
@@ -94,7 +94,7 @@ STAFF_DATA = [
     {
         'full_name': 'Maria C. Santos',
         'position': 'Administrative Officer',
-        'email': 'maria.santos@fahanie.gov.ph',
+        'email': 'maria.santos@bmparliament.gov.ph',
         'phone_number': '09456789012',
         'address': 'RH IV, Cotabato City',
         'division': 'administrative_affairs',
@@ -151,7 +151,7 @@ def create_user_for_staff(staff):
     # Create user account
     user = User.objects.create_user(
         username=username,
-        email=staff.email or f"{username}@fahanie.gov.ph",
+        email=staff.email or f"{username}@bmparliament.gov.ph",
         password=password,
         first_name=first_name,
         last_name=last_name,

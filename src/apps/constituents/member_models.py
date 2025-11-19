@@ -55,7 +55,7 @@ class BMParliamentMember(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='bmparliament_member'
+        related_name='bm_parliament_member'
     )
     
     # Application Information

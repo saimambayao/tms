@@ -37,7 +37,7 @@ class NotificationService:
                 'referral': referral,
                 'update': update,
                 'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
-                'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
+                'site_url': getattr(settings, 'SITE_URL', 'https://bmparliament.gov.ph'),
             }
             
             # Render the email content
@@ -92,7 +92,7 @@ class NotificationService:
                 'update': update,
                 'commenter': update.created_by,
                 'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
-                'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
+                'site_url': getattr(settings, 'SITE_URL', 'https://bmparliament.gov.ph'),
             }
             
             # Render the email content
@@ -147,7 +147,7 @@ class NotificationService:
                 'document': document,
                 'uploader': document.uploaded_by,
                 'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
-                'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
+                'site_url': getattr(settings, 'SITE_URL', 'https://bmparliament.gov.ph'),
             }
             
             # Render the email content

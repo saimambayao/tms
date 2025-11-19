@@ -465,7 +465,7 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            {% if ppa.program_source == 'fahaniecares' %}
+                            {% if ppa.program_source == 'bm_parliament' %}
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-100 text-primary-800">
                                 <i class="fas fa-heart mr-1"></i>
                                 BM Parliament
@@ -545,7 +545,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex items-center space-x-2">
-                                <a href="{% url 'fahaniecares_program_detail' ppa.slug %}" 
+                                <a href="{% url 'ministry_program_detail' ppa.slug %}" 
                                    class="text-primary-600 hover:text-primary-900 transition-colors duration-150"
                                    title="View Details">
                                     <i class="fas fa-eye"></i>

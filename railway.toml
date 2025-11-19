@@ -1,0 +1,61 @@
+# Railway Configuration for BM Parliament
+# This configuration file defines how the application is built and deployed on Railway
+
+[build]
+# Use Dockerfile for custom build process
+builder = "dockerfile"
+dockerfile = "deployment/docker/Dockerfile.railway"
+
+[deploy]
+# Start command runs the entrypoint script which handles migrations and startup
+startCommand = "sh /app/entrypoint.sh"
+
+# Restart policy for failed containers
+restartPolicy = "on_failure"
+restartPolicyMaxRetries = 10
+
+# Health check to ensure container is running properly
+[deploy.healthcheck]
+# Check the health endpoint
+command = "curl -f http://localhost:${PORT:-8000}/health || exit 1"
+# Perform health check every 30 seconds
+interval = 30
+# Timeout for health check (10 seconds)
+timeout = 10
+# Number of failures before restart
+retries = 3
+
+# Environment variables for Railway deployment
+[env]
+# Django settings module
+DJANGO_SETTINGS_MODULE = "config.settings.production"
+DOCKER_CONTAINER = "true"
+
+# Database configuration (Railway provides DATABASE_URL)
+# Do NOT hardcode DATABASE_URL - Railway automatically provides it
+
+# Python environment settings
+PYTHONDONTWRITEBYTECODE = "1"
+PYTHONUNBUFFERED = "1"
+
+# Optional: Cache configuration (Railway provides REDIS_URL if Redis is added)
+# CACHE_BACKEND will be auto-detected from REDIS_URL
+
+# Service configuration
+[services.database]
+# Use PostgreSQL
+type = "postgres"
+version = "15"
+# Database name - ensure this matches Django settings
+databases = ["bmparliament_db"]
+
+[services.cache]
+# Use Redis for caching and sessions
+type = "redis"
+version = "7"
+
+# Build configuration
+[build.env]
+# Allow npm to install as root in Docker (safe within container)
+NPM_CONFIG_LOGLEVEL = "info"
+NPM_CONFIG_PROGRESS = "true"

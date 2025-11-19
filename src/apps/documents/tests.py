@@ -514,7 +514,7 @@ class DocumentTemplateModelTests(TestCase):
         ]
         
         placeholders = {
-            'office_name': 'Office of MP Fahanie',
+            'office_name': 'Office of BM Parliament',
             'current_date': '{{current_date}}',
             'contact_info': 'contact@bmparliament.ph'
         }
@@ -530,7 +530,7 @@ class DocumentTemplateModelTests(TestCase):
         self.assertEqual(template.template_fields, fields)
         self.assertEqual(template.placeholders, placeholders)
         self.assertEqual(template.template_fields[0]['name'], 'applicant_name')
-        self.assertEqual(template.placeholders['office_name'], 'Office of MP Fahanie')
+        self.assertEqual(template.placeholders['office_name'], 'Office of BM Parliament')
     
     def test_template_usage_tracking(self):
         """Test template usage tracking."""
