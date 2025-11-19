@@ -10,7 +10,7 @@ WORKDIR /app
 
 # Copy package files
 COPY src/package*.json ./
-COPY static/css/input.css static/css/
+COPY src/static/css/input.css static/css/
 COPY src/tailwind.config.js ./
 
 # Install Node.js dependencies
