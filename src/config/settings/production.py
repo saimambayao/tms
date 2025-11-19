@@ -321,19 +321,14 @@ if REDIS_URL:
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
             'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
                 'CONNECTION_POOL_KWARGS': {
                     'max_connections': 50,
                     'retry_on_timeout': True,
                     'socket_keepalive': True,
-                    'socket_keepalive_options': {},
                 },
-                'IGNORE_EXCEPTIONS': True,  # Fall back gracefully if Redis is down
                 'KEY_PREFIX': 'bmparliament',
                 'VERSION': 1,
                 'TIMEOUT': 300,  # Default timeout of 5 minutes
-                'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
-                'PARSER_CLASS': 'redis.connection.HiredisParser',
             }
         },
         # Separate cache for sessions
@@ -341,7 +336,6 @@ if REDIS_URL:
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
             'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
                 'KEY_PREFIX': 'bmparliament:session',
                 'TIMEOUT': 3600,  # 1 hour for sessions
             }
@@ -351,7 +345,6 @@ if REDIS_URL:
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
             'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
                 'KEY_PREFIX': 'bmparliament:ratelimit',
                 'TIMEOUT': 600,  # 10 minutes for rate limit data
             }
