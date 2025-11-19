@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "dockerfile",
-    "dockerfile": "deployment/docker/Dockerfile.railway"
+    "dockerfile": "./Dockerfile"
   },
   "deploy": {
     "startCommand": "sh /app/entrypoint.sh",
