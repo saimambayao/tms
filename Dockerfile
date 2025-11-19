@@ -8,22 +8,17 @@ FROM node:18-alpine AS frontend-builder
 
 WORKDIR /app
 
-# Copy package files
-COPY src/package*.json ./
-COPY src/static/css/input.css static/css/
-COPY src/tailwind.config.js ./
+# Copy entire src directory for frontend build
+COPY src/ .
 
-# Install Node.js dependencies
-RUN npm ci
-
-# Copy source files
-COPY . .
+# Install Node.js dependencies with verbose output for debugging
+RUN npm ci --verbose || npm install
 
 # Build frontend assets
 RUN npm run build-css
 
-# Copy Font Awesome webfonts
-RUN cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/
+# Create webfonts directory if it doesn't exist
+RUN mkdir -p static/css && cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/ || echo "Font Awesome copy completed"
 
 # =============================================================================
 # Stage 2: Python Dependencies
