@@ -14,11 +14,13 @@ COPY src/ .
 # Install Node.js dependencies with verbose output for debugging
 RUN npm ci --verbose || npm install
 
+# Copy Font Awesome to static directory before building CSS
+RUN mkdir -p static/fontawesome && \
+    cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/fontawesome/ && \
+    cp node_modules/@fortawesome/fontawesome-free/css/all.min.css static/fontawesome/
+
 # Build frontend assets
 RUN npm run build-css
-
-# Create webfonts directory if it doesn't exist
-RUN mkdir -p static/css && cp -r node_modules/@fortawesome/fontawesome-free/webfonts static/ || echo "Font Awesome copy completed"
 
 # =============================================================================
 # Stage 2: Python Dependencies
