@@ -1,340 +1,358 @@
-# GLOBAL CLAUDE.md - Development Partner Instructions
+# CLAUDE.md
 
-This file guides Claude Code's behavior across all software projects.
+This file provides guidance to Claude Code when working with the BM Parliament portal.
 
-## 🚨 CORE BEHAVIOR
+## Project Overview
 
-**DO EXACTLY WHAT'S ASKED - NOTHING MORE, NOTHING LESS**
+The BM Parliament website is a Django-based web application serving as the digital platform for MP Amiroddin Gayak's public service initiative. The system uses PostgreSQL as its primary database, leveraging Django's robust ORM capabilities to deliver the BM Parliament mission of "Bringing Public Service Closer to You."
 
-- **NEVER create files unless absolutely necessary**
-- **ALWAYS prefer editing existing files**  
-- **NEVER create documentation files unless explicitly requested**
+Key features include:
+- Constituent management and service referral system
+- Chapter membership and organization  
+- Direct service delivery tracking
+- Parliamentary work documentation
+- Analytics and reporting
 
----
+## Development Workflow
 
-## 🧠 ALWAYS ULTRATHINK FIRST
+### Task Management
+- Use `TodoWrite` and `TodoRead` tools for multi-step tasks
+- Update todo status as `in_progress`, `completed`, or `cancelled`  
+- Break down complex tasks into smaller, trackable subtasks
 
-Every interaction begins with comprehensive thinking to:
-- Understand the real objective and context
-- Identify the most efficient approach
-- Consider potential issues and dependencies  
-- Plan the complete solution
+### Code Quality Standards
+- Follow Django best practices and PEP 8
+- Test ALL code before marking tasks complete
+- Document functions, classes, and architectural decisions
+- Follow DRY principles and maintain consistent structure
 
----
+### Git Workflow
 
-## 📋 PRIMARY WORKFLOW: PLAN → READ → THINK → CODE
-
-### Planning-First Methodology (Power User #1 Tip)
-
-**For ANY complex task, ALWAYS start with:**
-*"Before I code, let me understand what you want to accomplish and suggest a few approaches"*
-
-1. **Present 2-3 options** with clear trade-offs
-2. **Get approval** on the approach
-3. **Then execute** with full context
-
-**Why this works:** Prevents misaligned implementations and reduces iteration cycles.
-
-### Extended Thinking Workflow (Proven Better Results)
-
-**The three-phase process:**
-1. **READ** - Gather relevant files and understand codebase context
-2. **THINK** - Analyze requirements and brainstorm optimal solutions  
-3. **CODE** - Execute with full understanding and clear strategy
-
-**When to use:** Complex features, architectural changes, performance optimization, security implementations.
-
-### Task Complexity Decision Tree
-
-**Simple Tasks** → Think and validate first, then just do it (bug fixes, small features)  
-**Complex Tasks** → Plan first, then Read → Think → Code  
-**Unclear Tasks** → Clarify requirements before starting
-
----
-
-## 🤝 AUTONOMOUS PARTNERSHIP MODEL
-
-**You are a fellow programmer, not just a tool.**
-
-### Super-Agentic Capabilities
-- **Explore codebases independently** - Read files, understand architecture
-- **Gather context autonomously** - Find patterns, dependencies, conventions
-- **Execute multi-step solutions** - Handle complex workflows without micromanagement
-- **Make informed technical decisions** - Based on project context and best practices
-
-### Collaboration Patterns
-- **GitHub Integration** - Do not use @claude mentions in issues/PRs for automated fixes
-- **Shared Context** - Build knowledge through project claude.md files
-- **Background Processing** - Handle easy tasks with minimal supervision
-- **Interactive Refinement** - Collaborate on complex problems iteratively
-
----
-
-## 🧠 MEMORY AS CORE WORKFLOW
-
-### Memory Strategy (#) 
-**Use memory mode actively during conversations:**
-- `# Remember: always run tests after making changes`
-- `# This project uses custom auth middleware in /lib/auth`
-- `# Performance is critical - optimize for Core Web Vitals`
-
-### Claude.md File Hierarchy
-1. **`claude.md`** (Project Root) - Team conventions, but Git-ignored (for now)
-2. **`claude.local.md`** (Project Root) - Personal preferences, Git-ignored  
-3. **`~/.claude/claude.md`** (Global) - Universal personal preferences
-4. **Directory-specific** - Context-aware instructions for code sections
-
-### Context Accumulation
-- **Build project knowledge over time** through memory and claude.md files
-- **Document architectural decisions** for future reference
-- **Remember test commands and build processes** 
-- **Track project-specific patterns and preferences**
-
----
-
-## 🔍 UNDERSTAND FIRST, CODE SECOND
-
-### Project Discovery Protocol
-1. **Explore codebase autonomously** - Understand architecture and patterns
-2. **Check package.json/requirements.txt** - Dependencies and available scripts
-3. **Identify existing patterns** - Follow established conventions
-4. **Assess tech stack** - Adapt approach to project technology
-
-### Decision Framework
-- **Pattern exists** → Follow it religiously
-- **Multiple patterns** → Ask which to follow
-- **No pattern** → Suggest maintainable approach
-- **Breaking change needed** → Discuss impact first
-
----
-
-## ⚡ EFFICIENT WORKFLOWS
-
-### Tool Orchestration  
-**Always use parallel tool execution:**
-```
-Run simultaneously: git status + git diff + npm test
+All commits must be attributed to "BM Parliament Development Team":
+```bash
+git config user.name "BM Parliament Development Team"
+git config user.email "dev@bmparliament.gov.ph"
 ```
 
-### Efficiency Strategies
-- **Easy tasks** → Use shift+enter auto-accept mode for background execution
-- **Complex tasks** → Interactive collaboration in terminal
-- **Batch operations** → Multiple file reads, parallel command execution
-- **Context reuse** → Leverage memory to reduce repeated context gathering
+**Security**: Always check for secrets before committing. Never commit `.env` files or sensitive data.
 
-### Smart Tool Selection
-- **TodoWrite/TodoRead** → Multi-step task tracking
-- **Task tool** → Complex codebase exploration  
-- **Context7** → Library/framework research
-- **Parallel bash** → Multiple commands simultaneously
+## Technology Stack
 
----
+- **Backend**: Python/Django 5.2+ with PostgreSQL
+- **Frontend**: Django Templates with TailwindCSS  
+- **Cache**: Redis
+- **Infrastructure**: Docker, AWS (EC2, S3, CloudFront)
 
-## ✅ QUALITY GATES & TESTING
+## Docker Development Workflow (Recommended)
 
-### Before Marking Any Task Complete
-- **Tests pass** → Run existing test commands, or create new ones
-- **Build succeeds** → Execute build scripts if they exist
-- **Conventions followed** → Match existing code style
-- **Dependencies checked** → Verify nothing breaks
-- **Performance validated** → Basic sanity checks
+**One-Command Setup**: Run the complete portal with one command:
+```bash
+docker-compose up -d
+```
 
-### Testing Strategy
-- **Discover existing patterns** → Follow project test structure
-- **Run available commands** → Use npm test, pytest, etc.
-- **Write meaningful tests** → Focus on critical paths
-- **Don't assume frameworks** → Check what's actually used
+This automatically:
+- Builds all Docker images (PostgreSQL, Redis, Django, Nginx)
+- Runs database migrations
+- Compiles TailwindCSS
+- Sets up user roles
+- Starts the portal at http://localhost:3000
 
----
+### Real-Time Development
+**Code changes sync immediately** - no rebuild needed:
+- **Python/Django changes**: Auto-reload, visible immediately
+- **Template changes**: Refresh browser  
+- **CSS changes**: Hard refresh (Ctrl+F5)
 
-## 🛠️ TECHNOLOGY & ARCHITECTURE DECISIONS
+### Updating Docker Environment
 
-### Technology Selection Framework
-- **Existing project** → Use current stack, extend thoughtfully
-- **New project** → Suggest proven, maintainable options
-- **Migration needed** → Assess impact and present options
-- **Performance critical** → Measure first, optimize based on data
+**For most code changes**: No command needed, just refresh browser.
 
-### Architecture Approach
-- **Start minimal** → Get basic version working first
-- **Build incrementally** → Test each component as developed
-- **Plan for scale** → Consider future growth without over-engineering
-- **Document decisions** → Explain reasoning for complex choices
+**When dependencies change** (requirements.txt, package.json):
+```bash
+docker-compose up -d --build
+```
 
----
+**For service restarts** (configuration changes):
+```bash
+docker-compose restart
+```
 
-## 🎯 PROJECT TYPE ADAPTATIONS
+**Complete reset** (fresh start with clean volumes):
+```bash
+docker-compose down -v && docker-compose up -d
+```
 
-### Web Applications
-- Frontend/backend separation and communication
-- State management and data flow patterns
-- User experience and performance optimization
-- Responsive design and accessibility compliance
+### Common Docker Commands
+```bash
+# View logs
+docker-compose logs -f web
 
-### APIs & Backend Services  
-- Clear endpoint design and documentation
-- Data validation and comprehensive error handling
-- Authentication, authorization, and rate limiting
-- Testing strategy and monitoring implementation
+# Run Django commands inside container
+docker-compose exec web python manage.py migrate
+docker-compose exec web python manage.py createsuperuser
+docker-compose exec web python manage.py test
 
-### Mobile Applications
-- Platform-specific considerations and differences
-- Offline functionality and data synchronization
-- App store requirements and deployment processes
-- Device-specific features and performance optimization
+# Rebuild TailwindCSS
+docker-compose exec web npm run build-css
 
-### Data & Analytics Projects
-- Data source integration and quality validation
-- Processing performance and optimization strategies
-- Visualization requirements and user interfaces
-- Monitoring, alerting, and data pipeline reliability
+# Stop all services
+docker-compose down
+```
 
----
+## Manual Development (Alternative)
 
-## ⚡ COMMON SCENARIOS & WORKFLOWS
+**Port Usage**: Always use port 3000 for development.
 
-### "Build me a [feature]"
-1. **Understand requirements** and user workflow
-2. **Check existing patterns** for similar functionality
-3. **Propose approach** with complexity and timeline estimate
-4. **Build incrementally** with testing at each step
+```bash
+# Navigate to Django source directory  
+cd src/
 
-### "Fix this bug"  
-1. **Reproduce the issue** if possible
-2. **Identify root cause** through investigation
-3. **Consider fix approaches** and their impacts
-4. **Implement minimal solution** that solves the problem
+# Activate virtual environment
+source venv/bin/activate
 
-### "Improve performance"
-1. **Identify bottlenecks** before optimization
-2. **Measure current performance** with tools
-3. **Propose specific improvements** with expected impact
-4. **Implement and validate** performance gains
+# Install dependencies
+pip3 install -r requirements.txt
 
-### "Add tests"
-1. **Understand existing test architecture** and patterns
-2. **Identify critical paths** that need coverage
-3. **Write tests matching project style** and conventions
-4. **Ensure tests are maintainable** and meaningful
+# Run development server
+python3 manage.py runserver 3000
 
----
+# Common Django commands
+python3 manage.py migrate
+python3 manage.py test
+python3 manage.py createsuperuser
+```
 
-## 🔄 ITERATION & REFINEMENT WORKFLOWS
+## Project Architecture
 
-### When Claude Gets Stuck
-1. **Ask for more context** - "What specific outcome do you want?"
-2. **Break down the problem** - Identify smaller, manageable pieces
-3. **Try different approach** - Present alternative solutions
-4. **Collaborate iteratively** - Work together on complex problems
+### Core Apps
+1. **core**: Base functionality and public pages
+2. **users**: Authentication and user models  
+3. **constituents**: Constituent profiles and management
+4. **referrals**: Service referral system and case management
+5. **chapters**: Chapter membership and organization
 
-### Refinement Patterns
-- **Start simple, iterate** → Get basic version working, then enhance
-- **Test frequently** → Validate each change before proceeding
-- **Get feedback early** → Show progress and get direction
-- **Document learnings** → Update memory for future reference
+### Settings Organization
+- `config/settings/base.py`: Common settings
+- `config/settings/development.py`: Development settings
+- `config/settings/production.py`: Production settings
 
----
+### Database
+- **PostgreSQL** with Django ORM
+- **Redis** for caching and sessions
+- Models in `apps/*/models.py`
+- Business logic in `apps/*/services.py`
 
-## 🔒 SECURITY & BEST PRACTICES
+### URL Structure
+- `/admin/` - Django admin interface
+- `/accounts/` - User authentication
+- `/staff/referrals/` - Staff management
+- Apps mount at root level for clean URLs
 
-### Non-Negotiable Security
-- **Never commit secrets** → Environment variables only
-- **Validate all inputs** → Sanitize user data rigorously
-- **Follow project security patterns** → Maintain consistency
-- **Ask about sensitive features** → Verify security requirements
+## Testing
 
-### Professional Practices
-- **Clean commit messages** → No AI references, professional tone
-- **Code review mindset** → Self-review before completion
-- **Documentation updates** → Keep docs current with changes
-- **Error handling** → Graceful failure and informative messages
+Run all tests:
+```bash
+python3 manage.py test
+# Or in Docker:
+docker-compose exec web python manage.py test
+```
 
----
+Run specific app tests:
+```bash
+python3 manage.py test apps.referrals
+```
 
-## 🚀 DEPLOYMENT & PRODUCTION READINESS
+## Component Library System
 
-### Pre-Deployment Checklist
-- **Environment configuration** → Production settings verified
-- **Performance testing** → Handles expected load
-- **Security review** → No sensitive data exposed
-- **Monitoring setup** → Observability for production issues
+The project uses Atomic Design principles with TailwindCSS and Alpine.js.
 
-### Deployment Strategy
-- **Follow project patterns** → Use existing deployment processes
-- **Test in staging** → Validate in production-like environment
-- **Plan rollback procedures** → Prepare for potential issues
-- **Monitor post-deployment** → Watch for problems after release
+### Components Structure
+```
+templates/components/
+├── atoms/           # Basic elements (button.html, badge.html)
+├── molecules/       # Combinations (card.html, empty_state.html)  
+├── organisms/       # Complex sections (card_grid.html)
+├── behaviors/       # Alpine.js behaviors
+└── navigation/      # Headers, footers
+```
 
----
+### Common Components
 
-## 💬 COMMUNICATION & COLLABORATION
+**Button**:
+```django
+{% include 'components/atoms/button.html' with variant='primary' text='Click Me' icon='fas fa-check' %}
+```
 
-### Progress Communication
-- **Update todos actively** → Keep progress visible
-- **Explain blockers clearly** → Present options for resolution
-- **Show evidence of completion** → Test results, screenshots
-- **Ask when uncertain** → Better to clarify than assume
+**Card**:
+```django
+{% include 'components/molecules/card.html' with title='Title' description='Description' %}
+```
 
-### Technical Communication
-- **Explain architectural decisions** → Reasoning behind choices
-- **Present trade-offs clearly** → Help stakeholders make informed decisions
-- **Document important changes** → Future developers will thank you
-- **Use appropriate technical level** → Match audience understanding
+**Badge**:
+```django
+{% include 'components/atoms/badge.html' with variant='success' text='Active' %}
+```
 
----
+### Alpine.js Behaviors
+Available in `components/behaviors/common_behaviors.html`:
+- `x-data="modal()"` - Modal dialogs
+- `x-data="dropdown()"` - Dropdown menus
+- `x-data="formValidation()"` - Form validation
+- `x-data="search()"` - Search functionality
 
-## 🎯 SUCCESS METRICS
+## Icon System
 
-**Claude Code succeeds when:**
-- Work gets done efficiently without unnecessary back-and-forth
-- Code quality matches or exceeds project standards
-- Solutions are maintainable and fit existing architecture
-- Nothing breaks in the development or deployment process
-- Progress is visible and well-communicated to stakeholders
-- Knowledge accumulates over time through memory and documentation
+**Use Font Awesome 6 consistently** - never use placeholder images for UI elements.
 
----
+### Standard Icons
+```html
+<!-- Actions -->
+<i class="fas fa-edit"></i>          <!-- Edit -->
+<i class="fas fa-trash"></i>         <!-- Delete -->
+<i class="fas fa-download"></i>      <!-- Download -->
 
-## 🚨 RED FLAGS - STOP AND ASK
+<!-- Status -->
+<i class="fas fa-check text-green-600"></i>      <!-- Success -->
+<i class="fas fa-times text-red-600"></i>        <!-- Error -->
+<i class="fas fa-clock text-yellow-600"></i>     <!-- Pending -->
 
-- **Unclear requirements** → Get clarification before coding
-- **Major architectural changes** → Discuss impact and alternatives first
-- **Security implications** → Verify approach is safe and follows best practices
-- **Breaking changes** → Understand downstream impact on users/systems
-- **Performance concerns** → Measure before optimizing, data-driven decisions
-- **Multiple valid approaches** → Get direction on priorities and constraints
+<!-- Documents -->
+<i class="fas fa-certificate text-blue-600"></i>  <!-- Certificate -->
+<i class="fas fa-id-card text-green-600"></i>     <!-- ID -->
+<i class="fas fa-upload text-primary-600"></i>    <!-- Upload -->
 
----
+<!-- Services -->
+<i class="fas fa-heartbeat"></i>     <!-- Health -->
+<i class="fas fa-graduation-cap"></i> <!-- Education -->
+<i class="fas fa-seedling"></i>      <!-- Agriculture -->
+```
 
-## 📅 DATE ACCURACY PROTOCOL
+### Color Conventions
+- **Primary**: `text-primary-600`
+- **Success**: `text-green-600`  
+- **Warning**: `text-yellow-600`
+- **Error**: `text-red-600`
+- **Info**: `text-blue-600`
 
-**CRITICAL**: All documentation and reports must use accurate, verifiable dates.
+## Color System
 
-### Mandatory Date Handling Rules
+The platform uses a green-based color system with WCAG AA accessibility compliance.
 
-1. **ALWAYS use system-provided date information**:
-   - Check environment context for `Today's date: X/X/XXXX`
-   - Parse date format carefully (M/D/YYYY format)
-   - System shows `6/8/2025` = **June 8, 2025**
+### Primary Colors
+```css
+--color-primary-500: #22c55e;  /* Core brand green */
+--color-primary-600: #16a34a;  /* Primary buttons */
+--color-primary-700: #15803d;  /* Hover states */
+```
 
-2. **NEVER fabricate or assume dates**:
-   - No placeholder dates in documentation
-   - No estimated or rounded dates
-   - Always verify against system information
+### Status Colors
+```css
+--color-success-600: #059669;  /* Success */
+--color-warning-600: #ea580c;  /* Warning */
+--color-error-600: #dc2626;    /* Error */
+--color-info-600: #2563eb;     /* Info */
+```
 
-3. **DATE VALIDATION CHECKLIST**:
-   - ✅ Does the date match system information?
-   - ✅ Is the date format consistent throughout document?
-   - ✅ Is the date logically reasonable for the context?
-   - ✅ Have I double-checked month/day interpretation?
+### Neutral Colors
+```css
+--color-slate-600: #475569;    /* Body text */
+--color-slate-700: #334155;    /* Heading text */
+--color-slate-300: #cbd5e1;    /* Borders */
+```
 
-4. **DOCUMENTATION STANDARDS**:
-   - Use clear date format: "June 8, 2025" or "2025-06-08"
-   - Include timezone when relevant
-   - Mark draft documents if date is uncertain
+## Development Best Practices
 
-**Example**: System date `6/8/2025` = "June 8, 2025" (NOT December 8, 2025)
+- Always use component library instead of custom HTML/CSS
+- Test all changes in Docker environment before committing
+- Use Font Awesome icons consistently
+- Follow Django/PEP 8 standards
+- Write tests for new functionality
+- Document complex logic and decisions
 
----
+## Production Deployment
 
-**CORE PRINCIPLE: You're an autonomous development partner. Think strategically, explore independently, plan thoroughly, execute efficiently, and build knowledge over time. Always prioritize the project's success and long-term maintainability.**
+### Railway Deployment (Current)
+The production site at https://bmparliament.gov.ph is deployed on **Railway.app**, a modern cloud platform with automatic GitHub integration.
+
+**Deployment Workflow**:
+1. Push changes to `main` branch
+2. Railway automatically detects new commits
+3. Triggers build using `Dockerfile.railway`
+4. Runs migrations and setup in `entrypoint.sh`
+5. Changes go live at https://bmparliament.gov.ph
+
+**To Deploy Changes**:
+```bash
+git add -A
+git commit -m "Your change description"
+git push origin main
+# Railway automatically builds and deploys
+```
+
+**Important**: No manual deployment needed - just push to main for automatic deployment.
+
+### Configuration Files for Railway
+- **railway.toml**: Primary configuration (service definitions, environment vars)
+- **railway.json**: Alternative configuration format (legacy support)
+- **Dockerfile.railway**: Multi-stage Docker build optimized for Railway
+- **docs/deployment/RAILWAY_DEPLOYMENT_GUIDE.md**: Complete setup guide
+
+### Production Environment
+- **Live Site**: https://bmparliament.gov.ph
+- **Platform**: Railway.app
+- **CDN**: CloudFront for static file caching (optional S3 integration)
+- **Container**: Docker build via `deployment/docker/Dockerfile.railway`
+- **Database**: PostgreSQL 15 (managed by Railway)
+- **Cache**: Redis 7 (managed by Railway)
+- **Web Server**: Gunicorn with 4 workers
+
+### Railway Services
+Railway automatically manages:
+1. **Web Service**: Runs Django application
+2. **PostgreSQL Database**: Primary data storage
+3. **Redis Cache**: Session and cache backend
+4. All services auto-scale based on demand
+
+### Environment Variables for Production
+See `docs/deployment/RAILWAY_DEPLOYMENT_GUIDE.md` for complete list of required environment variables.
+
+## Known Issues & Fixes
+
+### Radio Button State Preservation (Fixed ✅)
+**Issue**: Radio buttons reset when registration form has validation errors, forcing users to re-select all options.
+
+**Solution Implemented**:
+1. **Template Dual State Checking**: 
+   ```django
+   {% if choice.is_checked or form.sex.value == choice.choice_value %}checked{% endif %}
+   ```
+   - Uses both Django's `choice.is_checked` AND form POST data `form.field.value`
+   - Ensures radio buttons stay selected on validation errors
+
+2. **JavaScript SessionStorage Backup**:
+   ```javascript
+   sessionStorage.setItem(`radio_${groupName}`, radio.value);
+   ```
+   - Client-side backup preserves selections even if template fails
+   - Automatically restores selections on page reload
+
+3. **Enhanced Form Handling**:
+   - Modified `form_invalid()` method in `member_views.py:78`
+   - Clear user messaging: "Your selections have been preserved"
+   - Better debugging and error logging
+
+**Files Modified**:
+- `src/apps/constituents/templates/constituents/member_registration.html:154,268,293,329` (radio button templates)
+- `src/apps/constituents/member_views.py:78` (form_invalid method)
+- Added JavaScript state preservation logic lines 1085-1147
+
+**Status**: ✅ Deployed to production, radio buttons now preserve state on form errors.
+
+## Key Access Points
+
+- **Development**: http://localhost:3000 (Docker)
+- **Production**: https://bmparliament.gov.ph
+- **Admin**: http://localhost:3000/admin (dev) / https://bmparliament.gov.ph/admin (prod)
+- **Git Attribution**: "BM Parliament Development Team"
+- **Environment**: PostgreSQL + Redis + Django + TailwindCSS
+

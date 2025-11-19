@@ -192,6 +192,12 @@ htmlcov/
 # DOCUMENTATION
 # -------------------------------------------------------------------------------
 
+# Documentation directory
+docs/
+
+# Claude AI configuration
+CLAUDE.md
+
 # Sphinx documentation
 docs/_build/
 target/
@@ -459,6 +465,9 @@ cython_debug/
 # -------------------------------------------------------------------------------
 # PROJECT SPECIFIC
 # -------------------------------------------------------------------------------
+
+# GitHub workflows (temporary)
+.github/workflows/
 
 # Task files
 tasks.json
