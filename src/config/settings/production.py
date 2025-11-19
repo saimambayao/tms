@@ -320,34 +320,30 @@ if REDIS_URL:
         'default': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
+            'KEY_PREFIX': 'bmparliament',
+            'VERSION': 1,
+            'TIMEOUT': 300,  # Default timeout of 5 minutes
             'OPTIONS': {
                 'CONNECTION_POOL_KWARGS': {
                     'max_connections': 50,
                     'retry_on_timeout': True,
                     'socket_keepalive': True,
-                },
-                'KEY_PREFIX': 'bmparliament',
-                'VERSION': 1,
-                'TIMEOUT': 300,  # Default timeout of 5 minutes
+                }
             }
         },
         # Separate cache for sessions
         'session': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
-            'OPTIONS': {
-                'KEY_PREFIX': 'bmparliament:session',
-                'TIMEOUT': 3600,  # 1 hour for sessions
-            }
+            'KEY_PREFIX': 'bmparliament:session',
+            'TIMEOUT': 3600,  # 1 hour for sessions
         },
         # Separate cache for rate limiting
         'ratelimit': {
             'BACKEND': 'django.core.cache.backends.redis.RedisCache',
             'LOCATION': REDIS_URL,
-            'OPTIONS': {
-                'KEY_PREFIX': 'bmparliament:ratelimit',
-                'TIMEOUT': 600,  # 10 minutes for rate limit data
-            }
+            'KEY_PREFIX': 'bmparliament:ratelimit',
+            'TIMEOUT': 600,  # 10 minutes for rate limit data
         }
     }
     
