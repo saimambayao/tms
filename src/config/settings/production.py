@@ -34,11 +34,13 @@ if RAILWAY_PUBLIC_DOMAIN:
 if RAILWAY_STATIC_URL:
     ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
 
-# Add Railway auto-generated domains (*.up.railway.app)
+# Add Railway auto-generated domains
 # Railway generates domains like: <service-name>.up.railway.app
+# Django doesn't support wildcards (*), so use subdomain suffix pattern
 ALLOWED_HOSTS.extend([
-    '*.up.railway.app',  # All Railway auto-generated domains
-    'up.railway.app',     # Base Railway domain
+    '.up.railway.app',     # Matches all *.up.railway.app subdomains
+    'up.railway.app',      # Base Railway domain
+    'mpgayak.up.railway.app',  # Current Railway domain
 ])
 
 # Add any additional allowed hosts from environment
