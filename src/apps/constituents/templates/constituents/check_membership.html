@@ -4,20 +4,23 @@
 {% block title %}Check Membership Status{% endblock %}
 
 {% block hero %}
-<!-- Hero Section with Emerald Theme -->
-<section class="relative overflow-hidden py-16 md:py-24" style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%);">
+<!-- Hero Section with Bangsamoro Gradient -->
+<section class="relative overflow-hidden py-16 md:py-24" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
     <!-- Minimal background elements -->
     <div class="absolute inset-0 opacity-10">
         <div class="absolute top-1/2 left-1/2 w-32 h-32 rounded-full blur-2xl animate-pulse" style="background-color: #10b981;"></div>
     </div>
 
-    <!-- Dark gradient overlay for text area -->
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.7) 20%, rgba(6, 95, 70, 0.4) 40%, rgba(4, 120, 87, 0.2) 60%, transparent 80%);"></div>
+    <!-- Bangsamoro gradient overlay for text area (top left) - lighter opacity to show gradient -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(30, 64, 175, 0.3) 0%, rgba(30, 64, 175, 0.2) 20%, rgba(5, 150, 105, 0.1) 40%, transparent 60%);"></div>
+
+    <!-- Bangsamoro gradient overlay for bottom right - lighter opacity -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(5, 150, 105, 0.4) 0%, rgba(5, 150, 105, 0.3) 20%, rgba(5, 150, 105, 0.2) 40%, rgba(5, 150, 105, 0.1) 60%, transparent 80%);"></div>
 
     <div class="container mx-auto px-4 relative z-10">
         <div class="max-w-2xl mx-auto text-center">
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white drop-shadow-lg">Am I a Member?</h1>
-            <p class="text-xl md:text-2xl text-white/90 drop-shadow-md mb-8">Enter your full name below to check your membership status with #FahanieCares.</p>
+            <p class="text-xl md:text-2xl text-white/90 drop-shadow-md mb-8">Enter your full name below to check your membership status with our system.</p>
         </div>
     </div>
 </section>
@@ -39,10 +42,10 @@
                 </div>
                 <div class="w-full max-w-md">
                     <button type="submit"
-                            class="w-full inline-flex items-center justify-center px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-colors"
-                            style="background-color: #059669;"
-                            onmouseover="this.style.backgroundColor='#047857'"
-                            onmouseout="this.style.backgroundColor='#059669'">
+                            class="w-full inline-flex items-center justify-center px-6 py-3 text-white font-semibold rounded-lg shadow-md transition-all duration-300"
+                            style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1)';"
+                            onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 2px rgba(0, 0, 0, 0.05)';">
                         <i class="fas fa-search mr-2"></i>
                         Check Status
                     </button>

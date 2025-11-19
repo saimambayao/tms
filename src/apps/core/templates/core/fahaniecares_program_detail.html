@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% block title %}{{ program.title }} - #FahanieCares{% endblock %}
+{% block title %}{{ program.title }} - BM Parliament{% endblock %}
 {% block meta_description %}{{ meta_description }}{% endblock %}
 
 {% block breadcrumbs %}
@@ -97,7 +97,7 @@
                     </a>
                 {% elif program.program_source == 'fahaniecares' %}
                     <a href="{% url 'programs' %}" class="inline-flex items-center justify-center font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-6 py-3 border border-gray-300 text-gray-700 hover:bg-gray-100 focus:ring-gray-300">
-                        <i class="fas fa-arrow-left mr-2"></i> Back to #FahanieCares Programs
+                        <i class="fas fa-arrow-left mr-2"></i> Back to BM Parliament Programs
                     </a>
                 {% endif %}
             </nav>
@@ -180,7 +180,7 @@
                     {% elif program.program_source == 'fahaniecares' %}
                         <a href="{% url 'programs' %}" 
                            class="inline-flex items-center justify-center w-full font-medium rounded-md transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 px-4 py-2 text-sm border-2 border-primary-600 text-primary-600 hover:bg-primary-50 focus:ring-primary-500">
-                            View All #FahanieCares Programs
+                            View All BM Parliament Programs
                         </a>
                     {% endif %}
                 </div>

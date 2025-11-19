@@ -278,7 +278,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                     </div>
                 </div>
 
-                <!-- Updates Link -->
+                <!-- News Link -->
                 <a href="{% url 'announcements' %}"
                    {% if request.resolver_match.url_name == 'announcements' or request.resolver_match.url_name == 'announcement_detail' %}
                    style="position: relative; padding: 0.75rem 0.75rem; font-size: 0.875rem; font-weight: 500; transition: color 0.2s ease; color: #047857;"
@@ -287,7 +287,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                    onmouseover="this.style.color='#059669';"
                    onmouseout="this.style.color='#374151';"
                    {% endif %}>
-                   {% trans "Updates" %}
+                   {% trans "News" %}
                    <span {% if request.resolver_match.url_name == 'announcements' or request.resolver_match.url_name == 'announcement_detail' %}
                          style="position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #059669; transform: scaleX(1); transition: transform 0.2s ease;"
                          {% else %}
@@ -306,7 +306,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                    onmouseover="this.style.color='#059669';"
                    onmouseout="this.style.color='#374151';"
                    {% endif %}>
-                   {% trans "Chapters" %}
+                   {% trans "Communities" %}
                    <span {% if 'chapter' in request.resolver_match.url_name %}
                          style="position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: #059669; transform: scaleX(1); transition: transform 0.2s ease;"
                          {% else %}
@@ -345,8 +345,8 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                          x-transition:leave-end="opacity-0 scale-95 translate-y-1"
                          class="absolute left-0 mt-2 w-72 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200/50 py-2">
 
-                        <!-- Member & Registrant Data -->
-                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">{% trans "Member Data" %}</div>
+                        <!-- Member and Service Data -->
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">{% trans "Member and Service Data" %}</div>
                         <a href="{% url 'database_registrants' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
                             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
@@ -354,12 +354,17 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             </div>
                             <div>
                                 <p class="font-medium">{% trans "Database of Registrants" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Member registrations" %}</p>
                             </div>
                         </a>
-
-                        <!-- Service Data -->
-                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; margin-top: 0.5rem;">{% trans "Service Data" %}</div>
+                        <a href="{% url 'unified_db:person_search' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-search text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Unified Person Search" %}</p>
+                            </div>
+                        </a>
                         <a href="{% url 'service_applications' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
                             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
@@ -367,7 +372,15 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             </div>
                             <div>
                                 <p class="font-medium">{% trans "Database of Applications" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Service applications" %}</p>
+                            </div>
+                        </a>
+                        <a href="{% url 'cooperatives:cooperative-dashboard' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-sitemap text-xs text-white"></i>
+                            </div>
+                            <div>
+                                <p class="font-medium">{% trans "Database of Cooperatives" %}</p>
                             </div>
                         </a>
 
@@ -380,7 +393,6 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             </div>
                             <div>
                                 <p class="font-medium">{% trans "Database of PPAs" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Peoples' organizations" %}</p>
                             </div>
                         </a>
                         <a href="{% url 'database_chapters' %}"
@@ -390,7 +402,6 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             </div>
                             <div>
                                 <p class="font-medium">{% trans "Database of Chapters" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Local chapters" %}</p>
                             </div>
                         </a>
                         <a href="{% url 'database_partners' %}"
@@ -400,22 +411,8 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             </div>
                             <div>
                                 <p class="font-medium">{% trans "Database of Partners" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Partner organizations" %}</p>
                             </div>
                         </a>
-                        <a href="{% url 'cooperatives:cooperative-dashboard' %}"
-                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
-                                <i class="fas fa-sitemap text-xs text-white"></i>
-                            </div>
-                            <div>
-                                <p class="font-medium">{% trans "Database of Cooperatives" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Cooperative networks" %}</p>
-                            </div>
-                        </a>
-
-                        <!-- Resource Data -->
-                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; margin-top: 0.5rem;">{% trans "Resources" %}</div>
                         <a href="{% url 'database_donors' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
                             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
@@ -423,7 +420,6 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             </div>
                             <div>
                                 <p class="font-medium">{% trans "Database of Donors" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Donor information" %}</p>
                             </div>
                         </a>
                         <a href="{% url 'database_contact_messages' %}"
@@ -433,7 +429,6 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             </div>
                             <div>
                                 <p class="font-medium">{% trans "Contact Messages" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "User inquiries" %}</p>
                             </div>
                         </a>
                         <a href="{% url 'database_updates' %}"
@@ -442,8 +437,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                 <i class="fas fa-newspaper text-xs text-white"></i>
                             </div>
                             <div>
-                                <p class="font-medium">{% trans "Database of Updates" %}</p>
-                                <p class="text-sm text-gray-500">{% trans "Updates and announcements" %}</p>
+                                <p class="font-medium">{% trans "Database of News/Updates" %}</p>
                             </div>
                         </a>
                     </div>
@@ -513,8 +507,10 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
 
                             <!-- Profile Links -->
                             <a href="{% url 'member_profile' %}"
-                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(249, 250, 251, 0.8)'; this.style.color='#111827';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                <i class="fas fa-user-circle w-4"></i>
+                               style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                                <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                    <i class="fas fa-user-circle text-xs text-white"></i>
+                                </div>
                                 {% trans "My Profile" %}
                             </a>
                             <!-- My Referrals - Alpha: Disabled -->
@@ -532,32 +528,35 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                 <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider">{% trans "Staff Area" %}</p>
                                 </div>
                                 <a href="{% url 'staff:dashboard' %}"
-                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(249, 250, 251, 0.8)'; this.style.color='#111827';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                    <i class="fas fa-tachometer-alt w-4"></i>
+                                   style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                                    <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                        <i class="fas fa-tachometer-alt text-xs text-white"></i>
+                                    </div>
                                     {% trans "Staff Dashboard" %}
                                 </a>
                                 {% if user.user_type in 'superuser,mp,chief_of_staff,admin' or user.is_superuser %}
                                     <a href="{% url 'analytics:dashboard' %}"
                                        style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                        <i class="fas fa-chart-pie w-4" style="color: #059669;"></i>
+                                        <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                            <i class="fas fa-chart-pie text-xs text-white"></i>
+                                        </div>
                                         {% trans "Member Analytics" %}
                                     </a>
                                 {% endif %}
                                 {% if user.user_type in 'superuser,mp,chief_of_staff,admin,coordinator' or user.is_superuser %}
                                     <a href="{% url 'database_staff' %}"
                                        style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                        <i class="fas fa-users-cog w-4" style="color: #059669;"></i>
+                                        <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                            <i class="fas fa-users-cog text-xs text-white"></i>
+                                        </div>
                                     {% trans "Database of Staff" %}
                                     </a>
                                     <a href="{% url 'unified_db:database_list' %}"
                                        style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                        <i class="fas fa-database w-4" style="color: #059669;"></i>
+                                        <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                            <i class="fas fa-database text-xs text-white"></i>
+                                        </div>
                                     {% trans "Database Management" %}
-                                    </a>
-                                    <a href="{% url 'unified_db:person_search' %}"
-                                       style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                                        <i class="fas fa-search w-4" style="color: #059669;"></i>
-                                    {% trans "Unified Person Search" %}
                                     </a>
                                 {% endif %}
                             {% endif %}
@@ -587,8 +586,10 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
 
                     {% if user.is_superuser %}
                         <a href="{% url 'admin:index' %}" @click="closeMobileMenu()"
-                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem; border-radius: 0.5rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(249, 250, 251, 0.8)'; this.style.color='#111827';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
-                            <i class="fas fa-cog w-5"></i>
+                           style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-cog text-xs text-white"></i>
+                            </div>
                            {% trans "Admin Panel" %}
                         </a>
                     {% endif %}
@@ -597,8 +598,10 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                     <form method="post" action="{% url 'logout' %}">
                         {% csrf_token %}
                         <button type="submit"
-                                style="display: flex; width: 100%; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem; border-radius: 0.5rem; color: #dc2626; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(254, 242, 242, 0.8)';" onmouseout="this.style.backgroundColor='transparent';">
-                            <i class="fas fa-sign-out-alt w-5"></i>
+                                style="display: flex; width: 100%; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #dc2626; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(254, 242, 242, 0.8)';" onmouseout="this.style.backgroundColor='transparent';">
+                            <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(220, 38, 38) 0%, rgb(185, 28, 28) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(185, 28, 28) 0%, rgb(153, 27, 27) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(220, 38, 38) 0%, rgb(185, 28, 28) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
+                                <i class="fas fa-sign-out-alt text-xs text-white"></i>
+                            </div>
                             {% trans "Logout" %}
                         </button>
                     </form>
@@ -746,7 +749,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
                             <i class="fas fa-bullhorn" style="width: 1rem; color: #059669;"></i>
-                            <span>{% trans "Updates" %}</span>
+                            <span>{% trans "News" %}</span>
                         </a>
                         <a href="{% url 'chapters_public' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
@@ -754,7 +757,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
                            @click="closeMobileMenu()">
                             <i class="fas fa-map-marker-alt" style="width: 1rem; color: #059669;"></i>
-                            <span>{% trans "Chapters" %}</span>
+                            <span>{% trans "Communities" %}</span>
                         </a>
                     </div>
                 </div>

@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block title %}
-    {% if object %}Edit Chapter{% else %}Create New Chapter{% endif %} - #FahanieCares
+    {% if object %}Edit Chapter{% else %}Create New Chapter{% endif %} - BM Parliament
 {% endblock %}
 
 {% block hero %}
@@ -19,7 +19,7 @@
                         {% if object %}
                             Update the information for <span class="font-semibold">{{ object.name }}</span>
                         {% else %}
-                            Expand our community network by adding a new #FahanieCares chapter
+                            Expand our community network by adding a new BM Parliament chapter
                         {% endif %}
                     </p>
                 </div>
@@ -96,7 +96,7 @@
                                 {{ form.name.errors.0 }}
                             </p>
                         {% endif %}
-                        <p class="mt-1 text-sm text-gray-500">The official name of the chapter (e.g., "#FahanieCares Cotabato Chapter")</p>
+                        <p class="mt-1 text-sm text-gray-500">The official name of the chapter (e.g., "BM Parliament Cotabato Chapter")</p>
                     </div>
                     
                     <!-- Tier -->
@@ -427,13 +427,13 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Enhanced form behavior for #FahanieCares chapter form
+    // Enhanced form behavior for BM Parliament chapter form
     
     // Apply consistent styling to all form controls
     const formControls = document.querySelectorAll('input, select, textarea');
     formControls.forEach(control => {
         if (!control.classList.contains('form-check-input')) {
-            // Apply #FahanieCares form control styling
+            // Apply BM Parliament form control styling
             control.classList.add(
                 'block', 'w-full', 'px-4', 'py-3', 'border', 'border-gray-300', 
                 'rounded-lg', 'shadow-sm', 'transition-all', 'duration-200',
@@ -531,7 +531,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (nameField && municipalityField && !nameField.value) {
         municipalityField.addEventListener('blur', function() {
             if (this.value && !nameField.value) {
-                nameField.value = `#FahanieCares ${this.value} Chapter`;
+                nameField.value = `BM Parliament ${this.value} Chapter`;
             }
         });
     }

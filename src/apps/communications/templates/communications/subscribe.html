@@ -1,12 +1,12 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Subscribe to Updates - #FahanieCares{% endblock %}
+{% block title %}Subscribe to Updates - BM Parliament{% endblock %}
 
 {% block content %}
 <div class="max-w-md mx-auto">
   <div class="bg-white rounded-lg shadow-md p-8 border border-gray-100">
     <h1 class="text-2xl font-bold text-center text-slate-800 mb-2">
-      Subscribe to Updates
+      Subscribe for News and Updates
     </h1>
     <p class="text-center text-gray-600 mb-6">Stay informed about our latest programs and services</p>
 
@@ -80,23 +80,28 @@
         </label>
         <div class="space-y-2">
           <label class="flex items-center">
-            <input type="checkbox" name="subscription_types" value="general" 
+            <input type="checkbox" name="subscription_types" value="all_updates" id="all_updates"
                    class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+            <span class="ml-2 text-sm text-gray-700">All Updates</span>
+          </label>
+          <label class="flex items-center">
+            <input type="checkbox" name="subscription_types" value="general" id="general"
+                   class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 subscription-checkbox">
             <span class="ml-2 text-sm text-gray-700">General Updates</span>
           </label>
           <label class="flex items-center">
-            <input type="checkbox" name="subscription_types" value="parliamentary" 
-                   class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+            <input type="checkbox" name="subscription_types" value="parliamentary" id="parliamentary"
+                   class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 subscription-checkbox">
             <span class="ml-2 text-sm text-gray-700">Parliamentary Updates</span>
           </label>
           <label class="flex items-center">
-            <input type="checkbox" name="subscription_types" value="programs" 
-                   class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+            <input type="checkbox" name="subscription_types" value="programs" id="programs"
+                   class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 subscription-checkbox">
             <span class="ml-2 text-sm text-gray-700">Program Announcements</span>
           </label>
           <label class="flex items-center">
-            <input type="checkbox" name="subscription_types" value="events" 
-                   class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500">
+            <input type="checkbox" name="subscription_types" value="events" id="events"
+                   class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 subscription-checkbox">
             <span class="ml-2 text-sm text-gray-700">Event Invitations</span>
           </label>
         </div>
@@ -106,7 +111,10 @@
       <div>
         <button
           type="submit"
-          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3); transition: all 0.3s ease;"
+          onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(30, 64, 175, 0.4)';"
+          onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 64, 175, 0.3)';"
         >
           Subscribe to Updates
         </button>
@@ -114,7 +122,7 @@
 
       <!-- Privacy Notice -->
       <p class="text-xs text-gray-600 text-center mt-4">
-        By subscribing, you agree to receive email communications from #FahanieCares. 
+        By subscribing, you agree to receive email communications from us. 
         You can unsubscribe at any time.
       </p>
     </form>
@@ -131,8 +139,8 @@
 
       <div class="mt-6 space-y-3">
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-bell text-primary-600 text-sm"></i>
+          <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <i class="fas fa-bell text-white text-sm"></i>
           </div>
           <div>
             <p class="text-sm font-medium text-gray-700">Latest Updates</p>
@@ -140,8 +148,8 @@
           </div>
         </div>
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-calendar text-primary-600 text-sm"></i>
+          <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <i class="fas fa-calendar text-white text-sm"></i>
           </div>
           <div>
             <p class="text-sm font-medium text-gray-700">Event Invitations</p>
@@ -149,8 +157,8 @@
           </div>
         </div>
         <div class="flex items-start gap-3">
-          <div class="flex-shrink-0 w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-            <i class="fas fa-heart text-primary-600 text-sm"></i>
+          <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);">
+            <i class="fas fa-heart text-white text-sm"></i>
           </div>
           <div>
             <p class="text-sm font-medium text-gray-700">Direct Assistance</p>
@@ -170,4 +178,19 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const allUpdatesCheckbox = document.getElementById('all_updates');
+    const subscriptionCheckboxes = document.querySelectorAll('.subscription-checkbox');
+    
+    if (allUpdatesCheckbox) {
+        allUpdatesCheckbox.addEventListener('change', function() {
+            subscriptionCheckboxes.forEach(function(checkbox) {
+                checkbox.checked = allUpdatesCheckbox.checked;
+            });
+        });
+    }
+});
+</script>
 {% endblock %}
