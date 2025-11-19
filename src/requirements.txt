@@ -57,7 +57,7 @@ qrcode==7.4.2  # For MFA QR codes
 django-crispy-forms==2.1
 crispy-bootstrap5==2023.10
 crispy-tailwind==1.0.3
-django-widget-tweaks==1.4.12
+django-widget-tweaks==1.5.0  # Updated to avoid pkg_resources deprecation warning
 setuptools<81  # Pin to avoid deprecated pkg_resources removal (scheduled for setuptools 81+)
 
 

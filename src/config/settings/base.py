@@ -42,6 +42,7 @@ THIRD_PARTY_APPS = [
     'rest_framework',
     'django_extensions',
     'guardian',
+    'storages',  # AWS S3 storage
     'crispy_forms', # Add crispy_forms
     'crispy_tailwind', # Add crispy_tailwind
     'widget_tweaks', # Add widget_tweaks
@@ -166,8 +167,18 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Media files
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# Railway Volumes: When deployed on Railway with a volume mounted at /data,
+# media files will be stored persistently on the volume instead of ephemeral storage
+RAILWAY_VOLUME_MOUNT = os.environ.get('RAILWAY_VOLUME_MOUNT_PATH', None)
+
+if RAILWAY_VOLUME_MOUNT:
+    # Use Railway Volume for persistent media storage
+    MEDIA_ROOT = os.path.join(RAILWAY_VOLUME_MOUNT, 'media')
+    MEDIA_URL = '/media/'
+else:
+    # Local development: use project directory
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
