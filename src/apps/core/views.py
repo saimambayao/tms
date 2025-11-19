@@ -428,7 +428,27 @@ class ProgramsView(TemplateView):
             'active': len([p for p in program_list if 'Active' in p['status']]),
             'featured': len([p for p in program_list if p['is_featured']]),
         }
-        
+
+        # Add FAQs for Programs page
+        context['page_faqs'] = [
+            {
+                'question': 'Who is eligible for BM Parliament programs?',
+                'answer': 'Most BM Parliament programs are available to registered members who are residents of the Bangsamoro region. Specific eligibility requirements vary by program and are outlined in each program description.'
+            },
+            {
+                'question': 'How long does the application process take?',
+                'answer': 'Application processing times vary by program. Most applications are processed within 2-3 weeks, but some programs with high demand may take longer. You will receive status updates via email or SMS throughout the process.'
+            },
+            {
+                'question': 'Can I apply for multiple programs simultaneously?',
+                'answer': 'Yes, you can apply for multiple programs at the same time. However, some programs may have restrictions on receiving multiple benefits simultaneously, which will be specified in the program details.'
+            },
+            {
+                'question': 'What documents are typically required for applications?',
+                'answer': 'Common required documents include valid ID, proof of residency in the Bangsamoro region, and program-specific documentation (such as income certificates, educational records, or medical documents). Specific requirements are listed with each program.'
+            }
+        ]
+
         return context
     
     def _get_sector_mapping(self):
@@ -1042,6 +1062,175 @@ class TDIFProjectsView(TemplateView):
     """TDIF Projects view - Transitional Development Impact Fund with enhanced display."""
     template_name = 'core/tdif_projects.html'
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # TDIF Projects data
+        context['title'] = 'TDIF Projects'
+        context['description'] = 'Transitional Development Impact Fund projects designed to support sustainable development and community empowerment in the Bangsamoro region.'
+
+        # Get filter parameters - using sector instead of type
+        sector_filter = self.request.GET.get('sector', '')
+        sort_by = self.request.GET.get('sort', '-start_date')
+
+        # Get sector mapping (similar to ProgramsView)
+        sector_mapping = self._get_sector_mapping()
+
+        # Get TDIF projects using unified MinistryProgram model
+        programs = MinistryProgram.objects.filter(
+            program_source='tdif',  # Only TDIF projects
+            is_public=True,
+            is_deleted=False,
+            status__in=['active', 'pending_approval', 'ongoing']
+        )
+
+        # Apply sector filter if specified
+        if sector_filter and sector_filter in sector_mapping:
+            ministry_codes = sector_mapping[sector_filter]['ministries']
+            programs = programs.filter(ministry__in=ministry_codes)
+
+        # Apply sorting with validation
+        valid_sort_fields = ['-start_date', 'start_date', 'title', '-title', 'end_date', '-end_date']
+        if sort_by in valid_sort_fields:
+            programs = programs.order_by(sort_by)
+        else:
+            programs = programs.order_by('-start_date')
+
+        # Prepare programs data for template compatibility
+        program_list = []
+        for program in programs:
+            program_sector = self._get_program_sector(program.ministry, sector_mapping)
+
+            program_data = {
+                'id': program.id,
+                'title': program.title,
+                'category': program_sector['name'] if program_sector else program.get_ppa_type_display(),
+                'status': program.get_status_display(),
+                'description': program.description[:200] + '...' if len(program.description) > 200 else program.description,
+                'eligibility': program.target_beneficiaries[:100] + '...' if len(program.target_beneficiaries) > 100 else program.target_beneficiaries,
+                'application_deadline': program.end_date,
+                'start_date': program.start_date,
+                'end_date': program.end_date,
+                'geographic_coverage': program.geographic_coverage,
+                'slug': program.slug,
+                'is_featured': program.is_featured,
+                'ministry': program.get_ministry_display(),
+                'priority': program.get_priority_level_display(),
+                'sector': program_sector['name'] if program_sector else 'Other',
+                'sector_code': program_sector['code'] if program_sector else 'other',
+                'sector_icon': program_sector['icon'] if program_sector else 'fas fa-cog',
+                'sector_color': program_sector['color'] if program_sector else 'gray',
+            }
+            program_list.append(program_data)
+
+        context['programs'] = program_list
+
+        # Prepare sector data for filters
+        sectors = []
+        for sector_code, sector_data in sector_mapping.items():
+            count = len([p for p in program_list if p.get('sector_code') == sector_code])
+            if count > 0:
+                sectors.append({
+                    'code': sector_code,
+                    'name': sector_data['name'],
+                    'icon': sector_data['icon'],
+                    'color': sector_data['color'],
+                    'count': count
+                })
+
+        context['sectors'] = sectors
+        context['current_sector'] = sector_filter
+        context['current_sort'] = sort_by
+        context['total_programs'] = len(program_list)
+
+        # Add program statistics
+        context['program_stats'] = {
+            'total': len(program_list),
+            'active': len([p for p in program_list if 'Active' in p['status']]),
+            'featured': len([p for p in program_list if p['is_featured']]),
+        }
+
+        # Add FAQs for TDIF Projects page
+        context['page_faqs'] = [
+            {
+                'question': 'What is the Transitional Development Impact Fund (TDIF)?',
+                'answer': 'The TDIF is a fund dedicated to supporting sustainable development and community empowerment projects in the Bangsamoro region, focusing on initiatives that create lasting positive change.'
+            },
+            {
+                'question': 'How are TDIF projects selected?',
+                'answer': 'Projects are selected based on their alignment with regional development goals, potential for community impact, sustainability, and feasibility, often involving community consultations.'
+            },
+            {
+                'question': 'Can organizations or individuals propose TDIF projects?',
+                'answer': 'Information on project proposal mechanisms and guidelines for organizations or individuals interested in proposing TDIF projects can be obtained by contacting our office directly.'
+            },
+            {
+                'question': 'How can I track the progress of a TDIF project?',
+                'answer': 'Updates on project progress are periodically shared on this page and through official reports. For specific project inquiries, please use the contact form or details provided.'
+            }
+        ]
+
+        return context
+
+    def _get_sector_mapping(self):
+        """Define sector to ministry mapping with visual attributes."""
+        return {
+            'health': {
+                'name': 'Health',
+                'description': 'Healthcare services, medical programs, and public health initiatives.',
+                'icon': 'fas fa-heartbeat',
+                'color': 'green',
+                'ministries': ['moh', 'MOH']
+            },
+            'education': {
+                'name': 'Education',
+                'description': 'Educational programs, training initiatives, and skills development.',
+                'icon': 'fas fa-graduation-cap',
+                'color': 'blue',
+                'ministries': ['mbasiced', 'mhe', 'MOE', 'TESDA', 'volunteer_teachers']
+            },
+            'agriculture': {
+                'name': 'Agriculture',
+                'description': 'Agricultural development, fisheries support, and agrarian reform programs.',
+                'icon': 'fas fa-seedling',
+                'color': 'green',
+                'ministries': ['mafar', 'MAFAR']
+            },
+            'social_services': {
+                'name': 'Social Services',
+                'description': 'Social protection, welfare programs, and support for vulnerable populations.',
+                'icon': 'fas fa-hands-helping',
+                'color': 'purple',
+                'ministries': ['mssd', 'MSSD']
+            },
+            'infrastructure': {
+                'name': 'Infrastructure',
+                'description': 'Public works, transportation networks, and infrastructure development projects.',
+                'icon': 'fas fa-road',
+                'color': 'orange',
+                'ministries': ['mpwh', 'MPWH', 'motc', 'MOTC']
+            },
+            'economic_development': {
+                'name': 'Economic Development',
+                'description': 'Trade promotion, industry development, tourism, and employment opportunities.',
+                'icon': 'fas fa-chart-line',
+                'color': 'indigo',
+                'ministries': ['mtit', 'MTIT', 'mle', 'MLE']
+            }
+        }
+
+    def _get_program_sector(self, ministry_code, sector_mapping):
+        """Get sector information for a given ministry code."""
+        for sector_code, sector_data in sector_mapping.items():
+            if ministry_code in sector_data['ministries']:
+                return {
+                    'code': sector_code,
+                    'name': sector_data['name'],
+                    'icon': sector_data['icon'],
+                    'color': sector_data['color']
+                }
+        return None
+
 class CompletedProgramsView(TemplateView):
     """View for displaying completed programs."""
     template_name = 'core/completed_programs.html'
@@ -1282,7 +1471,27 @@ class AccessibleMinistryProgramsView(TemplateView):
         
         # Add contact form for program inquiries
         context['contact_form'] = ContactForm(default_subject='ministry_program_inquiry')
-        
+
+        # Add FAQs for Ministry Programs page
+        context['page_faqs'] = [
+            {
+                'question': 'What types of ministry programs are available?',
+                'answer': 'Our ministry programs cover a wide range of sectors including education, health, livelihood, social welfare, and infrastructure development, designed to address various community needs.'
+            },
+            {
+                'question': 'How can I apply for a ministry program?',
+                'answer': 'Each program has specific application requirements and processes. You can find detailed instructions on the individual program\'s detail page, or contact our support team for assistance.'
+            },
+            {
+                'question': 'What are the eligibility criteria for these programs?',
+                'answer': 'Eligibility varies by program, often depending on factors such as residency, income level, age, and specific needs. Please refer to the program details for precise criteria.'
+            },
+            {
+                'question': 'How long does the application process take?',
+                'answer': 'The processing time for applications can vary. We strive to process all applications efficiently and will keep you informed of the status through your registered contact information.'
+            }
+        ]
+
         return context
     
     def _get_sector_mapping(self):
@@ -2312,7 +2521,68 @@ class TDIFProjectDetailView(LoginRequiredMixin, TemplateView):
 
 @login_required
 def faqs_view(request):
-    return render(request, 'core/placeholder.html', {'title': 'FAQs (Placeholder)'})
+    """Comprehensive FAQs page combining FAQs from all programs."""
+    faqs = {
+        'programs': [
+            {
+                'question': 'Who is eligible for BM Parliament programs?',
+                'answer': 'Most BM Parliament programs are available to registered members who are residents of the Bangsamoro region. Specific eligibility requirements vary by program and are outlined in each program description.'
+            },
+            {
+                'question': 'How long does the application process take?',
+                'answer': 'Application processing times vary by program. Most applications are processed within 2-3 weeks, but some programs with high demand may take longer. You will receive status updates via email or SMS throughout the process.'
+            },
+            {
+                'question': 'Can I apply for multiple programs simultaneously?',
+                'answer': 'Yes, you can apply for multiple programs at the same time. However, some programs may have restrictions on receiving multiple benefits simultaneously, which will be specified in the program details.'
+            },
+            {
+                'question': 'What documents are typically required for applications?',
+                'answer': 'Common required documents include valid ID, proof of residency in the Bangsamoro region, and program-specific documentation (such as income certificates, educational records, or medical documents). Specific requirements are listed with each program.'
+            }
+        ],
+        'tdif': [
+            {
+                'question': 'What is the Transitional Development Impact Fund (TDIF)?',
+                'answer': 'The TDIF is a fund dedicated to supporting sustainable development and community empowerment projects in the Bangsamoro region, focusing on initiatives that create lasting positive change.'
+            },
+            {
+                'question': 'How are TDIF projects selected?',
+                'answer': 'Projects are selected based on their alignment with regional development goals, potential for community impact, sustainability, and feasibility, often involving community consultations.'
+            },
+            {
+                'question': 'Can organizations or individuals propose TDIF projects?',
+                'answer': 'Information on project proposal mechanisms and guidelines for organizations or individuals interested in proposing TDIF projects can be obtained by contacting our office directly.'
+            },
+            {
+                'question': 'How can I track the progress of a TDIF project?',
+                'answer': 'Updates on project progress are periodically shared on this page and through official reports. For specific project inquiries, please use the contact form or details provided.'
+            }
+        ],
+        'ministry': [
+            {
+                'question': 'What types of ministry programs are available?',
+                'answer': 'Our ministry programs cover a wide range of sectors including education, health, livelihood, social welfare, and infrastructure development, designed to address various community needs.'
+            },
+            {
+                'question': 'How can I apply for a ministry program?',
+                'answer': 'Each program has specific application requirements and processes. You can find detailed instructions on the individual program\'s detail page, or contact our support team for assistance.'
+            },
+            {
+                'question': 'What are the eligibility criteria for these programs?',
+                'answer': 'Eligibility varies by program, often depending on factors such as residency, income level, age, and specific needs. Please refer to the program details for precise criteria.'
+            },
+            {
+                'question': 'How long does the application process take?',
+                'answer': 'The processing time for applications can vary. We strive to process all applications efficiently and will keep you informed of the status through your registered contact information.'
+            }
+        ]
+    }
+
+    return render(request, 'core/faqs.html', {
+        'title': 'Frequently Asked Questions',
+        'faqs': faqs
+    })
 
 @login_required
 def health_check(request):

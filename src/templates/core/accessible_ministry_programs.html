@@ -180,47 +180,19 @@
 <!-- Frequently Asked Questions -->
 <div class="bg-white rounded-lg shadow-sm p-8 border border-gray-100 mb-8">
     <h2 class="text-2xl font-bold text-slate-800 mb-6">Frequently Asked Questions about Ministry Programs</h2>
-    
+
     <div class="space-y-4">
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
-                <span>What types of ministry programs are available?</span>
-                <i class="fas fa-chevron-down text-gray-400"></i>
+        {% for faq in page_faqs %}
+        <div class="border border-gray-200 rounded-lg overflow-hidden faq-item">
+            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors faq-button" type="button">
+                <span>{{ faq.question }}</span>
+                <i class="fas fa-chevron-down text-gray-400 faq-icon"></i>
             </button>
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <p class="text-gray-600">Our ministry programs cover a wide range of sectors including education, health, livelihood, social welfare, and infrastructure development, designed to address various community needs.</p>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 faq-content" style="max-height: 0px; overflow: hidden; transition: max-height 0.3s ease;">
+                <p class="text-gray-600">{{ faq.answer }}</p>
             </div>
         </div>
-        
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
-                <span>How can I apply for a ministry program?</span>
-                <i class="fas fa-chevron-down text-gray-400"></i>
-            </button>
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <p class="text-gray-600">Each program has specific application requirements and processes. You can find detailed instructions on the individual program's detail page, or contact our support team for assistance.</p>
-            </div>
-        </div>
-        
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
-                <span>What are the eligibility criteria for these programs?</span>
-                <i class="fas fa-chevron-down text-gray-400"></i>
-            </button>
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <p class="text-gray-600">Eligibility varies by program, often depending on factors such as residency, income level, age, and specific needs. Please refer to the program details for precise criteria.</p>
-            </div>
-        </div>
-        
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
-                <span>How long does the application process take?</span>
-                <i class="fas fa-chevron-down text-gray-400"></i>
-            </button>
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <p class="text-gray-600">The processing time for applications can vary. We strive to process all applications efficiently and will keep you informed of the status through your registered contact information.</p>
-            </div>
-        </div>
+        {% endfor %}
     </div>
 </div>
 {% endblock %}
@@ -258,30 +230,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Toggle FAQ accordions
-    const faqButtons = document.querySelectorAll('.border.border-gray-200.rounded-lg button');
-    
+    // FAQ accordion functionality - only one open at a time
+    const faqButtons = document.querySelectorAll('.faq-button');
+    let currentlyOpenButton = null;
+
     faqButtons.forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
             const content = this.nextElementSibling;
-            const icon = this.querySelector('.fas');
-            
-            // Toggle visibility
-            if (content.style.maxHeight) {
-                content.style.maxHeight = null;
-                icon.classList.remove('fa-chevron-up');
-                icon.classList.add('fa-chevron-down');
-            } else {
-                content.style.maxHeight = content.scrollHeight + 'px';
-                icon.classList.remove('fa-chevron-down');
-                icon.classList.add('fa-chevron-up');
+            const icon = this.querySelector('.faq-icon');
+
+            // Close the currently open button if it's different
+            if (currentlyOpenButton && currentlyOpenButton !== this) {
+                const previousContent = currentlyOpenButton.nextElementSibling;
+                const previousIcon = currentlyOpenButton.querySelector('.faq-icon');
+
+                if (previousContent && previousIcon) {
+                    previousContent.style.maxHeight = '0px';
+                    previousIcon.classList.remove('fa-chevron-up');
+                    previousIcon.classList.add('fa-chevron-down');
+                }
+            }
+
+            // Toggle the clicked button
+            if (content && icon) {
+                if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                    content.style.maxHeight = '0px';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
+                    currentlyOpenButton = null;
+                } else {
+                    content.style.maxHeight = content.scrollHeight + 'px';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                    currentlyOpenButton = this;
+                }
             }
         });
     });
-    
-    // Initialize - hide all content
-    document.querySelectorAll('.border.border-gray-200.rounded-lg > div').forEach(div => {
-        div.style.maxHeight = null;
+
+    // Initialize all content to be completely hidden
+    const faqContents = document.querySelectorAll('.faq-content');
+    faqContents.forEach(content => {
+        content.style.maxHeight = '0px';
+        content.style.overflow = 'hidden';
     });
 });
 </script>
