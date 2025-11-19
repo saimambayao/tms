@@ -6,12 +6,12 @@
 # DJANGO/PYTHON WEB FRAMEWORK
 # -------------------------------------------------------------------------------
 
-# Django generated files - COMMENTED OUT TO PUSH ALL FILES
-# *.log
-# *.pot
-# local_settings.py
-# db.sqlite3
-# db.sqlite3-journal
+# Django generated files
+*.log
+*.pot
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
 
 # Django static and media files
 /static/
@@ -63,21 +63,21 @@ __pycache__/
 # -------------------------------------------------------------------------------
 
 # Environment variables
-# .env
-# .env.*
-# .env.local
-# .env.development
-# .env.staging
-# .env.production
-# .env.test
+.env
+.env.*
+.env.local
+.env.development
+.env.staging
+.env.production
+.env.test
 
 # Virtual environments
-# venv/
-# .venv/
-# env/
-# ENV/
-# env.bak/
-# venv.bak/
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
 
 # -------------------------------------------------------------------------------
 # DEVELOPMENT TOOLS
@@ -194,9 +194,6 @@ htmlcov/
 
 # Documentation directory
 docs/
-
-# Claude AI configuration
-CLAUDE.md
 
 # Sphinx documentation
 docs/_build/
