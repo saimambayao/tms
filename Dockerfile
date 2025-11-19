@@ -174,12 +174,6 @@ reset_stats() {
     fi
 }
 
-# Function to warm cache
-warm_cache() {
-    echo "⏳ Warming application cache..."
-    python manage.py warm_cache || echo "⚠️  Cache warming skipped (command not found)"
-    echo "✅ Cache warmed"
-}
 
 # Function to fix media permissions
 fix_media_permissions() {
@@ -207,7 +201,6 @@ create_cache
 setup_roles
 create_superuser
 reset_stats
-warm_cache
 
 echo "================================================"
 echo "🎉 BM Parliament on Railway Ready!"
