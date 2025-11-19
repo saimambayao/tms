@@ -13,18 +13,43 @@
     userTimer: null,
     csrfToken: '{{ csrf_token }}', // Pass CSRF token directly
     
+    _toggleInProgress: false,
+
     init() {
-        // No need to call setLanguage here, as currentLanguage is initialized from Django
-        // and localStorage will be updated on explicit language change.
+        console.log('BM Parliament Navbar: Alpine.js initialized');
+        console.log('Mobile menu state:', this.mobileMenuOpen);
     },
 
     toggleMobileMenu() {
+        // Prevent rapid double-calls
+        if (this._toggleInProgress) {
+            console.log('Toggle already in progress, ignoring');
+            return;
+        }
+
+        this._toggleInProgress = true;
+        console.log('Toggle mobile menu called. Current state:', this.mobileMenuOpen);
+
         this.mobileMenuOpen = !this.mobileMenuOpen;
+        console.log('New state:', this.mobileMenuOpen);
+
         if (this.mobileMenuOpen) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
         }
+
+        // Reset guard after 300ms
+        setTimeout(() => {
+            this._toggleInProgress = false;
+        }, 300);
+    },
+
+    closeMobileMenu() {
+        console.log('closeMobileMenu called. Current state:', this.mobileMenuOpen);
+        console.trace('Close called from:');
+        this.mobileMenuOpen = false;
+        document.body.style.overflow = '';
     },
     
     setLanguage(lang) {
@@ -149,7 +174,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
             </div>
 
             <!-- Desktop Navigation -->
-            <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-4">
                 <!-- About Link -->
                 <a href="{% url 'about' %}"
                    {% if request.resolver_match.url_name == 'about' %}
@@ -448,16 +473,18 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
 
             <!-- Mobile Menu Button -->
             <div class="md:hidden">
-                <button @click="toggleMobileMenu()"
-                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 transition-colors duration-200"
-                        aria-expanded="false">
+                <button id="mobile-menu-button"
+                        type="button"
+                        class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-emerald-500 transition-colors duration-200"
+                        aria-expanded="false"
+                        aria-controls="mobile-menu">
                     <span class="sr-only">Open main menu</span>
                     <!-- Hamburger icon -->
-                    <svg class="block h-6 w-6" :class="{'hidden': mobileMenuOpen, 'block': !mobileMenuOpen}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <svg id="hamburger-icon" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
                     </svg>
-                    <!-- Close icon -->
-                    <svg class="hidden h-6 w-6" :class="{'block': mobileMenuOpen, 'hidden': !mobileMenuOpen}" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <!-- Close icon (hidden by default) -->
+                    <svg id="close-icon" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
@@ -566,17 +593,17 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                     {% if user.user_type == 'mp' or user.user_type == 'staff' or user.is_superuser %}
                         <div class="border-t border-gray-100 my-2"></div>
                         <div class="px-3 py-2 text-sm font-semibold text-gray-500 uppercase tracking-wider">Ministry Programs</div>
-                        <a href="{% url 'admin_dashboard' %}" @click="closeMobileMenu()"
+                        <a href="{% url 'admin_dashboard' %}" onclick="window.toggleMobileNav()"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem; border-radius: 0.5rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(249, 250, 251, 0.8)'; this.style.color='#111827';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
                             <i class="fas fa-chart-pie w-5"></i>
                             Admin Dashboard
                         </a>
-                        <a href="{% url 'program_list' %}" @click="closeMobileMenu()"
+                        <a href="{% url 'program_list' %}" onclick="window.toggleMobileNav()"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem; border-radius: 0.5rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(249, 250, 251, 0.8)'; this.style.color='#111827';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
                             <i class="fas fa-clipboard-list w-5"></i>
                             Manage Programs
                         </a>
-                        <a href="{% url 'program_create' %}" @click="closeMobileMenu()"
+                        <a href="{% url 'program_create' %}" onclick="window.toggleMobileNav()"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.75rem; border-radius: 0.5rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(249, 250, 251, 0.8)'; this.style.color='#111827';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
                             <i class="fas fa-plus w-5"></i>
                             Add New Program
@@ -585,7 +612,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                     -->
 
                     {% if user.is_superuser %}
-                        <a href="{% url 'admin:index' %}" @click="closeMobileMenu()"
+                        <a href="{% url 'admin:index' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; color: #374151; transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='rgba(240, 253, 244, 0.8)'; this.style.color='#047857';" onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';">
                             <div style="width: 24px; height: 24px; min-width: 24px; min-height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; overflow: hidden; flex-shrink: 0; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, rgb(30, 58, 138) 0%, rgb(4, 120, 87) 100%)'; this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)';" onmouseout="this.style.background='linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%)'; this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px -1px rgba(0, 0, 0, 0.1)';">
                                 <i class="fas fa-cog text-xs text-white"></i>
@@ -629,37 +656,23 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                 </div>
             {% endif %}
     </div>
+</nav>
 
-    <!-- Mobile Menu Overlay -->
-    <div x-show="mobileMenuOpen"
-         x-transition:enter="transition-opacity ease-linear duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         x-transition:leave="transition-opacity ease-linear duration-300"
-         x-transition:leave-start="opacity-100"
-         x-transition:leave-end="opacity-0"
-         class="fixed inset-0 z-[60] bg-black bg-opacity-50 backdrop-blur-md md:hidden"
-         @click="closeMobileMenu()"
+<!-- Mobile Menu Overlay -->
+    <div id="mobile-menu-overlay"
+         class="mobile-menu-overlay md:hidden"
          aria-hidden="true"></div>
 
     <!-- Mobile Side Menu Panel -->
-    <div x-show="mobileMenuOpen"
-         x-transition:enter="transition ease-in-out duration-300 transform"
-         x-transition:enter-start="translate-x-full"
-         x-transition:enter-end="translate-x-0"
-         x-transition:leave="transition ease-in-out duration-300 transform"
-         x-transition:leave-start="translate-x-0"
-         x-transition:leave-end="translate-x-full"
-         class="fixed top-0 right-0 z-50 w-96 max-w-[90vw] overflow-y-auto bg-white/95 backdrop-blur-md shadow-2xl md:hidden"
-         style="height: 100vh;">
+    <div id="mobile-menu"
+         class="mobile-menu-panel md:hidden">
 
         <!-- Mobile Menu Header -->
         <div style="display: flex; align-items: center; padding: 1rem 1.5rem 0.5rem 1.5rem;">
-            <a href="{% url 'home' %}" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;" @click="closeMobileMenu()">
-                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, #059669 0%, #047857 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); color: white; font-weight: bold; font-size: 16px;">#FC</div>
+            <a href="{% url 'home' %}" class="mobile-menu-link" style="display: flex; align-items: center; gap: 0.75rem; text-decoration: none;">
+                <div style="width: 44px; height: 44px; border-radius: 12px; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); color: white; font-weight: bold; font-size: 16px;"><i class="fas fa-building"></i></div>
                 <div style="display: flex; flex-direction: column;">
-                    <span style="font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #047857 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #059669; line-height: 1.2;">BM Parliament</span>
-                    <span style="font-size: 0.75rem; color: #6b7280; font-weight: 500;">Bangsamoro Public Service</span>
+                    <span style="font-size: 1.25rem; font-weight: 700; background: linear-gradient(135deg, #059669 0%, #047857 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: #059669; line-height: 1.2;">Bangsamoro Parliament</span>
                 </div>
             </a>
         </div>
@@ -669,22 +682,13 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
             <div class="-my-6 divide-y divide-gray-200/50">
                 <!-- Main Navigation -->
                 <div class="space-y-1 py-6">
-                    <!-- Home -->
-                    <a href="{% url 'home' %}"
-                       class="group flex items-center gap-4 rounded-xl px-4 py-3 text-base font-medium text-gray-900 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 min-h-[48px]"
-                       @click="closeMobileMenu()">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200 transition-colors duration-200">
-                            <i class="fas fa-home text-lg"></i>
-                        </div>
-                        <span>{% trans "Home" %}</span>
-                    </a>
-
                     <!-- About -->
                     <a href="{% url 'about' %}"
-                       class="group flex items-center gap-4 rounded-xl px-4 py-3 text-base font-medium text-gray-900 hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 min-h-[48px]"
-                       @click="closeMobileMenu()">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 group-hover:bg-emerald-200 transition-colors duration-200">
-                            <i class="fas fa-info-circle text-lg"></i>
+                       style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 1rem; font-weight: 500; color: #111827; transition: all 0.2s ease; min-height: 48px; text-decoration: none;"
+                       onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                       onmouseout="this.style.backgroundColor='transparent'; this.style.color='#111827';">
+                        <div style="width: 40px; height: 40px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                            <i class="fas fa-info-circle" style="font-size: 1.125rem; color: white;"></i>
                         </div>
                         <span>{% trans "About" %}</span>
                     </a>
@@ -693,8 +697,8 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                 <!-- Services Section -->
                 <div style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.75rem; padding-left: 1rem; margin-bottom: 1rem;">
-                        <div style="display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 0.5rem; background-color: #d1fae5; color: #047857;">
-                            <i class="fas fa-cogs" style="font-size: 0.875rem;"></i>
+                        <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);">
+                            <i class="fas fa-cogs" style="font-size: 0.875rem; color: white;"></i>
                         </div>
                         <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827;">{% trans "Services" %}</h3>
                     </div>
@@ -703,32 +707,40 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-heart" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-heart" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>BM Parliament Programs</span>
                         </a>
                         <a href="{% url 'tdif_projects' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-hammer" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-hammer" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>TDIF Projects</span>
                         </a>
                         <a href="{% url 'accessible_ministry_programs' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-building" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-building" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>Ministry Programs</span>
                         </a>
                         <a href="{% url 'completed_programs' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-check-circle" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-check-circle" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>Completed Programs</span>
                         </a>
                     </div>
@@ -737,8 +749,8 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                 <!-- Community Section -->
                 <div style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.75rem; padding-left: 1rem; margin-bottom: 1rem;">
-                        <div style="display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 0.5rem; background-color: #d1fae5; color: #047857;">
-                            <i class="fas fa-users" style="font-size: 0.875rem;"></i>
+                        <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);">
+                            <i class="fas fa-users" style="font-size: 0.875rem; color: white;"></i>
                         </div>
                         <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827;">{% trans "Community" %}</h3>
                     </div>
@@ -747,16 +759,20 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-bullhorn" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-bullhorn" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "News" %}</span>
                         </a>
                         <a href="{% url 'chapters_public' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-map-marker-alt" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-map-marker-alt" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Communities" %}</span>
                         </a>
                     </div>
@@ -766,75 +782,116 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                 {% if user.is_authenticated and user.user_type in 'superuser,mp,chief_of_staff,admin,coordinator' or user.is_superuser %}
                 <div style="padding-top: 1.5rem; padding-bottom: 1.5rem;">
                     <div style="display: flex; align-items: center; gap: 0.75rem; padding-left: 1rem; margin-bottom: 1rem;">
-                        <div style="display: flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border-radius: 0.5rem; background-color: #d1fae5; color: #047857;">
-                            <i class="fas fa-database" style="font-size: 0.875rem;"></i>
+                        <div style="width: 2rem; height: 2rem; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1);">
+                            <i class="fas fa-database" style="font-size: 0.875rem; color: white;"></i>
                         </div>
                         <h3 style="font-size: 1.125rem; font-weight: 600; color: #111827;">{% trans "Database Access" %}</h3>
                     </div>
                     <div style="display: flex; flex-direction: column; gap: 0.25rem; margin-left: 1rem;">
+                        <!-- Member and Service Data Section -->
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em;">{% trans "Member and Service Data" %}</div>
                         <a href="{% url 'database_registrants' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-users" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-users" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Registrants" %}</span>
+                        </a>
+                        <a href="{% url 'unified_db:person_search' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-search" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
+                            <span>{% trans "Person Search" %}</span>
                         </a>
                         <a href="{% url 'service_applications' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-file-alt" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-file-alt" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Applications" %}</span>
                         </a>
+
+                        <!-- Organization Data Section -->
+                        <div style="padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #6b7280; letter-spacing: 0.05em; margin-top: 0.5rem;">{% trans "Organization Data" %}</div>
                         <a href="{% url 'database_ppas' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-folder-tree" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-folder-tree" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "PPAs" %}</span>
                         </a>
                         <a href="{% url 'database_chapters' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-users" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-users" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Chapters" %}</span>
                         </a>
                         <a href="{% url 'database_partners' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-handshake" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-handshake" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Partners" %}</span>
                         </a>
                         <a href="{% url 'cooperatives:cooperative-dashboard' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-sitemap" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-sitemap" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Cooperatives" %}</span>
                         </a>
                         <a href="{% url 'database_donors' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-hand-holding-usd" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-hand-holding-usd" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Donors" %}</span>
                         </a>
                         <a href="{% url 'database_contact_messages' %}"
                            style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                            onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
                            onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                           @click="closeMobileMenu()">
-                            <i class="fas fa-envelope-open-text" style="width: 1rem; color: #059669;"></i>
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-envelope-open-text" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
                             <span>{% trans "Messages" %}</span>
+                        </a>
+                        <a href="{% url 'database_updates' %}"
+                           style="display: flex; align-items: center; gap: 0.75rem; border-radius: 0.5rem; padding: 0.625rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                           onmouseover="this.style.backgroundColor='#ecfdf5'; this.style.color='#047857';"
+                           onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                           >
+                            <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                <i class="fas fa-newspaper" style="font-size: 0.75rem; color: white;"></i>
+                            </div>
+                            <span>{% trans "News/Updates" %}</span>
                         </a>
                     </div>
                 </div>
@@ -862,9 +919,9 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                                onmouseover="this.style.backgroundColor='#f9fafb'; this.style.color='#111827';"
                                onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                               @click="closeMobileMenu()">
-                                <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: #f3f4f6; color: #6b7280; transition: all 0.2s ease;">
-                                    <i class="fas fa-user-circle" style="font-size: 0.875rem;"></i>
+                               >
+                                <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                    <i class="fas fa-user-circle" style="font-size: 0.75rem; color: white;"></i>
                                 </div>
                                 <span>{% trans "My Profile" %}</span>
                             </a>
@@ -872,13 +929,49 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                             {% if user.is_staff or user.is_superuser %}
                                 <a href="{% url 'staff:dashboard' %}"
                                    style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
-                                   onmouseover="this.style.backgroundColor='#fff7ed'; this.style.color='#c2410c';"
+                                   onmouseover="this.style.backgroundColor='#f9fafb'; this.style.color='#111827';"
                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                                   @click="closeMobileMenu()">
-                                    <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: #fed7aa; color: #ea580c; transition: all 0.2s ease;">
-                                        <i class="fas fa-tachometer-alt" style="font-size: 0.875rem;"></i>
+                                   >
+                                    <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                        <i class="fas fa-tachometer-alt" style="font-size: 0.75rem; color: white;"></i>
                                     </div>
                                     <span>{% trans "Staff Dashboard" %}</span>
+                                </a>
+                            {% endif %}
+
+                            {% if user.user_type in 'superuser,mp,chief_of_staff,admin' or user.is_superuser %}
+                                <a href="{% url 'analytics:dashboard' %}"
+                                   style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                                   onmouseover="this.style.backgroundColor='#f9fafb'; this.style.color='#111827';"
+                                   onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                                   >
+                                    <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                        <i class="fas fa-chart-pie" style="font-size: 0.75rem; color: white;"></i>
+                                    </div>
+                                    <span>{% trans "Member Analytics" %}</span>
+                                </a>
+                            {% endif %}
+
+                            {% if user.user_type in 'superuser,mp,chief_of_staff,admin,coordinator' or user.is_superuser %}
+                                <a href="{% url 'database_staff' %}"
+                                   style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                                   onmouseover="this.style.backgroundColor='#f9fafb'; this.style.color='#111827';"
+                                   onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                                   >
+                                    <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                        <i class="fas fa-users-cog" style="font-size: 0.75rem; color: white;"></i>
+                                    </div>
+                                    <span>{% trans "Database of Staff" %}</span>
+                                </a>
+                                <a href="{% url 'unified_db:database_list' %}"
+                                   style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
+                                   onmouseover="this.style.backgroundColor='#f9fafb'; this.style.color='#111827';"
+                                   onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
+                                   >
+                                    <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                        <i class="fas fa-database" style="font-size: 0.75rem; color: white;"></i>
+                                    </div>
+                                    <span>{% trans "Database Management" %}</span>
                                 </a>
                             {% endif %}
 
@@ -887,9 +980,9 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                    style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: #374151; transition: all 0.2s ease; min-height: 44px; text-decoration: none;"
                                    onmouseover="this.style.backgroundColor='#fef2f2'; this.style.color='#dc2626';"
                                    onmouseout="this.style.backgroundColor='transparent'; this.style.color='#374151';"
-                                   @click="closeMobileMenu()">
-                                    <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: #fecaca; color: #dc2626; transition: all 0.2s ease;">
-                                        <i class="fas fa-cog" style="font-size: 0.875rem;"></i>
+                                   >
+                                    <div style="width: 24px; height: 24px; border-radius: 0.5rem; background: linear-gradient(135deg, rgb(220, 38, 38) 0%, rgb(239, 68, 68) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1); flex-shrink: 0;">
+                                        <i class="fas fa-cog" style="font-size: 0.75rem; color: white;"></i>
                                     </div>
                                     <span>{% trans "Admin Panel" %}</span>
                                 </a>
@@ -909,7 +1002,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                    style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: white; background: linear-gradient(90deg, #1e40af 0%, #059669 100%); transition: all 0.2s ease; min-height: 48px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"
                                    onmouseover="this.style.background='linear-gradient(90deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';"
                                    onmouseout="this.style.background='linear-gradient(90deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';"
-                                   @click="closeMobileMenu()">
+                                   >
                                     <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: rgba(255, 255, 255, 0.2); color: white;">
                                         <i class="fas fa-user-plus" style="font-size: 0.875rem;"></i>
                                     </div>
@@ -919,7 +1012,7 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
                                    style="display: flex; align-items: center; gap: 1rem; border-radius: 0.75rem; padding: 0.75rem 1rem; font-size: 0.875rem; font-weight: 500; color: white; background: linear-gradient(90deg, #1e40af 0%, #059669 100%); transition: all 0.2s ease; min-height: 48px; text-decoration: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);"
                                    onmouseover="this.style.background='linear-gradient(90deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-1px)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';"
                                    onmouseout="this.style.background='linear-gradient(90deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';"
-                                   @click="closeMobileMenu()">
+                                   >
                                     <div style="display: flex; align-items: center; justify-content: center; width: 2.25rem; height: 2.25rem; border-radius: 0.5rem; background-color: rgba(255, 255, 255, 0.2); color: white;">
                                         <i class="fas fa-sign-in-alt" style="font-size: 0.875rem;"></i>
                                     </div>
@@ -952,4 +1045,147 @@ x-init="window.addEventListener('resize', () => { if (window.innerWidth >= 768) 
             </div>
         </div>
     </div>
-</nav>
+
+    <!-- Mobile Menu CSS -->
+    <style>
+        /* Mobile Menu Overlay */
+        .mobile-menu-overlay {
+            display: block !important;
+            position: fixed !important;
+            inset: 0 !important;
+            background-color: rgba(0, 0, 0, 0.5) !important;
+            z-index: 99999 !important;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .mobile-menu-overlay.active {
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        /* Mobile Menu Panel */
+        .mobile-menu-panel {
+            display: block !important;
+            position: fixed !important;
+            top: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 90% !important;
+            max-width: 384px !important;
+            background: white !important;
+            overflow-y: auto !important;
+            box-shadow: -4px 0 24px rgba(0, 0, 0, 0.3) !important;
+            z-index: 999999 !important;
+            transform: translateX(100%) !important;
+            transition: transform 0.3s ease-in-out !important;
+        }
+
+        .mobile-menu-panel.active {
+            transform: translateX(0) !important;
+        }
+
+        /* Prevent body scroll when menu is open */
+        body.mobile-menu-open {
+            overflow: hidden;
+        }
+    </style>
+
+    <!-- Mobile Menu JavaScript -->
+    <script>
+        (function() {
+            'use strict';
+            
+            // Get elements
+            const menuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+            const mobileOverlay = document.getElementById('mobile-menu-overlay');
+            const hamburgerIcon = document.getElementById('hamburger-icon');
+            const closeIcon = document.getElementById('close-icon');
+            
+            if (!menuButton || !mobileMenu || !mobileOverlay) {
+                console.error('Mobile menu elements not found');
+                return;
+            }
+            
+            // Toggle mobile menu
+            function toggleMobileMenu() {
+                const isOpen = mobileMenu.classList.contains('active');
+                
+                if (isOpen) {
+                    closeMobileMenu();
+                } else {
+                    openMobileMenu();
+                }
+            }
+            
+            // Open mobile menu
+            function openMobileMenu() {
+                console.log('🔓 Opening mobile menu...');
+                console.log('Menu element:', mobileMenu);
+                console.log('Before - Menu classes:', mobileMenu.className);
+
+                mobileMenu.classList.add('active');
+                mobileOverlay.classList.add('active');
+                document.body.classList.add('mobile-menu-open');
+                menuButton.setAttribute('aria-expanded', 'true');
+
+                console.log('After - Menu classes:', mobileMenu.className);
+                console.log('Computed transform:', window.getComputedStyle(mobileMenu).transform);
+                console.log('Computed display:', window.getComputedStyle(mobileMenu).display);
+                console.log('Computed visibility:', window.getComputedStyle(mobileMenu).visibility);
+                console.log('Overlay classes:', mobileOverlay.className);
+
+                // Toggle icons
+                if (hamburgerIcon && closeIcon) {
+                    hamburgerIcon.classList.add('hidden');
+                    closeIcon.classList.remove('hidden');
+                }
+            }
+            
+            // Close mobile menu
+            function closeMobileMenu() {
+                mobileMenu.classList.remove('active');
+                mobileOverlay.classList.remove('active');
+                document.body.classList.remove('mobile-menu-open');
+                menuButton.setAttribute('aria-expanded', 'false');
+                
+                // Toggle icons
+                if (hamburgerIcon && closeIcon) {
+                    hamburgerIcon.classList.remove('hidden');
+                    closeIcon.classList.add('hidden');
+                }
+            }
+            
+            // Event listeners
+            menuButton.addEventListener('click', toggleMobileMenu);
+            mobileOverlay.addEventListener('click', closeMobileMenu);
+            
+            // Close menu when clicking any link inside
+            const menuLinks = mobileMenu.querySelectorAll('a, button[type="submit"]');
+            menuLinks.forEach(link => {
+                link.addEventListener('click', closeMobileMenu);
+            });
+            
+            // Close menu on escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                    closeMobileMenu();
+                }
+            });
+            
+            // Close menu when resizing to desktop
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    if (window.innerWidth >= 768 && mobileMenu.classList.contains('active')) {
+                        closeMobileMenu();
+                    }
+                }, 250);
+            });
+            
+            console.log('Mobile menu initialized with vanilla JavaScript');
+        })();
+    </script>
