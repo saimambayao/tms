@@ -1,13 +1,13 @@
 #!/bin/bash
-# SSL Certificate Setup Script for #FahanieCares Production
+# SSL Certificate Setup Script for BM Parliament Production
 # Sets up Let's Encrypt SSL certificates for secure HTTPS deployment
 
 set -e
 
 # Configuration
-DOMAIN="fahaniecares.gov.ph"
-WWW_DOMAIN="www.fahaniecares.gov.ph"
-EMAIL="admin@fahaniecares.gov.ph"
+DOMAIN="bmparliament.gov.ph"
+WWW_DOMAIN="www.bmparliament.gov.ph"
+EMAIL="admin@bmparliament.gov.ph"
 STAGING=${STAGING:-false}
 CERTBOT_DIR="/etc/letsencrypt"
 NGINX_SSL_DIR="/etc/nginx/ssl"
@@ -133,9 +133,9 @@ setup_certificate_renewal() {
     log "Setting up automatic certificate renewal..."
     
     # Create renewal script
-    cat > /usr/local/bin/renew_fahaniecares_ssl.sh << 'EOF'
+    cat > /usr/local/bin/renew_bmparliament_ssl.sh << 'EOF'
 #!/bin/bash
-# Automatic SSL certificate renewal for #FahanieCares
+# Automatic SSL certificate renewal for BM Parliament
 
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*" | tee -a /var/log/ssl_renewal.log
@@ -164,10 +164,10 @@ fi
 log "SSL renewal process completed"
 EOF
     
-    chmod +x /usr/local/bin/renew_fahaniecares_ssl.sh
+    chmod +x /usr/local/bin/renew_bmparliament_ssl.sh
     
     # Add cron job for automatic renewal (runs twice daily)
-    (crontab -l 2>/dev/null; echo "0 0,12 * * * /usr/local/bin/renew_fahaniecares_ssl.sh") | crontab -
+    (crontab -l 2>/dev/null; echo "0 0,12 * * * /usr/local/bin/renew_bmparliament_ssl.sh") | crontab -
     
     log "Automatic renewal configured (runs twice daily)"
 }
@@ -177,8 +177,8 @@ restore_nginx_config() {
     log "Restoring production nginx configuration..."
     
     # Copy production nginx config
-    if [ -f /var/www/fahaniecares/deployment/nginx.conf ]; then
-        cp /var/www/fahaniecares/deployment/nginx.conf /etc/nginx/nginx.conf
+    if [ -f /var/www/bmparliament/deployment/nginx.conf ]; then
+        cp /var/www/bmparliament/deployment/nginx.conf /etc/nginx/nginx.conf
     elif [ -f ./nginx.conf ]; then
         cp ./nginx.conf /etc/nginx/nginx.conf
     else
@@ -198,7 +198,7 @@ restore_nginx_config() {
 
 # Main execution
 main() {
-    log "Starting SSL setup for #FahanieCares..."
+    log "Starting SSL setup for BM Parliament..."
     
     check_root
     install_certbot

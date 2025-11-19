@@ -12,7 +12,7 @@ class Command(BaseCommand):
         if not User.objects.filter(username='saidamen.m').exists():
             user1 = User.objects.create_superuser(
                 username='saidamen.m',
-                email='saidamen.mambayao@fahaniecares.gov.ph',
+                email='saidamen.mambayao@bmparliament.gov.ph',
                 password='Saidamen2025!',
                 first_name='Saidamen',
                 last_name='Mambayao'
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         if not User.objects.filter(username='farissnoor.e').exists():
             user2 = User.objects.create_superuser(
                 username='farissnoor.e',
-                email='farissnoor.edza@fahaniecares.gov.ph',
+                email='farissnoor.edza@bmparliament.gov.ph',
                 password='Farissnoor2025!',
                 first_name='Farissnoor',
                 last_name='Edza'

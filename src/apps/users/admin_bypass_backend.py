@@ -1,5 +1,5 @@
 """
-Admin Bypass Authentication Backend for #FahanieCares.
+Admin Bypass Authentication Backend for #BM Parliament.
 This backend allows admin users to bypass normal authentication.
 """
 

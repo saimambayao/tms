@@ -7,7 +7,7 @@ This document provides visual examples of how the unified interface appears to d
 ### Constituent View
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ #FahanieCares | Home | About | Services | Contact | [Login] ⚡ │
+│ BM Parliament | Home | About | Services | Contact | [Login] ⚡ │
 └─────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────┐
 │ Home > My Referrals > REF-2025-001                             │
@@ -35,13 +35,13 @@ This document provides visual examples of how the unified interface appears to d
 │ [Add Comment]                                                  │
 └─────────────────────────────────────────────────────────────────┘
 
-💡 Become a #FahanieCares Member for enhanced tracking & community access!
+💡 Become a BM Parliament Member for enhanced tracking & community access!
 ```
 
 ### Member View
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ #FahanieCares | Home | Community | Services | Contact | [Jane] ⭐│
+│ BM Parliament | Home | Community | Services | Contact | [Jane] ⭐│
 └─────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────┐
 │ Home > My Referrals > REF-2025-001                  Member 🎖️ │
@@ -81,7 +81,7 @@ This document provides visual examples of how the unified interface appears to d
 ### Staff View
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ #FahanieCares | Dashboard | Operations | Analytics | [Staff] 👔│
+│ BM Parliament | Dashboard | Operations | Analytics | [Staff] 👔│
 └─────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────┐
 │ Operations > Referrals > REF-2025-001              Staff Mode 🔧│
@@ -123,7 +123,7 @@ This document provides visual examples of how the unified interface appears to d
 ### MP (Executive) View
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│ #FahanieCares | Executive | Parliamentary | Strategic | [MP] 👑 │
+│ BM Parliament | Executive | Parliamentary | Strategic | [MP] 👑 │
 └─────────────────────────────────────────────────────────────────┘
 ┌─────────────────────────────────────────────────────────────────┐
 │ Executive > Case Review > REF-2025-001          Executive View 📊│
@@ -263,12 +263,12 @@ This document provides visual examples of how the unified interface appears to d
 
 ### Constituent Navigation
 ```
-#FahanieCares | Home | About | Services | Contact | [Login]
+BM Parliament | Home | About | Services | Contact | [Login]
 ```
 
 ### Member Navigation  
 ```
-#FahanieCares | Home | Community | Services | My Profile | [Jane ⭐]
+BM Parliament | Home | Community | Services | My Profile | [Jane ⭐]
                       └─ Updates
                       └─ Directory  
                       └─ Resources
@@ -276,7 +276,7 @@ This document provides visual examples of how the unified interface appears to d
 
 ### Coordinator Navigation
 ```
-#FahanieCares | Home | Community | Chapter | Coordination | [John 🎖️]
+BM Parliament | Home | Community | Chapter | Coordination | [John 🎖️]
                       └─ Updates   └─ Events  └─ Management
                       └─ Directory └─ Members └─ Analytics
                       └─ Resources └─ Comms   └─ Reports
@@ -284,7 +284,7 @@ This document provides visual examples of how the unified interface appears to d
 
 ### Staff Navigation
 ```
-#FahanieCares | Dashboard | Operations | Analytics | System | [Staff 👔]
+BM Parliament | Dashboard | Operations | Analytics | System | [Staff 👔]
                └─ My Tasks └─ Referrals └─ Reports  └─ Users
                └─ Overview └─ Members    └─ Trends   └─ Settings
                └─ Alerts   └─ Chapters   └─ Export   └─ Logs
@@ -292,7 +292,7 @@ This document provides visual examples of how the unified interface appears to d
 
 ### MP Navigation
 ```
-#FahanieCares | Executive | Parliamentary | Strategic | Public | [MP 👑]
+BM Parliament | Executive | Parliamentary | Strategic | Public | [MP 👑]
                └─ KPIs     └─ Bills       └─ Planning └─ Media
                └─ Reports  └─ Committees  └─ Policy   └─ Events
                └─ Impact   └─ Sessions    └─ Research └─ Comms

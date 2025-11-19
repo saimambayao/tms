@@ -31,13 +31,13 @@ sudo systemctl start postgresql
 psql postgres
 
 # Create database
-CREATE DATABASE fahanie_cares_dev;
+CREATE DATABASE bm parliament_cares_dev;
 
 # Create user with password
 CREATE USER your_db_user WITH PASSWORD 'your_password';
 
 # Grant privileges
-GRANT ALL PRIVILEGES ON DATABASE fahanie_cares_dev TO your_db_user;
+GRANT ALL PRIVILEGES ON DATABASE bm parliament_cares_dev TO your_db_user;
 
 # Exit
 \q
@@ -46,13 +46,13 @@ GRANT ALL PRIVILEGES ON DATABASE fahanie_cares_dev TO your_db_user;
 ### 3. Configure Environment Variables
 Create or update `.env` file in the Django project:
 ```bash
-cd /Users/macbookpro/Documents/fahanie-cares/src
+cd /Users/macbookpro/Documents/bm-parliament/src
 cp .env.example .env
 ```
 
 Edit `.env` and update these values:
 ```
-DB_NAME=fahanie_cares_dev
+DB_NAME=bm parliament_cares_dev
 DB_USER=your_db_user
 DB_PASSWORD=your_password
 DB_HOST=localhost
@@ -102,7 +102,7 @@ python manage.py dbshell
 # If successful, you'll see:
 # psql (version)
 # Type "help" for help.
-# fahanie_cares_dev=>
+# bm parliament_cares_dev=>
 
 # Exit with \q
 ```

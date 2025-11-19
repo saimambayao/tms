@@ -1,6 +1,6 @@
-# #FahanieCares Portal Prototype
+# BM Parliament Portal Prototype
 
-This is a prototype of the #FahanieCares Portal for MP Atty. Sittie Fahanie S. Uy-Oyod's public service initiative. The prototype showcases the key features and design of the digital platform that will support the #FahanieCares mission of "Bringing Bangsamoro Public Service Closer to You."
+This is a prototype of the BM Parliament Portal for MP Atty. Sittie BM Parliament S. Uy-Oyod's public service initiative. The prototype showcases the key features and design of the digital platform that will support the BM Parliament mission of "Bringing Bangsamoro Public Service Closer to You."
 
 ## Prototype Pages
 
@@ -9,8 +9,8 @@ The prototype includes the following pages:
 1. **Landing Page (index.html)**
    - Main portal entry point
    - Overview of three main services:
-     * Join #FahanieCares (membership registration)
-     * Explore #FahanieCares Programs and Services
+     * Join BM Parliament (membership registration)
+     * Explore Our Programs and Services
      * Get to Know Bangsamoro Ministries PPAS
    - Latest updates and announcements
    - Impact statistics
@@ -37,7 +37,7 @@ The prototype includes the following pages:
 
 ## Design Notes
 
-- The prototype uses a modern, clean design with a green color scheme that represents the #FahanieCares brand.
+- The prototype uses a modern, clean design with a green color scheme that represents the BM Parliament brand.
 - It's fully responsive and works on mobile devices, tablets, and desktops.
 - Tailwind CSS is used for styling, making it easy to modify and extend.
 - Font Awesome icons are used for visual elements.
@@ -53,4 +53,4 @@ After reviewing this prototype, we can:
 
 ## Credits
 
-Developed for MP Atty. Sittie Fahanie S. Uy-Oyod's #FahanieCares initiative.
+Developed for MP Atty. Sittie BM Parliament S. Uy-Oyod's BM Parliament initiative.

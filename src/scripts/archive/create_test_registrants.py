@@ -14,7 +14,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
 django.setup()
 
 from django.contrib.auth import get_user_model
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember
 
 User = get_user_model()
 
@@ -146,7 +146,7 @@ def create_test_registrants():
                 print(f"→ User already exists: {user.username}")
             
             # Check if member profile already exists
-            member, member_created = FahanieCaresMember.objects.get_or_create(
+            member, member_created = BMParliamentMember.objects.get_or_create(
                 user=user,
                 defaults=member_data
             )
@@ -170,12 +170,12 @@ def create_test_registrants():
             print(f"✗ Error creating registrant {i}: {str(e)}")
     
     print(f"\n🎉 Successfully created {created_count} new test registrants!")
-    print(f"📊 Total registrants in database: {FahanieCaresMember.objects.count()}")
-    print(f"✅ Approved: {FahanieCaresMember.objects.filter(is_approved=True).count()}")
-    print(f"⏳ Pending: {FahanieCaresMember.objects.filter(is_approved=False).count()}")
+    print(f"📊 Total registrants in database: {BMParliamentMember.objects.count()}")
+    print(f"✅ Approved: {BMParliamentMember.objects.filter(is_approved=True).count()}")
+    print(f"⏳ Pending: {BMParliamentMember.objects.filter(is_approved=False).count()}")
     
     print(f"\n📝 Test registrants created:")
-    for member in FahanieCaresMember.objects.filter(user__username__endswith='_test'):
+    for member in BMParliamentMember.objects.filter(user__username__endswith='_test'):
         status = "✅ Approved" if member.is_approved else "⏳ Pending"
         print(f"   • {member.get_full_name()} ({member.get_sector_display()}) - {status}")
 

@@ -51,7 +51,7 @@ def create_test_image():
     return img_bytes
 
 def test_registration():
-    print("Testing #FahanieCares Member Registration Flow")
+    print("Testing BM Parliament Member Registration Flow")
     print("=" * 50)
     
     # Create a session to handle cookies

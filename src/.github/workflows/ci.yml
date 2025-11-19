@@ -60,29 +60,29 @@ jobs:
           ${{ runner.os }}-node-
     
     - name: Install Python dependencies
-      working-directory: ./fahanie_cares_django
+      working-directory: ./bmparliament_cares_django
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     
     - name: Install Node dependencies
-      working-directory: ./fahanie_cares_django
+      working-directory: ./bmparliament_cares_django
       run: |
         npm ci
     
     - name: Build CSS
-      working-directory: ./fahanie_cares_django
+      working-directory: ./bmparliament_cares_django
       run: |
         npm run build-css
     
     - name: Run security checks
-      working-directory: ./fahanie_cares_django
+      working-directory: ./bmparliament_cares_django
       run: |
         pip install safety
         safety check
     
     - name: Run linting
-      working-directory: ./fahanie_cares_django
+      working-directory: ./bmparliament_cares_django
       run: |
         pip install flake8 black isort
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -90,7 +90,7 @@ jobs:
         isort --check-only .
     
     - name: Run tests with coverage
-      working-directory: ./fahanie_cares_django
+      working-directory: ./bmparliament_cares_django
       env:
         DJANGO_SETTINGS_MODULE: config.settings.base
         DATABASE_URL: postgres://testuser:testpass@localhost:5432/testdb
@@ -104,13 +104,13 @@ jobs:
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       with:
-        file: ./fahanie_cares_django/coverage.xml
+        file: ./bmparliament_cares_django/coverage.xml
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false
     
     - name: Check Django deployment readiness
-      working-directory: ./fahanie_cares_django
+      working-directory: ./bmparliament_cares_django
       env:
         DJANGO_SETTINGS_MODULE: config.settings.production
         SECRET_KEY: test-secret-key-for-ci
@@ -138,12 +138,12 @@ jobs:
     - name: Build and push Django image
       uses: docker/build-push-action@v5
       with:
-        context: ./fahanie_cares_django
-        file: ./fahanie_cares_django/Dockerfile
+        context: ./bmparliament_cares_django
+        file: ./bmparliament_cares_django/Dockerfile
         push: true
         tags: |
-          ${{ secrets.DOCKER_USERNAME }}/fahaniecares:${{ github.sha }}
-          ${{ secrets.DOCKER_USERNAME }}/fahaniecares:latest
+          ${{ secrets.DOCKER_USERNAME }}/bmparliament:${{ github.sha }}
+          ${{ secrets.DOCKER_USERNAME }}/bmparliament:latest
         cache-from: type=gha
         cache-to: type=gha,mode=max
 
@@ -162,7 +162,7 @@ jobs:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_STAGING }}
       run: |
         npm install -g @railway/cli
-        railway up --service fahaniecares-staging
+        railway up --service bmparliament-staging
 
   deploy-production:
     name: Deploy to Production
@@ -179,13 +179,13 @@ jobs:
         RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN_PRODUCTION }}
       run: |
         npm install -g @railway/cli
-        railway up --service fahaniecares-production
+        railway up --service bmparliament-production
     
     - name: Run post-deployment checks
       run: |
         sleep 30
-        curl -f https://fahaniecares.ph/health/ || exit 1
-        curl -f https://fahaniecares.ph/ready/ || exit 1
+        curl -f https://bmparliament.gov.ph/health/ || exit 1
+        curl -f https://bmparliament.gov.ph/ready/ || exit 1
     
     - name: Notify deployment success
       uses: 8398a7/action-slack@v3

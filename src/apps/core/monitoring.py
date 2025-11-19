@@ -1,5 +1,5 @@
 """
-Performance monitoring and alerting for #FahanieCares platform.
+Performance monitoring and alerting for #BM Parliament platform.
 """
 
 import time

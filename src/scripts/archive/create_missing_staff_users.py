@@ -45,7 +45,7 @@ ADDITIONAL_STAFF = [
         'employment_status': 'contractual',
         'office': 'main_office',
         'date_hired': date(2025, 3, 24),
-        'duties_responsibilities': '''1. Assist in the development and maintenance of the #FahanieCares Portal / website.
+        'duties_responsibilities': '''1. Assist in the development and maintenance of the #BM Parliament Portal / website.
 2. Assist in the development and maintenance of the Notion Workspace of the Office.
 3. Provide technical support and training on the IT needs of the Office.
 4. Provide support to the Public Information and Media Affairs (PIMA)
@@ -267,7 +267,7 @@ def main():
     if created_users:
         credentials_file = 'staff_credentials.txt'
         with open(credentials_file, 'w') as f:
-            f.write("#FahanieCares Staff User Credentials\n")
+            f.write("#BM Parliament Staff User Credentials\n")
             f.write("="*50 + "\n\n")
             
             for user_data in created_users:

@@ -15,7 +15,7 @@ import os
 from django.db.models import Q, Count, Sum
 from django.utils import timezone
 from datetime import timedelta
-from apps.constituents.member_models import FahanieCaresMember # Import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember # Import BMParliamentMember
 from apps.services.models import MinistryProgram # Import MinistryProgram
 
 class ServiceProgramListView(ListView):
@@ -86,7 +86,7 @@ class ServiceProgramDetailView(DetailView):
                     service_program=program, # Changed from 'program' to 'service_program'
                     constituent=constituent
                 ).first()
-            except FahanieCaresMember.DoesNotExist:
+            except BMParliamentMember.DoesNotExist:
                 context['existing_application'] = None # User is logged in but has no constituent profile
         
         # Get program statistics
@@ -136,7 +136,7 @@ class ApplicationFormView(View):
             messages.error(request, "You must be logged in to apply for a program.")
             return redirect(settings.LOGIN_URL)
         
-        # Ensure the user has a FahanieCaresMember profile
+        # Ensure the user has a BMParliamentMember profile
         if not hasattr(request.user, 'fahanie_cares_member'):
             messages.warning(request, "Please complete your member registration before applying for a program.")
             return redirect('member_registration') # Redirect to your member registration page
@@ -224,7 +224,7 @@ class ServiceApplicationCreateView(LoginRequiredMixin, CreateView):
             messages.error(request, "This program is not currently accepting applications.")
             return redirect('service_program_detail', slug=self.program.slug)
         
-        # Ensure the user has a FahanieCaresMember profile
+        # Ensure the user has a BMParliamentMember profile
         if not hasattr(request.user, 'fahanie_cares_member'):
             messages.warning(request, "Please complete your member registration before applying for a program.")
             return redirect('member_registration') # Redirect to your member registration page

@@ -4,7 +4,7 @@ from django.utils import timezone
 from django.utils.text import slugify
 from django.urls import reverse
 from django.core.exceptions import ValidationError # Import ValidationError
-from apps.constituents.member_models import FahanieCaresMember # Import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember # Import BMParliamentMember
 
 class MinistryProgram(models.Model):
     """
@@ -23,7 +23,7 @@ class MinistryProgram(models.Model):
         ('motc', 'Ministry of Transportation and Communications'),
         ('mei', 'Ministry of Environment and Interior'),
         ('mle', 'Ministry of Labor and Employment'),
-        ('mp_office', 'Office of MP Atty. Sittie Fahanie S. Uy-Oyod'),
+        ('mp_office', 'Office of MP Amiroddin Gayak'),
         ('other', 'Other Ministry/Office'),
     )
     
@@ -55,7 +55,7 @@ class MinistryProgram(models.Model):
     )
     
     PROGRAM_SOURCES = (
-        ('fahaniecares', '#FahanieCares Program'),
+        ('bmparliament', '#BM Parliament Program'),
         ('tdif', 'TDIF Project'),
         ('ministry', 'Ministry Program'),
     )
@@ -230,7 +230,7 @@ class MinistryProgram(models.Model):
         return f"[{self.get_ministry_display()}] {self.title}"
     
     def get_absolute_url(self):
-        return reverse('fahaniecares_program_detail', args=[self.slug])
+        return reverse('bmparliament_program_detail', args=[self.slug])
 
     def to_json(self):
         """
@@ -422,7 +422,7 @@ class MinistryProgramHistory(models.Model):
 
 class ServiceProgram(models.Model):
     """
-    Direct service programs offered by #FahanieCares.
+    Direct service programs offered by #BM Parliament.
     """
     PROGRAM_STATUS = (
         ('active', 'Active'),
@@ -567,7 +567,7 @@ class ServiceApplication(models.Model):
     )
 
     constituent = models.ForeignKey(
-        FahanieCaresMember, # Change to FahanieCaresMember
+        BMParliamentMember, # Change to BMParliamentMember
         on_delete=models.CASCADE,
         related_name='service_applications'
     )

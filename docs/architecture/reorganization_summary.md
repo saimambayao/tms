@@ -3,19 +3,19 @@
 ## Date: June 8, 2025
 
 ## Overview
-Successfully completed the folder reorganization of the FahanieCares project to improve maintainability and follow best practices.
+Successfully completed the folder reorganization of the BM Parliament project to improve maintainability and follow best practices.
 
 ## Key Changes Implemented
 
 ### 1. Directory Structure Changes
-- ✅ Renamed `fahanie_cares_django/` to `src/` for cleaner project structure
+- ✅ Renamed `bm parliament_cares_django/` to `src/` for cleaner project structure
 - ✅ Consolidated all Docker files under `deployment/docker/`
 - ✅ Organized documentation into logical categories under `docs/`
 - ✅ Moved local scripts to `scripts/local/`
 - ✅ Archived old prototype files
 
 ### 2. Configuration Updates
-- ✅ Updated all Docker build contexts from `./fahanie_cares_django` to `./src`
+- ✅ Updated all Docker build contexts from `./bm parliament_cares_django` to `./src`
 - ✅ Modified docker-compose.yml files to use new paths
 - ✅ Updated shell scripts to reference new directory structure
 - ✅ Fixed Python import paths in scripts

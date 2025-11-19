@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='lgbtq_identity',
             field=models.CharField(blank=True, choices=[('gay', 'Gay'), ('lesbian', 'Lesbian'), ('bisexual', 'Bisexual'), ('transgender', 'Transgender'), ('queer', 'Queer'), ('questioning', 'Questioning'), ('intersex', 'Intersex'), ('asexual', 'Asexual'), ('pansexual', 'Pansexual'), ('non_binary', 'Non-Binary'), ('genderfluid', 'Genderfluid'), ('two_spirit', 'Two-Spirit'), ('other', 'Other')], help_text='LGBTQ+ identity', max_length=30),
         ),

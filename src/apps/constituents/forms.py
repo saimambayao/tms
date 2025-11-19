@@ -1,5 +1,5 @@
 from django import forms
-from .member_models import FahanieCaresMember
+from .member_models import BMParliamentMember
 from apps.users.models import User
 from django.forms import formset_factory
 from django.core.exceptions import ValidationError
@@ -42,14 +42,14 @@ MUNICIPALITY_CHOICES_MAP = {
 }
 
 
-class FahanieCaresMemberRegistrationForm(forms.ModelForm):
+class BMParliamentMemberRegistrationForm(forms.ModelForm):
     address_province = forms.ChoiceField(choices=PROVINCE_CHOICES, required=True)
     address_municipality = forms.ChoiceField(choices=[('', 'Select Municipality')], required=True)
     voter_address_province = forms.ChoiceField(choices=PROVINCE_CHOICES, required=True)
     voter_address_municipality = forms.ChoiceField(choices=[('', 'Select Municipality')], required=True)
 
     class Meta:
-        model = FahanieCaresMember
+        model = BMParliamentMember
         fields = [
             'last_name', 'first_name', 'middle_name', 'contact_number', 'email',
             'age', 'sex', 'address_barangay', 'address_municipality', 'address_province',
@@ -59,11 +59,11 @@ class FahanieCaresMemberRegistrationForm(forms.ModelForm):
             'voter_id_photo', 'status' # Add status field
         ]
         widgets = {
-            'sex': forms.Select(choices=FahanieCaresMember.SEX_CHOICES),
-            'highest_education': forms.Select(choices=FahanieCaresMember.EDUCATION_CHOICES),
-            'sector': forms.Select(choices=FahanieCaresMember.SECTOR_CHOICES),
-            'eligibility': forms.Select(choices=FahanieCaresMember.ELIGIBILITY_CHOICES),
-            'status': forms.Select(choices=FahanieCaresMember.STATUS_CHOICES), # Add widget for status
+            'sex': forms.Select(choices=BMParliamentMember.SEX_CHOICES),
+            'highest_education': forms.Select(choices=BMParliamentMember.EDUCATION_CHOICES),
+            'sector': forms.Select(choices=BMParliamentMember.SECTOR_CHOICES),
+            'eligibility': forms.Select(choices=BMParliamentMember.ELIGIBILITY_CHOICES),
+            'status': forms.Select(choices=BMParliamentMember.STATUS_CHOICES), # Add widget for status
             # Explicitly define Select widgets for address fields
             'address_province': forms.Select(),
             'address_municipality': forms.Select(),
@@ -133,7 +133,7 @@ class FahanieCaresMemberRegistrationForm(forms.ModelForm):
         middle_name = cleaned_data.get('middle_name', '')
 
         if first_name and last_name:
-            if FahanieCaresMember.objects.filter(
+            if BMParliamentMember.objects.filter(
                 first_name=first_name,
                 last_name=last_name,
                 middle_name=middle_name
@@ -141,8 +141,8 @@ class FahanieCaresMemberRegistrationForm(forms.ModelForm):
                 self.add_error(None, "A member with this full name already exists.")
         return cleaned_data
 
-FahanieCaresMemberFormSet = formset_factory(
-    FahanieCaresMemberRegistrationForm,
+BMParliamentMemberFormSet = formset_factory(
+    BMParliamentMemberRegistrationForm,
     extra=1,
     can_delete=True
 )

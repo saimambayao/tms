@@ -1,5 +1,5 @@
 """
-Test settings for #FahanieCares project.
+Test settings for #BM Parliament project.
 """
 
 from config.settings.base import *
@@ -12,13 +12,13 @@ TESTING = True
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.environ.get('TEST_DB_NAME', 'fahaniecares_test_db'),
-        'USER': os.environ.get('DB_USER', 'fahaniecares_user'),
+        'NAME': os.environ.get('TEST_DB_NAME', 'bmparliament_test_db'),
+        'USER': os.environ.get('DB_USER', 'bmparliament_user'),
         'PASSWORD': os.environ.get('DB_PASSWORD', 'changeme'),
         'HOST': os.environ.get('DB_HOST', 'db' if os.environ.get('DOCKER_ENV') else 'localhost'),
         'PORT': os.environ.get('DB_PORT', '5432'),
         'TEST': {
-            'NAME': 'fahaniecares_test_db',
+            'NAME': 'bmparliament_test_db',
         }
     }
 }

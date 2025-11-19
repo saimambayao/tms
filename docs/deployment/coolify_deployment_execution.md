@@ -1,6 +1,6 @@
-# 🚀 #FahanieCares Coolify Deployment Execution Guide
+# 🚀 BM Parliament Coolify Deployment Execution Guide
 
-**Quick execution checklist for deploying #FahanieCares to production via Coolify**
+**Quick execution checklist for deploying BM Parliament to production via Coolify**
 
 > **⚠️ CRITICAL**: This deployment will reset all statistics to zero for a clean production launch. Current development stats (247 updates, 45 this month, etc.) will be cleared.
 
@@ -9,7 +9,7 @@
 ### ✅ Requirements Verification
 
 - [ ] VPS ready (Ubuntu 22.04+, 4GB RAM, 40GB storage minimum)
-- [ ] Domain DNS configured (`fahaniecares.ph` → VPS IP)
+- [ ] Domain DNS configured (`bmparliament.gov.ph` → VPS IP)
 - [ ] SSH access to VPS established
 - [ ] Git repository access confirmed
 - [ ] Production environment variables prepared
@@ -45,7 +45,7 @@ apt install -y curl wget git unzip ufw
 timedatectl set-timezone Asia/Manila
 
 # Set hostname
-hostnamectl set-hostname fahaniecares-prod
+hostnamectl set-hostname bm-parliament-prod
 ```
 
 ### 2. Configure Firewall
@@ -106,11 +106,11 @@ http://YOUR_VPS_IP:8000
 
 ```bash
 # Create project directory on VPS
-mkdir -p /home/coolify/fahaniecares
-cd /home/coolify/fahaniecares
+mkdir -p /home/coolify/bm-parliament
+cd /home/coolify/bm-parliament
 
 # Clone repository
-git clone https://github.com/your-org/fahanie-cares.git .
+git clone https://github.com/your-org/bm-parliament.git .
 
 # Verify deployment files exist
 ls -la deployment/docker/docker-compose/coolify.yml
@@ -137,7 +137,7 @@ nano .env
 ```bash
 SECRET_KEY=your-generated-secret-key
 DEBUG=False
-ALLOWED_HOSTS=fahaniecares.gov.ph,www.fahaniecares.gov.ph,YOUR_VPS_IP
+ALLOWED_HOSTS=bm-parliament.gov.ph,www.bm-parliament.gov.ph,YOUR_VPS_IP
 DB_PASSWORD=your-generated-db-password
 REDIS_PASSWORD=your-generated-redis-password
 EMAIL_HOST_USER=your-email@gmail.com
@@ -151,10 +151,10 @@ NOTION_DATABASE_ID=your-notion-db-id
 **In Coolify Dashboard:**
 
 1. **Applications** → **New Application**
-2. **Name**: `fahaniecares-production`
+2. **Name**: `bm-parliament-production`
 3. **Type**: Docker Compose
 4. **Source**: Local Directory
-5. **Directory**: `/home/coolify/fahaniecares`
+5. **Directory**: `/home/coolify/bm-parliament`
 6. **Docker Compose File**: `deployment/docker/docker-compose/coolify.yml`
 
 ### 4. Upload Configuration
@@ -164,7 +164,7 @@ NOTION_DATABASE_ID=your-notion-db-id
 1. **Configuration Tab**
 2. **Upload Docker Compose**: Paste content of `deployment/docker/docker-compose/coolify.yml`
 3. **Environment Variables**: Upload `.env` file
-4. **Domain**: Add `fahaniecares.gov.ph`
+4. **Domain**: Add `bm-parliament.gov.ph`
 5. **SSL**: Enable Let's Encrypt
 
 ---
@@ -184,7 +184,7 @@ NOTION_DATABASE_ID=your-notion-db-id
 
 ```bash
 # Connect to web container
-docker exec -it fahaniecares_web /bin/bash
+docker exec -it bmparliament_web /bin/bash
 
 # Run migrations
 python manage.py migrate
@@ -211,7 +211,7 @@ exit
 
 **In Coolify Application:**
 
-1. **Domains Tab** → Add `fahaniecares.gov.ph`
+1. **Domains Tab** → Add `bm-parliament.gov.ph`
 2. **SSL Tab** → Enable Let's Encrypt
 3. **Wait for certificate** provisioning (2-5 minutes)
 4. **Enable Force HTTPS**
@@ -224,19 +224,19 @@ exit
 
 ```bash
 # Test health endpoints
-curl https://fahaniecares.gov.ph/health/
-curl https://fahaniecares.gov.ph/health/detailed/
+curl https://bm-parliament.gov.ph/health/
+curl https://bm-parliament.gov.ph/health/detailed/
 
 # Verify SSL
-curl -I http://fahaniecares.gov.ph  # Should redirect to HTTPS
-openssl s_client -connect fahaniecares.gov.ph:443 -servername fahaniecares.gov.ph
+curl -I http://bm-parliament.gov.ph  # Should redirect to HTTPS
+openssl s_client -connect bm-parliament.gov.ph:443 -servername bm-parliament.gov.ph
 ```
 
 ### 2. Functional Testing
 
 **Manual verification:**
 
-- [ ] Homepage loads: `https://fahaniecares.gov.ph`
+- [ ] Homepage loads: `https://bm-parliament.gov.ph`
 - [ ] Registration works: `/member-registration/`
 - [ ] Login/logout functional: `/accounts/login/`
 - [ ] Admin panel accessible: `/admin/`
@@ -254,10 +254,10 @@ docker ps
 docker stats --no-stream
 
 # Verify database connectivity
-docker exec fahaniecares_db pg_isready -U fahaniecares_user
+docker exec bmparliament_db pg_isready -U bmparliament_user
 
 # Check Redis connectivity
-docker exec fahaniecares_redis redis-cli -a YOUR_REDIS_PASSWORD ping
+docker exec bmparliament_redis redis-cli -a YOUR_REDIS_PASSWORD ping
 ```
 
 ---
@@ -274,7 +274,7 @@ docker exec fahaniecares_redis redis-cli -a YOUR_REDIS_PASSWORD ping
 
 **Verification Command:**
 ```bash
-docker exec -it fahaniecares_web python manage.py shell -c "
+docker exec -it bmparliament_web python manage.py shell -c "
 from django.core.cache import cache
 from django.contrib.auth import get_user_model
 
@@ -295,8 +295,8 @@ print('✅ Statistics reset verified')
 
 ```bash
 # Verify monitoring endpoints
-curl https://fahaniecares.gov.ph/monitoring/
-curl https://fahaniecares.gov.ph/metrics/
+curl https://bm-parliament.gov.ph/monitoring/
+curl https://bm-parliament.gov.ph/metrics/
 
 # Set up alerts in Coolify dashboard
 ```
@@ -314,7 +314,7 @@ curl https://fahaniecares.gov.ph/metrics/
 
 ```bash
 # Verify security headers
-curl -I https://fahaniecares.gov.ph | grep -E "(Strict-Transport|X-Content|X-Frame)"
+curl -I https://bm-parliament.gov.ph | grep -E "(Strict-Transport|X-Content|X-Frame)"
 
 # Check rate limiting
 # Test login rate limiting
@@ -336,20 +336,20 @@ curl -I https://fahaniecares.gov.ph | grep -E "(Strict-Transport|X-Content|X-Fra
 
 ```bash
 # Real-time application logs
-docker logs -f fahaniecares_web
+docker logs -f bmparliament_web
 
 # Check system resources
 docker stats
 htop
 
 # Database performance
-docker exec fahaniecares_db psql -U fahaniecares_user -d fahaniecares_prod -c "SELECT * FROM pg_stat_activity;"
+docker exec bmparliament_db psql -U bmparliament_user -d bmparliament_prod -c "SELECT * FROM pg_stat_activity;"
 ```
 
 ### Emergency Contacts
 
-- **Technical Support**: dev@fahaniecares.gov.ph
-- **System Admin**: admin@fahaniecares.gov.ph
+- **Technical Support**: dev@bmparliament.gov.ph
+- **System Admin**: admin@bm-parliament.gov.ph
 - **Coolify Issues**: [Coolify Discord](https://discord.gg/coolify)
 
 ---

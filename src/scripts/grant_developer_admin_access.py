@@ -74,7 +74,7 @@ DEVELOPERS = [
     },
     {
         'username': 'sittie.f',
-        'full_name': 'Sittie Fahanie Uy-Oyod',
+        'full_name': 'Amiroddin Gayak',
         'email': 'sittie.fahanie@example.com', # Assuming a generic email for now
         'role': 'System Superuser'
     },
@@ -135,7 +135,7 @@ def create_system_admin_group():
         'add_permission', 'change_permission', 'delete_permission', 'view_permission',
         # Constituent Management
         'add_constituent', 'change_constituent', 'delete_constituent', 'view_constituent',
-        'add_fahaniecaresmember', 'change_fahaniecaresmember', 'delete_fahaniecaresmember', 'view_fahaniecaresmember',
+        'add_bmparliamentmember', 'change_bmparliamentmember', 'delete_bmparliamentmember', 'view_bmparliamentmember',
         # Service Management
         'add_service', 'change_service', 'delete_service', 'view_service',
         # Referral Management
@@ -151,7 +151,7 @@ def create_system_admin_group():
         # System Administration (assuming these are custom permissions or related to core models)
         # These might need to be created as custom permissions if not tied to specific models
         'view_auditlog', # Assuming an AuditLog model
-        # #FahanieCares Programs (assuming models like Program, Application)
+        # #BM Parliament Programs (assuming models like Program, Application)
         'add_program', 'change_program', 'delete_program', 'view_program',
         'add_application', 'change_application', 'delete_application', 'view_application',
         # TDIF Projects (assuming models like Project)
@@ -488,7 +488,7 @@ def update_credentials_file():
     
     staff_members = Staff.objects.all().select_related('user').order_by('full_name')
     
-    content = "#FahanieCares Staff Login Credentials\n"
+    content = "#BM Parliament Staff Login Credentials\n"
     content += "=" * 60 + "\n"
     content += "Updated from Staff Profiles.csv (Developers promoted to superusers, System Admins added)\n\n"
     
@@ -506,7 +506,7 @@ def update_credentials_file():
             'administrative_affairs': 'Administrative Affairs',
             'communications': 'Communications',
             'it_unit': 'IT Unit',
-            'mp_office': "MP Uy-Oyod's Office"
+            'mp_office': "MP Gayak's Office"
         }.get(staff.division, staff.division or "Administrative Affairs")
         
         if staff.user:

@@ -1,4 +1,4 @@
-# #FahanieCares Portal RBAC Implementation Plan
+# BM Parliament Portal RBAC Implementation Plan
 
 ## Table of Contents
 1. [Executive Summary](#executive-summary)
@@ -12,7 +12,7 @@
 
 ## Executive Summary
 
-This document outlines the comprehensive Role-Based Access Control (RBAC) implementation plan for the #FahanieCares portal. The system will provide granular access control for eight distinct user roles, ensuring secure and efficient management of constituent services, parliamentary operations, and public communications.
+This document outlines the comprehensive Role-Based Access Control (RBAC) implementation plan for the BM Parliament portal. The system will provide granular access control for eight distinct user roles, ensuring secure and efficient management of constituent services, parliamentary operations, and public communications.
 
 ### Key Objectives
 - Implement a secure, scalable RBAC system
@@ -24,7 +24,7 @@ This document outlines the comprehensive Role-Based Access Control (RBAC) implem
 ## Role Definitions
 
 ### 1. **Member of Parliament (MP)** - Level 9
-- **Primary User**: MP Atty. Sittie Fahanie S. Uy-Oyod
+- **Primary User**: MP Atty. Sittie BM Parliament S. Uy-Oyod
 - **Access Level**: Strategic oversight and decision-making
 - **Key Responsibilities**:
   - View comprehensive analytics and reports
@@ -161,7 +161,7 @@ This document outlines the comprehensive Role-Based Access Control (RBAC) implem
 
 | Feature | MP | Chief of Staff | Admin | Coordinator | Info Officer | Staff | Chapter Member | Registered User | Public |
 |---------|----|----|-------|-------------|--------------|-------|----------------|-----------------|--------|
-| **#FahanieCares Programs** |
+| **BM Parliament Programs** |
 | Manage Programs | ✗ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | Approve Applications | ✗ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
 | View Applications | ✓ | ✓ | ✓ | ✓ | ✗ | ✗ | ✗ | ✗ | ✗ |
@@ -506,4 +506,4 @@ def test_permission_enforcement(self):
 
 ## Conclusion
 
-This RBAC implementation plan provides a comprehensive, secure, and scalable access control system for the #FahanieCares portal. The phased approach ensures minimal disruption while delivering enhanced security and user management capabilities. Regular monitoring and maintenance will ensure the system remains effective and aligned with organizational needs.
+This RBAC implementation plan provides a comprehensive, secure, and scalable access control system for the BM Parliament portal. The phased approach ensures minimal disruption while delivering enhanced security and user management capabilities. Regular monitoring and maintenance will ensure the system remains effective and aligned with organizational needs.

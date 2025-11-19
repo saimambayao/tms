@@ -10,7 +10,7 @@ class Command(BaseCommand):
         if not User.objects.filter(username='admin').exists():
             User.objects.create_superuser(
                 username='admin',
-                email='admin@fahaniecares.gov.ph',
+                email='admin@bmparliament.gov.ph',
                 password='admin123'
             )
             self.stdout.write(self.style.SUCCESS('Created superuser: admin'))

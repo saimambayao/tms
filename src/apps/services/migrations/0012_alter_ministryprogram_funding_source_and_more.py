@@ -18,6 +18,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='ministryprogram',
             name='ministry',
-            field=models.CharField(choices=[('mssd', 'Ministry of Social Services and Development'), ('mafar', 'Ministry of Agriculture, Fisheries and Agrarian Reform'), ('mtit', 'Ministry of Trade, Industry and Tourism'), ('mhe', 'Ministry of Higher Education'), ('mbasiced', 'Ministry of Basic, Higher and Technical Education'), ('moh', 'Ministry of Health'), ('mpwh', 'Ministry of Public Works and Highways'), ('motc', 'Ministry of Transportation and Communications'), ('mei', 'Ministry of Environment and Interior'), ('mle', 'Ministry of Labor and Employment'), ('mp_office', 'Office of MP Atty. Sittie Fahanie S. Uy-Oyod'), ('other', 'Other Ministry/Office')], max_length=20),
+            field=models.CharField(choices=[('mssd', 'Ministry of Social Services and Development'), ('mafar', 'Ministry of Agriculture, Fisheries and Agrarian Reform'), ('mtit', 'Ministry of Trade, Industry and Tourism'), ('mhe', 'Ministry of Higher Education'), ('mbasiced', 'Ministry of Basic, Higher and Technical Education'), ('moh', 'Ministry of Health'), ('mpwh', 'Ministry of Public Works and Highways'), ('motc', 'Ministry of Transportation and Communications'), ('mei', 'Ministry of Environment and Interior'), ('mle', 'Ministry of Labor and Employment'), ('mp_office', 'Office of MP Amiroddin Gayak'), ('other', 'Other Ministry/Office')], max_length=20),
         ),
     ]

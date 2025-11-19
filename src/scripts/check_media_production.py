@@ -97,10 +97,10 @@ except Exception as e:
 
 # Check specific model upload paths
 print("\n5. Model Upload Paths:")
-from apps.constituents.models import FahanieCaresMember
+from apps.constituents.models import BMParliamentMember
 
 # Get upload path for voter ID
-upload_to = FahanieCaresMember._meta.get_field('voter_id_photo').upload_to
+upload_to = BMParliamentMember._meta.get_field('voter_id_photo').upload_to
 if callable(upload_to):
     print(f"   Voter ID upload_to: {upload_to.__name__} (function)")
 else:
@@ -121,7 +121,7 @@ try:
     )
     
     # Create a test member instance
-    member = FahanieCaresMember(
+    member = BMParliamentMember(
         user=test_user,
         first_name='Test',
         last_name='User',

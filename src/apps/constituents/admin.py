@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
 from .models import Constituent, ConstituentInteraction, ConstituentGroup
-from .member_models import FahanieCaresMember
+from .member_models import BMParliamentMember
 
 class ConstituentInteractionInline(admin.TabularInline):
     model = ConstituentInteraction
@@ -146,8 +146,8 @@ class ConstituentGroupAdmin(admin.ModelAdmin):
     created_by_name.short_description = 'Created By'
 
 
-@admin.register(FahanieCaresMember)
-class FahanieCaresMemberAdmin(admin.ModelAdmin):
+@admin.register(BMParliamentMember)
+class BMParliamentMemberAdmin(admin.ModelAdmin):
     list_display = ('full_name', 'email', 'contact_number', 'age', 'sector_display', 
                     'address_municipality', 'status', 'date_of_application')
     list_filter = ('status', 'sector', 'sex', 'highest_education', 'eligibility',

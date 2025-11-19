@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}#FahanieCares{% endblock %}</title>
+    <title>{% block title %}BM Parliament{% endblock %}</title>
     <meta
       name="description"
-      content="{% block meta_description %}#FahanieCares: Bringing Bangsamoro Public Service Closer to You{% endblock %}"
+      content="{% block meta_description %}BM Parliament: Bringing Bangsamoro Public Service Closer to You{% endblock %}"
     />
     <!-- Compiled TailwindCSS -->
     {% load static %}
@@ -18,7 +18,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@400;700&family=Great+Vibes&display=swap"
       rel="stylesheet"
     />
     <!-- Font Awesome Icons -->
@@ -163,6 +163,9 @@
 
     <!-- Footer -->
     {% include 'components/navigation/footer.html' %}
+
+    <!-- Floating Facebook Widget -->
+    {% include 'components/widgets/floating_facebook.html' %}
 
     <!-- JavaScript -->
     <script>

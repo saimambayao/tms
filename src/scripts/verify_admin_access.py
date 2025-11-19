@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Admin Access Verification Script for #FahanieCares
+Admin Access Verification Script for #BM Parliament
 Verifies that admin accounts can access the portal and bypass authentication.
 """
 
@@ -66,7 +66,7 @@ def main():
     """Main verification function."""
     base_url = "http://localhost:3000"
     
-    print("🔍 #FahanieCares Admin Access Verification")
+    print("🔍 #BM Parliament Admin Access Verification")
     print("=" * 50)
     
     # Test both admin accounts

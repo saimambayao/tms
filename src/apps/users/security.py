@@ -1,5 +1,5 @@
 """
-Security utilities and middleware for #FahanieCares.
+Security utilities and middleware for #BM Parliament.
 """
 
 import secrets
@@ -144,7 +144,7 @@ class MFAService:
     @staticmethod
     def generate_qr_url(user, secret):
         """Generate QR code URL for setting up MFA."""
-        issuer = "#FahanieCares"
+        issuer = "#BM Parliament"
         totp = pyotp.TOTP(secret)
         return totp.provisioning_uri(
             name=user.email,
@@ -200,7 +200,7 @@ class SMSOTPService:
             return False
         
         # Prepare message
-        message = f"Your #FahanieCares verification code is: {otp}\n\nValid for 5 minutes. Do not share this code."
+        message = f"Your #BM Parliament verification code is: {otp}\n\nValid for 5 minutes. Do not share this code."
         
         # Send via configured SMS gateway
         if settings.SMS_PROVIDER == 'semaphore':

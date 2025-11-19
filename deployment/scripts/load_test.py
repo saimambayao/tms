@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-#FahanieCares Platform - Load Testing Script
+BM Parliament Platform - Load Testing Script
 Comprehensive load testing for production scenarios using locust
 """
 
@@ -14,9 +14,9 @@ from locust import HttpUser, task, between, events
 from locust.runners import MasterRunner, WorkerRunner
 
 
-class FahanieCaresUser(HttpUser):
+class BM ParliamentUser(HttpUser):
     """
-    Simulates realistic user behavior on the #FahanieCares platform.
+    Simulates realistic user behavior on the BM Parliament platform.
     """
     
     wait_time = between(2, 8)  # Realistic wait time between requests
@@ -167,7 +167,7 @@ class FahanieCaresUser(HttpUser):
         # Note: We don't actually log in to avoid affecting real admin accounts
 
 
-class HighVolumeUser(FahanieCaresUser):
+class HighVolumeUser(BM ParliamentUser):
     """Simulates high-volume usage patterns (e.g., during announcements)."""
     
     wait_time = between(1, 3)  # Faster interaction
@@ -188,7 +188,7 @@ class HighVolumeUser(FahanieCaresUser):
         self.client.get('/programs/', name="High-Volume Programs")
 
 
-class MobileUser(FahanieCaresUser):
+class MobileUser(BM ParliamentUser):
     """Simulates mobile user behavior patterns."""
     
     wait_time = between(3, 10)  # Mobile users often have longer think time
@@ -230,7 +230,7 @@ class MobileUser(FahanieCaresUser):
 def on_test_start(environment, **kwargs):
     """Called when the test starts."""
     print("=" * 60)
-    print("🚀 Starting #FahanieCares Load Test")
+    print("🚀 Starting BM Parliament Load Test")
     print(f"Target URL: {environment.host}")
     print(f"Test Duration: {getattr(environment.parsed_options, 'run_time', 'Not specified')}")
     print(f"Users: {getattr(environment.parsed_options, 'num_users', 'Not specified')}")
@@ -241,7 +241,7 @@ def on_test_start(environment, **kwargs):
 def on_test_stop(environment, **kwargs):
     """Called when the test stops."""
     print("=" * 60)
-    print("🏁 #FahanieCares Load Test Completed")
+    print("🏁 BM Parliament Load Test Completed")
     print("=" * 60)
 
 
@@ -250,7 +250,7 @@ def run_load_test():
     import subprocess
     import argparse
     
-    parser = argparse.ArgumentParser(description='Run #FahanieCares load tests')
+    parser = argparse.ArgumentParser(description='Run BM Parliament load tests')
     parser.add_argument('--host', default='http://localhost:3000', help='Target host')
     parser.add_argument('--users', type=int, default=50, help='Number of concurrent users')
     parser.add_argument('--spawn-rate', type=int, default=5, help='Users spawned per second')
@@ -272,7 +272,7 @@ def run_load_test():
     
     # Add user class based on scenario
     if args.scenario == 'normal':
-        cmd.extend(['--locustfile', __file__, 'FahanieCaresUser'])
+        cmd.extend(['--locustfile', __file__, 'BM ParliamentUser'])
     elif args.scenario == 'high-volume':
         cmd.extend(['--locustfile', __file__, 'HighVolumeUser'])
     elif args.scenario == 'mobile':
@@ -301,6 +301,6 @@ if __name__ == '__main__':
         print("Usage examples:")
         print("  python load_test.py --users 100 --time 10m")
         print("  python load_test.py --scenario high-volume --users 200")
-        print("  python load_test.py --host https://fahaniecares.ph --users 50")
+        print("  python load_test.py --host https://bmparliament.gov.ph --users 50")
         print("\nTo run with locust web UI:")
         print("  locust --host http://localhost:3000")

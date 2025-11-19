@@ -516,7 +516,7 @@ class DocumentTemplateModelTests(TestCase):
         placeholders = {
             'office_name': 'Office of MP Fahanie',
             'current_date': '{{current_date}}',
-            'contact_info': 'contact@fahaniecares.ph'
+            'contact_info': 'contact@bmparliament.ph'
         }
         
         template = DocumentTemplate.objects.create(

@@ -2,12 +2,12 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.validators import RegexValidator
 from apps.users.models import User
-from .member_models import FahanieCaresMember
+from .member_models import BMParliamentMember
 from .utils import MUNICIPALITY_CHOICES_DATA # Import the centralized data
 
-class FahanieCaresMemberRegistrationForm(UserCreationForm):
+class BMParliamentMemberRegistrationForm(UserCreationForm):
     """
-    Comprehensive registration form for #FahanieCares members
+    Comprehensive registration form for #BM Parliament members
     """
     # Personal Information
     last_name = forms.CharField(
@@ -50,7 +50,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
     )
     
     sex = forms.ChoiceField(
-        choices=FahanieCaresMember.SEX_CHOICES,
+        choices=BMParliamentMember.SEX_CHOICES,
         required=True,
         initial='male',
         widget=forms.RadioSelect()
@@ -103,7 +103,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
     
     # Sector Information
     sector = forms.ChoiceField(
-        choices=FahanieCaresMember.SECTOR_CHOICES,
+        choices=BMParliamentMember.SECTOR_CHOICES,
         required=True,
         initial='pwd_student', # The key remains the same, only the display value changed in models
         widget=forms.RadioSelect()
@@ -111,7 +111,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
     
     # Education Information
     highest_education = forms.ChoiceField(
-        choices=FahanieCaresMember.EDUCATION_CHOICES,
+        choices=BMParliamentMember.EDUCATION_CHOICES,
         required=True,
         initial='elementary',
         widget=forms.RadioSelect()
@@ -122,7 +122,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Graduated From'})
     )
     eligibility = forms.ChoiceField(
-        choices=FahanieCaresMember.ELIGIBILITY_CHOICES,
+        choices=BMParliamentMember.ELIGIBILITY_CHOICES,
         required=True,
         initial='none', # The key remains the same, only the display value changed in models
         widget=forms.RadioSelect()
@@ -135,7 +135,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Name of College/University'})
     )
     year_level = forms.ChoiceField(
-        choices=[('', '-- Select Year Level --')] + list(FahanieCaresMember._meta.get_field('year_level').choices),
+        choices=[('', '-- Select Year Level --')] + list(BMParliamentMember._meta.get_field('year_level').choices),
         required=False,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -312,7 +312,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
         last_name = cleaned_data.get('last_name')
         
         if first_name and last_name:
-            if FahanieCaresMember.objects.filter(first_name=first_name, last_name=last_name).exists():
+            if BMParliamentMember.objects.filter(first_name=first_name, last_name=last_name).exists():
                 self.add_error('first_name', "A member with this first name and last name already exists.")
                 self.add_error('last_name', "A member with this first name and last name already exists.")
         
@@ -343,8 +343,8 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
                 
                 logger.info(f"User created successfully: {user.username}")
                 
-                # Create FahanieCaresMember instance
-                member = FahanieCaresMember(
+                # Create BMParliamentMember instance
+                member = BMParliamentMember(
                     user=user,
                     last_name=self.cleaned_data['last_name'],
                     first_name=self.cleaned_data['first_name'],
@@ -372,7 +372,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
                 )
                 member.save()
                 
-                logger.info(f"FahanieCaresMember created successfully: {member.id}")
+                logger.info(f"BMParliamentMember created successfully: {member.id}")
                 
                 # Log successful completion
                 logger.info(f"Registration completed successfully for user: {user.username}")
@@ -397,7 +397,7 @@ class FahanieCaresMemberRegistrationForm(UserCreationForm):
             raise forms.ValidationError(error_message)
 
 
-class FahanieCaresMemberUpdateForm(forms.ModelForm):
+class BMParliamentMemberUpdateForm(forms.ModelForm):
     """
     Form for updating member information
     """
@@ -442,7 +442,7 @@ class FahanieCaresMemberUpdateForm(forms.ModelForm):
     )
     
     sex = forms.ChoiceField(
-        choices=FahanieCaresMember.SEX_CHOICES,
+        choices=BMParliamentMember.SEX_CHOICES,
         required=True,
         initial='male',
         widget=forms.RadioSelect()
@@ -495,7 +495,7 @@ class FahanieCaresMemberUpdateForm(forms.ModelForm):
     
     # Sector Information
     sector = forms.ChoiceField(
-        choices=FahanieCaresMember.SECTOR_CHOICES,
+        choices=BMParliamentMember.SECTOR_CHOICES,
         required=True,
         initial='pwd_student', # The key remains the same, only the display value changed in models
         widget=forms.RadioSelect()
@@ -503,7 +503,7 @@ class FahanieCaresMemberUpdateForm(forms.ModelForm):
     
     # Education Information
     highest_education = forms.ChoiceField(
-        choices=FahanieCaresMember.EDUCATION_CHOICES,
+        choices=BMParliamentMember.EDUCATION_CHOICES,
         required=True,
         initial='elementary',
         widget=forms.RadioSelect()
@@ -514,7 +514,7 @@ class FahanieCaresMemberUpdateForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Graduated From'})
     )
     eligibility = forms.ChoiceField(
-        choices=FahanieCaresMember.ELIGIBILITY_CHOICES,
+        choices=BMParliamentMember.ELIGIBILITY_CHOICES,
         required=True,
         initial='none', # The key remains the same, only the display value changed in models
         widget=forms.RadioSelect()
@@ -530,13 +530,13 @@ class FahanieCaresMemberUpdateForm(forms.ModelForm):
     )
     
     status = forms.ChoiceField(
-        choices=FahanieCaresMember.STATUS_CHOICES,
+        choices=BMParliamentMember.STATUS_CHOICES,
         required=False, # Make it not required for user updates
         widget=forms.HiddenInput() # Hide it from the user, as it's managed by the system
     )
 
     class Meta:
-        model = FahanieCaresMember
+        model = BMParliamentMember
         exclude = ['user', 'date_of_application', 'is_approved', 'approved_by', 'is_volunteer_teacher', 'volunteer_school', 'volunteer_service_length', 'approved_date', 'denied_date', 'denied_by', 'denial_reason', 'assigned_chapter', 'chapter_assigned_date', 'chapter_assigned_by']
 
     def __init__(self, *args, **kwargs):

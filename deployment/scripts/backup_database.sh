@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# #FahanieCares Platform - Database Backup Script
+# BM Parliament Platform - Database Backup Script
 # Automated PostgreSQL database backup with verification
 
 set -euo pipefail
@@ -8,9 +8,9 @@ set -euo pipefail
 # Configuration from environment or defaults
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
-DB_NAME="${DB_NAME:-fahaniecares_db}"
+DB_NAME="${DB_NAME:-bmparliament_db}"
 DB_USER="${DB_USER:-postgres}"
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/fahaniecares}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/bmparliament}"
 RETENTION_DAYS="${RETENTION_DAYS:-7}"
 S3_BUCKET="${S3_BUCKET:-}"
 SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
@@ -20,7 +20,7 @@ mkdir -p "$BACKUP_DIR"
 
 # Generate backup filename with timestamp
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="$BACKUP_DIR/fahaniecares_backup_$TIMESTAMP.sql"
+BACKUP_FILE="$BACKUP_DIR/bmparliament_backup_$TIMESTAMP.sql"
 BACKUP_COMPRESSED="$BACKUP_FILE.gz"
 
 # Logging function
@@ -37,7 +37,7 @@ send_notification() {
     
     if [ -n "$SLACK_WEBHOOK" ]; then
         curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"🗄️ #FahanieCares Backup $status: $message\"}" \
+            --data "{\"text\":\"🗄️ BM Parliament Backup $status: $message\"}" \
             "$SLACK_WEBHOOK" 2>/dev/null || true
     fi
 }
@@ -45,8 +45,8 @@ send_notification() {
 # Cleanup old backups
 cleanup_old_backups() {
     log "Cleaning up backups older than $RETENTION_DAYS days"
-    find "$BACKUP_DIR" -name "fahaniecares_backup_*.sql.gz" -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
-    find "$BACKUP_DIR" -name "fahaniecares_backup_*.sql" -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
+    find "$BACKUP_DIR" -name "bmparliament_backup_*.sql.gz" -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
+    find "$BACKUP_DIR" -name "bmparliament_backup_*.sql" -mtime +$RETENTION_DAYS -delete 2>/dev/null || true
 }
 
 # Create database backup
@@ -152,7 +152,7 @@ upload_to_s3() {
 
 # Main backup process
 main() {
-    log "=== Starting #FahanieCares Database Backup Process ==="
+    log "=== Starting BM Parliament Database Backup Process ==="
     
     # Check required environment variables
     if [ -z "${DB_PASSWORD:-}" ]; then

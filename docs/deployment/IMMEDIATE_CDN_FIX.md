@@ -6,7 +6,7 @@
 
 ```bash
 # Find your distribution ID
-aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@, 'fahaniecares.ph')]].Id" --output text
+aws cloudfront list-distributions --query "DistributionList.Items[?Aliases.Items[?contains(@, 'bmparliament.gov.ph')]].Id" --output text
 
 # Invalidate all cached files
 aws cloudfront create-invalidation \
@@ -68,7 +68,7 @@ After deployment, verify cache was cleared:
 
 ```bash
 # Check cache status
-curl -I https://fahaniecares.ph/static/css/output.css | grep x-cache
+curl -I https://bmparliament.gov.ph/static/css/output.css | grep x-cache
 # Should show: x-cache: Miss from cloudfront
 
 # Force reload in browser
@@ -95,7 +95,7 @@ If you prefer using AWS Console:
 ## 📱 Contact for Help
 
 If you need the CloudFront distribution ID or AWS access:
-- DevOps Team: devops@fahaniecares.ph
+- DevOps Team: devops@bmparliament.gov.ph
 - Or check AWS Console > CloudFront > Distributions
 
 ---

@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('constituents', '0007_alter_fahaniecaresmember_eligibility_and_more'),
+        ('constituents', '0007_alter_bmparliamentmember_eligibility_and_more'),
     ]
 
     operations = [
@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, choices=[('private_sector', 'Private Sector'), ('public_sector', 'Public Sector'), ('self_employed', 'Self-employed'), ('student', 'Student'), ('unemployed', 'Unemployed'), ('retired', 'Retired'), ('homemaker', 'Homemaker'), ('farmer', 'Farmer'), ('fisherman', 'Fisherman'), ('small_time_vendor', 'Small-time Vendor'), ('other', 'Other')], max_length=20),
         ),
         migrations.AlterField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='sector',
             field=models.CharField(choices=[('pwd_student', 'Person with Disability (PWD)'), ('solo_parent', 'Solo Parents'), ('volunteer_teacher', 'Volunteer Teachers'), ('volunteer_health', 'Volunteer Health Workers'), ('special_needs', 'Children with Special Needs'), ('women_mothers', 'Women/Mothers and Children'), ('farmer', 'Farmers'), ('fisherman', 'Fishermen'), ('small_time_vendor', 'Small-time Vendors'), ('student', 'Students in need of Scholarship/Financial Assistance')], max_length=50),
         ),

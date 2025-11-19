@@ -296,7 +296,7 @@ class NotificationTemplateModelTests(TestCase):
             html_template='<p>Dear {user.first_name}, your referral <strong>#{referral.id}</strong> status is now <em>{referral.status}</em>.</p>',
             push_title_template='Referral Update',
             push_body_template='Your referral #{referral.id} is {referral.status}',
-            sms_template='Referral #{referral.id} is {referral.status}. Visit fahaniecares.ph for details.',
+            sms_template='Referral #{referral.id} is {referral.status}. Visit bmparliament.ph for details.',
             variables=['user.first_name', 'user.last_name', 'referral.id', 'referral.status'],
             is_active=True
         )

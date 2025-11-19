@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('constituents', '0006_alter_fahaniecaresmember_eligibility_and_more'),
+        ('constituents', '0006_alter_bmparliamentmember_eligibility_and_more'),
         ('services', '0010_alter_serviceapplication_unique_together_and_more'),
     ]
 
@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='serviceapplication',
             name='constituent',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_applications', to='constituents.fahaniecaresmember'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='service_applications', to='constituents.bmparliamentmember'),
         ),
     ]

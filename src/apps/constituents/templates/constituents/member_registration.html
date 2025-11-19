@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}#FahanieCares Member Registration{% endblock %}
+{% block title %}BM Parliament Member Registration{% endblock %}
 
 {% block extra_css %}
 <style>
@@ -12,12 +12,12 @@
     }
 
     .registration-header {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
         color: white;
         padding: 2rem 0;
         margin-bottom: 2rem;
         border-radius: 0;
-        box-shadow: 0 4px 20px rgba(16, 185, 129, 0.15);
+        box-shadow: 0 4px 20px rgba(30, 64, 175, 0.15);
     }
 
     .registration-header h1 {
@@ -65,13 +65,13 @@
     .section-icon {
         width: 2.5rem;
         height: 2.5rem;
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
         border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
     }
 
     .form-content {
@@ -277,15 +277,15 @@
     }
 
     .btn-primary {
-        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
         color: white;
-        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
     }
 
     .btn-primary:hover {
-        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        background: linear-gradient(135deg, #1e3a8a 0%, #047857 100%);
         transform: translateY(-1px);
-        box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        box-shadow: 0 6px 16px rgba(30, 64, 175, 0.4);
     }
 
     .btn-secondary {
@@ -488,9 +488,9 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
                     </svg>
                 </div>
-                <h1>#FahanieCares Member Registration</h1>
+                <h1>Member Registration</h1>
             </div>
-            <p class="text-lg">Join the #FahanieCares movement and be part of our mission to bring public service closer to you.</p>
+            <p class="text-lg">Join our movement and be part of our mission to bring public service closer to Bangsamoro people.</p>
         </div>
 
         <!-- Progress Indicator -->
@@ -1027,8 +1027,8 @@
 
         <!-- Header with Icon -->
         <div class="mb-6">
-            <div class="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-shield-alt text-2xl text-emerald-600"></i>
+            <div class="mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
+                <i class="fas fa-shield-alt text-2xl text-white"></i>
             </div>
             <h2 class="text-2xl font-bold text-emerald-800 mb-2">Document Verification Required</h2>
             <p class="text-sm text-emerald-600 font-medium">Prepare your identification documents</p>
@@ -1037,19 +1037,18 @@
         <!-- Enhanced Description -->
         <div class="bg-emerald-50 rounded-lg p-4 mb-6 border border-emerald-200">
             <p class="text-gray-700 text-sm leading-relaxed">
-                To complete your <strong class="text-emerald-700">#FahanieCares membership registration</strong>,
-                please prepare a clear, readable photo of <strong>your most recent Voter's Certificate (latest 6 months only)</strong>:
+                To complete your <strong class="text-emerald-700">membership registration</strong>,
+                please prepare a clear, readable photo <strong>of your valid National or Other Government IDs:</strong>
             </p>
         </div>
 
         <!-- Document Options with Icons -->
         <div class="grid grid-cols-1 gap-4 mb-6">
             <div class="bg-white border-2 border-gray-200 rounded-lg p-4 hover:border-emerald-300 transition-colors duration-200">
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                    <i class="fas fa-certificate text-xl text-blue-600"></i>
+                <div class="w-12 h-12 rounded-lg flex items-center justify-center mx-auto mb-3" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
+                    <i class="fas fa-certificate text-xl text-white"></i>
                 </div>
-                <h3 class="font-semibold text-gray-800 text-sm mb-1">Voter's Certificate</h3>
-                <p class="text-xs text-gray-500">Official COMELEC certificate</p>
+                <h3 class="font-semibold text-gray-800 text-sm mb-1">National or Other Government ID</h3>
             </div>
         </div>
 
@@ -1070,7 +1069,7 @@
         </div>
 
         <!-- Action Button -->
-        <button id="acknowledgePopup" class="btn btn-primary">
+        <button id="acknowledgePopup" class="btn" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';">
             <i class="fas fa-check-circle mr-2"></i>
             I Understand, Continue Registration
         </button>

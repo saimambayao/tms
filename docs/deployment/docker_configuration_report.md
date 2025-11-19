@@ -3,7 +3,7 @@
 ## Date: June 8, 2025 (Updated January 2025)
 
 ## Summary
-Successfully configured and tested Docker setup for the #FahanieCares portal with current project structure. All deployment configurations updated to include critical DJANGO_SETTINGS_MODULE requirements for production stability.
+Successfully configured and tested Docker setup for the BM Parliament portal with current project structure. All deployment configurations updated to include critical DJANGO_SETTINGS_MODULE requirements for production stability.
 
 ## Configuration Updates
 
@@ -20,7 +20,7 @@ Successfully configured and tested Docker setup for the #FahanieCares portal wit
   - `Dockerfile.production` (Production optimized)
 
 ### 2. Path Updates
-- Updated build context from `./fahanie_cares_django` to `./src`
+- Updated build context from `./bm parliament_cares_django` to `./src`
 - Volume mounts updated to use new `src/` directory
 - Static files properly mapped for both Django and Nginx
 
@@ -45,25 +45,25 @@ Successfully configured and tested Docker setup for the #FahanieCares portal wit
 ## Services Status
 
 ### Running Services
-1. **PostgreSQL Database** (fahaniecares_db)
+1. **PostgreSQL Database** (bmparliament_db)
    - Status: ✅ Healthy
    - Version: PostgreSQL 15.13
    - Port: 5432
    - Connection: Verified
 
-2. **Redis Cache** (fahaniecares_redis)
+2. **Redis Cache** (bmparliament_redis)
    - Status: ✅ Healthy
    - Version: Redis 7
    - Port: 6379
    - Connection: Verified (PING/PONG)
 
-3. **Django Web Application** (fahaniecares_web)
+3. **Django Web Application** (bmparliament_web)
    - Status: ✅ Running
    - Port: 3000
    - Development server: Active
    - Admin panel: Accessible
 
-4. **Nginx Proxy** (fahaniecares_nginx)
+4. **Nginx Proxy** (bmparliament_nginx)
    - Status: ✅ Running
    - Port: 80
    - Proxy to Django: Working
@@ -112,11 +112,11 @@ Successfully configured and tested Docker setup for the #FahanieCares portal wit
 ### Critical Environment Check
 ```bash
 # Verify DJANGO_SETTINGS_MODULE is set correctly (CRITICAL)
-docker exec fahaniecares_web env | grep DJANGO_SETTINGS_MODULE
+docker exec bmparliament_web env | grep DJANGO_SETTINGS_MODULE
 # Must output: DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Verify production settings are loaded
-docker exec fahaniecares_web python manage.py shell -c "
+docker exec bmparliament_web python manage.py shell -c "
 from django.conf import settings
 print('CSRF_TRUSTED_ORIGINS:', settings.CSRF_TRUSTED_ORIGINS)
 print('ALLOWED_HOSTS:', settings.ALLOWED_HOSTS)
@@ -124,7 +124,7 @@ print('DEBUG:', settings.DEBUG)  # Should be False
 "
 
 # Test CSRF functionality (critical for forms)
-curl -I https://fahaniecares.ph/accounts/login/
+curl -I https://bmparliament.gov.ph/accounts/login/
 # Should return 200 OK, not 403 Forbidden
 ```
 
@@ -163,16 +163,16 @@ docker-compose exec web python manage.py createsuperuser
 docker-compose -f deployment/docker/docker-compose/coolify.yml up -d
 
 # Production environment verification
-docker exec fahaniecares_web env | grep DJANGO_SETTINGS_MODULE
+docker exec bmparliament_web env | grep DJANGO_SETTINGS_MODULE
 
 # Production health check
-docker exec fahaniecares_web python manage.py check
+docker exec bmparliament_web python manage.py check
 
 # Production database migration
-docker exec fahaniecares_web python manage.py migrate
+docker exec bmparliament_web python manage.py migrate
 
 # Collect static files for production
-docker exec fahaniecares_web python manage.py collectstatic --noinput
+docker exec bmparliament_web python manage.py collectstatic --noinput
 ```
 
 ## Conclusion
@@ -187,4 +187,4 @@ The Docker configuration is working correctly with the current project structure
 
 **Critical Success Factor**: Always ensure `DJANGO_SETTINGS_MODULE=config.settings.production` is set in production deployments to prevent CSRF verification failures.
 
-The #FahanieCares platform is ready for reliable production deployment with proper Docker containerization.
+The BM Parliament platform is ready for reliable production deployment with proper Docker containerization.

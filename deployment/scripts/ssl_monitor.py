@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-#FahanieCares Platform - SSL Certificate Monitoring
+BM Parliament Platform - SSL Certificate Monitoring
 Automated SSL certificate monitoring with expiry alerts
 """
 
@@ -182,7 +182,7 @@ class SSLCertificateMonitor:
         emoji = emoji_map.get(status, 'ℹ️')
         
         payload = {
-            'text': f"{emoji} #FahanieCares SSL Monitor: {message}",
+            'text': f"{emoji} BM Parliament SSL Monitor: {message}",
             'username': 'SSL Monitor',
             'icon_emoji': ':lock:'
         }
@@ -296,20 +296,20 @@ class SSLCertificateMonitor:
             return False
 
 
-def get_fahaniecares_domains():
-    """Get list of domains to monitor for #FahanieCares."""
+def get_bmparliament_domains():
+    """Get list of domains to monitor for BM Parliament."""
     return [
-        'fahaniecares.ph',
-        'www.fahaniecares.ph',
+        'bmparliament.gov.ph',
+        'www.bmparliament.gov.ph',
         # Add additional domains as needed
-        # 'api.fahaniecares.ph',
-        # 'admin.fahaniecares.ph',
+        # 'api.bmparliament.gov.ph',
+        # 'admin.bmparliament.gov.ph',
     ]
 
 
 def main():
     """Main function for SSL certificate monitoring."""
-    parser = argparse.ArgumentParser(description='Monitor SSL certificates for #FahanieCares')
+    parser = argparse.ArgumentParser(description='Monitor SSL certificates for BM Parliament')
     parser.add_argument('--domains', nargs='+', help='Domains to check')
     parser.add_argument('--slack-webhook', help='Slack webhook URL for notifications')
     parser.add_argument('--threshold', type=int, default=30, help='Alert threshold in days')
@@ -318,10 +318,10 @@ def main():
     
     args = parser.parse_args()
     
-    # Use provided domains or default #FahanieCares domains
-    domains = args.domains if args.domains else get_fahaniecares_domains()
+    # Use provided domains or default BM Parliament domains
+    domains = args.domains if args.domains else get_bmparliament_domains()
     
-    print("🔒 #FahanieCares SSL Certificate Monitor")
+    print("🔒 BM Parliament SSL Certificate Monitor")
     print(f"📋 Checking {len(domains)} domain(s): {', '.join(domains)}")
     print(f"⏰ Alert threshold: {args.threshold} days")
     print("-" * 60)

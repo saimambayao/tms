@@ -9,7 +9,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('constituents', '0006_alter_fahaniecaresmember_eligibility_and_more'),
+        ('constituents', '0006_alter_bmparliamentmember_eligibility_and_more'),
         ('services', '0008_applicationattachment'),
     ]
 

@@ -10,7 +10,7 @@ git pull origin main
 
 # Restart web service to pick up template changes
 echo "🔄 Restarting web service..."
-docker-compose restart web || docker-compose restart fahanie-cares-web-1
+docker-compose restart web || docker-compose restart bmparliament-web-1
 
 echo ""
 echo "✅ Radio button fix deployed!"

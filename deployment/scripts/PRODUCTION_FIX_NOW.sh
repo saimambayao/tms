@@ -1,18 +1,18 @@
 #!/bin/bash
 # Quick production fix script
 
-echo "🚀 #FahanieCares Production CSS Fix"
+echo "🚀 BM Parliament Production CSS Fix"
 echo "==================================="
 
 # SSH to production and run these commands:
 echo "📋 Copy and run these commands on your production server:"
 echo ""
-echo "cd /path/to/fahanie-cares"
+echo "cd /path/to/bmparliament"
 echo "git pull origin main"
 echo ""
 echo "# Rebuild CSS only (faster option):"
-echo "docker exec fahanie-cares-web-1 npm run build-css"
-echo "docker exec fahanie-cares-web-1 python manage.py collectstatic --noinput"
+echo "docker exec bmparliament-web-1 npm run build-css"
+echo "docker exec bmparliament-web-1 python manage.py collectstatic --noinput"
 echo ""
 echo "# OR Full rebuild (slower but thorough):"
 echo "docker-compose -f deployment/docker/docker-compose/production.yml build --no-cache web"

@@ -1,11 +1,11 @@
 from django.http import JsonResponse
 from django.db.models import Count
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember
 from datetime import datetime, timedelta
 from django.db.models.functions import TruncDate
 
 def get_filtered_queryset(request):
-    queryset = FahanieCaresMember.objects.all()
+    queryset = BMParliamentMember.objects.all()
     province = request.GET.get('province')
     municipality = request.GET.get('municipality')
     sector = request.GET.get('sector')

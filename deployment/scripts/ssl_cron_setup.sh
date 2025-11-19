@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# #FahanieCares Platform - SSL Certificate Monitoring Cron Setup
+# BM Parliament Platform - SSL Certificate Monitoring Cron Setup
 # Automated setup of SSL certificate monitoring with cron jobs
 
 set -euo pipefail
@@ -8,7 +8,7 @@ set -euo pipefail
 # Configuration
 SCRIPT_DIR="$(dirname "$0")"
 SSL_MONITOR_SCRIPT="$SCRIPT_DIR/ssl_monitor.py"
-LOG_DIR="/var/log/fahaniecares"
+LOG_DIR="/var/log/bmparliament"
 CRON_USER="${CRON_USER:-$(whoami)}"
 SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
 
@@ -63,25 +63,25 @@ setup_cron_jobs() {
     log "Setting up cron jobs for SSL certificate monitoring..."
     
     # Create temporary cron file
-    local temp_cron="/tmp/fahaniecares_ssl_cron"
+    local temp_cron="/tmp/bmparliament_ssl_cron"
     
     # Get current crontab (if any)
     (crontab -l 2>/dev/null || true) > "$temp_cron"
     
-    # Remove existing #FahanieCares SSL monitoring entries
-    grep -v "#FahanieCares SSL Monitor" "$temp_cron" > "${temp_cron}.new" || true
+    # Remove existing BM Parliament SSL monitoring entries
+    grep -v "BM Parliament SSL Monitor" "$temp_cron" > "${temp_cron}.new" || true
     mv "${temp_cron}.new" "$temp_cron"
     
     # Add new cron entries
     cat >> "$temp_cron" << EOF
 
-# #FahanieCares SSL Monitor - Daily certificate check
+# BM Parliament SSL Monitor - Daily certificate check
 0 9 * * * /usr/bin/python3 "$SSL_MONITOR_SCRIPT" --threshold 30 --slack-webhook "$SLACK_WEBHOOK" --output "$LOG_DIR/ssl_check_daily.json" >> "$LOG_DIR/ssl_monitor.log" 2>&1
 
-# #FahanieCares SSL Monitor - Weekly detailed report  
+# BM Parliament SSL Monitor - Weekly detailed report  
 0 9 * * 1 /usr/bin/python3 "$SSL_MONITOR_SCRIPT" --threshold 60 --slack-webhook "$SLACK_WEBHOOK" --output "$LOG_DIR/ssl_check_weekly.json" >> "$LOG_DIR/ssl_monitor_weekly.log" 2>&1
 
-# #FahanieCares SSL Monitor - Critical alert check (every 6 hours)
+# BM Parliament SSL Monitor - Critical alert check (every 6 hours)
 0 */6 * * * /usr/bin/python3 "$SSL_MONITOR_SCRIPT" --threshold 7 --slack-webhook "$SLACK_WEBHOOK" --output "$LOG_DIR/ssl_check_critical.json" >> "$LOG_DIR/ssl_monitor_critical.log" 2>&1
 
 EOF
@@ -109,10 +109,10 @@ setup_systemd_timer() {
     fi
     
     # Create service file
-    sudo tee /etc/systemd/system/fahaniecares-ssl-monitor.service > /dev/null << EOF
+    sudo tee /etc/systemd/system/bmparliament-ssl-monitor.service > /dev/null << EOF
 [Unit]
-Description=#FahanieCares SSL Certificate Monitor
-Wants=fahaniecares-ssl-monitor.timer
+Description=BM Parliament SSL Certificate Monitor
+Wants=bmparliament-ssl-monitor.timer
 
 [Service]
 Type=oneshot
@@ -126,10 +126,10 @@ WantedBy=multi-user.target
 EOF
 
     # Create timer file
-    sudo tee /etc/systemd/system/fahaniecares-ssl-monitor.timer > /dev/null << EOF
+    sudo tee /etc/systemd/system/bmparliament-ssl-monitor.timer > /dev/null << EOF
 [Unit]
-Description=Run #FahanieCares SSL Certificate Monitor daily
-Requires=fahaniecares-ssl-monitor.service
+Description=Run BM Parliament SSL Certificate Monitor daily
+Requires=bmparliament-ssl-monitor.service
 
 [Timer]
 OnCalendar=daily
@@ -142,8 +142,8 @@ EOF
 
     # Reload systemd and enable timer
     sudo systemctl daemon-reload
-    sudo systemctl enable fahaniecares-ssl-monitor.timer
-    sudo systemctl start fahaniecares-ssl-monitor.timer
+    sudo systemctl enable bmparliament-ssl-monitor.timer
+    sudo systemctl start bmparliament-ssl-monitor.timer
     
     log "Systemd timer setup completed"
     return 0
@@ -154,7 +154,7 @@ test_ssl_monitoring() {
     log "Testing SSL certificate monitoring..."
     
     # Run a test check
-    if python3 "$SSL_MONITOR_SCRIPT" --check-only --domains fahaniecares.ph; then
+    if python3 "$SSL_MONITOR_SCRIPT" --check-only --domains bmparliament.gov.ph; then
         log "✓ SSL monitoring test passed"
         return 0
     else
@@ -169,12 +169,12 @@ show_status() {
     
     # Check cron jobs
     log "Cron jobs:"
-    crontab -l 2>/dev/null | grep -A 5 -B 1 "#FahanieCares SSL Monitor" || log "  No cron jobs found"
+    crontab -l 2>/dev/null | grep -A 5 -B 1 "BM Parliament SSL Monitor" || log "  No cron jobs found"
     
     # Check systemd timers
     if command -v systemctl >/dev/null 2>&1; then
         log "Systemd timers:"
-        systemctl list-timers fahaniecares-ssl-monitor.timer 2>/dev/null || log "  No systemd timers found"
+        systemctl list-timers bmparliament-ssl-monitor.timer 2>/dev/null || log "  No systemd timers found"
     fi
     
     # Check recent logs
@@ -189,16 +189,16 @@ remove_setup() {
     log "Removing SSL certificate monitoring setup..."
     
     # Remove cron jobs
-    local temp_cron="/tmp/fahaniecares_ssl_cron_remove"
-    (crontab -l 2>/dev/null || true) | grep -v "#FahanieCares SSL Monitor" > "$temp_cron" || true
+    local temp_cron="/tmp/bmparliament_ssl_cron_remove"
+    (crontab -l 2>/dev/null || true) | grep -v "BM Parliament SSL Monitor" > "$temp_cron" || true
     crontab "$temp_cron" 2>/dev/null || true
     rm -f "$temp_cron"
     
     # Remove systemd timer
     if command -v systemctl >/dev/null 2>&1; then
-        sudo systemctl stop fahaniecares-ssl-monitor.timer 2>/dev/null || true
-        sudo systemctl disable fahaniecares-ssl-monitor.timer 2>/dev/null || true
-        sudo rm -f /etc/systemd/system/fahaniecares-ssl-monitor.* 2>/dev/null || true
+        sudo systemctl stop bmparliament-ssl-monitor.timer 2>/dev/null || true
+        sudo systemctl disable bmparliament-ssl-monitor.timer 2>/dev/null || true
+        sudo rm -f /etc/systemd/system/bmparliament-ssl-monitor.* 2>/dev/null || true
         sudo systemctl daemon-reload 2>/dev/null || true
     fi
     
@@ -211,7 +211,7 @@ main() {
     
     case "$action" in
         "setup")
-            log "=== Setting up #FahanieCares SSL Certificate Monitoring ==="
+            log "=== Setting up BM Parliament SSL Certificate Monitoring ==="
             
             if ! check_ssl_monitor_script; then
                 exit 1

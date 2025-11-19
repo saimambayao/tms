@@ -13,7 +13,7 @@ from PIL import Image
 import io
 
 from .models import Constituent, ConstituentInteraction, ConstituentGroup
-from .member_models import FahanieCaresMember
+from .member_models import BMParliamentMember
 from .member_forms import MemberRegistrationForm, MemberUpdateForm
 
 User = get_user_model()
@@ -233,8 +233,8 @@ class ConstituentGroupModelTest(TestCase):
         self.assertNotIn(self.constituent1, self.group.members.all())
 
 
-class FahanieCaresMemberModelTest(TestCase):
-    """Test cases for FahanieCaresMember model."""
+class BMParliamentMemberModelTest(TestCase):
+    """Test cases for BMParliamentMember model."""
     
     def setUp(self):
         """Set up test data."""
@@ -246,7 +246,7 @@ class FahanieCaresMemberModelTest(TestCase):
             last_name='Santos'
         )
         
-        self.member = FahanieCaresMember.objects.create(
+        self.member = BMParliamentMember.objects.create(
             user=self.user,
             first_name='Maria',
             last_name='Santos',
@@ -433,7 +433,7 @@ class MemberUpdateFormTest(TestCase):
             password='testpass123'
         )
         
-        self.member = FahanieCaresMember.objects.create(
+        self.member = BMParliamentMember.objects.create(
             user=self.user,
             first_name='Maria',
             last_name='Santos',
@@ -522,7 +522,7 @@ class ConstituentViewTest(TestCase):
             user_type='staff'
         )
         
-        self.member = FahanieCaresMember.objects.create(
+        self.member = BMParliamentMember.objects.create(
             user=self.user,
             first_name='Test',
             last_name='Member',
@@ -597,7 +597,7 @@ class ConstituentViewTest(TestCase):
         
         # Verify user and member were created
         new_user = User.objects.get(username='newuser')
-        new_member = FahanieCaresMember.objects.get(user=new_user)
+        new_member = BMParliamentMember.objects.get(user=new_user)
         self.assertEqual(new_member.first_name, 'New')
         self.assertEqual(new_member.last_name, 'User')
 
@@ -656,6 +656,6 @@ class ConstituentFileUploadTest(TestCase):
         # Check if registration succeeded (might fail on file upload)
         if response.status_code == 302:
             user = User.objects.get(username='fileuser')
-            member = FahanieCaresMember.objects.get(user=user)
+            member = BMParliamentMember.objects.get(user=user)
             # File upload success would be indicated by voter_id_photo field
             # We don't assert this as file upload might fail in test environment

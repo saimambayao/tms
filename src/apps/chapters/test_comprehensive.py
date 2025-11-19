@@ -1042,7 +1042,7 @@ class ChapterWorkflowE2ETests(TransactionTestCase):
         # Create users with different roles
         self.staff_user = User.objects.create_user(
             username='staff',
-            email='staff@fahaniecares.ph',
+            email='staff@bmparliament.ph',
             password='StaffPass123!',
             first_name='Jane',
             last_name='Staff',
@@ -1051,7 +1051,7 @@ class ChapterWorkflowE2ETests(TransactionTestCase):
         
         self.coordinator = User.objects.create_user(
             username='coordinator',
-            email='coordinator@fahaniecares.ph',
+            email='coordinator@bmparliament.ph',
             password='CoordPass123!',
             first_name='John',
             last_name='Coordinator',
@@ -1091,7 +1091,7 @@ class ChapterWorkflowE2ETests(TransactionTestCase):
             'description': 'Serving the Cotabato community with dedication',
             'mission_statement': 'To provide excellent public service to Cotabato residents',
             'coordinator': self.coordinator.id,
-            'email': 'cotabato@fahaniecares.ph',
+            'email': 'cotabato@bmparliament.ph',
             'phone': '+63 9123456789',
             'address': '123 Pioneer Avenue, Cotabato City',
             'meeting_location': 'City Hall Conference Room',

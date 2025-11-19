@@ -3,11 +3,11 @@
 from django.db import migrations
 
 def restore_approved_status(apps, schema_editor):
-    FahanieCaresMember = apps.get_model('constituents', 'FahanieCaresMember')
+    BMParliamentMember = apps.get_model('constituents', 'BMParliamentMember')
     # Filter for members whose status is currently 'pending' but have a permanent member_id
     # This assumes that only previously approved members would have a non-temporary member_id
     # and that new pending registrants have a member_id starting with 'PREG'
-    members_to_restore = FahanieCaresMember.objects.filter(
+    members_to_restore = BMParliamentMember.objects.filter(
         status='pending'
     ).exclude(
         member_id__startswith='PREG'

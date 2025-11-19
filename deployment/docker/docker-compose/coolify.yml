@@ -4,26 +4,26 @@ services:
   # PostgreSQL Database
   db:
     image: postgres:15-alpine
-    container_name: fahaniecares_db
+    container_name: bmparliament_db
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-fahaniecares_production}
-      POSTGRES_USER: ${POSTGRES_USER:-fahaniecares_user}
+      POSTGRES_DB: ${POSTGRES_DB:-bmparliament_production}
+      POSTGRES_USER: ${POSTGRES_USER:-bmparliament_user}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-fahaniecares_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bmparliament_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: fahaniecares_redis
+    container_name: bmparliament_redis
     restart: unless-stopped
     volumes:
       - redis_data:/data
@@ -36,14 +36,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Django Web Application
   web:
     build:
       context: ../../../src
       dockerfile: ../deployment/docker/Dockerfile.django
-    container_name: fahaniecares_web
+    container_name: bmparliament_web
     restart: unless-stopped
     command: sh -c "
       echo 'Waiting for database...' &&
@@ -70,20 +70,20 @@ services:
       - "8000:8000"
     environment:
       # Coolify Magic Variables
-      - SERVICE_FQDN_WEB=${SERVICE_FQDN_WEB:-fahaniecares.ph}
+      - SERVICE_FQDN_WEB=${SERVICE_FQDN_WEB:-bmparliament.ph}
       - SERVICE_FQDN_WEB_8000=${SERVICE_FQDN_WEB_8000:-/}
       
       # Django Settings
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DEBUG=False
       - SECRET_KEY=${DJANGO_SECRET_KEY}
-      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-fahaniecares.ph,www.fahaniecares.ph,.fahaniecares.ph}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-bmparliament.ph,www.bmparliament.ph,.bmparliament.ph}
       
-      # CSRF Configuration for fahaniecares.ph
-      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-https://fahaniecares.ph,https://www.fahaniecares.ph}
+      # CSRF Configuration for bmparliament.ph
+      - CSRF_TRUSTED_ORIGINS=${CSRF_TRUSTED_ORIGINS:-https://bmparliament.ph,https://www.bmparliament.ph}
       
       # Database Configuration
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-fahaniecares_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fahaniecares_production}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bmparliament_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-bmparliament_production}
       
       # Redis Configuration
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
@@ -102,12 +102,12 @@ services:
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
       - EMAIL_USE_TLS=${EMAIL_USE_TLS:-True}
-      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@fahaniecares.ph}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL:-noreply@bmparliament.ph}
       
       # AWS S3 Configuration (Optional)
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME:-fahaniecares-media}
+      - AWS_STORAGE_BUCKET_NAME=${AWS_STORAGE_BUCKET_NAME:-bmparliament-media}
       - AWS_S3_REGION_NAME=${AWS_S3_REGION_NAME:-ap-southeast-1}
       
       # CDN Configuration (Optional)
@@ -129,12 +129,12 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Nginx Reverse Proxy (Optional - Coolify handles this)
   nginx:
     image: nginx:alpine
-    container_name: fahaniecares_nginx
+    container_name: bmparliament_nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -145,14 +145,14 @@ services:
     depends_on:
       - web
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Celery Worker for Background Tasks (Optional)
   celery:
     build:
       context: ../../../src
       dockerfile: ../deployment/docker/Dockerfile.django
-    container_name: fahaniecares_celery
+    container_name: bmparliament_celery
     restart: unless-stopped
     command: celery -A config worker -l info --concurrency=2
     volumes:
@@ -163,7 +163,7 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DEBUG=False
       - SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-fahaniecares_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fahaniecares_production}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bmparliament_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-bmparliament_production}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
@@ -173,14 +173,14 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Celery Beat Scheduler (Optional)
   celery-beat:
     build:
       context: ../../../src
       dockerfile: ../deployment/docker/Dockerfile.django
-    container_name: fahaniecares_celery_beat
+    container_name: bmparliament_celery_beat
     restart: unless-stopped
     command: celery -A config beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
     volumes:
@@ -190,7 +190,7 @@ services:
       - DJANGO_SETTINGS_MODULE=config.settings.production
       - DEBUG=False
       - SECRET_KEY=${DJANGO_SECRET_KEY}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-fahaniecares_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-fahaniecares_production}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-bmparliament_user}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-bmparliament_production}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_BROKER_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
       - CELERY_RESULT_BACKEND=redis://:${REDIS_PASSWORD}@redis:6379/0
@@ -200,21 +200,21 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
 volumes:
   postgres_data:
-    name: fahaniecares_postgres_data
+    name: bmparliament_postgres_data
   redis_data:
-    name: fahaniecares_redis_data
+    name: bmparliament_redis_data
   static_files:
-    name: fahaniecares_static_files
+    name: bmparliament_static_files
   media_files:
-    name: fahaniecares_media_files
+    name: bmparliament_media_files
   logs:
-    name: fahaniecares_logs
+    name: bmparliament_logs
 
 networks:
-  fahaniecares_network:
-    name: fahaniecares_network
+  bmparliament_network:
+    name: bmparliament_network
     driver: bridge

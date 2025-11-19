@@ -4,28 +4,28 @@ services:
   # PostgreSQL Database for Testing
   db_test:
     image: postgres:15-alpine
-    container_name: fahaniecares_db_test
+    container_name: bmparliament_db_test
     restart: unless-stopped
     volumes:
       - postgres_test_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: ${DB_NAME:-fahaniecares_test_db}
-      POSTGRES_USER: ${DB_USER:-fahaniecares_test_user}
+      POSTGRES_DB: ${DB_NAME:-bmparliament_test_db}
+      POSTGRES_USER: ${DB_USER:-bmparliament_test_user}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-test_password}
     ports:
       - "5433:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fahaniecares_test_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bmparliament_test_user}"]
       interval: 5s
       timeout: 3s
       retries: 5
     networks:
-      - fahaniecares_test_network
+      - bmparliament_test_network
 
   # Redis Cache for Testing
   redis_test:
     image: redis:7-alpine
-    container_name: fahaniecares_redis_test
+    container_name: bmparliament_redis_test
     restart: unless-stopped
     ports:
       - "6380:6379"
@@ -38,14 +38,14 @@ services:
       timeout: 3s
       retries: 5
     networks:
-      - fahaniecares_test_network
+      - bmparliament_test_network
 
   # Django Test Runner
   test_runner:
     build:
       context: ../../../src
       dockerfile: ../deployment/docker/Dockerfile.django
-    container_name: fahaniecares_test_runner
+    container_name: bmparliament_test_runner
     command: sh -c "
       echo '🧪 Setting up test environment...' &&
       python manage.py wait_for_db &&
@@ -70,8 +70,8 @@ services:
       
       # Database settings
       DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: ${DB_NAME:-fahaniecares_test_db}
-      DB_USER: ${DB_USER:-fahaniecares_test_user}
+      DB_NAME: ${DB_NAME:-bmparliament_test_db}
+      DB_USER: ${DB_USER:-bmparliament_test_user}
       DB_PASSWORD: ${DB_PASSWORD:-test_password}
       DB_HOST: db_test
       DB_PORT: 5432
@@ -94,14 +94,14 @@ services:
       redis_test:
         condition: service_healthy
     networks:
-      - fahaniecares_test_network
+      - bmparliament_test_network
 
   # Performance Test Runner
   performance_test:
     build:
       context: ../../../src
       dockerfile: ../deployment/docker/Dockerfile.django
-    container_name: fahaniecares_performance_test
+    container_name: bmparliament_performance_test
     command: sh -c "
       echo '⚡ Running performance tests...' &&
       python manage.py wait_for_db &&
@@ -121,8 +121,8 @@ services:
       
       # Database settings
       DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: ${DB_NAME:-fahaniecares_test_db}
-      DB_USER: ${DB_USER:-fahaniecares_test_user}
+      DB_NAME: ${DB_NAME:-bmparliament_test_db}
+      DB_USER: ${DB_USER:-bmparliament_test_user}
       DB_PASSWORD: ${DB_PASSWORD:-test_password}
       DB_HOST: db_test
       DB_PORT: 5432
@@ -139,19 +139,19 @@ services:
       redis_test:
         condition: service_healthy
     networks:
-      - fahaniecares_test_network
+      - bmparliament_test_network
 
 volumes:
   postgres_test_data:
-    name: fahaniecares_postgres_test_data
+    name: bmparliament_postgres_test_data
   redis_test_data:
-    name: fahaniecares_redis_test_data
+    name: bmparliament_redis_test_data
   test_reports:
-    name: fahaniecares_test_reports
+    name: bmparliament_test_reports
   performance_reports:
-    name: fahaniecares_performance_reports
+    name: bmparliament_performance_reports
 
 networks:
-  fahaniecares_test_network:
-    name: fahaniecares_test_network
+  bmparliament_test_network:
+    name: bmparliament_test_network
     driver: bridge

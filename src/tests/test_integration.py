@@ -1,5 +1,5 @@
 """
-Comprehensive integration tests for #FahanieCares Django portal.
+Comprehensive integration tests for #BM Parliament Django portal.
 Testing API endpoints, user workflows, and cross-app integrations.
 """
 
@@ -18,7 +18,7 @@ import io
 
 # Import models from various apps
 from apps.users.models import DynamicPermission, RolePermission, UserPermissionOverride, RoleTransitionLog
-from apps.constituents.models import Constituent, FahanieCaresMember
+from apps.constituents.models import Constituent, BMParliamentMember
 from apps.referrals.models import Service, Agency, Referral, ReferralUpdate
 from apps.chapters.models import Chapter
 from apps.documents.models import DocumentCategory, Document
@@ -38,7 +38,7 @@ class UserAuthenticationIntegrationTests(TestCase):
         # Create test users with different roles
         self.superuser = User.objects.create_superuser(
             username='superuser',
-            email='super@fahaniecares.test',
+            email='super@bmparliament.test',
             password='TestPass123!',
             first_name='Super',
             last_name='User'
@@ -46,7 +46,7 @@ class UserAuthenticationIntegrationTests(TestCase):
         
         self.mp_user = User.objects.create_user(
             username='mp_user',
-            email='mp@fahaniecares.test',
+            email='mp@bmparliament.test',
             password='TestPass123!',
             user_type='mp',
             first_name='MP',
@@ -56,7 +56,7 @@ class UserAuthenticationIntegrationTests(TestCase):
         
         self.staff_user = User.objects.create_user(
             username='staff_user',
-            email='staff@fahaniecares.test',
+            email='staff@bmparliament.test',
             password='TestPass123!',
             user_type='staff',
             first_name='Staff',
@@ -66,7 +66,7 @@ class UserAuthenticationIntegrationTests(TestCase):
         
         self.chapter_member = User.objects.create_user(
             username='chapter_member',
-            email='member@fahaniecares.test',
+            email='member@bmparliament.test',
             password='TestPass123!',
             user_type='chapter_member',
             first_name='Chapter',
@@ -76,7 +76,7 @@ class UserAuthenticationIntegrationTests(TestCase):
         
         self.regular_user = User.objects.create_user(
             username='regular_user',
-            email='regular@fahaniecares.test',
+            email='regular@bmparliament.test',
             password='TestPass123!',
             user_type='registered_user',
             first_name='Regular',
@@ -128,7 +128,7 @@ class UserAuthenticationIntegrationTests(TestCase):
         # Test successful registration
         registration_data = {
             'username': 'newuser',
-            'email': 'newuser@fahaniecares.test',
+            'email': 'newuser@bmparliament.test',
             'password1': 'ComplexPass123!',
             'password2': 'ComplexPass123!',
             'first_name': 'New',
@@ -149,7 +149,7 @@ class UserAuthenticationIntegrationTests(TestCase):
             # Verify user was created
             new_user = User.objects.filter(username='newuser').first()
             self.assertIsNotNone(new_user)
-            self.assertEqual(new_user.email, 'newuser@fahaniecares.test')
+            self.assertEqual(new_user.email, 'newuser@bmparliament.test')
             self.assertEqual(new_user.user_type, 'registered_user')
         else:
             # Form validation errors - check that registration form is still displayed
@@ -228,7 +228,7 @@ class ReferralSystemIntegrationTests(TestCase):
         # Create test users
         self.staff_user = User.objects.create_user(
             username='staff_user',
-            email='staff@fahaniecares.test',
+            email='staff@bmparliament.test',
             password='TestPass123!',
             user_type='staff',
             is_active=True
@@ -236,7 +236,7 @@ class ReferralSystemIntegrationTests(TestCase):
         
         self.regular_user = User.objects.create_user(
             username='regular_user',
-            email='regular@fahaniecares.test',
+            email='regular@bmparliament.test',
             password='TestPass123!',
             user_type='registered_user',
             is_active=True
@@ -332,13 +332,13 @@ class CoreDatabaseIntegrationTests(TestCase):
         # Create test users
         self.superuser = User.objects.create_superuser(
             username='superuser',
-            email='super@fahaniecares.test',
+            email='super@bmparliament.test',
             password='TestPass123!'
         )
         
         self.coordinator = User.objects.create_user(
             username='coordinator',
-            email='coordinator@fahaniecares.test',
+            email='coordinator@bmparliament.test',
             password='TestPass123!',
             user_type='coordinator',
             is_active=True
@@ -381,13 +381,13 @@ class CrossAppIntegrationTests(TestCase):
         # Create test users
         self.superuser = User.objects.create_superuser(
             username='superuser',
-            email='super@fahaniecares.test',
+            email='super@bmparliament.test',
             password='TestPass123!'
         )
         
         self.regular_user = User.objects.create_user(
             username='regular_user',
-            email='regular@fahaniecares.test',
+            email='regular@bmparliament.test',
             password='TestPass123!',
             user_type='registered_user',
             is_active=True
@@ -477,7 +477,7 @@ class APIEndpointIntegrationTests(TestCase):
         
         self.superuser = User.objects.create_superuser(
             username='superuser',
-            email='super@fahaniecares.test',
+            email='super@bmparliament.test',
             password='TestPass123!'
         )
 
@@ -548,7 +548,7 @@ class SecurityIntegrationTests(TestCase):
         
         self.user = User.objects.create_user(
             username='securityuser',
-            email='security@fahaniecares.test',
+            email='security@bmparliament.test',
             password='TestPass123!',
             user_type='registered_user',
             is_active=True
@@ -628,7 +628,7 @@ class PerformanceIntegrationTests(TestCase):
         for i in range(10):  # Smaller number for CI/CD
             user = User.objects.create_user(
                 username=f'perfuser{i}',
-                email=f'perf{i}@fahaniecares.test',
+                email=f'perf{i}@bmparliament.test',
                 password='TestPass123!',
                 user_type='registered_user'
             )
@@ -676,7 +676,7 @@ class EndToEndWorkflowTests(TransactionTestCase):
         register_url = reverse('register')
         registration_data = {
             'username': 'e2euser',
-            'email': 'e2e@fahaniecares.test',
+            'email': 'e2e@bmparliament.test',
             'password1': 'ComplexPass123!',
             'password2': 'ComplexPass123!',
             'first_name': 'E2E',
@@ -695,7 +695,7 @@ class EndToEndWorkflowTests(TransactionTestCase):
             # Let's create the user manually for test continuation
             user = User.objects.create_user(
                 username='e2euser',
-                email='e2e@fahaniecares.test',
+                email='e2e@bmparliament.test',
                 password='ComplexPass123!',
                 user_type='registered_user',
                 first_name='E2E',

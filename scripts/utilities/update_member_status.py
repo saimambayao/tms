@@ -10,13 +10,13 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.base')
 django.setup()
 
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BM ParliamentMember
 
 def update_member_status():
     print('=== Updating Member Status and IDs ===')
 
     # Update members with empty or null status to 'pending'
-    members_with_empty_status = FahanieCaresMember.objects.filter(status__in=['', None])
+    members_with_empty_status = BM ParliamentMember.objects.filter(status__in=['', None])
     count_empty = members_with_empty_status.count()
     print(f'Found {count_empty} members with empty/null status')
 
@@ -28,7 +28,7 @@ def update_member_status():
         print(f'Updated member {member.id}: status="pending", member_id="{member.member_id}"')
 
     # Update incomplete members without IDs
-    incomplete_members = FahanieCaresMember.objects.filter(status='incomplete', member_id__isnull=True)
+    incomplete_members = BM ParliamentMember.objects.filter(status='incomplete', member_id__isnull=True)
     count_incomplete = incomplete_members.count()
     print(f'Found {count_incomplete} incomplete members without IDs')
 
@@ -38,7 +38,7 @@ def update_member_status():
         print(f'Updated incomplete member {member.id}: member_id="{member.member_id}"')
 
     # Update non-compliant members without IDs
-    non_compliant_members = FahanieCaresMember.objects.filter(status='non_compliant', member_id__isnull=True)
+    non_compliant_members = BM ParliamentMember.objects.filter(status='non_compliant', member_id__isnull=True)
     count_non_compliant = non_compliant_members.count()
     print(f'Found {count_non_compliant} non-compliant members without IDs')
 
@@ -48,15 +48,15 @@ def update_member_status():
         print(f'Updated non-compliant member {member.id}: member_id="{member.member_id}"')
 
     print('\n=== Final Status Check ===')
-    print(f'Total members: {FahanieCaresMember.objects.count()}')
-    print(f'Pending: {FahanieCaresMember.objects.filter(status="pending").count()}')
-    print(f'Approved: {FahanieCaresMember.objects.filter(status="approved").count()}')
-    print(f'Incomplete: {FahanieCaresMember.objects.filter(status="incomplete").count()}')
-    print(f'Non-compliant: {FahanieCaresMember.objects.filter(status="non_compliant").count()}')
-    print(f'Members with PREG IDs: {FahanieCaresMember.objects.filter(member_id__startswith="PREG").count()}')
-    print(f'Members with INC IDs: {FahanieCaresMember.objects.filter(member_id__startswith="INC").count()}')
-    print(f'Members with NOC IDs: {FahanieCaresMember.objects.filter(member_id__startswith="NOC").count()}')
-    print(f'Members with no member_id: {FahanieCaresMember.objects.filter(member_id__isnull=True).count()}')
+    print(f'Total members: {BM ParliamentMember.objects.count()}')
+    print(f'Pending: {BM ParliamentMember.objects.filter(status="pending").count()}')
+    print(f'Approved: {BM ParliamentMember.objects.filter(status="approved").count()}')
+    print(f'Incomplete: {BM ParliamentMember.objects.filter(status="incomplete").count()}')
+    print(f'Non-compliant: {BM ParliamentMember.objects.filter(status="non_compliant").count()}')
+    print(f'Members with PREG IDs: {BM ParliamentMember.objects.filter(member_id__startswith="PREG").count()}')
+    print(f'Members with INC IDs: {BM ParliamentMember.objects.filter(member_id__startswith="INC").count()}')
+    print(f'Members with NOC IDs: {BM ParliamentMember.objects.filter(member_id__startswith="NOC").count()}')
+    print(f'Members with no member_id: {BM ParliamentMember.objects.filter(member_id__isnull=True).count()}')
 
 if __name__ == '__main__':
     update_member_status()

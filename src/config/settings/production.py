@@ -1,5 +1,5 @@
 """
-Production settings for #FahanieCares project.
+Production settings for #BM Parliament project.
 """
 
 import os
@@ -16,9 +16,9 @@ if not SECRET_KEY:
 
 # Production domains
 ALLOWED_HOSTS = [
-    'fahaniecares.ph',
-    'www.fahaniecares.ph',
-    '.fahaniecares.ph',  # Allow all subdomains
+    'bmparliament.ph',
+    'www.bmparliament.ph',
+    '.bmparliament.ph',  # Allow all subdomains
     'localhost',  # For health checks
     '127.0.0.1',  # For health checks
 ]
@@ -57,8 +57,8 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
 
 # SSL Certificate Configuration
-SSL_CERTIFICATE_PATH = os.getenv('SSL_CERTIFICATE_PATH', '/etc/letsencrypt/live/fahaniecares.ph/fullchain.pem')
-SSL_PRIVATE_KEY_PATH = os.getenv('SSL_PRIVATE_KEY_PATH', '/etc/letsencrypt/live/fahaniecares.ph/privkey.pem')
+SSL_CERTIFICATE_PATH = os.getenv('SSL_CERTIFICATE_PATH', '/etc/letsencrypt/live/bmparliament.ph/fullchain.pem')
+SSL_PRIVATE_KEY_PATH = os.getenv('SSL_PRIVATE_KEY_PATH', '/etc/letsencrypt/live/bmparliament.ph/privkey.pem')
 
 # Certificate Pinning (Optional - Use with caution)
 ENABLE_CERTIFICATE_PINNING = os.getenv('ENABLE_CERTIFICATE_PINNING', 'False').lower() == 'true'
@@ -72,7 +72,7 @@ if ENABLE_CERTIFICATE_PINNING:
     ]
     HPKP_MAX_AGE = int(os.getenv('HPKP_MAX_AGE', '5184000'))  # 60 days
     HPKP_INCLUDE_SUBDOMAINS = True
-    HPKP_REPORT_URI = os.getenv('HPKP_REPORT_URI', 'https://fahaniecares.ph/api/hpkp-report')
+    HPKP_REPORT_URI = os.getenv('HPKP_REPORT_URI', 'https://bmparliament.ph/api/hpkp-report')
 
 # Session Security
 SESSION_COOKIE_HTTPONLY = True
@@ -93,10 +93,10 @@ CSRF_FAILURE_VIEW = 'django.views.csrf.csrf_failure'  # Custom CSRF failure view
 # Additional production-specific domains for comprehensive coverage
 CSRF_TRUSTED_ORIGINS.extend([
     # Subdomain support for future expansion
-    'https://*.fahaniecares.ph',
-    'https://app.fahaniecares.ph',
-    'https://api.fahaniecares.ph',
-    'https://admin.fahaniecares.ph',
+    'https://*.bmparliament.ph',
+    'https://app.bmparliament.ph',
+    'https://api.bmparliament.ph',
+    'https://admin.bmparliament.ph',
 ])
 
 # Add Coolify/Docker deployment domains
@@ -152,7 +152,7 @@ database_config['OPTIONS'] = {
     'sslrootcert': os.getenv('DB_SSL_ROOT_CERT', None),
     
     # Performance optimizations
-    'application_name': f'fahaniecares_production_{os.getenv("INSTANCE_ID", "main")}',
+    'application_name': f'bmparliament_production_{os.getenv("INSTANCE_ID", "main")}',
     'keepalives_idle': '600',  # Keep alive every 10 minutes
     'keepalives_interval': '30',  # Check every 30 seconds
     'keepalives_count': '3',  # 3 failed checks before considering connection dead
@@ -172,7 +172,7 @@ database_config.update({
     
     # Test database settings for health checks
     'TEST': {
-        'NAME': f"{database_config.get('NAME', 'fahaniecares')}_test",
+        'NAME': f"{database_config.get('NAME', 'bmparliament')}_test",
         'CHARSET': 'utf8',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
@@ -229,7 +229,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # CDN Configuration
 CDN_ENABLED = os.getenv('CDN_ENABLED', 'False').lower() == 'true'
-CDN_DOMAIN = os.getenv('CDN_DOMAIN', '')  # e.g., 'cdn.fahaniecares.ph' or CloudFront URL
+CDN_DOMAIN = os.getenv('CDN_DOMAIN', '')  # e.g., 'cdn.bmparliament.ph' or CloudFront URL
 
 if CDN_ENABLED and CDN_DOMAIN:
     # Use CDN for static files
@@ -256,7 +256,7 @@ else:
 # AWS S3 Configuration for media files
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
-AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'fahaniecares-media')
+AWS_STORAGE_BUCKET_NAME = os.getenv('AWS_STORAGE_BUCKET_NAME', 'bmparliament-media')
 AWS_S3_REGION_NAME = os.getenv('AWS_S3_REGION_NAME', 'ap-southeast-1')
 
 if AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY:
@@ -322,7 +322,7 @@ if REDIS_URL:
                     'socket_keepalive_options': {},
                 },
                 'IGNORE_EXCEPTIONS': True,  # Fall back gracefully if Redis is down
-                'KEY_PREFIX': 'fahaniecares',
+                'KEY_PREFIX': 'bmparliament',
                 'VERSION': 1,
                 'TIMEOUT': 300,  # Default timeout of 5 minutes
                 'COMPRESSOR': 'django_redis.compressors.zlib.ZlibCompressor',
@@ -335,7 +335,7 @@ if REDIS_URL:
             'LOCATION': REDIS_URL,
             'OPTIONS': {
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'KEY_PREFIX': 'fahaniecares:session',
+                'KEY_PREFIX': 'bmparliament:session',
                 'TIMEOUT': 3600,  # 1 hour for sessions
             }
         },
@@ -345,7 +345,7 @@ if REDIS_URL:
             'LOCATION': REDIS_URL,
             'OPTIONS': {
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-                'KEY_PREFIX': 'fahaniecares:ratelimit',
+                'KEY_PREFIX': 'bmparliament:ratelimit',
                 'TIMEOUT': 600,  # 10 minutes for rate limit data
             }
         }
@@ -373,7 +373,7 @@ else:
 # Cache middleware settings
 CACHE_MIDDLEWARE_ALIAS = 'default'
 CACHE_MIDDLEWARE_SECONDS = 300  # 5 minutes
-CACHE_MIDDLEWARE_KEY_PREFIX = 'fahaniecares'
+CACHE_MIDDLEWARE_KEY_PREFIX = 'bmparliament'
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

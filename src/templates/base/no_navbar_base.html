@@ -9,7 +9,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#10b981">
     
-    <title>{% block title %}#FahanieCares{% endblock %}</title>
+    <title>{% block title %}BM Parliament{% endblock %}</title>
     
     <!-- PWA Manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
@@ -51,7 +51,7 @@
         <!-- Mobile Footer -->
         <footer class="mobile-footer bg-gray-800 text-white p-4 mt-8">
             <div class="text-center">
-                <p class="text-sm">© 2024 #FahanieCares</p>
+                <p class="text-sm">© 2024 BM Parliament</p>
                 <p class="text-xs">Bringing Public Service Closer to You</p>
                 <div class="mt-4 flex justify-center space-x-4">
                     <a href="#" class="touch-target">
@@ -69,6 +69,9 @@
             </div>
         </footer>
     </div>
+    
+    <!-- Floating Facebook Widget -->
+    {% include 'components/widgets/floating_facebook.html' %}
     
     <!-- Scripts -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>

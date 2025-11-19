@@ -16,7 +16,7 @@ DEPLOYMENT_ID=$(date +%Y%m%d%H%M%S)
 STATIC_VERSION=$(git rev-parse --short HEAD)
 AWS_REGION=${AWS_REGION:-"ap-southeast-1"}
 
-echo -e "${BLUE}🚀 Starting #FahanieCares Deployment${NC}"
+echo -e "${BLUE}🚀 Starting BM Parliament Deployment${NC}"
 echo -e "${BLUE}📦 Deployment ID: ${DEPLOYMENT_ID}${NC}"
 echo -e "${BLUE}📦 Static Version: ${STATIC_VERSION}${NC}"
 
@@ -31,7 +31,7 @@ echo -e "\n${BLUE}📦 Building Docker image...${NC}"
 docker build \
   --build-arg STATIC_VERSION=${STATIC_VERSION} \
   --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-  -t fahaniecares:${STATIC_VERSION} \
+  -t bmparliament:${STATIC_VERSION} \
   -f deployment/docker/Dockerfile.production . || {
     echo -e "${RED}❌ Docker build failed${NC}"
     exit 1
@@ -49,12 +49,12 @@ if [ -f "docker-compose.production.yml" ]; then
 fi
 
 # Option B: Manual Docker deployment
-# docker stop fahaniecares || true
-# docker rm fahaniecares || true
-# docker run -d --name fahaniecares \
+# docker stop bmparliament || true
+# docker rm bmparliament || true
+# docker run -d --name bmparliament \
 #   -p 80:8000 \
 #   --env-file .env.production \
-#   fahaniecares:${STATIC_VERSION}
+#   bmparliament:${STATIC_VERSION}
 
 # Step 3: Wait for application to be ready
 echo -e "\n${BLUE}⏳ Waiting for application to start...${NC}"
@@ -62,7 +62,7 @@ sleep 30
 
 # Step 4: Health check
 echo -e "\n${BLUE}🏥 Running health check...${NC}"
-HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fahaniecares.ph/health/ || echo "000")
+HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://bmparliament.gov.ph/health/ || echo "000")
 
 if [ "$HEALTH_STATUS" = "200" ]; then
     echo -e "${GREEN}✅ Health check passed${NC}"
@@ -102,7 +102,7 @@ fi
 
 # Step 6: Verify static files
 echo -e "\n${BLUE}🔍 Verifying static files...${NC}"
-CSS_CHECK=$(curl -s -I https://fahaniecares.ph/static/css/output.css | grep -i "x-cache" || echo "No cache header")
+CSS_CHECK=$(curl -s -I https://bmparliament.gov.ph/static/css/output.css | grep -i "x-cache" || echo "No cache header")
 echo -e "Cache status: ${CSS_CHECK}"
 
 # Step 7: Final summary
@@ -112,7 +112,7 @@ echo -e "   - Deployment ID: ${DEPLOYMENT_ID}"
 echo -e "   - Static Version: ${STATIC_VERSION}"
 echo -e "   - Health Check: ${HEALTH_STATUS}"
 echo -e "   - CloudFront: ${INVALIDATION_ID:-Not invalidated}"
-echo -e "\n${BLUE}🌐 Application URL: https://fahaniecares.ph${NC}"
+echo -e "\n${BLUE}🌐 Application URL: https://bmparliament.gov.ph${NC}"
 
 # Step 8: Send notification (optional)
 if [ ! -z "$SLACK_WEBHOOK" ]; then

@@ -15,7 +15,7 @@ from .forms import UserRegistrationForm
 from .models import User, RoleTransitionLog, DynamicPermission, UserPermissionOverride
 from .decorators import require_role, require_role_or_higher, RoleRequiredMixin
 from .permissions import assign_user_to_role_group
-from apps.constituents.member_forms import FahanieCaresMemberRegistrationForm
+from apps.constituents.member_forms import BMParliamentMemberRegistrationForm
 from django.conf import settings
 import logging
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 class CustomLoginView(LoginView):
     """
-    Custom login view for #FahanieCares.
+    Custom login view for #BM Parliament.
     """
     template_name = 'users/login.html'
     redirect_authenticated_user = True
@@ -34,21 +34,21 @@ class CustomLoginView(LoginView):
 
 class UserRegistrationView(CreateView):
     """
-    User registration view for #FahanieCares.
+    User registration view for #BM Parliament.
     Creates a new user and also adds them to the Notion members database.
     """
     template_name = 'constituents/member_registration.html'
-    form_class = FahanieCaresMemberRegistrationForm
+    form_class = BMParliamentMemberRegistrationForm
     success_url = reverse_lazy('registration_success')
     
     def form_valid(self, form):
-        # The form's save method handles both User and FahanieCaresMember creation
+        # The form's save method handles both User and BMParliamentMember creation
         response = super().form_valid(form)
         
         # Show success message
         messages.success(
             self.request, 
-            'Your #FahanieCares membership application has been submitted successfully! '
+            'Your #BM Parliament membership application has been submitted successfully! '
             'You will receive an email once your application is approved.'
         )
         
@@ -143,7 +143,7 @@ class MemberRegistrationView(LoginRequiredMixin, CreateView):
             print(f"Error updating Notion record: {str(e)}")
         
         # Show success message
-        messages.success(self.request, "Congratulations! You are now a registered #FahanieCares member.")
+        messages.success(self.request, "Congratulations! You are now a registered #BM Parliament member.")
         
         return redirect(self.success_url)
 

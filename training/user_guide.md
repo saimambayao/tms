@@ -1,8 +1,8 @@
-# #FahanieCares Website User Guide
+# BM Parliament Website User Guide
 
-## Welcome to #FahanieCares
+## Welcome to BM Parliament
 
-The #FahanieCares website is a comprehensive platform designed to help MP Atty. Sittie Fahanie S. Uy-Oyod deliver public services efficiently to constituents. This guide will help you navigate and use the system effectively.
+The BM Parliament website is a comprehensive platform designed to help MP Atty. Sittie BM Parliament S. Uy-Oyod deliver public services efficiently to constituents. This guide will help you navigate and use the system effectively.
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@ The #FahanieCares website is a comprehensive platform designed to help MP Atty. 
 
 ### Logging In
 
-1. Navigate to the #FahanieCares website
+1. Navigate to the BM Parliament website
 2. Click "Login" in the top right corner
 3. Enter your username and password
 4. Click "Sign In"
@@ -283,7 +283,7 @@ A: Data is backed up daily, with real-time sync to Notion.
 
 ### Contact Information
 
-- **Email**: support@fahaniecares.gov.ph
+- **Email**: support@bmparliament.gov.ph
 - **Phone**: (02) 8123-4567
 - **Office Hours**: Monday-Friday, 8AM-5PM
 

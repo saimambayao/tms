@@ -7,19 +7,19 @@ services:
   # Add certbot service for SSL certificate management
   certbot:
     image: certbot/certbot:latest
-    container_name: fahaniecares_certbot
+    container_name: bmparliament_certbot
     volumes:
       - ./ssl/certbot/conf:/etc/letsencrypt
       - ./ssl/certbot/www:/var/www/certbot
       - ./ssl/certbot/logs:/var/log/letsencrypt
-    command: certonly --webroot --webroot-path=/var/www/certbot --email admin@fahaniecares.gov.ph --agree-tos --no-eff-email -d fahaniecares.gov.ph -d www.fahaniecares.gov.ph
+    command: certonly --webroot --webroot-path=/var/www/certbot --email admin@bmparliament.gov.ph --agree-tos --no-eff-email -d bmparliament.gov.ph -d www.bmparliament.gov.ph
     depends_on:
       - nginx
 
   # Enhanced nginx service with SSL support
   nginx:
     image: nginx:alpine
-    container_name: fahaniecares_nginx_ssl
+    container_name: bmparliament_nginx_ssl
     ports:
       - "80:80"
       - "443:443"
@@ -34,14 +34,14 @@ services:
       - web
     restart: unless-stopped
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Enhanced web service for SSL-aware Django
   web:
     build: 
       context: ../../src
       dockerfile: ../deployment/docker/Dockerfile.django
-    container_name: fahaniecares_web_ssl
+    container_name: bmparliament_web_ssl
     command: sh -c "
       npm install &&
       npm run build-css &&
@@ -54,7 +54,7 @@ services:
       - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
       - DATABASE_URL=${DATABASE_URL}
       - REDIS_URL=${REDIS_URL}
-      - ALLOWED_HOSTS=fahaniecares.gov.ph,www.fahaniecares.gov.ph
+      - ALLOWED_HOSTS=bmparliament.gov.ph,www.bmparliament.gov.ph
       - SECURE_SSL_REDIRECT=True
       - SECURE_PROXY_SSL_HEADER=HTTP_X_FORWARDED_PROTO,https
       - USE_HTTPS=True
@@ -69,12 +69,12 @@ services:
       - redis
     restart: unless-stopped
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # SSL certificate renewal service
   ssl_renewer:
     image: certbot/certbot:latest
-    container_name: fahaniecares_ssl_renewer
+    container_name: bmparliament_ssl_renewer
     volumes:
       - ./ssl/certbot/conf:/etc/letsencrypt
       - ./ssl/certbot/www:/var/www/certbot
@@ -87,7 +87,7 @@ services:
   # Database service (unchanged)
   db:
     image: postgres:15-alpine
-    container_name: fahaniecares_db_ssl
+    container_name: bmparliament_db_ssl
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -99,12 +99,12 @@ services:
       - "5432:5432"
     restart: unless-stopped
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Redis service (unchanged)
   redis:
     image: redis:7-alpine
-    container_name: fahaniecares_redis_ssl
+    container_name: bmparliament_redis_ssl
     command: redis-server --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
@@ -112,15 +112,15 @@ services:
       - "6379:6379"
     restart: unless-stopped
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
 volumes:
   postgres_data:
-    name: fahaniecares_postgres_ssl
+    name: bmparliament_postgres_ssl
   redis_data:
-    name: fahaniecares_redis_ssl
+    name: bmparliament_redis_ssl
 
 networks:
-  fahaniecares_network:
-    name: fahaniecares_ssl_network
+  bmparliament_network:
+    name: bmparliament_ssl_network
     driver: bridge

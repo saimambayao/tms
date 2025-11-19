@@ -1,11 +1,11 @@
-# #FahanieCares Production Deployment Checklist
+# BM Parliament Production Deployment Checklist
 
 ## ✅ Pre-Deployment Checklist
 
 ### 🔧 Infrastructure Setup
 - [ ] VPS provisioned with minimum 4GB RAM, 2 vCPU, 40GB SSD
 - [ ] Ubuntu 22.04 LTS installed and updated
-- [ ] Domain `fahaniecares.ph` pointing to VPS IP address
+- [ ] Domain `bmparliament.gov.ph` pointing to VPS IP address
 - [ ] DNS records configured (A records for @ and www)
 - [ ] Coolify installed and configured on VPS
 - [ ] SSL certificates configured (Let's Encrypt via Coolify)
@@ -87,8 +87,8 @@ Copy variables from `.env.coolify.example` and configure:
 - [ ] Sentry (if using error tracking)
 
 ### 4. Domain and SSL Configuration
-- [ ] Configure primary domain: `fahaniecares.ph`
-- [ ] Configure www redirect: `www.fahaniecares.ph`
+- [ ] Configure primary domain: `bmparliament.gov.ph`
+- [ ] Configure www redirect: `www.bmparliament.gov.ph`
 - [ ] Enable Let's Encrypt SSL
 - [ ] Enable HTTPS redirect
 - [ ] Verify SSL certificate installation
@@ -104,7 +104,7 @@ Copy variables from `.env.coolify.example` and configure:
 ### 1. Database Setup
 ```bash
 # Access the web container
-docker exec -it fahaniecares_web bash
+docker exec -it bmparliament_web bash
 
 # Run database migrations
 python manage.py migrate
@@ -143,7 +143,7 @@ This command will:
 - ⭐ Preserve system configuration and superuser accounts
 
 ### 4. Verify Application Health
-- [ ] Check health endpoint: `https://fahaniecares.ph/health/`
+- [ ] Check health endpoint: `https://bmparliament.gov.ph/health/`
 - [ ] Verify database connectivity
 - [ ] Test Redis cache functionality
 - [ ] Confirm all static files loading
@@ -230,7 +230,7 @@ python manage.py clearsessions
 ### 3. Log Management
 ```bash
 # View application logs
-docker logs fahaniecares_web
+docker logs bmparliament_web
 
 # View all service logs
 docker-compose -f deployment/docker/docker-compose/coolify.yml logs
@@ -287,11 +287,11 @@ Once all checklist items are completed:
 5. **Performance Status**: ✅ Optimized and caching enabled
 6. **Data Status**: ✅ Clean production environment with zero sample data
 
-**🎉 #FahanieCares is now live and ready to serve the Bangsamoro community!**
+**🎉 BM Parliament is now live and ready to serve the Bangsamoro community!**
 
 The platform is ready to receive real registrations, service requests, and community engagement. All statistics will grow organically from zero as real users interact with the system.
 
 ---
 
-**#FahanieCares Development Team**  
+**BM Parliament Development Team**  
 *Bringing Bangsamoro Public Service Closer to You*

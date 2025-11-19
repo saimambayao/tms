@@ -1,5 +1,5 @@
 """
-URL configuration for #FahanieCares project.
+URL configuration for #BM Parliament project.
 """
 import os
 from django.contrib import admin
@@ -9,9 +9,9 @@ from django.conf.urls.static import static
 from django.conf.urls.i18n import i18n_patterns # Import i18n_patterns
 
 # Customize admin site
-admin.site.site_header = "#FahanieCares Administration"
-admin.site.site_title = "#FahanieCares Admin"
-admin.site.index_title = "Welcome to #FahanieCares Admin Panel"
+admin.site.site_header = "Administration"
+admin.site.site_title = "#BM Parliament Admin"
+admin.site.index_title = "Welcome to Admin Panel"
 
 # Main URL patterns
 urlpatterns = [

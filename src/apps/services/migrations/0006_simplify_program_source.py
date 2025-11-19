@@ -42,7 +42,7 @@ class Migration(migrations.Migration):
             name='program_source',
             field=models.CharField(
                 choices=[
-                    ('fahaniecares', '#FahanieCares Program'),
+                    ('bmparliament', '#BM Parliament Program'),
                     ('tdif', 'TDIF Project'),
                     ('ministry', 'Ministry Program')
                 ],

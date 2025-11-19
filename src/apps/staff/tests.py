@@ -42,7 +42,7 @@ class StaffModelTests(TestCase):
             user=self.user,
             full_name='Test Staff Member',
             position='Software Developer',
-            email='test@fahaniecares.ph',
+            email='test@bmparliament.ph',
             phone_number='09123456789',
             division='it_unit',
             employment_status='contractual',
@@ -876,7 +876,7 @@ class StaffE2EWorkflowTests(TestCase):
             password='MPPass123!',
             user_type='mp',
             first_name='MP',
-            last_name='Uy-Oyod'
+            last_name='Gayak'
         )
         
         self.chief_staff_user = User.objects.create_user(
@@ -906,7 +906,7 @@ class StaffE2EWorkflowTests(TestCase):
         # Create staff profiles
         self.mp_staff = Staff.objects.create(
             user=self.mp_user,
-            full_name='MP Fahanie Uy-Oyod',
+            full_name='MP Amiroddin Gayak',
             position='Member of Parliament',
             division='mp_office',
             employment_status='coterminous',
@@ -1362,7 +1362,7 @@ class StaffE2EWorkflowTests(TestCase):
         # Create user account first
         new_user = User.objects.create_user(
             username='new_staff',
-            email='newstaff@fahaniecares.ph',
+            email='newstaff@bmparliament.ph',
             password='NewStaff123!',
             user_type='staff',
             first_name='New',
@@ -1374,7 +1374,7 @@ class StaffE2EWorkflowTests(TestCase):
             user=new_user,
             full_name='New Employee',
             position='Junior Assistant',
-            email='newstaff@fahaniecares.ph',
+            email='newstaff@bmparliament.ph',
             phone_number='09123456789',
             division='administrative_affairs',
             employment_status='contractual',
@@ -1430,7 +1430,7 @@ class StaffE2EWorkflowTests(TestCase):
 
 
 class StaffSystemIntegrationTests(TestCase):
-    """Integration tests between staff system and other #FahanieCares modules."""
+    """Integration tests between staff system and other #BM Parliament modules."""
     
     def setUp(self):
         self.client = Client()
@@ -1494,7 +1494,7 @@ class StaffSystemIntegrationTests(TestCase):
         
         # Test profile editing
         response = self.client.post(reverse('staff:edit_profile'), {
-            'email': 'updated@fahaniecares.ph',
+            'email': 'updated@bmparliament.ph',
             'phone_number': '09987654321',
             'bio': 'Updated bio information'
         })
@@ -1502,7 +1502,7 @@ class StaffSystemIntegrationTests(TestCase):
         
         # Verify profile was updated
         self.staff.refresh_from_db()
-        self.assertEqual(self.staff.email, 'updated@fahaniecares.ph')
+        self.assertEqual(self.staff.email, 'updated@bmparliament.ph')
         self.assertEqual(self.staff.phone_number, '09987654321')
     
     def test_export_functionality_integration(self):

@@ -1,17 +1,17 @@
 {
-  "Comment": "#FahanieCares CloudFront Distribution Configuration",
-  "CallerReference": "fahaniecares-cdn-2024",
+  "Comment": "BM Parliament CloudFront Distribution Configuration",
+  "CallerReference": "bmparliament-cdn-2024",
   "Aliases": {
     "Quantity": 1,
-    "Items": ["cdn.fahaniecares.ph"]
+    "Items": ["cdn.bmparliament.gov.ph"]
   },
   "DefaultRootObject": "",
   "Origins": {
     "Quantity": 2,
     "Items": [
       {
-        "Id": "fahaniecares-static",
-        "DomainName": "fahaniecares.ph",
+        "Id": "bmparliament-static",
+        "DomainName": "bmparliament.gov.ph",
         "OriginPath": "/static",
         "CustomHeaders": {
           "Quantity": 0
@@ -31,8 +31,8 @@
         }
       },
       {
-        "Id": "fahaniecares-s3-media",
-        "DomainName": "fahaniecares-media.s3.ap-southeast-1.amazonaws.com",
+        "Id": "bmparliament-s3-media",
+        "DomainName": "bmparliament-media.s3.ap-southeast-1.amazonaws.com",
         "OriginPath": "/media",
         "S3OriginConfig": {
           "OriginAccessIdentity": "origin-access-identity/cloudfront/E1EXAMPLE"
@@ -44,7 +44,7 @@
     "Quantity": 0
   },
   "DefaultCacheBehavior": {
-    "TargetOriginId": "fahaniecares-static",
+    "TargetOriginId": "bmparliament-static",
     "TrustedSigners": {
       "Enabled": false,
       "Quantity": 0
@@ -90,7 +90,7 @@
     "Items": [
       {
         "PathPattern": "/static/*",
-        "TargetOriginId": "fahaniecares-static",
+        "TargetOriginId": "bmparliament-static",
         "TrustedSigners": {
           "Enabled": false,
           "Quantity": 0
@@ -132,7 +132,7 @@
       },
       {
         "PathPattern": "/media/*",
-        "TargetOriginId": "fahaniecares-s3-media",
+        "TargetOriginId": "bmparliament-s3-media",
         "TrustedSigners": {
           "Enabled": false,
           "Quantity": 0
@@ -175,7 +175,7 @@
       },
       {
         "PathPattern": "*.css",
-        "TargetOriginId": "fahaniecares-static",
+        "TargetOriginId": "bmparliament-static",
         "TrustedSigners": {
           "Enabled": false,
           "Quantity": 0
@@ -234,11 +234,11 @@
       }
     ]
   },
-  "Comment": "#FahanieCares CDN Distribution",
+  "Comment": "BM Parliament CDN Distribution",
   "Logging": {
     "Enabled": true,
     "IncludeCookies": false,
-    "Bucket": "fahaniecares-logs.s3.amazonaws.com",
+    "Bucket": "bmparliament-logs.s3.amazonaws.com",
     "Prefix": "cloudfront/"
   },
   "PriceClass": "PriceClass_100",
@@ -247,7 +247,7 @@
     "ACMCertificateArn": "arn:aws:acm:us-east-1:123456789012:certificate/example",
     "SSLSupportMethod": "sni-only",
     "MinimumProtocolVersion": "TLSv1.2_2021",
-    "Certificate": "cdn.fahaniecares.ph",
+    "Certificate": "cdn.bmparliament.gov.ph",
     "CertificateSource": "acm"
   },
   "Restrictions": {

@@ -1,5 +1,5 @@
 """
-Comprehensive End-to-End (E2E) tests for critical user journeys in #FahanieCares portal.
+Comprehensive End-to-End (E2E) tests for critical user journeys in #BM Parliament portal.
 Testing complete workflows from user perspective across multiple applications.
 """
 
@@ -18,7 +18,7 @@ import io
 
 # Import models from various apps
 from apps.users.models import DynamicPermission, RolePermission, UserPermissionOverride
-from apps.constituents.models import Constituent, FahanieCaresMember
+from apps.constituents.models import Constituent, BMParliamentMember
 from apps.referrals.models import Service, Agency, Referral, ReferralUpdate
 from apps.chapters.models import Chapter, ChapterMembership
 from apps.documents.models import DocumentCategory, Document
@@ -51,7 +51,7 @@ class ConstituentRegistrationAndProfileJourneyTests(TransactionTestCase):
         # Step 3: User submits registration form
         registration_data = {
             'username': 'newconstituen2025',
-            'email': 'constituent@fahaniecares.test',
+            'email': 'constituent@bmparliament.test',
             'password1': 'SecurePass123!',
             'password2': 'SecurePass123!',
             'first_name': 'Maria',
@@ -68,7 +68,7 @@ class ConstituentRegistrationAndProfileJourneyTests(TransactionTestCase):
             # Create user manually if registration form has validation issues
             user = User.objects.create_user(
                 username='newconstituen2025',
-                email='constituent@fahaniecares.test',
+                email='constituent@bmparliament.test',
                 password='SecurePass123!',
                 user_type='registered_user',
                 first_name='Maria',
@@ -76,7 +76,7 @@ class ConstituentRegistrationAndProfileJourneyTests(TransactionTestCase):
             )
         
         self.assertIsNotNone(user)
-        self.assertEqual(user.email, 'constituent@fahaniecares.test')
+        self.assertEqual(user.email, 'constituent@bmparliament.test')
         self.assertEqual(user.first_name, 'Maria')
         
         # Step 5: User logs in for the first time
@@ -91,13 +91,13 @@ class ConstituentRegistrationAndProfileJourneyTests(TransactionTestCase):
         # Create member manually since member registration URL may not exist
         # Use transaction to ensure consistency
         with transaction.atomic():
-            member = FahanieCaresMember.objects.create(
+            member = BMParliamentMember.objects.create(
                 user=user,
                 last_name='Santos',
                 first_name='Maria',
                 middle_name='',
                 contact_number='+639123456789',
-                email='constituent@fahaniecares.test',
+                email='constituent@bmparliament.test',
                 age=30,
                 sex='female',
                 address_barangay='Barangay Test',
@@ -277,7 +277,7 @@ class StaffAdministrativeJourneyTests(TransactionTestCase):
         # Create staff user
         self.staff_user = User.objects.create_user(
             username='admin_staff',
-            email='admin@fahaniecares.test',
+            email='admin@bmparliament.test',
             password='AdminPass123!',
             user_type='staff',
             first_name='Admin',
@@ -287,7 +287,7 @@ class StaffAdministrativeJourneyTests(TransactionTestCase):
         # Create coordinator user
         self.coordinator = User.objects.create_user(
             username='coordinator',
-            email='coord@fahaniecares.test',
+            email='coord@bmparliament.test',
             password='CoordPass123!',
             user_type='coordinator',
             first_name='Program',
@@ -348,7 +348,7 @@ class StaffAdministrativeJourneyTests(TransactionTestCase):
         # Create superuser for testing
         superuser = User.objects.create_superuser(
             username='superuser',
-            email='super@fahaniecares.test',
+            email='super@bmparliament.test',
             password='SuperPass123!',
             first_name='Super',
             last_name='User'
@@ -386,7 +386,7 @@ class ChapterMembershipJourneyTests(TransactionTestCase):
         # Create chapter member user
         self.member_user = User.objects.create_user(
             username='chapter_member',
-            email='member@fahaniecares.test',
+            email='member@bmparliament.test',
             password='MemberPass123!',
             user_type='chapter_member',
             first_name='Chapter',
@@ -396,7 +396,7 @@ class ChapterMembershipJourneyTests(TransactionTestCase):
         # Create coordinator
         self.coordinator = User.objects.create_user(
             username='chapter_coord',
-            email='coord@fahaniecares.test',
+            email='coord@bmparliament.test',
             password='CoordPass123!',
             user_type='coordinator',
             first_name='Chapter',
@@ -467,7 +467,7 @@ class DocumentManagementJourneyTests(TransactionTestCase):
         # Create users
         self.user = User.objects.create_user(
             username='doc_user',
-            email='doc@fahaniecares.test',
+            email='doc@bmparliament.test',
             password='DocPass123!',
             user_type='registered_user',
             first_name='Document',
@@ -476,7 +476,7 @@ class DocumentManagementJourneyTests(TransactionTestCase):
         
         self.admin_user = User.objects.create_user(
             username='doc_admin',
-            email='admin@fahaniecares.test',
+            email='admin@bmparliament.test',
             password='AdminPass123!',
             user_type='admin',
             first_name='Document',

@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.base')
 django.setup()
 
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BM ParliamentMember
 
 def test_madaris_sector():
     """Test that the Madaris Students sector is properly configured"""
@@ -21,7 +21,7 @@ def test_madaris_sector():
     print("Testing Madaris Students sector implementation...")
 
     # Test 1: Check if Madaris Students sector is in SECTOR_CHOICES
-    sector_choices = dict(FahanieCaresMember.SECTOR_CHOICES)
+    sector_choices = dict(BM ParliamentMember.SECTOR_CHOICES)
     if 'madaris_students' in sector_choices:
         print("✓ Madaris Students sector found in SECTOR_CHOICES")
         print(f"  Display name: {sector_choices['madaris_students']}")
@@ -30,9 +30,9 @@ def test_madaris_sector():
         return False
 
     # Test 2: Check if Madaris Students sector has ID prefix
-    if 'madaris_students' in FahanieCaresMember.SECTOR_ID_PREFIXES:
+    if 'madaris_students' in BM ParliamentMember.SECTOR_ID_PREFIXES:
         print("✓ Madaris Students sector found in SECTOR_ID_PREFIXES")
-        print(f"  ID prefix: {FahanieCaresMember.SECTOR_ID_PREFIXES['madaris_students']}")
+        print(f"  ID prefix: {BM ParliamentMember.SECTOR_ID_PREFIXES['madaris_students']}")
     else:
         print("✗ Madaris Students sector NOT found in SECTOR_ID_PREFIXES")
         return False
@@ -43,7 +43,7 @@ def test_madaris_sector():
         class MockMember:
             def __init__(self, sector):
                 self.sector = sector
-                self.SECTOR_ID_PREFIXES = FahanieCaresMember.SECTOR_ID_PREFIXES
+                self.SECTOR_ID_PREFIXES = BM ParliamentMember.SECTOR_ID_PREFIXES
 
             def _generate_member_id(self):
                 prefix = self.SECTOR_ID_PREFIXES.get(self.sector, 'GEN')

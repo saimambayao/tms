@@ -1,14 +1,14 @@
-# SMS OTP Cost Documentation - #FahanieCares Portal
+# SMS OTP Cost Documentation - BM Parliament Portal
 
 ## Overview
 
-The #FahanieCares portal implements SMS OTP (One-Time Password) as an accessible two-factor authentication option for constituents who may not have smartphones or email access. This document outlines the cost structure and payment arrangements for this government-funded service.
+The BM Parliament portal implements SMS OTP (One-Time Password) as an accessible two-factor authentication option for constituents who may not have smartphones or email access. This document outlines the cost structure and payment arrangements for this government-funded service.
 
 ## Cost Responsibility
 
-**The Philippine government, through the Office of MP Atty. Sittie Fahanie S. Uy-Oyod, covers all SMS OTP costs.**
+**The Philippine government, through the Office of MP Atty. Sittie BM Parliament S. Uy-Oyod, covers all SMS OTP costs.**
 
-This ensures equal access to security features for all constituents regardless of their economic status, in line with the #FahanieCares mission of "Bringing Public Service Closer to You."
+This ensures equal access to security features for all constituents regardless of their economic status, in line with the BM Parliament mission of "Bringing Public Service Closer to You."
 
 ## SMS Gateway Options and Pricing
 
@@ -174,11 +174,11 @@ The system tracks:
 ## Contact for Budget Matters
 
 **Finance Department**
-- Email: finance@fahaniecares.ph
+- Email: finance@bmparliament.gov.ph
 - Phone: +63 XX XXX XXXX
 
 **Technical Implementation**
-- Email: tech@fahaniecares.ph
+- Email: tech@bmparliament.gov.ph
 - Phone: +63 XX XXX XXXX
 
 **SMS Provider Accounts**

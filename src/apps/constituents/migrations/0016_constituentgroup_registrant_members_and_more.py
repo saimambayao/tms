@@ -6,14 +6,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('constituents', '0015_alter_fahaniecaresmember_sector'),
+        ('constituents', '0015_alter_bmparliamentmember_sector'),
     ]
 
     operations = [
         migrations.AddField(
             model_name='constituentgroup',
             name='registrant_members',
-            field=models.ManyToManyField(blank=True, related_name='registrant_groups', to='constituents.fahaniecaresmember'),
+            field=models.ManyToManyField(blank=True, related_name='registrant_groups', to='constituents.bmparliamentmember'),
         ),
         migrations.AlterField(
             model_name='constituentgroup',
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
             field=models.ManyToManyField(blank=True, related_name='constituent_groups', to='constituents.constituent'),
         ),
         migrations.AlterField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='sector',
             field=models.CharField(choices=[('student', 'College Students in need of Educational Assistance'), ('delivery_riders', 'Delivery Riders'), ('dressmaker_weaver', 'Dressmaker/Weaver'), ('farmer', 'Farmers'), ('fisherman', 'Fishermen'), ('women_mothers', 'Learning Women/Mothers (Ummahat)'), ('mujahidin', 'Mujahidin/Mujahidat'), ('special_needs', 'Parents/Guardians of Children with Special Needs'), ('pwd_student', 'Person with Disability (PWD)'), ('volunteer_teacher', 'Public School Volunteer Teachers (English/Arabic)'), ('small_time_vendor', 'Small-time Vendors'), ('solo_parent', 'Solo Parents'), ('volunteer_health', 'Volunteer Health Workers')], max_length=50),
         ),

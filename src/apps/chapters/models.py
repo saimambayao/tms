@@ -6,7 +6,7 @@ from django.urls import reverse
 
 class Chapter(models.Model):
     """
-    Chapter model for #FahanieCares organization units.
+    Chapter model for #BM Parliament organization units.
     """
     STATUS_CHOICES = (
         ('active', 'Active'),

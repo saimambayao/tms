@@ -1,4 +1,4 @@
-# Unified Interface Architecture for #FahanieCares
+# Unified Interface Architecture for BM Parliament
 
 ## Table of Contents
 1. [Architecture Overview](#architecture-overview)
@@ -23,7 +23,7 @@
 
 ## Architecture Overview
 
-The #FahanieCares Unified Interface Architecture embraces the philosophy of **"One Platform, Many Roles"** to deliver a seamless, scalable, and maintainable solution that serves all constituents while supporting the mission of "Bringing Public Service Closer to You."
+The BM Parliament Unified Interface Architecture embraces the philosophy of **"One Platform, Many Roles"** to deliver a seamless, scalable, and maintainable solution that serves all constituents while supporting the mission of "Bringing Public Service Closer to You."
 
 ### Core Concept
 
@@ -75,7 +75,7 @@ Frontend permission checks enhance UX, but all security enforcement happens serv
 
 ## The Referral System
 
-The referral system is the heart of #FahanieCares, serving as the primary mechanism for connecting constituents with government services through MP Atty. Sittie Fahanie S. Uy-Oyod's office.
+The referral system is the heart of BM Parliament, serving as the primary mechanism for connecting constituents with government services through MP Atty. Sittie BM Parliament S. Uy-Oyod's office.
 
 ### What is a Referral?
 
@@ -2061,7 +2061,7 @@ nginx_rollback() {
 
 # 2. Restore database to pre-migration snapshot
 db_rollback() {
-    pg_restore -d fahanie_cares /backups/pre_migration_backup.sql
+    pg_restore -d bm parliament_cares /backups/pre_migration_backup.sql
 }
 
 # 3. Clear caches
@@ -2151,7 +2151,7 @@ notify_rollback() {
 
 ## Conclusion
 
-The Unified Interface Architecture provides a robust, scalable foundation for the #FahanieCares platform. By embracing progressive disclosure and role-based adaptation, we create a seamless experience that grows with users while maintaining security and performance.
+The Unified Interface Architecture provides a robust, scalable foundation for the BM Parliament platform. By embracing progressive disclosure and role-based adaptation, we create a seamless experience that grows with users while maintaining security and performance.
 
 Key benefits:
 - **60% reduction** in development and maintenance costs
@@ -2167,4 +2167,4 @@ Success depends on:
 - Clear documentation and guidelines
 - Continuous monitoring and optimization
 
-This architecture positions #FahanieCares to effectively serve constituents while empowering staff with powerful tools, all within a single, cohesive platform that truly brings public service closer to the people.
+This architecture positions BM Parliament to effectively serve constituents while empowering staff with powerful tools, all within a single, cohesive platform that truly brings public service closer to the people.

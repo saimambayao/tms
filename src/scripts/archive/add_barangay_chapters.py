@@ -63,13 +63,13 @@ for municipality, brgy_list in barangays.items():
                 'tier': 'barangay',
                 'municipality': municipality,
                 'province': 'Maguindanao del Sur',
-                'description': f"The {barangay} Barangay Chapter of #FahanieCares, serving the residents of Barangay {barangay} in {municipality}, Maguindanao del Sur.",
+                'description': f"The {barangay} Barangay Chapter of #BM Parliament, serving the residents of Barangay {barangay} in {municipality}, Maguindanao del Sur.",
                 'mission_statement': f"To bring public service closer to the residents of Barangay {barangay} through community-based initiatives and programs.",
                 'established_date': timezone.now().date(),
                 'status': 'active',
                 'coordinator': admin_user,
                 'parent_chapter': municipal_chapter,
-                'email': f"{slugify(barangay)}.{slugify(municipality)}@fahaniecares.org",
+                'email': f"{slugify(barangay)}.{slugify(municipality)}@bmparliament.org",
                 'phone': '+63 XXX XXX XXXX',
             }
         )

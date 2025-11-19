@@ -1,4 +1,4 @@
-# #FahanieCares Production Dockerfile - Optimized for Coolify VPS Deployment
+# BM Parliament Production Dockerfile - Optimized for Coolify VPS Deployment
 # Multi-stage build for optimal production container size and security
 
 # =============================================================================
@@ -116,7 +116,7 @@ RUN cat > /app/entrypoint.sh << 'EOF'
 #!/bin/bash
 set -e
 
-echo "🚀 Starting #FahanieCares Production Server"
+echo "🚀 Starting BM Parliament Production Server"
 echo "================================================"
 
 # Function to wait for database
@@ -216,7 +216,7 @@ warm_cache
 exec gunicorn --bind 0.0.0.0:8000 --workers 3 config.wsgi:application
 
 echo "================================================"
-echo "🎉 #FahanieCares Production Server Ready!"
+echo "🎉 BM Parliament Production Server Ready!"
 echo "================================================"
 
 # Execute the main command
@@ -236,8 +236,8 @@ EXPOSE 8000
 ENTRYPOINT ["/app/entrypoint.sh"]
 
 # Metadata
-LABEL maintainer="#FahanieCares Development Team <dev@fahaniecares.gov.ph>"
-LABEL description="#FahanieCares Production Container - Bringing Public Service Closer to You"
+LABEL maintainer="BM Parliament Development Team <dev@bmparliament.gov.ph>"
+LABEL description="BM Parliament Production Container - Bringing Public Service Closer to You"
 LABEL version="1.0.0"
 LABEL environment="production"
 LABEL platform="coolify"

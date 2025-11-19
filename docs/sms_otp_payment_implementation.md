@@ -4,7 +4,7 @@
 
 ### Step 1: Budget Allocation
 
-**Office of MP Atty. Sittie Fahanie S. Uy-Oyod Budget Process:**
+**Office of MP Atty. Sittie BM Parliament S. Uy-Oyod Budget Process:**
 
 1. **Annual Budget Request**
    - Include line item: "Digital Security Infrastructure - SMS Authentication"
@@ -44,7 +44,7 @@
 **Semaphore Setup:**
 ```bash
 1. Create Government Account
-   - Account Name: "Office of MP Sittie Fahanie S. Uy-Oyod"
+   - Account Name: "Office of MP Sittie BM Parliament S. Uy-Oyod"
    - Account Type: Government/Prepaid
    - Initial Credit: ₱25,000
 
@@ -67,7 +67,7 @@ SEMAPHORE_CONFIG = {
     'sender_name': 'FAHANIECARES',
     'account_type': 'prepaid',
     'low_balance_alert': 5000,  # Alert when balance < ₱5,000
-    'finance_email': 'finance@fahaniecares.ph'
+    'finance_email': 'finance@bmparliament.gov.ph'
 }
 ```
 
@@ -232,7 +232,7 @@ OPTIMAL_SEND_WINDOWS = [
 ```python
 # Shorter messages = lower cost
 OTP_MESSAGE_TEMPLATE = (
-    "FahanieCares OTP: {otp}\n"
+    "BM Parliament OTP: {otp}\n"
     "Valid for 5 mins"
 )  # Under 160 characters = 1 SMS
 ```

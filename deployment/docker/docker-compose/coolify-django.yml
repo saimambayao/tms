@@ -4,7 +4,7 @@ services:
   # PostgreSQL Database - Production Ready
   db:
     image: postgres:15-alpine
-    container_name: fahaniecares_db_prod
+    container_name: bmparliament_db_prod
     restart: unless-stopped
     volumes:
       - postgres_data:/var/lib/postgresql/data
@@ -23,7 +23,7 @@ services:
       retries: 5
       start_period: 30s
     networks:
-      - fahaniecares_network
+      - bmparliament_network
     command: >
       postgres
       -c log_statement=all
@@ -36,7 +36,7 @@ services:
   # Redis Cache - Production Configuration
   redis:
     image: redis:7-alpine
-    container_name: fahaniecares_redis_prod
+    container_name: bmparliament_redis_prod
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -57,14 +57,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Django Web Application - Production
   web:
     build:
       context: .
       dockerfile: Dockerfile.production
-    container_name: fahaniecares_web_prod
+    container_name: bmparliament_web_prod
     restart: unless-stopped
     command: >
       sh -c "
@@ -153,7 +153,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health/"]
       interval: 30s
@@ -164,7 +164,7 @@ services:
   # Nginx Reverse Proxy
   nginx:
     image: nginx:alpine
-    container_name: fahaniecares_nginx_prod
+    container_name: bmparliament_nginx_prod
     restart: unless-stopped
     ports:
       - "80:80"
@@ -178,7 +178,7 @@ services:
       web:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
     healthcheck:
       test: ["CMD", "nginx", "-t"]
       interval: 30s
@@ -190,7 +190,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-    container_name: fahaniecares_celery_prod
+    container_name: bmparliament_celery_prod
     restart: unless-stopped
     command: >
       sh -c "
@@ -227,7 +227,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
     profiles:
       - celery
 
@@ -236,7 +236,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.production
-    container_name: fahaniecares_celery_beat_prod
+    container_name: bmparliament_celery_beat_prod
     restart: unless-stopped
     command: >
       sh -c "
@@ -270,25 +270,25 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
     profiles:
       - celery
 
 volumes:
   postgres_data:
-    name: fahaniecares_postgres_data_prod
+    name: bmparliament_postgres_data_prod
     driver: local
   redis_data:
-    name: fahaniecares_redis_data_prod
+    name: bmparliament_redis_data_prod
     driver: local
   static_files:
-    name: fahaniecares_static_files_prod
+    name: bmparliament_static_files_prod
     driver: local
   media_files:
-    name: fahaniecares_media_files_prod
+    name: bmparliament_media_files_prod
     driver: local
 
 networks:
-  fahaniecares_network:
-    name: fahaniecares_network_prod
+  bmparliament_network:
+    name: bmparliament_network_prod
     driver: bridge

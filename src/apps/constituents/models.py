@@ -4,10 +4,10 @@ from django.utils.text import slugify
 from django.urls import reverse
 
 # Import member models
-from .member_models import FahanieCaresMember
+from .member_models import BMParliamentMember
 
-# Make FahanieCaresMember available when importing from models
-__all__ = ['Constituent', 'ConstituentInteraction', 'ConstituentGroup', 'FahanieCaresMember']
+# Make BMParliamentMember available when importing from models
+__all__ = ['Constituent', 'ConstituentInteraction', 'ConstituentGroup', 'BMParliamentMember']
 
 class Constituent(models.Model):
     """
@@ -17,7 +17,6 @@ class Constituent(models.Model):
         ('male', 'Male'),
         ('female', 'Female'),
         ('other', 'Other'),
-        ('prefer_not_to_say', 'Prefer not to say')
     )
     
     EDUCATION_LEVEL_CHOICES = (
@@ -144,7 +143,7 @@ class ConstituentGroup(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField(blank=True)
     members = models.ManyToManyField(Constituent, related_name='constituent_groups', blank=True) # Existing field for Constituent
-    registrant_members = models.ManyToManyField(FahanieCaresMember, related_name='registrant_groups', blank=True) # New field for FahanieCaresMember
+    registrant_members = models.ManyToManyField(BMParliamentMember, related_name='registrant_groups', blank=True) # New field for BMParliamentMember
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.SET_NULL,

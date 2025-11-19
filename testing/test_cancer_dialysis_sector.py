@@ -15,14 +15,14 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 # Setup Django
 django.setup()
 
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BM ParliamentMember
 
 def test_cancer_dialysis_sector():
     """Test if the Cancer/Dialysis Patients sector is properly configured"""
     print("Testing Cancer/Dialysis Patients sector implementation...")
 
     # Test 1: Check if cancer_dialysis sector is in SECTOR_CHOICES
-    sector_choices = dict(FahanieCaresMember.SECTOR_CHOICES)
+    sector_choices = dict(BM ParliamentMember.SECTOR_CHOICES)
     if 'cancer_dialysis' in sector_choices:
         print("✓ Cancer/Dialysis Patients sector found in SECTOR_CHOICES")
         print(f"  Display name: {sector_choices['cancer_dialysis']}")
@@ -32,7 +32,7 @@ def test_cancer_dialysis_sector():
 
     # Test 2: Check if model has the required fields
     required_fields = ['cancer_patient', 'dialysis_patient']
-    model_fields = [field.name for field in FahanieCaresMember._meta.get_fields()]
+    model_fields = [field.name for field in BM ParliamentMember._meta.get_fields()]
 
     for field in required_fields:
         if field in model_fields:

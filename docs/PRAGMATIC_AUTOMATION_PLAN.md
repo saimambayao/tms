@@ -1,8 +1,8 @@
-# 🚀 Pragmatic Automation Plan for #FahanieCares Platform
+# 🚀 Pragmatic Automation Plan for BM Parliament Platform
 
 ## Executive Summary
 
-**Current State**: The #FahanieCares platform is production-ready with solid Docker + Coolify infrastructure, but lacks comprehensive CI/CD automation.
+**Current State**: The BM Parliament platform is production-ready with solid Docker + Coolify infrastructure, but lacks comprehensive CI/CD automation.
 
 **Goal**: Achieve 90% automation through incremental improvements that build on existing infrastructure, focusing on high-impact, low-complexity solutions.
 
@@ -152,7 +152,7 @@ jobs:
           username: ${{ secrets.PRODUCTION_USER }}
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
           script: |
-            cd /path/to/fahanie-cares
+            cd /path/to/bm-parliament
             git pull origin main
             docker-compose down
             docker-compose up -d --build
@@ -160,7 +160,7 @@ jobs:
       - name: Health Check
         run: |
           sleep 30
-          curl -f https://fahaniecares.gov.ph/health/ || exit 1
+          curl -f https://bm-parliament.gov.ph/health/ || exit 1
 ```
 
 **Immediate Benefits:**
@@ -232,9 +232,9 @@ jobs:
         uses: treosh/lighthouse-ci-action@v9
         with:
           urls: |
-            https://fahaniecares.gov.ph
-            https://fahaniecares.gov.ph/chapters/
-            https://fahaniecares.gov.ph/services/
+            https://bm-parliament.gov.ph
+            https://bm-parliament.gov.ph/chapters/
+            https://bm-parliament.gov.ph/services/
 ```
 
 **Immediate Benefits:**
@@ -291,7 +291,7 @@ docker run --rm -v $BACKUP_FILE:/backup.sql postgres:15 \
   psql -h test_db -U test_user -d test_db -f /backup.sql
 
 # Verify critical data integrity
-docker exec fahaniecares_web python manage.py shell -c "
+docker exec bmparliament_web python manage.py shell -c "
 from django.contrib.auth.models import User
 from apps.constituents.models import Constituent
 print(f'Users: {User.objects.count()}')
@@ -332,9 +332,9 @@ jobs:
           username: ${{ secrets.PRODUCTION_USER }}
           key: ${{ secrets.PRODUCTION_SSH_KEY }}
           script: |
-            docker exec fahaniecares_web python manage.py optimize_database
-            docker exec fahaniecares_web python manage.py clearsessions
-            docker exec fahaniecares_redis redis-cli FLUSHALL
+            docker exec bmparliament_web python manage.py optimize_database
+            docker exec bmparliament_web python manage.py clearsessions
+            docker exec bmparliament_redis redis-cli FLUSHALL
             
       - name: Log rotation
         uses: appleboy/ssh-action@v0.1.7
@@ -438,7 +438,7 @@ docker volume prune -f
 
 # Database optimization
 echo "=== Database Optimization ==="
-docker exec fahaniecares_db psql -U fahaniecares_user -d fahaniecares_prod -c "
+docker exec bmparliament_db psql -U bmparliament_user -d bmparliament_prod -c "
   SELECT schemaname,tablename,attname,n_distinct,correlation 
   FROM pg_stats WHERE tablename IN (
     SELECT tablename FROM pg_tables WHERE schemaname = 'public'
@@ -652,4 +652,4 @@ The platform will achieve **90% automation** within **2-3 HOURS** with Claude Co
 ---
 
 *Last updated: June 2025*  
-*#FahanieCares Development Team*
+*BM Parliament Development Team*

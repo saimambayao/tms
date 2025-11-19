@@ -1,10 +1,10 @@
 #!/bin/bash
-# Production CSS Quick Fix Script for #FahanieCares
+# Production CSS Quick Fix Script for BM Parliament
 # This script rebuilds CSS and clears CloudFront cache without full Docker rebuild
 
 set -e
 
-echo "🚀 #FahanieCares Production CSS Quick Fix"
+echo "🚀 BM Parliament Production CSS Quick Fix"
 echo "========================================"
 echo ""
 
@@ -60,7 +60,7 @@ echo -e "${YELLOW}Step 4: Clearing CloudFront cache...${NC}"
 if [ -z "$CLOUDFRONT_DISTRIBUTION_ID" ]; then
     echo "Searching for CloudFront distribution..."
     CLOUDFRONT_DISTRIBUTION_ID=$(aws cloudfront list-distributions \
-        --query "DistributionList.Items[?contains(Aliases.Items || [''], 'fahaniecares.ph')].Id" \
+        --query "DistributionList.Items[?contains(Aliases.Items || [''], 'bmparliament.gov.ph')].Id" \
         --output text 2>/dev/null)
 fi
 
@@ -111,7 +111,7 @@ echo -e "${GREEN}🎉 CSS Fix Complete!${NC}"
 echo ""
 echo "📌 Verification steps:"
 echo "1. Hard refresh your browser (Ctrl+F5 or Cmd+Shift+R)"
-echo "2. Check https://fahaniecares.ph"
+echo "2. Check https://bmparliament.gov.ph"
 echo "3. The navbar dropdown should now be scrollable"
 echo ""
 echo "💡 If still not working:"

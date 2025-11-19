@@ -1,6 +1,6 @@
-# 🚀 #FahanieCares Coolify Deployment Guide
+# 🚀 BM Parliament Coolify Deployment Guide
 
-Complete step-by-step guide for deploying the #FahanieCares platform on a VPS using Coolify.
+Complete step-by-step guide for deploying the BM Parliament platform on a VPS using Coolify.
 
 ## 📋 Table of Contents
 
@@ -38,7 +38,7 @@ Complete step-by-step guide for deploying the #FahanieCares platform on a VPS us
 
 - Git installed
 - SSH client
-- Domain name (e.g., `fahaniecares.gov.ph`)
+- Domain name (e.g., `bm-parliament.gov.ph`)
 - SSL certificate (or use Coolify's automatic Let's Encrypt)
 
 ---
@@ -66,7 +66,7 @@ apt install -y curl wget git unzip software-properties-common apt-transport-http
 timedatectl set-timezone Asia/Manila
 
 # Set hostname
-hostnamectl set-hostname fahaniecares-prod
+hostnamectl set-hostname bm-parliament-prod
 ```
 
 ### 3. Configure Firewall
@@ -142,11 +142,11 @@ Configure your domain's DNS records:
 
 ```bash
 # A Records
-fahaniecares.gov.ph     A    your-vps-ip
-www.fahaniecares.gov.ph A    your-vps-ip
+bm-parliament.gov.ph     A    your-vps-ip
+www.bm-parliament.gov.ph A    your-vps-ip
 
 # Optional: CNAME for subdomains
-api.fahaniecares.gov.ph CNAME fahaniecares.gov.ph
+api.bm-parliament.gov.ph CNAME bm-parliament.gov.ph
 ```
 
 ### 2. SSL Certificate Configuration
@@ -169,8 +169,8 @@ api.fahaniecares.gov.ph CNAME fahaniecares.gov.ph
 2. **Click "New Application"**
 3. **Choose "Docker Compose"** as deployment type
 4. **Configure basic settings:**
-   - Name: `fahaniecares-production`
-   - Description: `#FahanieCares Public Service Platform`
+   - Name: `bm-parliament-production`
+   - Description: `BM Parliament Public Service Platform`
    - Environment: `production`
 
 ### 2. Upload Docker Configuration
@@ -179,11 +179,11 @@ api.fahaniecares.gov.ph CNAME fahaniecares.gov.ph
 
 ```bash
 # Create project directory
-mkdir -p /home/coolify/fahaniecares
-cd /home/coolify/fahaniecares
+mkdir -p /home/coolify/bm-parliament
+cd /home/coolify/bm-parliament
 
 # Clone repository (or upload files)
-git clone https://github.com/your-org/fahanie-cares.git .
+git clone https://github.com/your-org/bm-parliament.git .
 
 # Copy Coolify-specific files
 cp deployment/docker/docker-compose/coolify.yml docker-compose.yml
@@ -208,7 +208,7 @@ In Coolify dashboard:
 Copy and configure the `.env` file:
 
 ```bash
-cd /home/coolify/fahaniecares
+cd /home/coolify/bm-parliament
 cp .env.coolify.example .env
 ```
 
@@ -221,12 +221,12 @@ cp .env.coolify.example .env
 DJANGO_SETTINGS_MODULE=config.settings.production
 SECRET_KEY=your-super-secret-production-key-here
 DEBUG=False
-ALLOWED_HOSTS=fahaniecares.gov.ph,www.fahaniecares.gov.ph,your-vps-ip
-CSRF_TRUSTED_ORIGINS=https://fahaniecares.gov.ph,https://www.fahaniecares.gov.ph
+ALLOWED_HOSTS=bm-parliament.gov.ph,www.bm-parliament.gov.ph,your-vps-ip
+CSRF_TRUSTED_ORIGINS=https://bm-parliament.gov.ph,https://www.bm-parliament.gov.ph
 
 # Database
-DB_NAME=fahaniecares_prod
-DB_USER=fahaniecares_user
+DB_NAME=bmparliament_prod
+DB_USER=bmparliament_user
 DB_PASSWORD=your-super-strong-database-password
 
 # Redis
@@ -238,7 +238,7 @@ EMAIL_PORT=587
 EMAIL_USE_TLS=True
 EMAIL_HOST_USER=your-email@gmail.com
 EMAIL_HOST_PASSWORD=your-app-specific-password
-DEFAULT_FROM_EMAIL=#FahanieCares <noreply@fahaniecares.gov.ph>
+DEFAULT_FROM_EMAIL=BM Parliament <noreply@bm-parliament.gov.ph>
 
 # Notion API
 NOTION_API_KEY=secret_your_notion_integration_token_here
@@ -286,7 +286,7 @@ After deployment, run initial setup:
 
 ```bash
 # Connect to web container
-docker exec -it fahaniecares_web /bin/bash
+docker exec -it bmparliament_web /bin/bash
 
 # Run migrations
 python manage.py migrate
@@ -320,23 +320,23 @@ In Coolify dashboard:
 
 ```bash
 # Health check
-curl https://fahaniecares.gov.ph/health/
+curl https://bm-parliament.gov.ph/health/
 
 # Detailed health check
-curl https://fahaniecares.gov.ph/health/detailed/
+curl https://bm-parliament.gov.ph/health/detailed/
 
 # Metrics endpoint
-curl https://fahaniecares.gov.ph/metrics/
+curl https://bm-parliament.gov.ph/metrics/
 ```
 
 **Verify SSL:**
 
 ```bash
 # Check SSL certificate
-openssl s_client -connect fahaniecares.gov.ph:443 -servername fahaniecares.gov.ph
+openssl s_client -connect bm-parliament.gov.ph:443 -servername bm-parliament.gov.ph
 
 # Test HTTPS redirect
-curl -I http://fahaniecares.gov.ph
+curl -I http://bm-parliament.gov.ph
 ```
 
 ### 3. Reset Production Statistics
@@ -345,10 +345,10 @@ Ensure clean launch with zero statistics:
 
 ```bash
 # Access Django shell
-docker exec -it fahaniecares_web python manage.py shell
+docker exec -it bmparliament_web python manage.py shell
 
 # Or run the reset command
-docker exec -it fahaniecares_web python manage.py reset_production_stats --confirm
+docker exec -it bmparliament_web python manage.py reset_production_stats --confirm
 ```
 
 ### 4. Test Core Functionality
@@ -385,13 +385,13 @@ Coolify provides built-in monitoring:
 
 ```bash
 # Monitoring dashboard
-https://fahaniecares.gov.ph/monitoring/
+https://bm-parliament.gov.ph/monitoring/
 
 # Health check
-https://fahaniecares.gov.ph/health/
+https://bm-parliament.gov.ph/health/
 
 # System metrics
-https://fahaniecares.gov.ph/metrics/
+https://bm-parliament.gov.ph/metrics/
 ```
 
 ### 3. Log Management
@@ -400,22 +400,22 @@ https://fahaniecares.gov.ph/metrics/
 
 ```bash
 # Application logs
-docker logs fahaniecares_web
+docker logs bmparliament_web
 
 # Database logs
-docker logs fahaniecares_db
+docker logs bmparliament_db
 
 # Redis logs  
-docker logs fahaniecares_redis
+docker logs bmparliament_redis
 
 # Nginx logs (if using Nginx service)
-docker logs fahaniecares_nginx
+docker logs bmparliament_nginx
 
 # Celery logs
-docker logs fahaniecares_celery
+docker logs bmparliament_celery
 
 # Follow logs in real-time
-docker logs -f fahaniecares_web
+docker logs -f bmparliament_web
 ```
 
 ### 4. Automated Backups
@@ -430,10 +430,10 @@ docker logs -f fahaniecares_web
 
 ```bash
 # Database backup
-docker exec fahaniecares_db_prod pg_dump -U fahaniecares_user fahaniecares_prod > backup_$(date +%Y%m%d_%H%M%S).sql
+docker exec bmparliament_db_prod pg_dump -U bmparliament_user bmparliament_prod > backup_$(date +%Y%m%d_%H%M%S).sql
 
 # Application data backup
-docker exec fahaniecares_web_prod python manage.py dumpdata > app_data_$(date +%Y%m%d_%H%M%S).json
+docker exec bmparliament_web_prod python manage.py dumpdata > app_data_$(date +%Y%m%d_%H%M%S).json
 ```
 
 ### 5. Security Updates
@@ -463,7 +463,7 @@ docker compose pull && docker compose up -d
 **Check container logs:**
 
 ```bash
-docker logs fahaniecares_web
+docker logs bmparliament_web
 docker compose logs web
 ```
 
@@ -480,13 +480,13 @@ docker compose logs web
 docker compose down && docker compose up --build -d
 
 # Check environment variables
-docker exec fahaniecares_web env | grep DJANGO
+docker exec bmparliament_web env | grep DJANGO
 
 # Verify DJANGO_SETTINGS_MODULE is set
-docker exec fahaniecares_web env | grep DJANGO_SETTINGS_MODULE
+docker exec bmparliament_web env | grep DJANGO_SETTINGS_MODULE
 
 # Verify database connectivity
-docker exec fahaniecares_web python manage.py dbshell
+docker exec bmparliament_web python manage.py dbshell
 ```
 
 #### 2. Database Connection Issues
@@ -494,17 +494,17 @@ docker exec fahaniecares_web python manage.py dbshell
 **Check database container:**
 
 ```bash
-docker logs fahaniecares_db
-docker exec fahaniecares_db pg_isready -U fahaniecares_user
+docker logs bmparliament_db
+docker exec bmparliament_db pg_isready -U bmparliament_user
 ```
 
 **Solutions:**
 ```bash
 # Restart database container
-docker restart fahaniecares_db
+docker restart bmparliament_db
 
 # Check database credentials
-docker exec fahaniecares_db psql -U fahaniecares_user -d fahaniecares_production -c "SELECT 1;"
+docker exec bmparliament_db psql -U bmparliament_user -d bmparliament_production -c "SELECT 1;"
 ```
 
 #### 3. SSL Certificate Problems
@@ -539,12 +539,12 @@ docker exec fahaniecares_db psql -U fahaniecares_user -d fahaniecares_production
 **Check CSRF Configuration:**
 ```bash
 # Verify DJANGO_SETTINGS_MODULE is set correctly
-docker exec fahaniecares_web env | grep DJANGO_SETTINGS_MODULE
+docker exec bmparliament_web env | grep DJANGO_SETTINGS_MODULE
 
 # Should output: DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Check if production settings are being loaded
-docker exec fahaniecares_web python manage.py shell -c "
+docker exec bmparliament_web python manage.py shell -c "
 from django.conf import settings
 print('CSRF_TRUSTED_ORIGINS:', settings.CSRF_TRUSTED_ORIGINS)
 print('ALLOWED_HOSTS:', settings.ALLOWED_HOSTS)
@@ -558,13 +558,13 @@ print('ALLOWED_HOSTS:', settings.ALLOWED_HOSTS)
 DJANGO_SETTINGS_MODULE=config.settings.production
 
 # 2. Verify CSRF_TRUSTED_ORIGINS includes your domain
-# Should include: https://fahaniecares.ph, https://www.fahaniecares.ph
+# Should include: https://bmparliament.gov.ph, https://www.bmparliament.gov.ph
 
 # 3. Restart containers after environment variable changes
 docker compose down && docker compose up -d
 
 # 4. Test CSRF configuration
-curl -I https://fahaniecares.ph/accounts/login/
+curl -I https://bmparliament.gov.ph/accounts/login/
 # Should return 200 OK, not 403 Forbidden
 ```
 
@@ -589,7 +589,7 @@ export GUNICORN_WORKERS=2
 
 # Enable memory limits in docker-compose.yml
 # Clear application cache
-docker exec fahaniecares_web python manage.py shell -c "from django.core.cache import cache; cache.clear()"
+docker exec bmparliament_web python manage.py shell -c "from django.core.cache import cache; cache.clear()"
 ```
 
 #### 6. Slow Performance
@@ -598,10 +598,10 @@ docker exec fahaniecares_web python manage.py shell -c "from django.core.cache i
 
 ```bash
 # Check database performance
-docker exec fahaniecares_db psql -U fahaniecares_user -d fahaniecares_production -c "SELECT * FROM pg_stat_activity;"
+docker exec bmparliament_db psql -U bmparliament_user -d bmparliament_production -c "SELECT * FROM pg_stat_activity;"
 
 # Monitor Redis performance
-docker exec fahaniecares_redis redis-cli -a ${REDIS_PASSWORD} INFO stats
+docker exec bmparliament_redis redis-cli -a ${REDIS_PASSWORD} INFO stats
 
 # Check disk space
 df -h
@@ -610,10 +610,10 @@ df -h
 **Optimization:**
 ```bash
 # Optimize database
-docker exec fahaniecares_web python manage.py optimize_database
+docker exec bmparliament_web python manage.py optimize_database
 
 # Clear cache
-docker exec fahaniecares_redis redis-cli -a ${REDIS_PASSWORD} FLUSHALL
+docker exec bmparliament_redis redis-cli -a ${REDIS_PASSWORD} FLUSHALL
 
 # Restart services
 docker compose restart
@@ -672,19 +672,19 @@ docker compose restart
 ### Community Support
 
 - [Coolify Discord Community](https://discord.gg/coolify)
-- [#FahanieCares Development Team](mailto:dev@fahaniecares.gov.ph)
+- [BM Parliament Development Team](mailto:dev@bmparliament.gov.ph)
 
 ### Emergency Contacts
 
-- **Technical Support**: dev@fahaniecares.gov.ph
-- **System Administrator**: admin@fahaniecares.gov.ph
+- **Technical Support**: dev@bmparliament.gov.ph
+- **System Administrator**: admin@bm-parliament.gov.ph
 - **Emergency Hotline**: +63 xxx xxx xxxx
 
 ---
 
 ## 🎉 Conclusion
 
-Your #FahanieCares platform is now successfully deployed on Coolify! The platform features:
+Your BM Parliament platform is now successfully deployed on Coolify! The platform features:
 
 ✅ **Production-ready infrastructure** with PostgreSQL, Redis, and Nginx  
 ✅ **Automatic SSL certificates** and security headers  
@@ -700,4 +700,4 @@ The platform is ready to serve the Bangsamoro community with reliable, secure, a
 ---
 
 *Last updated: June 2025*  
-*#FahanieCares Development Team*
+*BM Parliament Development Team*

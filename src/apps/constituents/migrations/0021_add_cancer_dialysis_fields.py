@@ -10,12 +10,12 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='cancer_patient',
             field=models.BooleanField(default=False, help_text='Is a cancer patient'),
         ),
         migrations.AddField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='dialysis_patient',
             field=models.BooleanField(default=False, help_text='Is a dialysis patient'),
         ),

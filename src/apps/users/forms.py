@@ -5,7 +5,7 @@ from .models import User
 
 class UserRegistrationForm(UserCreationForm):
     """
-    Custom registration form for #FahanieCares.
+    Custom registration form for #BM Parliament.
     Extends Django's UserCreationForm to add custom fields.
     """
     first_name = forms.CharField(max_length=30, required=True)

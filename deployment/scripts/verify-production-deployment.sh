@@ -2,7 +2,7 @@
 # Production Deployment Verification Script for Radio Button Fixes
 # Ensures the fork sync and production rebuild will work correctly
 
-echo "🚀 #FahanieCares Production Deployment Verification"
+echo "🚀 BM Parliament Production Deployment Verification"
 echo "=================================================="
 
 # Function to check deployment readiness
@@ -179,7 +179,7 @@ check_site_health() {
     echo "🏥 Checking site health..."
     
     # Check main site
-    if curl -s -o /dev/null -w "%{http_code}" https://fahaniecares.ph | grep -q "200"; then
+    if curl -s -o /dev/null -w "%{http_code}" https://bmparliament.gov.ph | grep -q "200"; then
         echo "  ✅ Main site: HEALTHY (200 OK)"
     else
         echo "  ❌ Main site: UNHEALTHY"
@@ -187,7 +187,7 @@ check_site_health() {
     fi
     
     # Check registration page
-    if curl -s -o /dev/null -w "%{http_code}" https://fahaniecares.ph/constituents/register/ | grep -q "200"; then
+    if curl -s -o /dev/null -w "%{http_code}" https://bmparliament.gov.ph/constituents/register/ | grep -q "200"; then
         echo "  ✅ Registration page: ACCESSIBLE"
     else
         echo "  ❌ Registration page: NOT ACCESSIBLE"
@@ -206,7 +206,7 @@ check_deployment_status() {
     cache_buster="?v=$timestamp"
     
     # Check if CSS includes our radio button styles
-    if curl -s "https://fahaniecares.ph/static/css/output.css$cache_buster" | grep -q "radio-group\|radio-enhanced"; then
+    if curl -s "https://bmparliament.gov.ph/static/css/output.css$cache_buster" | grep -q "radio-group\|radio-enhanced"; then
         echo "  ✅ Radio button styles: DEPLOYED"
     else
         echo "  ⚠️  Radio button styles: NOT CONFIRMED (may be cached)"

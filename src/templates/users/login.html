@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}Log In - #FahanieCares{% endblock %}
+{% block title %}Log In - BM Parliament{% endblock %}
 
 
 
@@ -17,10 +17,10 @@
             <div class="relative z-10">
                 <!-- Header -->
                 <div class="text-center mb-8">
-                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background-color: #10b981;">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
                         <i class="fas fa-user text-white text-2xl"></i>
                     </div>
-                    <h2 class="text-2xl font-bold mb-2" style="color: #065f46;">Log In to #FahanieCares</h2>
+                    <h2 class="text-2xl font-bold mb-2" style="color: #065f46;">Login to our portal</h2>
                     <p style="color: #059669;">Access your personalized dashboard and community features</p>
                 </div>
 
@@ -59,7 +59,7 @@
                                 required
                             />
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-envelope" style="color: #34d399;"></i>
+                                <i class="fas fa-envelope" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                             </div>
                         </div>
                         {% if form.username.errors %}
@@ -89,7 +89,7 @@
                                 required
                             />
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <i class="fas fa-key" style="color: #34d399;"></i>
+                                <i class="fas fa-key" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                             </div>
                             <button
                                 type="button"
@@ -113,7 +113,7 @@
                     <!-- Submit Button -->
                     <button
                         type="submit"
-                        style="width: 100%; display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 600; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';"
+                        style="width: 100%; display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; font-weight: 600; border-radius: 0.5rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px #1e40af';"
                     >
                         <i class="fas fa-sign-in-alt mr-2"></i>
                         Sign In
@@ -127,7 +127,7 @@
                             <div class="w-full" style="border-top: 1px solid #a7f3d0;"></div>
                         </div>
                         <div class="relative flex justify-center text-sm">
-                            <span class="px-4 font-medium" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); color: #059669;">New to #FahanieCares?</span>
+                            <span class="px-4 font-medium" style="background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%); color: #059669;">New to BM Parliament?</span>
                         </div>
                     </div>
                 </div>
@@ -138,7 +138,7 @@
                         href="{% url 'register' %}"
                         style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem 1.5rem; background: white; color: #047857; font-weight: 600; border: 2px solid #10b981; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.backgroundColor='#f9fafb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';"
                     >
-                        <i class="fas fa-user-plus mr-2"></i>
+                        <i class="fas fa-user-plus mr-2" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                         Create New Account
                     </a>
 

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# #FahanieCares Platform - Performance Benchmarking Script
+# BM Parliament Platform - Performance Benchmarking Script
 # Comprehensive performance testing and benchmarking
 
 set -euo pipefail
 
 # Configuration
 TARGET_HOST="${TARGET_HOST:-http://localhost:3000}"
-RESULTS_DIR="${RESULTS_DIR:-/tmp/fahaniecares_performance}"
+RESULTS_DIR="${RESULTS_DIR:-/tmp/bmparliament_performance}"
 TEST_DURATION="${TEST_DURATION:-300}"  # 5 minutes default
 CONCURRENT_USERS="${CONCURRENT_USERS:-50}"
 SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
@@ -29,7 +29,7 @@ send_notification() {
     
     if [ -n "$SLACK_WEBHOOK" ]; then
         curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"⚡ #FahanieCares Performance Test $status: $message\"}" \
+            --data "{\"text\":\"⚡ BM Parliament Performance Test $status: $message\"}" \
             "$SLACK_WEBHOOK" 2>/dev/null || true
     fi
 }
@@ -338,7 +338,7 @@ validate_health_endpoints() {
 
 # Main benchmark function
 main() {
-    log "=== Starting #FahanieCares Performance Benchmark ==="
+    log "=== Starting BM Parliament Performance Benchmark ==="
     
     # Check dependencies
     if ! check_dependencies; then

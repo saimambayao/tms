@@ -5,15 +5,14 @@ from .utils import safe_voter_id_upload
 import secrets
 import string
 
-class FahanieCaresMember(models.Model):
+class BMParliamentMember(models.Model):
     """
-    Comprehensive member profile for #FahanieCares registration
+    Comprehensive member profile for #BM Parliament registration
     """
     
     SEX_CHOICES = (
         ('male', 'Male'),
         ('female', 'Female'),
-        ('prefer_not_to_say', 'Prefer not to say')
     )
     
     EDUCATION_CHOICES = (
@@ -34,7 +33,6 @@ class FahanieCaresMember(models.Model):
         ('farmer', 'Farmers'),
         ('fisherman', 'Fishermen'),
         ('women_mothers', 'Learning Women/Mothers (Ummahat)'),
-        ('lgbtq_community', 'LGBTQ+ Community Members'),
         ('madaris_students', 'Madaris Students'),
         ('mujahidin', 'Mujahidin/Mujahidat'),
         ('special_needs', 'Parents/Guardians of Children with Special Needs'),
@@ -43,7 +41,7 @@ class FahanieCaresMember(models.Model):
         ('small_time_vendor', 'Small-time Vendors'),
         ('solo_parent', 'Solo Parents'),
         ('volunteer_health', 'Volunteer Health Workers'),
-        ('cancer_dialysis', 'Cancer/Dialysis Patients'),
+        ('cancer_dialysis', 'Hospital Patients'),
     )
     
     ELIGIBILITY_CHOICES = (
@@ -57,7 +55,7 @@ class FahanieCaresMember(models.Model):
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name='fahanie_cares_member'
+        related_name='bmparliament_member'
     )
     
     # Application Information
@@ -190,8 +188,8 @@ class FahanieCaresMember(models.Model):
     class Meta:
         app_label = 'constituents'
         ordering = ['-date_of_application']
-        verbose_name = '#FahanieCares Member'
-        verbose_name_plural = '#FahanieCares Members'
+        verbose_name = '#BM Parliament Member'
+        verbose_name_plural = '#BM Parliament Members'
     
     def __str__(self):
         return f"{self.last_name}, {self.first_name} {self.middle_name}"
@@ -244,7 +242,6 @@ class FahanieCaresMember(models.Model):
         'dressmaker_weaver': 'DW',
         'student': 'S',
         'mujahidin': 'MJ',
-        'lgbtq_community': 'LGBTQ',
         'madaris_students': 'MS',
     }
 
@@ -259,7 +256,7 @@ class FahanieCaresMember(models.Model):
             
             # Find the highest existing sequential number for the given prefix
             # We need to ensure the suffix is numeric to avoid issues with temporary IDs
-            last_member = FahanieCaresMember.objects.filter(
+            last_member = BMParliamentMember.objects.filter(
                 member_id__startswith=prefix
             ).exclude(
                 member_id__regex=r'^PREG[A-Z0-9]{8}$' # Exclude temporary IDs
@@ -278,14 +275,14 @@ class FahanieCaresMember(models.Model):
             # Ensure uniqueness by incrementing until a unique ID is found
             while True:
                 new_member_id = f"{prefix}{next_number:04d}"
-                if not FahanieCaresMember.objects.filter(member_id=new_member_id).exists():
+                if not BMParliamentMember.objects.filter(member_id=new_member_id).exists():
                     return new_member_id
                 next_number += 1
 
     def _generate_status_id(self, status_prefix):
         """Generate ID for incomplete (INC) and non-compliant (NOC) statuses"""
         # Find the highest existing sequential number for the given status prefix
-        last_member = FahanieCaresMember.objects.filter(
+        last_member = BMParliamentMember.objects.filter(
             member_id__startswith=status_prefix
         ).order_by('-member_id').first()
 
@@ -302,7 +299,7 @@ class FahanieCaresMember(models.Model):
         # Ensure uniqueness by incrementing until a unique ID is found
         while True:
             new_member_id = f"{status_prefix}{next_number:04d}"
-            if not FahanieCaresMember.objects.filter(member_id=new_member_id).exists():
+            if not BMParliamentMember.objects.filter(member_id=new_member_id).exists():
                 return new_member_id
             next_number += 1
 
@@ -312,7 +309,7 @@ class FahanieCaresMember(models.Model):
 
         # Check for existing member with the same full name
         if is_new:
-            existing_member = FahanieCaresMember.objects.filter(
+            existing_member = BMParliamentMember.objects.filter(
                 first_name=self.first_name,
                 last_name=self.last_name,
                 middle_name=self.middle_name

@@ -8,7 +8,7 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.development')
 django.setup()
 
 from apps.referrals.models import Agency, ServiceCategory, Service
-from apps.constituents.models import Constituent, FahanieCaresMember
+from apps.constituents.models import Constituent, BMParliamentMember
 from apps.chapters.models import Chapter
 from apps.services.models import MinistryProgram
 
@@ -325,7 +325,7 @@ def create_sample_data():
         title="Community Health Caravan",
         defaults={
             'ministry': 'moh',
-            'program_source': 'fahaniecares',
+            'program_source': 'bmparliament',
             'ppa_type': 'program',
             'status': 'active',
             'priority_level': 'high',
@@ -346,7 +346,7 @@ def create_sample_data():
         title="Youth Leadership Summit",
         defaults={
             'ministry': 'mbasiced',
-            'program_source': 'fahaniecares',
+            'program_source': 'bmparliament',
             'ppa_type': 'activity',
             'status': 'active',
             'priority_level': 'medium',
@@ -367,7 +367,7 @@ def create_sample_data():
         title="Livelihood Training for Women",
         defaults={
             'ministry': 'mle',
-            'program_source': 'fahaniecares',
+            'program_source': 'bmparliament',
             'ppa_type': 'program',
             'status': 'completed',
             'priority_level': 'high',

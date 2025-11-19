@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# Production entrypoint script for #FahanieCares Django application
+# Production entrypoint script for BM Parliament Django application
 
 set -e
 
-echo "Starting #FahanieCares production deployment..."
+echo "Starting BM Parliament production deployment..."
 
 # Check if running as root (needed for permission fixes)
 if [ "$(id -u)" = "0" ]; then
@@ -71,7 +71,7 @@ python manage.py setup_rbac || echo "RBAC setup completed"
 echo "Granting developer and system admin access..."
 python /app/src/grant_developer_admin_access.py
 
-echo "#FahanieCares production setup completed successfully!"
+echo "BM Parliament production setup completed successfully!"
 
 # Start the application
 exec "$@"

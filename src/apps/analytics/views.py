@@ -1,12 +1,12 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember
 
 @login_required
 def dashboard(request):
     # Get unique provinces and municipalities, excluding null/empty values
     provinces = sorted(list(
-        FahanieCaresMember.objects
+        BMParliamentMember.objects
         .exclude(address_province__isnull=True)
         .exclude(address_province__exact='')
         .values_list('address_province', flat=True)
@@ -14,7 +14,7 @@ def dashboard(request):
     ))
 
     municipalities = sorted(list(
-        FahanieCaresMember.objects
+        BMParliamentMember.objects
         .exclude(address_municipality__isnull=True)
         .exclude(address_municipality__exact='')
         .values_list('address_municipality', flat=True)
@@ -26,9 +26,9 @@ def dashboard(request):
     municipalities = sorted(list(set(municipalities)))
 
     # Get all sectors from the model choices, not from database
-    sectors = sorted([choice[0] for choice in FahanieCaresMember.SECTOR_CHOICES])
+    sectors = sorted([choice[0] for choice in BMParliamentMember.SECTOR_CHOICES])
     # Get sector display names for the dropdown
-    sector_display_names = sorted([choice[1] for choice in FahanieCaresMember.SECTOR_CHOICES])
+    sector_display_names = sorted([choice[1] for choice in BMParliamentMember.SECTOR_CHOICES])
 
     context = {
         'provinces': provinces,

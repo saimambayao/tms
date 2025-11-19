@@ -6,12 +6,12 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('constituents', '0012_remove_fahaniecaresmember_is_approved_and_more'),
+        ('constituents', '0012_remove_bmparliamentmember_is_approved_and_more'),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='status',
             field=models.CharField(choices=[('pending', 'Pending'), ('approved', 'Approved'), ('incomplete', 'Incomplete'), ('archived', 'Archived')], default='pending', max_length=10),
         ),

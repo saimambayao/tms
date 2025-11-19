@@ -16,12 +16,12 @@ provincial_chapter, created = Chapter.objects.get_or_create(
         'tier': 'provincial',
         'municipality': 'Buluan',
         'province': 'Maguindanao del Sur',
-        'description': "The provincial chapter of #FahanieCares in Maguindanao del Sur, focusing on serving communities across the province.",
+        'description': "The provincial chapter of #BM Parliament in Maguindanao del Sur, focusing on serving communities across the province.",
         'mission_statement': "To bring quality public service and community support to all municipalities of Maguindanao del Sur.",
         'established_date': timezone.now().date(),
         'status': 'active',
         'coordinator': admin_user,
-        'email': 'maguindanaosur@fahaniecares.org',
+        'email': 'maguindanaosur@bmparliament.org',
         'phone': '+63 XXX XXX XXXX',
     }
 )
@@ -31,31 +31,31 @@ print(f"Provincial chapter: {provincial_chapter.name} ({'created' if created els
 municipalities = [
     {
         'name': 'Datu Piang',
-        'description': "The Datu Piang chapter of #FahanieCares, focusing on local community development and assistance programs.",
+        'description': "The Datu Piang chapter of #BM Parliament, focusing on local community development and assistance programs.",
     },
     {
         'name': 'Datu Saudi-Ampatuan',
-        'description': "The Datu Saudi-Ampatuan chapter of #FahanieCares, working to address local needs and improve community services.",
+        'description': "The Datu Saudi-Ampatuan chapter of #BM Parliament, working to address local needs and improve community services.",
     },
     {
         'name': 'Datu Salibo',
-        'description': "The Datu Salibo chapter of #FahanieCares, promoting education, healthcare, and social welfare initiatives.",
+        'description': "The Datu Salibo chapter of #BM Parliament, promoting education, healthcare, and social welfare initiatives.",
     },
     {
         'name': 'Shariff Saydona Mustapha',
-        'description': "The Shariff Saydona Mustapha chapter of #FahanieCares, advocating for sustainable development and community empowerment.",
+        'description': "The Shariff Saydona Mustapha chapter of #BM Parliament, advocating for sustainable development and community empowerment.",
     },
     {
         'name': 'Mamasapano',
-        'description': "The Mamasapano chapter of #FahanieCares, focusing on peace-building, reconciliation, and community support.",
+        'description': "The Mamasapano chapter of #BM Parliament, focusing on peace-building, reconciliation, and community support.",
     },
     {
         'name': 'Shariff Aguak',
-        'description': "The Shariff Aguak chapter of #FahanieCares, formerly known as Maganoy, working on public service initiatives.",
+        'description': "The Shariff Aguak chapter of #BM Parliament, formerly known as Maganoy, working on public service initiatives.",
     },
     {
         'name': 'Datu Unsay',
-        'description': "The Datu Unsay chapter of #FahanieCares, delivering community services and support programs.",
+        'description': "The Datu Unsay chapter of #BM Parliament, delivering community services and support programs.",
     }
 ]
 
@@ -76,7 +76,7 @@ for municipality in municipalities:
             'status': 'active',
             'coordinator': admin_user,
             'parent_chapter': provincial_chapter,
-            'email': f"{municipality['name'].lower().replace(' ', '')}@fahaniecares.org",
+            'email': f"{municipality['name'].lower().replace(' ', '')}@bmparliament.org",
             'phone': '+63 XXX XXX XXXX',
         }
     )

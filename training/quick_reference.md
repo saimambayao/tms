@@ -1,4 +1,4 @@
-# #FahanieCares Quick Reference Guide
+# BM Parliament Quick Reference Guide
 
 ## Common Tasks
 
@@ -64,7 +64,7 @@
 
 ## Contact Support
 
-- **Email**: support@fahaniecares.gov.ph
+- **Email**: support@bmparliament.gov.ph
 - **Phone**: (02) 8123-4567
 - **Hours**: Mon-Fri, 8AM-5PM
 
@@ -91,7 +91,7 @@
 ## Emergency Contacts
 
 - **IT Support**: ext. 5555
-- **System Admin**: admin@fahaniecares.gov.ph
+- **System Admin**: admin@bm-parliament.gov.ph
 - **Hotline**: 0917-123-4567
 
 ---

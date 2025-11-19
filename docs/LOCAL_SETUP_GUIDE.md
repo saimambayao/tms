@@ -1,6 +1,6 @@
 # Local Development Setup Guide (Without Docker)
 
-This guide provides instructions on how to set up and run the Fahanie Cares application on your local machine without using Docker.
+This guide provides instructions on how to set up and run the BM Parliament Cares application on your local machine without using Docker.
 
 ## 1. Prerequisites
 
@@ -17,12 +17,12 @@ Before you begin, ensure you have the following software installed on your syste
 2.  **Create Database and User:** You need to create a database and a user for the application. You can do this using the `psql` command-line tool or a graphical tool like pgAdmin.
 
     ```sql
-    CREATE DATABASE fahaniecares_db;
-    CREATE USER fahaniecares_user WITH PASSWORD 'changeme';
-    ALTER ROLE fahaniecares_user SET client_encoding TO 'utf8';
-    ALTER ROLE fahaniecares_user SET default_transaction_isolation TO 'read committed';
-    ALTER ROLE fahaniecares_user SET timezone TO 'UTC';
-    GRANT ALL PRIVILEGES ON DATABASE fahaniecares_db TO fahaniecares_user;
+    CREATE DATABASE bmparliament_db;
+    CREATE USER bmparliament_user WITH PASSWORD 'changeme';
+    ALTER ROLE bmparliament_user SET client_encoding TO 'utf8';
+    ALTER ROLE bmparliament_user SET default_transaction_isolation TO 'read committed';
+    ALTER ROLE bmparliament_user SET timezone TO 'UTC';
+    GRANT ALL PRIVILEGES ON DATABASE bmparliament_db TO bmparliament_user;
     ```
 
 ## 3. Environment Configuration
@@ -40,8 +40,8 @@ Before you begin, ensure you have the following software installed on your syste
 
     # Database settings
     DB_ENGINE=django.db.backends.postgresql
-    DB_NAME=fahaniecares_db
-    DB_USER=fahaniecares_user
+    DB_NAME=bmparliament_db
+    DB_USER=bmparliament_user
     DB_PASSWORD=changeme
     DB_HOST=localhost
     DB_PORT=5432

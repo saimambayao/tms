@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Deployment script for #FahanieCares
+# Deployment script for BM Parliament
 
 # Exit on error
 set -e
 
 # Configuration
-APP_NAME="fahaniecares"
+APP_NAME="bmparliament"
 REGION="ap-southeast-1"
 ECR_REPOSITORY="${APP_NAME}"
 ECS_CLUSTER="${APP_NAME}-cluster"

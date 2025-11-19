@@ -1,26 +1,32 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}Chapters - #FahanieCares{% endblock %}
+{% block title %}Chapters - BM Parliament{% endblock %}
 
-{% block content %}
-<!-- Hero Section with Emerald Theme -->
-<section class="relative overflow-hidden py-16 md:py-24" style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%); position: relative;">
+{% block hero %}
+<!-- Hero Section with Primary Bangsamoro Colors -->
+<section class="relative overflow-hidden py-16 md:py-24 bg-bangsamoro">
     <!-- Minimal background elements -->
     <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-emerald-500 rounded-full blur-2xl animate-pulse"></div>
+        <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-gray-900 rounded-full blur-2xl animate-pulse"></div>
     </div>
 
-    <!-- Dark gradient overlay for text area -->
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.7) 20%, rgba(6, 95, 70, 0.4) 40%, rgba(4, 120, 87, 0.2) 60%, transparent 80%);"></div>
+    <!-- Bangsamoro gradient overlay for text area (top left) - lighter opacity to show gradient -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(30, 64, 175, 0.3) 0%, rgba(30, 64, 175, 0.2) 20%, rgba(5, 150, 105, 0.1) 40%, transparent 60%);"></div>
 
-    <!-- Dark gradient overlay for bottom right -->
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(17, 24, 39, 0.9) 0%, rgba(31, 41, 55, 0.8) 20%, rgba(6, 95, 70, 0.6) 40%, rgba(4, 120, 87, 0.4) 60%, rgba(5, 150, 105, 0.2) 80%, transparent 100%);"></div>
+    <!-- Bangsamoro gradient overlay for bottom right - lighter opacity -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(5, 150, 105, 0.4) 0%, rgba(5, 150, 105, 0.3) 20%, rgba(5, 150, 105, 0.2) 40%, rgba(5, 150, 105, 0.1) 60%, transparent 80%);"></div>
+
+    <!-- Subtle accent at bottom right corner - reduced opacity -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(5, 150, 105, 0.2) 0%, transparent 50%);"></div>
+
+    <!-- Bangsamoro gradient texture layer -->
+    <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30, 64, 175, 0.15) 0%, transparent 40%, rgba(5, 150, 105, 0.2) 100%);"></div>
 
     <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center">
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white drop-shadow-lg">
-                #FahanieCares <span class="text-emerald-200">Chapters</span>
+                Community <span class="text-white">Chapters</span>
             </h1>
             <p class="text-xl md:text-2xl text-white/90 drop-shadow-md mb-8 max-w-3xl mx-auto">
                 Join our network of community leaders and volunteers working together to bring public service closer to every Bangsamoro constituent
@@ -41,7 +47,9 @@
         </div>
     </div>
 </section>
+{% endblock %}
 
+{% block content %}
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
     
     <!-- Stats Section -->
@@ -79,12 +87,12 @@
     -->
 
     <!-- About Chapters Section -->
-    <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl shadow-lg p-8 mb-12 border border-emerald-200">
+    <div class="bg-white rounded-2xl shadow-lg p-8 mb-12 border border-emerald-200">
         <h2 class="text-3xl font-bold text-emerald-800 mb-6">Building a Network of Service</h2>
         <div class="grid md:grid-cols-2 gap-8">
             <div>
                 <p class="text-gray-700 mb-4 text-lg leading-relaxed">
-                    #FahanieCares Chapters are community-based networks of volunteers and supporters working together to extend our reach and impact. Each chapter serves as a local hub for delivering government services, community engagement, and grassroots initiatives.
+                    BM Parliament Chapters are community-based networks of volunteers and supporters working together to extend our reach and impact. Each chapter serves as a local hub for delivering government services, community engagement, and grassroots initiatives.
                 </p>
                 <p class="text-gray-700 mb-4 text-lg leading-relaxed">
                     Our chapter system ensures that no constituent is left behind, regardless of their location or circumstances. Through organizing at the provincial and municipal levels, we create multiple touch points for public service delivery.
@@ -92,22 +100,22 @@
             </div>
             <div class="grid grid-cols-2 gap-4">
                 <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-emerald-500">
-                    <i class="fas fa-building text-emerald-600 text-2xl mb-2"></i>
+                    <i class="fas fa-building text-2xl mb-2" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                     <h4 class="font-semibold text-gray-900">Provincial</h4>
                     <p class="text-sm text-gray-600">Coordinate province-wide initiatives</p>
                 </div>
                 <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-emerald-500">
-                    <i class="fas fa-city text-emerald-600 text-2xl mb-2"></i>
+                    <i class="fas fa-city text-2xl mb-2" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                     <h4 class="font-semibold text-gray-900">Municipal</h4>
                     <p class="text-sm text-gray-600">Direct community service delivery</p>
                 </div>
                 <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-emerald-500">
-                    <i class="fas fa-user-tie text-emerald-600 text-2xl mb-2"></i>
+                    <i class="fas fa-user-tie text-2xl mb-2" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                     <h4 class="font-semibold text-gray-900">Leadership</h4>
                     <p class="text-sm text-gray-600">Trained chapter coordinators</p>
                 </div>
                 <div class="bg-white rounded-lg p-4 shadow-sm border-l-4 border-emerald-500">
-                    <i class="fas fa-heart text-emerald-600 text-2xl mb-2"></i>
+                    <i class="fas fa-heart text-2xl mb-2" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                     <h4 class="font-semibold text-gray-900">Volunteers</h4>
                     <p class="text-sm text-gray-600">Dedicated community servants</p>
                 </div>
@@ -119,33 +127,33 @@
     <div class="mb-12">
         <h2 class="text-3xl font-bold text-emerald-800 mb-8 text-center">What Our Chapters Do</h2>
         <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mb-4">
-                    <i class="fas fa-users text-xl"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px; border-radius: 9999px; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; overflow: hidden; flex-shrink: 0; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; this.style.transform='scale(1.05)';" onmouseout="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'; this.style.transform='scale(1)';">
+                    <i class="fas fa-users text-white text-xl"></i>
                 </div>
                 <h3 class="font-bold text-emerald-800 mb-2">Community Outreach</h3>
                 <p class="text-gray-700 text-sm leading-relaxed">Regular community visits, service caravans, and mobile assistance programs bringing government services directly to people.</p>
             </div>
 
-            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mb-4">
-                    <i class="fas fa-graduation-cap text-xl"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px; border-radius: 9999px; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; overflow: hidden; flex-shrink: 0; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; this.style.transform='scale(1.05)';" onmouseout="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'; this.style.transform='scale(1)';">
+                    <i class="fas fa-graduation-cap text-white text-xl"></i>
                 </div>
                 <h3 class="font-bold text-emerald-800 mb-2">Training & Education</h3>
                 <p class="text-gray-700 text-sm leading-relaxed">Skills development workshops, civic education seminars, and leadership training for chapter members and community residents.</p>
             </div>
 
-            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mb-4">
-                    <i class="fas fa-hands-helping text-xl"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px; border-radius: 9999px; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; overflow: hidden; flex-shrink: 0; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; this.style.transform='scale(1.05)';" onmouseout="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'; this.style.transform='scale(1)';">
+                    <i class="fas fa-hands-helping text-white text-xl"></i>
                 </div>
                 <h3 class="font-bold text-emerald-800 mb-2">Volunteer Service</h3>
                 <p class="text-gray-700 text-sm leading-relaxed">Coordinate volunteer activities addressing local needs, from environmental cleanup to health and wellness campaigns.</p>
             </div>
 
-            <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-                <div class="w-12 h-12 bg-emerald-500 text-white rounded-full flex items-center justify-center mb-4">
-                    <i class="fas fa-clipboard-list text-xl"></i>
+            <div class="bg-white rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                <div style="width: 48px; height: 48px; min-width: 48px; min-height: 48px; border-radius: 9999px; background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%); display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); margin-bottom: 1rem; overflow: hidden; flex-shrink: 0; transition: transform 0.3s ease, box-shadow 0.3s ease;" onmouseover="this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'; this.style.transform='scale(1.05)';" onmouseout="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1)'; this.style.transform='scale(1)';">
+                    <i class="fas fa-clipboard-list text-white text-xl"></i>
                 </div>
                 <h3 class="font-bold text-emerald-800 mb-2">Service Coordination</h3>
                 <p class="text-gray-700 text-sm leading-relaxed">Help constituents access government programs, process documents, and connect with appropriate ministries and agencies.</p>
@@ -233,12 +241,12 @@
     <!-- Benefits & Call to Action -->
     <div class="grid lg:grid-cols-2 gap-8">
         <!-- Benefits -->
-        <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-2xl shadow-lg p-8 border border-emerald-200">
+        <div class="bg-white rounded-2xl shadow-lg p-8 border border-emerald-200 flex flex-col">
             <h2 class="text-2xl font-bold text-emerald-800 mb-6">Member Benefits</h2>
 
-            <ul class="space-y-4">
+            <ul class="space-y-4 flex-grow">
                 <li class="flex items-start">
-                    <div class="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
                         <i class="fas fa-check text-white text-xs"></i>
                     </div>
                     <div>
@@ -247,7 +255,7 @@
                     </div>
                 </li>
                 <li class="flex items-start">
-                    <div class="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
                         <i class="fas fa-check text-white text-xs"></i>
                     </div>
                     <div>
@@ -256,7 +264,7 @@
                     </div>
                 </li>
                 <li class="flex items-start">
-                    <div class="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
                         <i class="fas fa-check text-white text-xs"></i>
                     </div>
                     <div>
@@ -265,20 +273,20 @@
                     </div>
                 </li>
                 <li class="flex items-start">
-                    <div class="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0">
+                    <div class="w-6 h-6 rounded-full flex items-center justify-center mt-0.5 mr-3 flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
                         <i class="fas fa-check text-white text-xs"></i>
                     </div>
                     <div>
                         <span class="font-semibold text-emerald-800">Recognition & Support</span>
-                        <p class="text-gray-700 text-sm mt-1 leading-relaxed">Be recognized for your contributions and receive support from the #FahanieCares central team.</p>
+                        <p class="text-gray-700 text-sm mt-1 leading-relaxed">Be recognized for your contributions and receive support from the office.</p>
                     </div>
                 </li>
             </ul>
 
-            <div class="mt-8">
+            <div class="mt-auto pt-8">
                 <a href="{% url 'chapter_list' %}"
-                   style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 500; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)';">
-                    <i class="fas fa-user-plus mr-2"></i>
+                   style="display: inline-flex; align-items: center; justify-content: center; width: 100%; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; font-weight: 500; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';">
+                    <i class="fas fa-user-plus mr-2 text-white"></i>
                     Join Your Local Chapter
                 </a>
             </div>
@@ -293,11 +301,11 @@
             {% endif %}
 
             <h2 class="text-2xl font-semibold mb-4 text-emerald-700">
-                <i class="fas fa-plus-circle mr-2 text-emerald-600"></i>
+                <i class="fas fa-plus-circle mr-2" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
                 Start a Chapter
             </h2>
             <p class="mb-6 text-gray-700">
-                Interested in starting a new #FahanieCares chapter in your community? Fill out this form to get in touch with our chapter development team.
+                Interested in starting a new chapter in your community? Fill out this form to get in touch with our chapter development team.
             </p>
             
             <form method="post" class="space-y-4">
@@ -385,7 +393,7 @@
                 
                 <!-- Submit Button -->
                 <div class="pt-4">
-                    <button type="submit" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; font-weight: 500; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)';">
+                    <button type="submit" style="width: 100%; display: inline-flex; align-items: center; justify-content: center; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; font-weight: 500; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';">
                         <i class="fas fa-paper-plane mr-2"></i>
                         Send Message
                     </button>
@@ -393,6 +401,7 @@
             </form>
         </div>
     </div>
+
 </div>
 {% endblock %}
 

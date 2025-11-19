@@ -5,90 +5,173 @@
 
 {# CLINE_DEBUG_MARKER_V1 #}
 
+{% block extra_css %}
+<style>
+    .dashboard-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 0.5rem 0;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
+        color: white;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(30, 64, 175, 0.25), 0 0 0 1px rgba(5, 150, 105, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        transform: translate(40%, -40%);
+    }
+
+    .dashboard-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .dashboard-header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .dashboard-header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.125rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-icon {
+        width: 3rem;
+        height: 3rem;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem 1.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .dashboard-header p {
+            font-size: 1rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Header Section -->
-    <div class="mb-8">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                    <i class="fas fa-clipboard-list text-primary-600"></i>
-                    Service Applications
-                </h1>
-                <p class="mt-2 text-gray-600">Manage and track all service applications submitted by members.</p>
-            </div>
-            <div class="flex items-center gap-2 text-sm text-gray-500">
-                <i class="fas fa-user-shield"></i>
-                <span>Authorized Access: {{ user.get_user_type_display }}</span>
+<div class="dashboard-container">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <!-- Hero Section -->
+        <div class="dashboard-header">
+            <div class="dashboard-header-content">
+                <div class="header-left">
+                    <div class="header-icon">
+                        <i class="fas fa-clipboard-list text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1>Service Applications</h1>
+                        <p>
+                            <i class="fas fa-bolt text-white"></i>
+                            Comprehensive management system for all service applications submitted by members
+                        </p>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
     <!-- Statistics Cards (Placeholder - to be populated with actual data if available) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 mb-8">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total Applications -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Total Applications</p>
+            <div class="flex items-center justify-between gap-6">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-600 mb-1">Total Applications</p>
                     <p class="text-3xl font-bold text-gray-900">{{ total_applications|default:0 }}</p>
                 </div>
-                <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-file-alt text-primary-600 text-xl"></i>
+                <div class="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
+                    <i class="fas fa-file-alt text-white text-xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- Approved -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Approved</p>
+            <div class="flex items-center justify-between gap-6">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-600 mb-1">Approved</p>
                     <p class="text-3xl font-bold text-green-600">{{ approved_applications|default:0 }}</p>
                 </div>
-                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                <div class="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
+                    <i class="fas fa-check-circle text-white text-xl"></i>
                 </div>
             </div>
         </div>
 
         <!-- Pending -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Pending</p>
+            <div class="flex items-center justify-between gap-6">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-600 mb-1">Pending</p>
                     <p class="text-3xl font-bold text-yellow-600">{{ pending_applications|default:0 }}</p>
                 </div>
-                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                <div class="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
+                    <i class="fas fa-clock text-white text-xl"></i>
                 </div>
             </div>
         </div>
         <!-- Rejected -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Rejected</p>
+            <div class="flex items-center justify-between gap-6">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-600 mb-1">Rejected</p>
                     <p class="text-3xl font-bold text-red-600">{{ rejected_applications|default:0 }}</p>
                 </div>
-                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-times-circle text-red-600 text-xl"></i>
+                <div class="w-14 h-14 rounded-lg flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%);">
+                    <i class="fas fa-times-circle text-white text-xl"></i>
                 </div>
             </div>
         </div>
 
-        <!-- This Month -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">This Month</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ this_month_applications|default:0 }}</p>
-                </div>
-                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                    <i class="fas fa-calendar-plus text-blue-600 text-xl"></i>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Filters and Search Section -->
@@ -113,7 +196,10 @@
                     </div>
                     <div class="flex items-end">
                         <button type="submit" 
-                                class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                                style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.3s ease; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);"
+                                onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(30, 64, 175, 0.4)';"
+                                onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 64, 175, 0.3)';"
+                                class="text-white px-6 py-3 rounded-lg font-medium flex items-center gap-2">
                             <i class="fas fa-search"></i>
                             Search
                         </button>
@@ -188,7 +274,10 @@
                 <!-- Filter Actions -->
                 <div class="flex flex-wrap gap-3">
                     <button type="submit" 
-                            class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                            style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.5rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.3s ease; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);"
+                            onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(30, 64, 175, 0.4)';"
+                            onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 64, 175, 0.3)';"
+                            class="text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2">
                         <i class="fas fa-filter"></i>
                         Apply Filters
                     </button>
@@ -401,6 +490,7 @@
             </div>
         </div>
         {% endif %}
+    </div>
     </div>
 </div>
 

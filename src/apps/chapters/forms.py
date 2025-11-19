@@ -21,7 +21,7 @@ class ChapterForm(forms.ModelForm):
         ]
         widgets = {
             'name': forms.TextInput(attrs={
-                'placeholder': 'e.g., #FahanieCares Cotabato Chapter',
+                'placeholder': 'e.g., #BM Parliament Cotabato Chapter',
                 'required': True
             }),
             'tier': forms.Select(attrs={'required': True}),
@@ -49,7 +49,7 @@ class ChapterForm(forms.ModelForm):
             'established_date': forms.DateInput(attrs={'type': 'date'}),
             'coordinator': forms.Select(),
             'email': forms.EmailInput(attrs={
-                'placeholder': 'chapter@fahaniecares.ph'
+                'placeholder': 'chapter@bmparliament.ph'
             }),
             'phone': forms.TextInput(attrs={
                 'placeholder': '+63 XXX XXX XXXX'

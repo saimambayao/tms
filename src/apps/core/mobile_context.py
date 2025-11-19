@@ -1,5 +1,5 @@
 """
-Mobile detection context processor for #FahanieCares.
+Mobile detection context processor for #BM Parliament.
 """
 
 import re

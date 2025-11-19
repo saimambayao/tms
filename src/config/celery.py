@@ -1,5 +1,5 @@
 """
-Celery configuration for #FahanieCares project.
+Celery configuration for #BM Parliament project.
 """
 
 import os
@@ -9,7 +9,7 @@ from celery.schedules import crontab
 # Set the default Django settings module for the 'celery' program.
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.production')
 
-app = Celery('fahanie_cares')
+app = Celery('bmparliament')
 
 # Using a string here means the worker doesn't have to serialize
 # the configuration object to child processes.

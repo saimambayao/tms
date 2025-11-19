@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-#FahanieCares Platform - API Documentation Generator
+BM Parliament Platform - API Documentation Generator
 Automatically generates comprehensive API documentation from Django REST API
 """
 
@@ -163,12 +163,12 @@ def generate_openapi_spec(patterns):
     openapi_spec = {
         "openapi": "3.0.0",
         "info": {
-            "title": "#FahanieCares API",
-            "description": "API documentation for the #FahanieCares platform - Bringing Bangsamoro Public Service Closer to You",
+            "title": "BM Parliament API",
+            "description": "API documentation for the BM Parliament platform - Bringing Bangsamoro Public Service Closer to You",
             "version": "1.0.0",
             "contact": {
-                "name": "#FahanieCares Development Team",
-                "email": "dev@fahaniecares.ph"
+                "name": "BM Parliament Development Team",
+                "email": "dev@bmparliament.gov.ph"
             },
             "license": {
                 "name": "Proprietary",
@@ -181,7 +181,7 @@ def generate_openapi_spec(patterns):
                 "description": "Development server"
             },
             {
-                "url": "https://fahaniecares.ph",
+                "url": "https://bmparliament.gov.ph",
                 "description": "Production server"
             }
         ],
@@ -318,17 +318,17 @@ def extract_tag_from_module(module_name):
 def generate_markdown_docs(patterns):
     """Generate Markdown documentation."""
     
-    docs = f"""# #FahanieCares API Documentation
+    docs = f"""# BM Parliament API Documentation
 
 Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 ## Overview
 
-This document provides comprehensive API documentation for the #FahanieCares platform.
+This document provides comprehensive API documentation for the BM Parliament platform.
 
 ### Base URLs
 - Development: `http://localhost:3000`
-- Production: `https://fahaniecares.ph`
+- Production: `https://bmparliament.gov.ph`
 
 ### Authentication
 Most endpoints require Django session authentication with CSRF protection.
@@ -374,8 +374,8 @@ def generate_postman_collection(patterns):
     
     collection = {
         "info": {
-            "name": "#FahanieCares API",
-            "description": "API collection for #FahanieCares platform testing",
+            "name": "BM Parliament API",
+            "description": "API collection for BM Parliament platform testing",
             "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
         },
         "variable": [
@@ -451,7 +451,7 @@ def generate_postman_collection(patterns):
 
 def main():
     """Main function to generate API documentation."""
-    print("🚀 Generating #FahanieCares API Documentation...")
+    print("🚀 Generating BM Parliament API Documentation...")
     
     # Setup Django
     if not setup_django():

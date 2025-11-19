@@ -8,7 +8,7 @@ from .utils import safe_media_upload
 
 class Announcement(models.Model):
     """
-    News and announcements for the #FahanieCares platform
+    News and announcements for the #BM Parliament platform
     """
     CATEGORY_CHOICES = (
         ('news', 'News'),

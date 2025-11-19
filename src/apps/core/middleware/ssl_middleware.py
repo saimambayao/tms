@@ -1,5 +1,5 @@
 """
-SSL and Security Middleware for #FahanieCares
+SSL and Security Middleware for #BM Parliament
 
 This middleware handles SSL redirection, security headers,
 and certificate validation at the Django application level.
@@ -118,7 +118,7 @@ class SecurityHeadersMiddleware(MiddlewareMixin):
             del response['Server']
         
         # Add custom security header
-        response['X-Security-Policy'] = 'FahanieCares Security Policy v1.0'
+        response['X-Security-Policy'] = 'BM Parliament Security Policy v1.0'
         
         return response
 

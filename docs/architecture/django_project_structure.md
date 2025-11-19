@@ -1,9 +1,9 @@
-# Fahanie Cares Django Project Structure
+# BM Parliament Cares Django Project Structure
 
-Below is the comprehensive directory structure for the #FahanieCares website following the reorganization plan:
+Below is the comprehensive directory structure for the BM Parliament website following the reorganization plan:
 
 ```
-fahanie-cares/
+bm-parliament/
 ├── .env                     # Environment variables (gitignored)
 ├── .env.example             # Example environment file
 ├── .gitignore               # Git ignore file
@@ -11,7 +11,7 @@ fahanie-cares/
 ├── CLAUDE.md                # AI assistant instructions
 ├── docker-compose.yml       # Default development docker-compose
 │
-├── src/                     # Django source code (renamed from fahanie_cares_django)
+├── src/                     # Django source code (renamed from bm parliament_cares_django)
 │   ├── requirements.txt     # Python dependencies
 │   ├── manage.py            # Django management script
 │   │
@@ -396,7 +396,7 @@ Each module includes its own models, views, templates, and tests for maximum ind
 
 ## Reorganized Structure Benefits
 
-After the reorganization from `fahanie_cares_django/` to `src/`:
+After the reorganization from `bm parliament_cares_django/` to `src/`:
 
 1. **Cleaner Root Directory**: The root now contains only essential configuration files and documentation.
 
@@ -415,6 +415,6 @@ After the reorganization from `fahanie_cares_django/` to `src/`:
 ## Migration Notes
 
 When migrating from the old structure to the new one, update all references:
-- Docker build contexts: Change from `./fahanie_cares_django` to `./src`
-- Shell scripts: Update paths to point to `src/` instead of `fahanie_cares_django/`
+- Docker build contexts: Change from `./bm parliament_cares_django` to `./src`
+- Shell scripts: Update paths to point to `src/` instead of `bm parliament_cares_django/`
 - Documentation: Update any path references in documentation files

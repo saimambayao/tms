@@ -1,6 +1,6 @@
-# Docker Setup for FahanieCares
+# Docker Setup for BM Parliament
 
-This guide provides instructions for running the FahanieCares Django application using Docker.
+This guide provides instructions for running the BM Parliament Django application using Docker.
 
 ## Prerequisites
 
@@ -12,8 +12,8 @@ This guide provides instructions for running the FahanieCares Django application
 
 1. **Clone the repository** (if you haven't already):
    ```bash
-   git clone https://github.com/your-org/fahanie-cares.git
-   cd fahanie-cares
+   git clone https://github.com/your-org/bm-parliament.git
+   cd bm-parliament
    ```
 
 2. **Create environment file**:
@@ -86,7 +86,7 @@ docker-compose exec web python manage.py shell_plus
 2. **Database Management**:
    ```bash
    # Access PostgreSQL
-   docker-compose exec db psql -U fahaniecares_user -d fahaniecares_db
+   docker-compose exec db psql -U bmparliament_user -d bmparliament_db
    ```
 
 3. **Redis CLI**:
@@ -132,7 +132,7 @@ docker-compose -f docker-compose.prod.yml logs -f
 docker-compose -f docker-compose.prod.yml up -d --scale celery=3
 
 # Backup database
-docker-compose -f docker-compose.prod.yml exec db pg_dump -U fahaniecares_user fahaniecares_db > backup.sql
+docker-compose -f docker-compose.prod.yml exec db pg_dump -U bmparliament_user bmparliament_db > backup.sql
 ```
 
 ## Troubleshooting
@@ -168,7 +168,7 @@ docker-compose exec web /bin/bash
 docker ps -a
 
 # Inspect container
-docker inspect fahaniecares_web
+docker inspect bmparliament_web
 
 # Remove all containers and volumes (WARNING: deletes data)
 docker-compose down -v
@@ -238,15 +238,15 @@ docker-compose -f docker-compose.test.yml up
 ### Test Reports
 
 Test reports are stored in Docker volumes:
-- **Test Coverage**: `fahaniecares_test_reports` volume
-- **Performance Reports**: `fahaniecares_performance_reports` volume
+- **Test Coverage**: `bmparliament_test_reports` volume
+- **Performance Reports**: `bmparliament_performance_reports` volume
 
 ```bash
 # Access test coverage reports
-docker run --rm -v fahaniecares_test_reports:/reports alpine ls -la /reports
+docker run --rm -v bmparliament_test_reports:/reports alpine ls -la /reports
 
 # Access performance reports
-docker run --rm -v fahaniecares_performance_reports:/reports alpine ls -la /reports
+docker run --rm -v bmparliament_performance_reports:/reports alpine ls -la /reports
 ```
 
 ## Docker Compose Files
@@ -280,7 +280,7 @@ CSRF_COOKIE_SECURE=True
 ```bash
 TESTING=True
 EMAIL_BACKEND=django.core.mail.backends.locmem.EmailBackend
-DB_NAME=fahaniecares_test_db
+DB_NAME=bmparliament_test_db
 ```
 
 ## Additional Resources

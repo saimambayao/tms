@@ -1,12 +1,12 @@
 # Radio Button Validation Issue - Root Cause Analysis and Solution
 
 **Date**: June 10, 2025  
-**Author**: #FahanieCares Development Team  
+**Author**: BM Parliament Development Team  
 **Issue**: Registration form showing "This field is required" errors for radio button fields despite being selected
 
 ## Problem Description
 
-The #FahanieCares member registration form was experiencing validation errors where radio button fields (sex, sector, highest_education, eligibility) were showing "This field is required" errors even though users had selected values. This issue occurred specifically when:
+The BM Parliament member registration form was experiencing validation errors where radio button fields (sex, sector, highest_education, eligibility) were showing "This field is required" errors even though users had selected values. This issue occurred specifically when:
 
 1. The form had validation errors (e.g., username already taken, password mismatch)
 2. The form was re-rendered with errors
@@ -92,8 +92,8 @@ class EnhancedRadioSelect(forms.RadioSelect):
 
 ### 3. Applied Fix to All Forms
 Updated all forms with RadioSelect widgets to use the mixin and enhanced widget:
-- `FahanieCaresMemberRegistrationForm`
-- `FahanieCaresMemberUpdateForm`
+- `BM ParliamentMemberRegistrationForm`
+- `BM ParliamentMemberUpdateForm`
 - `DocumentApprovalForm`
 - `VotingRecordForm`
 
@@ -171,6 +171,6 @@ docker-compose logs -f web
 The fix was deployed by pushing to the main branch, which automatically:
 1. Syncs to the production fork repository
 2. Triggers the production rebuild in Coolify
-3. Updates the live site at https://fahaniecares.ph
+3. Updates the live site at https://bmparliament.gov.ph
 
 No manual deployment steps were required.

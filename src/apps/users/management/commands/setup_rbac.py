@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-    help = 'Set up RBAC permissions, roles, and initial data for #FahanieCares'
+    help = 'Set up RBAC permissions, roles, and initial data for #BM Parliament'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -154,9 +154,9 @@ class Command(BaseCommand):
             
             # Service management
             {
-                'name': 'Manage FahanieCares Programs',
-                'codename': 'manage_fahaniecares_programs',
-                'description': 'Create and manage #FahanieCares service programs',
+                'name': 'Manage BM Parliament Programs',
+                'codename': 'manage_bmparliament_programs',
+                'description': 'Create and manage #BM Parliament service programs',
                 'module': 'services'
             },
             {
@@ -353,7 +353,7 @@ class Command(BaseCommand):
                 'view_operational_reports',
                 'export_data',
                 'view_service_analytics',
-                'manage_fahaniecares_programs',
+                'manage_bmparliament_programs',
                 'manage_tdif_projects',
                 'manage_ministry_programs',
                 'approve_service_applications',
@@ -437,7 +437,7 @@ class Command(BaseCommand):
                 'manage_backups',
                 'view_operational_reports',
                 'export_data',
-                'manage_fahaniecares_programs',
+                'manage_bmparliament_programs',
                 'manage_tdif_projects',
                 'manage_ministry_programs',
                 'approve_service_applications',
@@ -454,7 +454,7 @@ class Command(BaseCommand):
                 'view_calendar',
                 'view_tasks',
                 # PLUS Service coordination capabilities
-                'manage_fahaniecares_programs',
+                'manage_bmparliament_programs',
                 'manage_tdif_projects',
                 'manage_ministry_programs',
                 'approve_service_applications',
@@ -515,75 +515,75 @@ class Command(BaseCommand):
         test_users = [
             {
                 'username': 'superuser_test',
-                'email': 'superuser@fahaniecares.ph',
+                'email': 'superuser@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'Superuser',
                 'user_type': 'superuser',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'mp_test',
-                'email': 'mp@fahaniecares.ph',
+                'email': 'mp@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'MP',
                 'user_type': 'mp',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'chief_test',
-                'email': 'chief@fahaniecares.ph',
+                'email': 'chief@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'Chief',
                 'user_type': 'chief_of_staff',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'staff_test',
-                'email': 'staff@fahaniecares.ph',
+                'email': 'staff@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'Staff',
                 'user_type': 'staff',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'admin_test',
-                'email': 'admin@fahaniecares.ph',
+                'email': 'admin@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'Admin',
                 'user_type': 'admin',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'coordinator_test',
-                'email': 'coordinator@fahaniecares.ph',
+                'email': 'coordinator@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'Coordinator',
                 'user_type': 'coordinator',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'info_officer_test',
-                'email': 'info@fahaniecares.ph',
+                'email': 'info@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'InfoOfficer',
                 'user_type': 'info_officer',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'member_test',
-                'email': 'member@fahaniecares.ph',
+                'email': 'member@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'Member',
                 'user_type': 'chapter_member',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
             {
                 'username': 'user_test',
-                'email': 'user@fahaniecares.ph',
+                'email': 'user@bmparliament.ph',
                 'first_name': 'Test',
                 'last_name': 'User',
                 'user_type': 'registered_user',
-                'password': 'FahanieCares2024!'
+                'password': 'BMParliament2024!'
             },
         ]
         

@@ -200,7 +200,7 @@ def update_credentials_file():
     """Update staff_login_credentials.txt with all current staff"""
     staff_members = Staff.objects.all().select_related('user').order_by('full_name')
     
-    content = "#FahanieCares Staff Login Credentials\n"
+    content = "#BM Parliament Staff Login Credentials\n"
     content += "=" * 60 + "\n"
     content += "Updated from Staff Profiles.csv\n\n"
     

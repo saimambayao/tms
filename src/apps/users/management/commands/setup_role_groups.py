@@ -9,7 +9,7 @@ from django.db import transaction
 
 
 class Command(BaseCommand):
-    help = 'Set up Django Groups for #FahanieCares role hierarchy'
+    help = 'Set up Django Groups for #BM Parliament role hierarchy'
     
     def add_arguments(self, parser):
         parser.add_argument(

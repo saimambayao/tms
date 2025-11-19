@@ -1,12 +1,12 @@
 #!/bin/bash
-# SSL Certificate Verification Script for #FahanieCares
+# SSL Certificate Verification Script for BM Parliament
 # Checks SSL certificate status, expiry, and security configuration
 
 set -e
 
 # Configuration
-DOMAIN="fahaniecares.gov.ph"
-WWW_DOMAIN="www.fahaniecares.gov.ph"
+DOMAIN="bmparliament.gov.ph"
+WWW_DOMAIN="www.bmparliament.gov.ph"
 LOG_FILE="/var/log/ssl_verification.log"
 
 # Colors for output
@@ -224,7 +224,7 @@ generate_report() {
     
     {
         echo "================================"
-        echo "#FahanieCares SSL Status Report"
+        echo "BM Parliament SSL Status Report"
         echo "Generated: $(date)"
         echo "================================"
         echo ""
@@ -249,7 +249,7 @@ generate_report() {
 
 # Main execution
 main() {
-    log "${BLUE}Starting SSL verification for #FahanieCares...${NC}"
+    log "${BLUE}Starting SSL verification for BM Parliament...${NC}"
     
     # Create log directory if it doesn't exist
     mkdir -p "$(dirname "$LOG_FILE")"
@@ -274,7 +274,7 @@ main() {
 if [ "$1" = "--help" ] || [ "$1" = "-h" ]; then
     echo "Usage: $0 [options]"
     echo ""
-    echo "SSL Certificate Verification Script for #FahanieCares"
+    echo "SSL Certificate Verification Script for BM Parliament"
     echo ""
     echo "Options:"
     echo "  --help, -h    Show this help message"

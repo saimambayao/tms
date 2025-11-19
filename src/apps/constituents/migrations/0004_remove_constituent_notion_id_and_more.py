@@ -6,7 +6,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('constituents', '0003_fahaniecaresmember_voter_id_photo'),
+        ('constituents', '0003_bmparliamentmember_voter_id_photo'),
     ]
 
     operations = [
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
             name='notion_id',
         ),
         migrations.RemoveField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='notion_id',
         ),
     ]

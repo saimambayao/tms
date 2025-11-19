@@ -14,7 +14,7 @@ import io
 import tempfile
 import os
 
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember
 from apps.users.models import User
 
 User = get_user_model()
@@ -29,13 +29,13 @@ class RegistrationIntegrationTest(TransactionTestCase):
         self.registration_url = reverse('register')
         self.success_url = reverse('registration_success')
         # Clean up ALL users and members to ensure complete isolation
-        FahanieCaresMember.objects.all().delete()
+        BMParliamentMember.objects.all().delete()
         User.objects.all().delete()
     
     def tearDown(self):
         """Clean up after each test."""
         # Clean up uploaded files before deleting members
-        for member in FahanieCaresMember.objects.all():
+        for member in BMParliamentMember.objects.all():
             if member.voter_id_photo:
                 try:
                     if os.path.exists(member.voter_id_photo.path):
@@ -44,7 +44,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
                     pass  # Ignore file cleanup errors
         
         # Delete test data
-        FahanieCaresMember.objects.all().delete()
+        BMParliamentMember.objects.all().delete()
         User.objects.filter(username__startswith='test').delete()  # Only delete test users
         
     def create_test_image(self):
@@ -93,7 +93,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         # Step 1: Access registration page
         response = self.client.get(self.registration_url)
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, '#FahanieCares Member Registration')
+        self.assertContains(response, '#BM Parliament Member Registration')
         
         # Step 2: Submit valid registration data
         form_data = self.get_valid_registration_data()
@@ -113,7 +113,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         self.assertFalse(user.is_approved)
         
         # Step 5: Verify member profile was created
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         self.assertEqual(member.first_name, 'Test')
         self.assertEqual(member.last_name, 'Integration')
         self.assertEqual(member.middle_name, 'User')
@@ -152,7 +152,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         self.assertRedirects(response, self.success_url)
         
         user = User.objects.get(username='test_volunteer_teacher')
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         
         self.assertTrue(member.is_volunteer_teacher)
         self.assertEqual(member.volunteer_school, 'Elementary School of Test')
@@ -186,7 +186,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         self.assertRedirects(response, self.success_url)
         
         user = User.objects.get(username='test_file_upload_user')
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         
         # Check if file was uploaded
         if member.voter_id_photo:
@@ -222,7 +222,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         
         # Verify no user or member was created
         self.assertEqual(User.objects.count(), 0)
-        self.assertEqual(FahanieCaresMember.objects.count(), 0)
+        self.assertEqual(BMParliamentMember.objects.count(), 0)
     
     def test_duplicate_registration_prevention(self):
         """Test prevention of duplicate registrations."""
@@ -246,7 +246,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         
         # Verify only one user exists
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(FahanieCaresMember.objects.count(), 1)
+        self.assertEqual(BMParliamentMember.objects.count(), 1)
     
     def test_registration_message_system(self):
         """Test Django messages system integration."""
@@ -284,7 +284,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
                                msg_prefix=f"Failed for {province}, {municipality}")
             
             user = User.objects.get(username=f'test_user_{i}')
-            member = FahanieCaresMember.objects.get(user=user)
+            member = BMParliamentMember.objects.get(user=user)
             self.assertEqual(member.address_province, province)
             self.assertEqual(member.address_municipality, municipality)
     
@@ -311,7 +311,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
                                msg_prefix=f"Failed for sector {sector}")
             
             user = User.objects.get(username=f'test_sector_user_{i}')
-            member = FahanieCaresMember.objects.get(user=user)
+            member = BMParliamentMember.objects.get(user=user)
             self.assertEqual(member.sector, sector)
     
     def test_all_education_levels(self):
@@ -336,7 +336,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
                                msg_prefix=f"Failed for education {education}")
             
             user = User.objects.get(username=f'test_edu_user_{i}')
-            member = FahanieCaresMember.objects.get(user=user)
+            member = BMParliamentMember.objects.get(user=user)
             self.assertEqual(member.highest_education, education)
     
     def test_registration_database_consistency(self):
@@ -345,14 +345,14 @@ class RegistrationIntegrationTest(TransactionTestCase):
         
         # Count before registration
         user_count_before = User.objects.count()
-        member_count_before = FahanieCaresMember.objects.count()
+        member_count_before = BMParliamentMember.objects.count()
         
         response = self.client.post(self.registration_url, data=form_data)
         self.assertRedirects(response, self.success_url)
         
         # Count after registration
         user_count_after = User.objects.count()
-        member_count_after = FahanieCaresMember.objects.count()
+        member_count_after = BMParliamentMember.objects.count()
         
         # Verify counts increased by exactly 1
         self.assertEqual(user_count_after, user_count_before + 1)
@@ -360,7 +360,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         
         # Verify relationship integrity
         user = User.objects.get(username='test_integration_user')
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         self.assertEqual(member.user, user)
         
         # Verify cascade behavior
@@ -369,7 +369,7 @@ class RegistrationIntegrationTest(TransactionTestCase):
         user.delete()
         
         # Member should be deleted due to CASCADE
-        self.assertFalse(FahanieCaresMember.objects.filter(id=member_id).exists())
+        self.assertFalse(BMParliamentMember.objects.filter(id=member_id).exists())
 
 
 class RegistrationWorkflowIntegrationTest(TransactionTestCase):
@@ -380,7 +380,7 @@ class RegistrationWorkflowIntegrationTest(TransactionTestCase):
         self.client = Client()
         self.registration_url = reverse('register')
         # Clean up ALL users and members to ensure complete isolation
-        FahanieCaresMember.objects.all().delete()
+        BMParliamentMember.objects.all().delete()
         User.objects.all().delete()
     
     def test_registration_to_login_workflow(self):
@@ -453,7 +453,7 @@ class RegistrationWorkflowIntegrationTest(TransactionTestCase):
         
         # Verify user is not approved initially
         user = User.objects.get(username='test_approval_user')
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         self.assertFalse(user.is_approved)
         self.assertFalse(member.is_approved)
         

@@ -1,10 +1,10 @@
 #!/bin/bash
-# Production Launch Sequence for #FahanieCares Platform
+# Production Launch Sequence for BM Parliament Platform
 # This script orchestrates the complete production deployment
 
 set -e
 
-echo "=== #FahanieCares Production Launch Sequence ==="
+echo "=== BM Parliament Production Launch Sequence ==="
 echo "Starting at: $(date)"
 echo "=============================================="
 
@@ -16,10 +16,10 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 # Configuration
-PROJECT_ROOT="/Users/macbookpro/Documents/fahanie-cares"
+PROJECT_ROOT="/Users/macbookpro/Documents/bmparliament"
 DJANGO_ROOT="${PROJECT_ROOT}/src"
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/fahaniecares}"
-LOG_FILE="${LOG_FILE:-/var/log/fahaniecares/launch_$(date +%Y%m%d_%H%M%S).log}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/bmparliament}"
+LOG_FILE="${LOG_FILE:-/var/log/bmparliament/launch_$(date +%Y%m%d_%H%M%S).log}"
 
 # Ensure log directory exists
 mkdir -p $(dirname "$LOG_FILE")
@@ -223,7 +223,7 @@ cd "$DJANGO_ROOT"
 
 # Generate deployment report
 cat > "${BACKUP_DIR}/deployment_report_$(date +%Y%m%d_%H%M%S).txt" << EOF
-#FahanieCares Production Deployment Report
+BM Parliament Production Deployment Report
 ==========================================
 Deployment Date: $(date)
 Git Commit: $(git rev-parse HEAD)
@@ -266,9 +266,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 
 send_mail(
-    subject='#FahanieCares Platform - Production Deployment Completed',
+    subject='BM Parliament Platform - Production Deployment Completed',
     message='''
-The #FahanieCares platform has been successfully deployed to production.
+The BM Parliament platform has been successfully deployed to production.
 
 Deployment Details:
 - Date: $(date)
@@ -299,7 +299,7 @@ log "3. Monitor error logs and performance metrics"
 log "4. Review deployment report at: ${BACKUP_DIR}"
 log ""
 log "Support Contacts:"
-log "- Technical: dev@fahaniecares.ph"
+log "- Technical: dev@bmparliament.gov.ph"
 log "- Emergency: +63 XXX XXX XXXX"
 log ""
 log "Deployment log saved to: ${LOG_FILE}"

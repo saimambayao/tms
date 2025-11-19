@@ -1,5 +1,5 @@
 """
-Template tags for permission checking in #FahanieCares.
+Template tags for permission checking in #BM Parliament.
 """
 
 from django import template

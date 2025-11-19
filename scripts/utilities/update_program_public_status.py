@@ -16,7 +16,7 @@ from apps.services.models import MinistryProgram
 
 programs_to_update = ["dasdwq", "sample edit v2"]
 
-print("Updating 'is_public' status for #FahanieCares programs:")
+print("Updating 'is_public' status for BM Parliament programs:")
 for title in programs_to_update:
     try:
         program = MinistryProgram.objects.get(title=title, program_source='fahaniecares')

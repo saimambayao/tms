@@ -1,5 +1,5 @@
 """
-Security middleware for #FahanieCares.
+Security middleware for #BM Parliament.
 """
 
 from django.conf import settings

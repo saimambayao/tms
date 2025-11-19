@@ -1,5 +1,5 @@
 """
-Enhanced custom permission classes for #FahanieCares role-based access control.
+Enhanced custom permission classes for #BM Parliament role-based access control.
 Integrates with dynamic permissions and comprehensive role hierarchy.
 """
 
@@ -187,7 +187,7 @@ class HasFeatureAccess(BasePermission):
         'program_administration': ['coordinator', 'admin', 'chief_of_staff', 'mp', 'superuser'],
         'chapter_management': ['coordinator', 'admin', 'chief_of_staff', 'mp', 'superuser'],
         'constituent_management': ['coordinator', 'admin', 'chief_of_staff', 'mp', 'superuser'],
-        'fahaniecares_programs': ['coordinator', 'admin', 'chief_of_staff', 'mp', 'superuser'],
+        'bmparliament_programs': ['coordinator', 'admin', 'chief_of_staff', 'mp', 'superuser'],
         'tdif_projects': ['coordinator', 'admin', 'chief_of_staff', 'mp', 'superuser'],
         'ministry_programs': ['coordinator', 'admin', 'chief_of_staff', 'mp', 'superuser'],
         
@@ -395,7 +395,7 @@ def setup_role_groups():
             'change_constituent',
             'delete_constituent',
             # Service coordination
-            'manage_fahaniecares_program',
+            'manage_bmparliament_program',
             'manage_tdif_project',
             'manage_ministry_program',
             'view_operational_report',
@@ -448,7 +448,7 @@ def setup_role_groups():
             'view_audit_log',
             'manage_security',
             'manage_backup',
-            'manage_fahaniecares_program',
+            'manage_bmparliament_program',
             'manage_tdif_project',
             'manage_ministry_program',
             'view_operational_report',

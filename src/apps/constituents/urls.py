@@ -1,7 +1,7 @@
 from django.urls import path
 from . import views
 from .member_views import (
-    FahanieCaresMemberRegistrationView, 
+    BMParliamentMemberRegistrationView, 
     RegistrationSuccessView,
     MemberProfileView,
     MemberUpdateView,
@@ -14,7 +14,7 @@ from .simple_views import SimpleMemberRegistrationView
 
 urlpatterns = [
     # Member Registration URLs
-    path('member/register/', FahanieCaresMemberRegistrationView.as_view(), name='member_register'),
+    path('member/register/', BMParliamentMemberRegistrationView.as_view(), name='member_register'),
     path('member/register/quick/', SimpleMemberRegistrationView.as_view(), name='quick_register'),
     path('member/register/success/', RegistrationSuccessView.as_view(), name='registration_success'),
     path('member/profile/', MemberProfileView.as_view(), name='member_profile'),

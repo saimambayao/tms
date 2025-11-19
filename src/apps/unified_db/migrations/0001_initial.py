@@ -81,7 +81,7 @@ class Migration(migrations.Migration):
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('constituent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='person_links', to='constituents.constituent')),
                 ('database_entries', models.ManyToManyField(blank=True, related_name='person_links', to='unified_db.databaseentry')),
-                ('fahanie_cares_member', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='person_links', to='constituents.fahaniecaresmember')),
+                ('fahanie_cares_member', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='person_links', to='constituents.bmparliamentmember')),
                 ('verified_by', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='verified_person_links', to=settings.AUTH_USER_MODEL)),
             ],
             options={

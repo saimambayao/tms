@@ -1,5 +1,5 @@
 """
-Enhanced permission decorators for #FahanieCares RBAC system.
+Enhanced permission decorators for #BM Parliament RBAC system.
 Provides convenient decorators for view-level access control.
 """
 

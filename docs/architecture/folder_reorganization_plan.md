@@ -1,8 +1,8 @@
-# FahanieCares Folder Reorganization Plan
+# BM Parliament Folder Reorganization Plan
 
 ## Overview
 
-This document outlines the reorganization of the FahanieCares project structure to improve maintainability, follow Django best practices, and create a cleaner development experience.
+This document outlines the reorganization of the BM Parliament project structure to improve maintainability, follow Django best practices, and create a cleaner development experience.
 
 ## Current Issues with Existing Structure
 
@@ -12,7 +12,7 @@ This document outlines the reorganization of the FahanieCares project structure 
 
 3. **Mixed deployment files**: Deployment configurations are split between the root directory and a deployment folder, making it difficult to manage.
 
-4. **Legacy prototype code**: Old prototype code (`fahanie_cares_prototype/`) is mixed with production code in the root directory.
+4. **Legacy prototype code**: Old prototype code (`bm parliament_cares_prototype/`) is mixed with production code in the root directory.
 
 5. **Redundant Docker files**: Multiple docker-compose files for different environments are scattered in various locations.
 
@@ -21,7 +21,7 @@ This document outlines the reorganization of the FahanieCares project structure 
 ## Proposed New Structure
 
 ```
-fahanie-cares/
+bm-parliament/
 ├── src/                              # All Django source code (renamed from src)
 │   ├── apps/                         # Django applications
 │   │   ├── analytics/

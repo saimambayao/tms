@@ -1,4 +1,4 @@
-# #FahanieCares Latest Updates Management Guide
+# BM Parliament Latest Updates Management Guide
 
 *Complete Administrator Guide for Managing Announcements and Updates*
 
@@ -22,7 +22,7 @@
 
 ## Overview
 
-The #FahanieCares Latest Updates system allows administrators to create, manage, and publish announcements that appear on the website's homepage and dedicated announcements page. This system supports rich content, photo uploads, categorization, and flexible publishing controls.
+The BM Parliament Latest Updates system allows administrators to create, manage, and publish announcements that appear on the website's homepage and dedicated announcements page. This system supports rich content, photo uploads, categorization, and flexible publishing controls.
 
 ### Key Features
 
@@ -49,7 +49,7 @@ The #FahanieCares Latest Updates system allows administrators to create, manage,
 Before you can manage announcements, ensure you have:
 
 - [ ] **Admin Account**: You need an administrator or staff account
-- [ ] **Login Credentials**: Username and password for the #FahanieCares system
+- [ ] **Login Credentials**: Username and password for the BM Parliament system
 - [ ] **Internet Connection**: Access to the website admin panel
 - [ ] **Modern Web Browser**: Chrome, Firefox, Safari, or Edge (recommended)
 
@@ -69,7 +69,7 @@ You need one of the following permission levels:
 1. **Open your web browser**
 2. **Go to the admin URL**:
    - **Development**: `http://localhost:3000/admin/`
-   - **Production**: `https://fahaniecares.ph/admin/`
+   - **Production**: `https://bmparliament.gov.ph/admin/`
 3. **Bookmark this page** for easy future access
 
 ### Step 2: Login
@@ -148,7 +148,7 @@ You need one of the following permission levels:
 - **News**: General news and updates
 - **Event**: Upcoming or past events
 - **Parliament**: Parliamentary activities and legislation
-- **Program**: #FahanieCares program announcements
+- **Program**: BM Parliament program announcements
 - **Update**: Status updates and progress reports
 
 **Status** (Required)
@@ -189,7 +189,7 @@ You need one of the following permission levels:
 **Image Editing Tips:**
 - Use photo editing software to resize images before upload
 - Ensure images are clear and professional-looking
-- Consider adding the #FahanieCares logo if appropriate
+- Consider adding the BM Parliament logo if appropriate
 - Crop images to focus on the most important elements
 
 #### Step 2: Upload Images
@@ -222,7 +222,7 @@ You need one of the following permission levels:
 - Use high-quality, relevant images that support your announcement
 - Ensure you have permission to use the image
 - Avoid images with too much text (may not be readable on mobile)
-- Use images that represent the #FahanieCares brand positively
+- Use images that represent the BM Parliament brand positively
 
 **Technical Guidelines:**
 - Always test how images look on mobile devices
@@ -265,7 +265,7 @@ Before publishing any announcement, verify:
 - [ ] **Category is correctly selected**
 - [ ] **Published date is set correctly**
 - [ ] **Featured status is appropriate**
-- [ ] **Content follows #FahanieCares brand guidelines**
+- [ ] **Content follows BM Parliament brand guidelines**
 
 ### Publishing Process
 
@@ -382,7 +382,7 @@ Before publishing any announcement, verify:
 - **Homepage Display**: Shows with success badge
 
 #### Program
-- **Purpose**: #FahanieCares program announcements and updates
+- **Purpose**: BM Parliament program announcements and updates
 - **Examples**: New programs, program results, beneficiary updates
 - **Badge Color**: Primary Green
 - **Homepage Display**: Shows with primary badge
@@ -398,7 +398,7 @@ Before publishing any announcement, verify:
 **Choosing the Right Category:**
 - **Be consistent** in category usage
 - **Consider your audience** when categorizing
-- **Use "Program"** for content directly related to #FahanieCares initiatives
+- **Use "Program"** for content directly related to BM Parliament initiatives
 - **Use "Parliament"** for official government-related content
 - **Use "Event"** for time-sensitive announcements
 - **Use "News"** for general updates
@@ -457,7 +457,7 @@ Before publishing any announcement, verify:
 #### Content Standards
 - **High Quality**: Sharp, well-lit, professional appearance
 - **Relevant**: Directly related to the announcement content
-- **Brand Consistent**: Aligns with #FahanieCares visual identity
+- **Brand Consistent**: Aligns with BM Parliament visual identity
 - **Accessible**: Avoid images with essential text
 - **Rights Cleared**: Ensure you have permission to use the image
 
@@ -565,7 +565,7 @@ Before publishing any announcement, verify:
 
 #### Contacting Support
 **For Technical Issues:**
-- Email: dev@fahaniecares.ph
+- Email: dev@bmparliament.gov.ph
 - Include: Description of issue, steps you tried, browser information
 
 **For Content Questions:**
@@ -646,7 +646,7 @@ Before publishing any announcement, verify:
 
 ## Conclusion
 
-This documentation provides comprehensive guidance for managing the #FahanieCares Latest Updates system. By following these guidelines, you can effectively create, manage, and publish announcements that keep your community informed and engaged.
+This documentation provides comprehensive guidance for managing the BM Parliament Latest Updates system. By following these guidelines, you can effectively create, manage, and publish announcements that keep your community informed and engaged.
 
 ### Quick Reference Summary
 
@@ -672,11 +672,11 @@ This documentation provides comprehensive guidance for managing the #FahanieCare
 4. Save
 
 **For Support:**
-- Technical: dev@fahaniecares.ph
+- Technical: dev@bmparliament.gov.ph
 - Content: Communications Team
 - Permissions: System Administrator
 
 ---
 
 *Last Updated: January 2025*  
-*#FahanieCares Development Team*
+*BM Parliament Development Team*

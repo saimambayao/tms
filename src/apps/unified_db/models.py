@@ -545,7 +545,7 @@ class PersonLink(models.Model):
     """
 
     LINK_TYPES = (
-        ('fahanie_cares_member', 'FahanieCares Member'),
+        ('fahanie_cares_member', 'BM Parliament Member'),
         ('constituent', 'Constituent Profile'),
         ('database_entry', 'Database Entry'),
         ('external', 'External System'),
@@ -557,7 +557,7 @@ class PersonLink(models.Model):
 
     # Linked records
     fahanie_cares_member = models.ForeignKey(
-        'constituents.FahanieCaresMember',
+        'constituents.BMParliamentMember',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -639,7 +639,7 @@ class PersonLink(models.Model):
 # Import here to avoid circular imports
 from django.apps import apps
 try:
-    from apps.constituents.models import FahanieCaresMember
+    from apps.constituents.models import BMParliamentMember
     from apps.constituents.models import Constituent
 except ImportError:
     # Models might not be available during migration

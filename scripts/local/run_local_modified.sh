@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the absolute path to the Django project directory
-DJANGO_PROJECT_PATH="c:/Users/User/Desktop/fahanie-cares/src"
+DJANGO_PROJECT_PATH="c:/Users/User/Desktop/bmparliament/src"
 
 # Navigate to the Django project directory
 cd "$DJANGO_PROJECT_PATH"

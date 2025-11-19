@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}Database of Chapters - #FahanieCares Admin{% endblock %}
+{% block title %}Database of Chapters - BM Parliament Admin{% endblock %}
 
 {% block extra_head %}
 <meta name="csrf-token" content="{{ csrf_token }}">
@@ -37,63 +37,119 @@
         color: white !important;
         border: none !important;
     }
+
+    /* Hero Section Styles */
+    .dashboard-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 0.5rem 0;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
+        color: white;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(30, 64, 175, 0.25), 0 0 0 1px rgba(5, 150, 105, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        transform: translate(40%, -40%);
+    }
+
+    .dashboard-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .dashboard-header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .dashboard-header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.125rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-icon {
+        width: 3rem;
+        height: 3rem;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem 1.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .dashboard-header p {
+            font-size: 1rem;
+        }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="min-h-screen bg-gray-50">
-    <!-- Admin Header -->
-    <div class="bg-white shadow-sm border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                        <i class="fas fa-database text-primary-600"></i>
-                        Chapters Database Management
-                    </h1>
-                    <p class="mt-2 text-gray-600">Comprehensive administrative interface for chapter management and operations</p>
-                </div>
-                <div class="flex items-center gap-4">
-                    <!-- Quick Actions Dropdown -->
-                    <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="inline-flex items-center gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                            <i class="fas fa-bolt"></i>
-                            Quick Actions
-                            <i class="fas fa-chevron-down text-xs"></i>
-                        </button>
-                        <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                            <a href="{% url 'chapter_create' %}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-plus mr-2"></i> Create New Chapter
-                            </a>
-                            <a href="#" onclick="exportData('excel')" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-file-excel mr-2"></i> Export to Excel
-                            </a>
-                            <a href="#" onclick="exportData('pdf')" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-file-pdf mr-2"></i> Export to PDF
-                            </a>
-                            <a href="#" onclick="printReport()" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-print mr-2"></i> Print Report
-                            </a>
-                            <hr class="my-1">
-                            <a href="#" onclick="openBulkOperations()" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-tasks mr-2"></i> Bulk Operations
-                            </a>
-                            <a href="#" onclick="syncWithNotion()" class="block px-4 py-3 text-sm text-gray-700 hover:bg-gray-50">
-                                <i class="fas fa-sync mr-2"></i> Sync with Notion
-                            </a>
-                        </div>
+<div class="dashboard-container">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <!-- Hero Section -->
+        <div class="dashboard-header">
+            <div class="dashboard-header-content">
+                <div class="header-left">
+                    <div class="header-icon">
+                        <i class="fas fa-database text-white text-2xl"></i>
                     </div>
-                    
-                    <div class="flex items-center gap-2 px-4 py-2 bg-green-100 text-green-800 rounded-lg">
-                        <i class="fas fa-shield-alt"></i>
-                        <span class="text-sm font-medium">{{ user.get_user_type_display }} Access</span>
+                    <div>
+                        <h1>Chapters Database Management</h1>
+                        <p>
+                            <i class="fas fa-bolt text-white"></i>
+                            Comprehensive administrative interface for chapter management and operations
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
         <!-- Enhanced Statistics Dashboard -->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
@@ -314,7 +370,10 @@
                     <div class="flex items-center justify-between pt-4 border-t border-gray-200">
                         <div class="flex items-center gap-3">
                             <button type="submit" 
-                                    class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-5 py-2.5 rounded-md font-medium transition-colors duration-200 text-sm">
+                                    style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.625rem 1.25rem; border-radius: 0.375rem; font-weight: 500; transition: all 0.3s ease; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);"
+                                    onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(30, 64, 175, 0.4)';"
+                                    onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(30, 64, 175, 0.3)';"
+                                    class="inline-flex items-center gap-2 text-white px-5 py-2.5 rounded-md font-medium text-sm">
                                 <i class="fas fa-search"></i>
                                 Apply Filters
                             </button>
@@ -613,7 +672,9 @@
                     <div class="flex items-center justify-center gap-3">
                         {% if not current_filters.search and not current_filters.tier and not current_filters.status %}
                             <a href="{% url 'chapter_create' %}" 
-                               class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                               style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.15s ease; text-decoration: none;"
+                               onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';"
+                               onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';">
                                 <i class="fas fa-plus"></i>
                                 Create First Chapter
                             </a>
@@ -823,7 +884,7 @@
                                             </a>
                                             <a href="#" onclick="assignChapterRequest({{ request.id }})" 
                                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
-                                                <i class="fas fa-user-plus mr-2"></i> Assign to Staff
+                                                <i class="fas fa-user-plus mr-2" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i> Assign to Staff
                                             </a>
                                             <hr class="my-1">
                                             <a href="#" onclick="deleteChapterRequest({{ request.id }})" 
@@ -903,13 +964,16 @@
                 </p>
                 <div class="flex items-center justify-center gap-3">
                     <a href="{% url 'chapters_public' %}" 
-                       class="inline-flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                       style="display: inline-flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.15s ease; text-decoration: none;"
+                       onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';"
+                       onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';">
                         <i class="fas fa-external-link-alt"></i>
                         Visit Chapters Page
                     </a>
                 </div>
             </div>
         {% endif %}
+    </div>
     </div>
 </div>
 
@@ -1124,7 +1188,7 @@ function printReport() {
     printWindow.document.write(`
         <html>
         <head>
-            <title>Chapters Database Report - #FahanieCares</title>
+            <title>Chapters Database Report - BM Parliament</title>
             <link rel="stylesheet" href="https://cdn.tailwindcss.com">
             <style>
                 @media print {
@@ -1135,7 +1199,7 @@ function printReport() {
             </style>
         </head>
         <body class="p-8">
-            <h1 class="text-2xl font-bold mb-4">#FahanieCares Chapters Database Report</h1>
+            <h1 class="text-2xl font-bold mb-4">BM Parliament Chapters Database Report</h1>
             <p class="text-gray-600 mb-6">Generated on: ${new Date().toLocaleString()}</p>
             <div class="mb-8">${stats}</div>
             <div>${tableContent}</div>
@@ -1387,7 +1451,7 @@ function viewChapterRequest(requestId) {
                 <div>
                     <h4 class="font-semibold text-gray-900 mb-3">Request Details</h4>
                     <div class="text-sm text-gray-700">
-                        <p>I am interested in starting a new #FahanieCares chapter in our municipality. Our community would greatly benefit from having a local chapter to coordinate service delivery and community engagement programs...</p>
+                        <p>I am interested in starting a new BM Parliament chapter in our municipality. Our community would greatly benefit from having a local chapter to coordinate service delivery and community engagement programs...</p>
                     </div>
                 </div>
             </div>

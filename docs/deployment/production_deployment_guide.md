@@ -1,4 +1,4 @@
-# #FahanieCares Production Deployment Guide
+# BM Parliament Production Deployment Guide
 
 ## Table of Contents
 1. [Executive Summary](#executive-summary)
@@ -18,7 +18,7 @@
 
 ## Executive Summary
 
-This guide outlines the systematic approach to deploying the #FahanieCares platform to production, leveraging Claude Code's autonomous development capabilities for rapid, high-quality delivery. The strategy emphasizes **parallel execution**, **continuous quality assurance**, and **security-first development**.
+This guide outlines the systematic approach to deploying the BM Parliament platform to production, leveraging Claude Code's autonomous development capabilities for rapid, high-quality delivery. The strategy emphasizes **parallel execution**, **continuous quality assurance**, and **security-first development**.
 
 ### Key Objectives
 - **Zero-downtime production deployment** with automated rollback capabilities
@@ -166,16 +166,16 @@ DJANGO_SETTINGS_MODULE=config.settings.production
 
 # Database Configuration
 DATABASE_URL=postgresql://user:password@host:port/dbname
-DB_NAME=fahaniecares_production
-DB_USER=fahaniecares_user
+DB_NAME=bmparliament_production
+DB_USER=bmparliament_user
 DB_PASSWORD=[SECURE_PASSWORD]
 DB_HOST=production-db-host
 DB_PORT=5432
 
 # Security Configuration  
 DJANGO_SECRET_KEY=[SECURE_SECRET_KEY_32_CHARS_MIN]
-ALLOWED_HOSTS=fahaniecares.gov.ph,www.fahaniecares.gov.ph
-CSRF_TRUSTED_ORIGINS=https://fahaniecares.gov.ph,https://www.fahaniecares.gov.ph
+ALLOWED_HOSTS=bm-parliament.gov.ph,www.bm-parliament.gov.ph
+CSRF_TRUSTED_ORIGINS=https://bm-parliament.gov.ph,https://www.bm-parliament.gov.ph
 DEBUG=False
 
 # Email Configuration
@@ -184,7 +184,7 @@ EMAIL_PORT=587
 EMAIL_HOST_USER=[EMAIL_USER]
 EMAIL_HOST_PASSWORD=[EMAIL_PASSWORD]
 EMAIL_USE_TLS=True
-DEFAULT_FROM_EMAIL=noreply@fahaniecares.gov.ph
+DEFAULT_FROM_EMAIL=noreply@bm-parliament.gov.ph
 
 # Cache Configuration
 REDIS_URL=redis://redis-host:6379/0
@@ -208,16 +208,16 @@ SENTRY_DSN=[SENTRY_DSN]
 # File: deployment/nginx.conf (production)
 server {
     listen 80;
-    server_name fahaniecares.gov.ph www.fahaniecares.gov.ph;
+    server_name bm-parliament.gov.ph www.bm-parliament.gov.ph;
     return 301 https://$server_name$request_uri;
 }
 
 server {
     listen 443 ssl http2;
-    server_name fahaniecares.gov.ph www.fahaniecares.gov.ph;
+    server_name bm-parliament.gov.ph www.bm-parliament.gov.ph;
     
-    ssl_certificate /etc/letsencrypt/live/fahaniecares.gov.ph/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/fahaniecares.gov.ph/privkey.pem;
+    ssl_certificate /etc/letsencrypt/live/bm-parliament.gov.ph/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/bm-parliament.gov.ph/privkey.pem;
     
     # Modern SSL configuration
     ssl_protocols TLSv1.2 TLSv1.3;
@@ -593,7 +593,7 @@ jobs:
     
     - name: Build Docker image
       run: |
-        docker build -t fahaniecares:${{ github.sha }} ./src
+        docker build -t bm-parliament:${{ github.sha }} ./src
     
     - name: Deploy to production
       env:
@@ -610,7 +610,7 @@ jobs:
         
         ssh -i deploy_key -o StrictHostKeyChecking=no \
           $DEPLOY_USER@$DEPLOY_HOST \
-          "cd /var/www/fahaniecares && /tmp/deploy.sh ${{ github.sha }}"
+          "cd /var/www/bm-parliament && /tmp/deploy.sh ${{ github.sha }}"
 ```
 
 #### Enhanced Deployment Scripts
@@ -622,8 +622,8 @@ jobs:
 set -e  # Exit on any error
 
 IMAGE_TAG=${1:-latest}
-BACKUP_DIR="/var/backups/fahaniecares"
-APP_DIR="/var/www/fahaniecares"
+BACKUP_DIR="/var/backups/bm-parliament"
+APP_DIR="/var/www/bm-parliament"
 
 log() {
     echo "[$(date +'%Y-%m-%d %H:%M:%S')] $*"
@@ -716,12 +716,12 @@ rollback_deployment() {
     log "Rolling back deployment..."
     
     # Find previous image
-    PREVIOUS_IMAGE=$(docker images fahaniecares --format "table {{.Tag}}" | sed -n '2p')
+    PREVIOUS_IMAGE=$(docker images bm-parliament --format "table {{.Tag}}" | sed -n '2p')
     
     if [ -n "$PREVIOUS_IMAGE" ]; then
         # Rollback to previous version
         docker-compose stop web
-        docker tag fahaniecares:$PREVIOUS_IMAGE fahaniecares:latest
+        docker tag bm-parliament:$PREVIOUS_IMAGE bm-parliament:latest
         docker-compose up -d web
         
         log "Rollback completed to $PREVIOUS_IMAGE"
@@ -978,7 +978,7 @@ def api_documentation(request):
     api_endpoints = [ep for ep in api_endpoints if '/api/' in ep['pattern']]
     
     documentation = {
-        'title': '#FahanieCares API Documentation',
+        'title': 'BM Parliament API Documentation',
         'version': '1.0.0',
         'base_url': request.build_absolute_uri('/api/'),
         'endpoints': api_endpoints,
@@ -1524,7 +1524,7 @@ class AlertManager:
     @staticmethod
     def _send_email_alert(level, message, details):
         """Send email alert."""
-        subject = f"[{level}] #FahanieCares Alert: {message}"
+        subject = f"[{level}] BM Parliament Alert: {message}"
         
         email_body = f"""
         Alert Level: {level}
@@ -1606,7 +1606,7 @@ def check_system_health():
 #!/bin/bash
 # File: deployment/scripts/pre_launch_checklist.sh
 
-echo "=== #FahanieCares Pre-Launch Checklist ==="
+echo "=== BM Parliament Pre-Launch Checklist ==="
 echo "Timestamp: $(date)"
 
 ERRORS=0
@@ -1639,13 +1639,13 @@ else
 fi
 
 # Check SSL certificate
-openssl s_client -connect fahaniecares.gov.ph:443 -servername fahaniecares.gov.ph </dev/null 2>/dev/null | openssl x509 -noout -dates
+openssl s_client -connect bm-parliament.gov.ph:443 -servername bm-parliament.gov.ph </dev/null 2>/dev/null | openssl x509 -noout -dates
 check_status "SSL certificate valid"
 
 echo "--- Security Checks ---"
 
 # Check security headers
-HEADERS=$(curl -I https://fahaniecares.gov.ph 2>/dev/null)
+HEADERS=$(curl -I https://bm-parliament.gov.ph 2>/dev/null)
 echo "$HEADERS" | grep -i "strict-transport-security" > /dev/null
 check_status "HSTS header present"
 
@@ -1658,7 +1658,7 @@ check_status "X-Frame-Options header present"
 echo "--- Application Checks ---"
 
 # Check application health
-curl -f https://fahaniecares.gov.ph/health/ > /dev/null 2>&1
+curl -f https://bm-parliament.gov.ph/health/ > /dev/null 2>&1
 check_status "Application health check"
 
 # Check database connectivity
@@ -1666,18 +1666,18 @@ python manage.py check --database default > /dev/null 2>&1
 check_status "Database connectivity"
 
 # Check static files
-curl -f https://fahaniecares.gov.ph/static/css/output.css > /dev/null 2>&1
+curl -f https://bm-parliament.gov.ph/static/css/output.css > /dev/null 2>&1
 check_status "Static files accessible"
 
 # Check Font Awesome icons
-curl -s https://fahaniecares.gov.ph/static/css/output.css | grep -q "Font Awesome" || \
-curl -s https://fahaniecares.gov.ph/ | grep -q "font-awesome"
+curl -s https://bm-parliament.gov.ph/static/css/output.css | grep -q "Font Awesome" || \
+curl -s https://bm-parliament.gov.ph/ | grep -q "font-awesome"
 check_status "Font Awesome icons loaded"
 
 echo "--- Performance Checks ---"
 
 # Check response time
-RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' https://fahaniecares.gov.ph/)
+RESPONSE_TIME=$(curl -o /dev/null -s -w '%{time_total}' https://bm-parliament.gov.ph/)
 if (( $(echo "$RESPONSE_TIME < 2.0" | bc -l) )); then
     echo "✅ Response time: ${RESPONSE_TIME}s"
 else
@@ -1696,7 +1696,7 @@ else
 fi
 
 # Check log files
-if [ -f "/var/log/fahaniecares/error.log" ]; then
+if [ -f "/var/log/bm-parliament/error.log" ]; then
     echo "✅ Error logging configured"
 else
     echo "❌ Error logging not configured"
@@ -1706,8 +1706,8 @@ fi
 echo "--- Backup Checks ---"
 
 # Check backup system
-if [ -d "/var/backups/fahaniecares" ]; then
-    LATEST_BACKUP=$(find /var/backups/fahaniecares -name "*.tar.gz" -mtime -1 | wc -l)
+if [ -d "/var/backups/bm-parliament" ]; then
+    LATEST_BACKUP=$(find /var/backups/bm-parliament -name "*.tar.gz" -mtime -1 | wc -l)
     if [ $LATEST_BACKUP -gt 0 ]; then
         echo "✅ Recent backup available"
     else
@@ -1738,7 +1738,7 @@ fi
 
 set -e
 
-echo "=== #FahanieCares Production Launch Sequence ==="
+echo "=== BM Parliament Production Launch Sequence ==="
 echo "Starting at: $(date)"
 
 # Step 1: Final backup
@@ -1760,14 +1760,14 @@ echo "Step 4: DNS configuration..."
 # Step 5: Enable monitoring
 echo "Step 5: Enabling production monitoring..."
 # Start monitoring services
-systemctl start fahaniecares-monitor
+systemctl start bm-parliament-monitor
 
 # Step 6: Send launch notification
 echo "Step 6: Sending launch notifications..."
 python manage.py send_launch_notification
 
 echo "🚀 Production launch completed successfully!"
-echo "Monitoring dashboard: https://fahaniecares.gov.ph/admin/monitoring/"
+echo "Monitoring dashboard: https://bm-parliament.gov.ph/admin/monitoring/"
 ```
 
 ---
@@ -1789,7 +1789,7 @@ python manage.py health_check
 
 # Check error logs
 echo "2. Error Log Review"
-tail -n 100 /var/log/fahaniecares/error.log | grep -i error || echo "No errors found"
+tail -n 100 /var/log/bm-parliament/error.log | grep -i error || echo "No errors found"
 
 # Check performance metrics
 echo "3. Performance Metrics"
@@ -1801,7 +1801,7 @@ echo "4. Backup Status"
 
 # Check SSL certificate expiry
 echo "5. SSL Certificate Check"
-openssl s_client -connect fahaniecares.gov.ph:443 -servername fahaniecares.gov.ph </dev/null 2>/dev/null | openssl x509 -noout -dates
+openssl s_client -connect bm-parliament.gov.ph:443 -servername bm-parliament.gov.ph </dev/null 2>/dev/null | openssl x509 -noout -dates
 
 # Generate daily report
 echo "6. Generating Daily Report"
@@ -1847,7 +1847,7 @@ class Command(BaseCommand):
         from datetime import datetime, timedelta
         
         # Clean old temporary files
-        temp_files = glob.glob('/tmp/fahaniecares_*')
+        temp_files = glob.glob('/tmp/bmparliament_*')
         cutoff_date = datetime.now() - timedelta(days=7)
         
         for temp_file in temp_files:
@@ -1979,14 +1979,14 @@ Missing or incorrect `DJANGO_SETTINGS_MODULE` environment variable causes Django
 **Immediate Solution:**
 ```bash
 # 1. Verify DJANGO_SETTINGS_MODULE is set correctly in production
-docker exec fahaniecares_web env | grep DJANGO_SETTINGS_MODULE
+docker exec bmparliament_web env | grep DJANGO_SETTINGS_MODULE
 # Must output: DJANGO_SETTINGS_MODULE=config.settings.production
 
 # 2. If missing or incorrect, add to environment variables:
 DJANGO_SETTINGS_MODULE=config.settings.production
 
 # 3. Verify production settings are loaded correctly
-docker exec fahaniecares_web python manage.py shell -c "
+docker exec bmparliament_web python manage.py shell -c "
 from django.conf import settings
 print('Settings Module:', settings.SETTINGS_MODULE)
 print('CSRF_TRUSTED_ORIGINS:', settings.CSRF_TRUSTED_ORIGINS)
@@ -1998,7 +1998,7 @@ print('DEBUG:', settings.DEBUG)
 docker-compose down && docker-compose up -d
 
 # 5. Test forms functionality immediately
-curl -I https://fahaniecares.gov.ph/accounts/login/
+curl -I https://bm-parliament.gov.ph/accounts/login/
 # Should return 200 OK, not 403 Forbidden
 ```
 
@@ -2015,7 +2015,7 @@ curl -I https://fahaniecares.gov.ph/accounts/login/
 #### Database Connection Issues
 ```bash
 # Check database connectivity
-docker-compose exec db pg_isready -U fahaniecares_user -d fahaniecares_db
+docker-compose exec db pg_isready -U bmparliament_user -d bmparliament_db
 
 # Check connection pool
 docker-compose exec web python manage.py dbshell
@@ -2026,14 +2026,14 @@ docker-compose exec web python manage.py dbshell
 #### Performance Issues
 ```bash
 # Check slow queries
-docker-compose exec db psql -U fahaniecares_user -d fahaniecares_db -c "
+docker-compose exec db psql -U bmparliament_user -d bmparliament_db -c "
 SELECT query, calls, total_time, mean_time, rows
 FROM pg_stat_statements
 ORDER BY mean_time DESC
 LIMIT 10;"
 
 # Check index usage
-docker-compose exec db psql -U fahaniecares_user -d fahaniecares_db -c "
+docker-compose exec db psql -U bmparliament_user -d bmparliament_db -c "
 SELECT schemaname, tablename, indexname, idx_scan, idx_tup_read, idx_tup_fetch
 FROM pg_stat_user_indexes
 ORDER BY idx_scan;"
@@ -2042,22 +2042,22 @@ ORDER BY idx_scan;"
 #### SSL Certificate Issues
 ```bash
 # Check certificate expiry
-openssl s_client -connect fahaniecares.gov.ph:443 -servername fahaniecares.gov.ph </dev/null 2>/dev/null | openssl x509 -noout -dates
+openssl s_client -connect bm-parliament.gov.ph:443 -servername bm-parliament.gov.ph </dev/null 2>/dev/null | openssl x509 -noout -dates
 
 # Renew Let's Encrypt certificate
 certbot renew --nginx
 
 # Test SSL configuration
-ssl-cert-check -c fahaniecares.gov.ph:443
+ssl-cert-check -c bm-parliament.gov.ph:443
 ```
 
 ### Support Procedures
 
 #### Emergency Contacts
-- **System Administrator**: admin@fahaniecares.gov.ph
-- **Database Administrator**: dba@fahaniecares.gov.ph  
-- **Security Team**: security@fahaniecares.gov.ph
-- **MP Office**: mp@fahaniecares.gov.ph
+- **System Administrator**: admin@bm-parliament.gov.ph
+- **Database Administrator**: dba@bm-parliament.gov.ph  
+- **Security Team**: security@bmparliament.gov.ph
+- **MP Office**: mp@bm-parliament.gov.ph
 
 #### Escalation Matrix
 1. **Level 1**: System alerts and automated responses
@@ -2103,7 +2103,7 @@ ssl-cert-check -c fahaniecares.gov.ph:443
 
 ### Success Metrics
 
-The #FahanieCares platform will be production-ready when:
+The BM Parliament platform will be production-ready when:
 
 - ✅ **Security**: All security audits pass with zero critical vulnerabilities
 - ✅ **Performance**: All endpoints respond in <2 seconds under production load
@@ -2118,5 +2118,5 @@ The #FahanieCares platform will be production-ready when:
 *Next Review: Upon completion of Critical Path items*  
 *Document Version: 1.0*
 
-**Prepared by**: #FahanieCares Development Team  
+**Prepared by**: BM Parliament Development Team  
 **Approved for Implementation**: Ready for autonomous Claude Code execution

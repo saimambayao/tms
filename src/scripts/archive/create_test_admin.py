@@ -24,7 +24,7 @@ def create_test_admin():
     # Create superuser for testing
     admin_data = {
         'username': 'admin_test',
-        'email': 'admin@fahaniecares.test',
+        'email': 'admin@bmparliament.test',
         'first_name': 'Test',
         'last_name': 'Administrator',
         'password': 'testadmin123',
@@ -67,7 +67,7 @@ def create_test_admin():
     # Create MP user for testing
     mp_data = {
         'username': 'mp_test',
-        'email': 'mp@fahaniecares.test',
+        'email': 'mp@bmparliament.test',
         'first_name': 'MP',
         'last_name': 'Test Account',
         'password': 'testmp123',

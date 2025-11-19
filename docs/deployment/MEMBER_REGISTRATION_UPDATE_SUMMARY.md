@@ -1,12 +1,12 @@
-# #FahanieCares Member Registration Database Update Summary
+# BM Parliament Member Registration Database Update Summary
 
 ## Overview
-I've successfully updated the database fields for #FahanieCares member registration to include all requested information. The system now captures comprehensive member data as specified.
+I've successfully updated the database fields for BM Parliament member registration to include all requested information. The system now captures comprehensive member data as specified.
 
 ## What Was Created/Updated
 
 ### 1. Database Models
-- **New Model**: `FahanieCaresMember` in `apps/constituents/member_models.py`
+- **New Model**: `BM ParliamentMember` in `apps/constituents/member_models.py`
 - **Updated Model**: `User` model now includes `middle_name` field
 
 ### 2. Fields Implemented
@@ -32,8 +32,8 @@ Implemented all requested sectors:
 - **Youth**: Students needing scholarships, Students requiring educational assistance
 
 ### 4. Forms Created
-- `FahanieCaresMemberRegistrationForm` - Comprehensive registration form
-- `FahanieCaresMemberUpdateForm` - For updating member information
+- `BM ParliamentMemberRegistrationForm` - Comprehensive registration form
+- `BM ParliamentMemberUpdateForm` - For updating member information
 
 ### 5. Admin Interface
 - Full admin interface for managing members
@@ -46,19 +46,19 @@ Implemented all requested sectors:
 - Staff views for member management
 
 ## Database Migration Applied
-- Migration `constituents.0002_fahaniecaresmember` created and applied
+- Migration `constituents.0002_bm-parliamentmember` created and applied
 - Migration `users.0003_user_middle_name` created and applied
 
 ## How to Use
 
 ### For New Member Registration:
-1. Create a URL pattern pointing to `FahanieCaresMemberRegistrationView`
+1. Create a URL pattern pointing to `BM ParliamentMemberRegistrationView`
 2. Users can register at `/register/` (or your chosen URL)
 3. Staff can approve members through Django admin
 
 ### For Staff/Admin:
 1. Access Django admin at `/admin/`
-2. Navigate to "Constituents" → "#FahanieCares Members"
+2. Navigate to "Constituents" → "BM Parliament Members"
 3. View, filter, search, and approve members
 4. Use bulk actions to approve multiple members at once
 
@@ -66,7 +66,7 @@ Implemented all requested sectors:
 1. Add URL patterns in `apps/constituents/urls.py`:
 ```python
 from .member_views import (
-    FahanieCaresMemberRegistrationView, 
+    BM ParliamentMemberRegistrationView, 
     RegistrationSuccessView,
     MemberProfileView,
     MemberUpdateView,
@@ -75,7 +75,7 @@ from .member_views import (
 
 urlpatterns = [
     # ... existing patterns ...
-    path('register/', FahanieCaresMemberRegistrationView.as_view(), name='member_register'),
+    path('register/', BM ParliamentMemberRegistrationView.as_view(), name='member_register'),
     path('register/success/', RegistrationSuccessView.as_view(), name='registration_success'),
     path('profile/', MemberProfileView.as_view(), name='member_profile'),
     path('profile/update/', MemberUpdateView.as_view(), name='member_update'),

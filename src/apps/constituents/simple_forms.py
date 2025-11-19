@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.core.validators import RegexValidator
 from apps.users.models import User
-from .member_models import FahanieCaresMember
+from .member_models import BMParliamentMember
 
 
 class SimpleMemberRegistrationForm(UserCreationForm):
@@ -21,13 +21,13 @@ class SimpleMemberRegistrationForm(UserCreationForm):
     contact_number = forms.CharField(validators=[phone_regex], max_length=20, required=True)
     
     age = forms.IntegerField(min_value=1, max_value=120, required=True)
-    sex = forms.ChoiceField(choices=FahanieCaresMember.SEX_CHOICES, required=True)
+    sex = forms.ChoiceField(choices=BMParliamentMember.SEX_CHOICES, required=True)
     
     # Basic address
     municipality = forms.CharField(max_length=100, required=True)
     
     # Sector
-    sector = forms.ChoiceField(choices=FahanieCaresMember.SECTOR_CHOICES, required=True)
+    sector = forms.ChoiceField(choices=BMParliamentMember.SECTOR_CHOICES, required=True)
     
     # Terms
     terms = forms.BooleanField(required=True, label="I agree to the terms and conditions")
@@ -56,7 +56,7 @@ class SimpleMemberRegistrationForm(UserCreationForm):
             user.save()
             
             # Create simplified member record
-            FahanieCaresMember.objects.create(
+            BMParliamentMember.objects.create(
                 user=user,
                 first_name=self.cleaned_data['first_name'],
                 last_name=self.cleaned_data['last_name'],

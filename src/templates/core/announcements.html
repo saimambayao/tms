@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}Latest Updates - #FahanieCares{% endblock %}
+{% block title %}Latest Updates - BM Parliament{% endblock %}
 
 {% block extra_head %}
 {% include 'components/design-system/color_palette.html' %}
@@ -10,26 +10,32 @@
 {% endblock %}
 
 {% block hero %}
-<!-- Hero Section with Emerald Theme -->
-<section class="relative overflow-hidden py-16 md:py-24" style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%); position: relative;">
+<!-- Hero Section with Primary Bangsamoro Colors -->
+<section class="relative overflow-hidden py-16 md:py-24 bg-bangsamoro">
     <!-- Minimal background elements -->
     <div class="absolute inset-0 opacity-10">
-        <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-emerald-500 rounded-full blur-2xl animate-pulse"></div>
+        <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-gray-900 rounded-full blur-2xl animate-pulse"></div>
     </div>
 
-    <!-- Dark gradient overlay for text area -->
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(17, 24, 39, 0.8) 0%, rgba(31, 41, 55, 0.7) 20%, rgba(6, 95, 70, 0.4) 40%, rgba(4, 120, 87, 0.2) 60%, transparent 80%);"></div>
+    <!-- Bangsamoro gradient overlay for text area (top left) - lighter opacity to show gradient -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(30, 64, 175, 0.3) 0%, rgba(30, 64, 175, 0.2) 20%, rgba(5, 150, 105, 0.1) 40%, transparent 60%);"></div>
 
-    <!-- Dark gradient overlay for bottom right -->
-    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(17, 24, 39, 0.9) 0%, rgba(31, 41, 55, 0.8) 20%, rgba(6, 95, 70, 0.6) 40%, rgba(4, 120, 87, 0.4) 60%, rgba(5, 150, 105, 0.2) 80%, transparent 100%);"></div>
+    <!-- Bangsamoro gradient overlay for bottom right - lighter opacity -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(5, 150, 105, 0.4) 0%, rgba(5, 150, 105, 0.3) 20%, rgba(5, 150, 105, 0.2) 40%, rgba(5, 150, 105, 0.1) 60%, transparent 80%);"></div>
+
+    <!-- Subtle accent at bottom right corner - reduced opacity -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(5, 150, 105, 0.2) 0%, transparent 50%);"></div>
+
+    <!-- Bangsamoro gradient texture layer -->
+    <div class="absolute inset-0" style="background: linear-gradient(135deg, rgba(30, 64, 175, 0.15) 0%, transparent 40%, rgba(5, 150, 105, 0.2) 100%);"></div>
 
     <div class="container mx-auto px-4 relative z-10">
         <div class="text-center mb-12">
             <h1 class="text-5xl md:text-6xl lg:text-7xl font-bold mb-6 text-white drop-shadow-lg">Latest Updates</h1>
-            <p class="text-xl md:text-2xl text-white/90 drop-shadow-md mb-8 max-w-3xl mx-auto">Stay informed about the latest activities, programs, and parliamentary updates from MP Uy-Oyod.</p>
+            <p class="text-xl md:text-2xl text-white/90 drop-shadow-md mb-8 max-w-3xl mx-auto">Stay informed about the latest activities, programs, and parliamentary updates from MP Gayak.</p>
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
                 <a href="{% url 'email_subscribe' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; background: white; color: #047857; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);" onmouseover="this.style.backgroundColor='#f9fafb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';">Subscribe to Updates</a>
-                <a href="{% url 'register' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; border: 2px solid white; color: white; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px rgba(255, 255, 255, 0.5)';">Join #FahanieCares</a>
+                <a href="{% url 'register' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1.125rem; border: 2px solid white; color: white; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px rgba(255, 255, 255, 0.5)';">Join BM Parliament</a>
             </div>
         </div>
     </div>
@@ -70,7 +76,7 @@
                     <option value="community" {% if request.GET.category == 'community' %}selected{% endif %}>Community</option>
                 </select>
             </div>
-            <button type="submit" style="width: auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 0.625rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, #059669 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #10b981 0%, #059669 100%)';" class="flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
+            <button type="submit" style="width: auto; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.625rem 1.5rem; border-radius: 0.5rem; font-weight: 500; transition: all 0.15s ease; outline: none; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.boxShadow='0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1)';" class="flex items-center justify-center gap-2 shadow-md hover:shadow-lg">
                 <i class="fas fa-filter"></i>
                 Apply Filters
             </button>
@@ -255,7 +261,7 @@
 {% block cta %}
 <!-- Community Engagement CTA Section -->
 <div class="container mx-auto px-4 mt-20 mb-20">
-    <div style="background: linear-gradient(135deg, #065f46 0%, #047857 15%, #059669 30%, #10b981 45%, #065f46 60%, #064e3b 75%, #1f2937 90%, #111827 100%);" class="rounded-2xl p-8 lg:p-12 text-white relative overflow-hidden animate-fade-in-up" x-data="scrollAnimation()" x-bind:class="{ 'animate-in': isVisible }">
+    <div style="background: linear-gradient(135deg, rgb(30, 64, 175) 0%, rgb(5, 150, 105) 100%);" class="rounded-2xl p-8 lg:p-12 text-white relative overflow-hidden animate-fade-in-up" x-data="scrollAnimation()" x-bind:class="{ 'animate-in': isVisible }">
         <!-- Background Pattern -->
         <div class="absolute inset-0 opacity-10">
             <div class="absolute top-0 left-0 w-32 h-32 bg-white rounded-full -translate-x-16 -translate-y-16"></div>
@@ -272,7 +278,7 @@
             <!-- Heading -->
             <h2 class="text-3xl lg:text-4xl font-bold mb-4">Stay Connected with Your Community</h2>
             <p class="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                Join thousands of constituents who stay informed about the latest programs, services, and parliamentary updates from MP Uy-Oyod.
+                Join thousands of constituents who stay informed about the latest programs, services, and parliamentary updates from MP Gayak.
             </p>
 
             <!-- CTA Buttons -->

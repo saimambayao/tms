@@ -1,5 +1,5 @@
 """
-Production security testing for #FahanieCares platform.
+Production security testing for #BM Parliament platform.
 Tests security middleware, feature flags, and production readiness.
 """
 

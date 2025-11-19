@@ -20,7 +20,7 @@ import io
 import tempfile
 import time
 
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember
 from apps.users.models import User
 
 User = get_user_model()
@@ -39,7 +39,7 @@ class RegistrationE2ETestCase(TestCase):
         # Step 1: New visitor lands on home page
         home_response = self.client.get(reverse('home'))
         self.assertEqual(home_response.status_code, 200)
-        self.assertContains(home_response, '#FahanieCares')
+        self.assertContains(home_response, '#BM Parliament')
         
         # Step 2: Visitor learns about the platform through announcements
         announcements_response = self.client.get(reverse('announcements'))
@@ -93,7 +93,7 @@ class RegistrationE2ETestCase(TestCase):
         self.assertEqual(user.user_type, 'member')
         self.assertFalse(user.is_approved)
         
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         self.assertEqual(member.first_name, 'Maria')
         self.assertEqual(member.sector, 'women_mothers')
         self.assertEqual(member.eligibility, 'let_passer')
@@ -148,7 +148,7 @@ class RegistrationE2ETestCase(TestCase):
         
         # Step 4: Verify volunteer teacher specific data
         user = User.objects.get(username='teacher_volunteer')
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         
         self.assertTrue(member.is_volunteer_teacher)
         self.assertEqual(member.volunteer_school, 'Parang Elementary School')
@@ -184,7 +184,7 @@ class RegistrationE2ETestCase(TestCase):
         self.assertRedirects(response, reverse('registration_success'))
         
         user = User.objects.get(username='student_youth')
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         
         self.assertEqual(member.sector, 'student_scholarship')
         self.assertEqual(member.get_sector_display_category(), 'Youth')
@@ -218,7 +218,7 @@ class RegistrationE2ETestCase(TestCase):
         self.assertRedirects(response, reverse('registration_success'))
         
         user = User.objects.get(username='pwd_student')
-        member = FahanieCaresMember.objects.get(user=user)
+        member = BMParliamentMember.objects.get(user=user)
         
         self.assertEqual(member.sector, 'pwd_student')
         self.assertEqual(member.get_sector_display_category(), 'Vulnerable Sectors')

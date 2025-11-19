@@ -32,7 +32,7 @@ ACTIVITY_TEMPLATES = [
         'type': 'meeting',
         'title_template': "{} Monthly Chapter Meeting",
         'description': "Regular meeting of chapter members to discuss ongoing programs and upcoming activities.",
-        'objectives': "To coordinate chapter activities and ensure alignment with #FahanieCares mission."
+        'objectives': "To coordinate chapter activities and ensure alignment with #BM Parliament mission."
     },
     {
         'type': 'volunteer',

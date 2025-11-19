@@ -6,7 +6,7 @@
 
 ## Overview
 
-This document outlines the architecture for implementing Notion forms as a backup system when the primary PostgreSQL database is unavailable or experiencing issues. This ensures continuous service availability for critical #FahanieCares portal operations.
+This document outlines the architecture for implementing Notion forms as a backup system when the primary PostgreSQL database is unavailable or experiencing issues. This ensures continuous service availability for critical BM Parliament portal operations.
 
 ## Architecture Design
 
@@ -152,7 +152,7 @@ async function submitForm(formData) {
 ENABLE_NOTION_FALLBACK=true
 NOTION_FALLBACK_FORMS_URL=https://notion.so/forms/
 DATABASE_HEALTH_CHECK_INTERVAL=30
-FALLBACK_MODE_ALERT_EMAIL=admin@fahaniecares.ph
+FALLBACK_MODE_ALERT_EMAIL=admin@bmparliament.gov.ph
 
 # Notion form URLs for each critical form
 NOTION_STAFF_FORM_URL=https://notion.so/form/staff-backup
@@ -208,7 +208,7 @@ class DatabaseHealthMonitor:
                     height="600"
                     frameborder="0"
                     loading="lazy">
-                <p>Backup form unavailable. Please contact support at <a href="mailto:support@fahaniecares.ph">support@fahaniecares.ph</a></p>
+                <p>Backup form unavailable. Please contact support at <a href="mailto:support@bmparliament.gov.ph">support@bmparliament.gov.ph</a></p>
             </iframe>
         </div>
     {% endif %}
@@ -329,7 +329,7 @@ DATABASE_HEALTH_CHECK_INTERVAL = int(os.environ.get('DATABASE_HEALTH_CHECK_INTER
 
 ## Conclusion
 
-This fallback architecture ensures #FahanieCares portal maintains critical functionality during PostgreSQL outages while keeping the implementation simple and maintainable. The system prioritizes PostgreSQL as the primary database while providing a reliable Notion-based backup for emergency operations.
+This fallback architecture ensures BM Parliament portal maintains critical functionality during PostgreSQL outages while keeping the implementation simple and maintainable. The system prioritizes PostgreSQL as the primary database while providing a reliable Notion-based backup for emergency operations.
 
 **Key Principles:**
 - PostgreSQL-first architecture

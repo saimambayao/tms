@@ -4,7 +4,7 @@ services:
   # Dedicated Frontend Build Service
   frontend:
     image: node:20-alpine
-    container_name: fahaniecares_frontend
+    container_name: bmparliament_frontend
     working_dir: /app
     volumes:
       - ../../../src:/app
@@ -19,14 +19,14 @@ services:
     environment:
       NODE_ENV: development
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Updated Django Web Application (without frontend build)
   web:
     build:
       context: ../../../src
       dockerfile: ../deployment/docker/Dockerfile.django
-    container_name: fahaniecares_web
+    container_name: bmparliament_web
     restart: unless-stopped
     command: sh -c "
       python manage.py wait_for_db &&
@@ -51,8 +51,8 @@ services:
       
       # Database settings
       DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: ${DB_NAME:-fahaniecares_db}
-      DB_USER: ${DB_USER:-fahaniecares_user}
+      DB_NAME: ${DB_NAME:-bmparliament_db}
+      DB_USER: ${DB_USER:-bmparliament_user}
       DB_PASSWORD: ${DB_PASSWORD:-changeme}
       DB_HOST: db
       DB_PORT: 5432
@@ -77,8 +77,8 @@ services:
       frontend:
         condition: service_started
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
 networks:
-  fahaniecares_network:
+  bmparliament_network:
     external: true

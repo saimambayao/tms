@@ -1,10 +1,10 @@
-# #FahanieCares Website
+# BM Parliament Website
 
-The official website system for MP Atty. Sittie Fahanie S. Uy-Oyod's #FahanieCares initiative - Bringing Public Service Closer to You.
+The official website system for MP Amiroddin Gayak's BM Parliament initiative - Bringing Public Service Closer to You.
 
 ## Overview
 
-The #FahanieCares website is a comprehensive digital platform designed to streamline constituent services, manage chapter operations, and track public service delivery. Built with Django and integrated with Notion for data management, it provides a robust solution for efficient public service administration.
+The BM Parliament website is a comprehensive digital platform designed to streamline constituent services, manage chapter operations, and track public service delivery. Built with Django and integrated with Notion for data management, it provides a robust solution for efficient public service administration.
 
 ## Features
 
@@ -37,7 +37,7 @@ The #FahanieCares website is a comprehensive digital platform designed to stream
 ## Project Structure
 
 ```
-fahanie-cares/
+bm-parliament/
 ├── src/                     # Django source code
 │   ├── apps/
 │   │   ├── core/
@@ -72,8 +72,8 @@ fahanie-cares/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/mpuyoyod/fahanie-cares.git
-cd fahanie-cares
+git clone https://github.com/mpuyoyod/bm-parliament.git
+cd bm-parliament
 ```
 
 2. Create virtual environment:
@@ -145,7 +145,7 @@ EMAIL_HOST_PASSWORD=your-sendgrid-api-key
 # AWS S3 (for file storage)
 AWS_ACCESS_KEY_ID=your-access-key
 AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_STORAGE_BUCKET_NAME=fahaniecares-files
+AWS_STORAGE_BUCKET_NAME=bm-parliament-files
 ```
 
 ## Usage
@@ -228,13 +228,13 @@ python manage.py collectstatic
 
 ```bash
 # Build image
-docker build -t fahaniecares .
+docker build -t bm-parliament .
 
 # Run container (development - port 3000)
-docker run -p 3000:8000 fahaniecares
+docker run -p 3000:8000 bm-parliament
 
 # Run container (production - port 8000)
-docker run -p 8000:8000 fahaniecares
+docker run -p 8000:8000 bm-parliament
 ```
 
 ## API Documentation
@@ -273,7 +273,7 @@ Use conventional commits:
 
 - **Documentation**: `/docs/`
 - **User Guide**: `/training/user_guide.md`
-- **Support Email**: support@fahaniecares.gov.ph
+- **Support Email**: support@bmparliament.gov.ph
 - **Issue Tracker**: GitHub Issues
 
 ### Common Issues
@@ -284,7 +284,7 @@ See `docs/troubleshooting.md` for common issues and solutions.
 
 ### Reporting Security Issues
 
-Please report security vulnerabilities to: security@fahaniecares.gov.ph
+Please report security vulnerabilities to: security@bmparliament.gov.ph
 
 ### Security Features
 
@@ -302,7 +302,7 @@ This project is proprietary software. All rights reserved.
 ## Acknowledgments
 
 - Development Team
-- MP Atty. Sittie Fahanie S. Uy-Oyod's Office
+- MP Amiroddin Gayak's Office
 - Beta Testers and Early Users
 
 ---

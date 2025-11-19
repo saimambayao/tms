@@ -118,7 +118,7 @@ class CooperativeDashboardView(StaffRequiredMixin, ListView):
 
 class EnhancedOfficerRegistrationView(StaffRequiredMixin, FormMixin, DetailView):
     """
-    View for registering a new FahanieCares member and making them a cooperative officer
+    View for registering a new BM Parliament member and making them a cooperative officer
     """
     model = Cooperative
     template_name = 'cooperatives/enhanced_officer_registration.html'
@@ -146,7 +146,7 @@ class EnhancedOfficerRegistrationView(StaffRequiredMixin, FormMixin, DetailView)
             officer, member = form.save(cooperative=self.object, user=self.request.user)
             messages.success(
                 self.request, 
-                f"Successfully registered {member.get_full_name()} as a FahanieCares member and {officer.position} for {self.object.name}!"
+                f"Successfully registered {member.get_full_name()} as a BM Parliament member and {officer.position} for {self.object.name}!"
             )
             return super().form_valid(form)
         except Exception as e:

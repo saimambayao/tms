@@ -145,10 +145,10 @@ msgstr ""
 
 #: .\src\templates\core\home.html:21
 msgid ""
-"MP Atty. Sittie Fahanie S. Uy-Oyod's initiative to improve access to "
+"MP Amiroddin Gayak's initiative to improve access to "
 "government services and community support for the Bangsamoro."
 msgstr ""
-"Inisyatiba ni MP Atty. Sittie Fahanie S. Uy-Oyod upang mapabuti ang pag-"
+"Inisyatiba ni MP Amiroddin Gayak upang mapabuti ang pag-"
 "access sa mga serbisyo ng gobyerno at suporta sa komunidad para sa "
 "Bangsamoro."
 

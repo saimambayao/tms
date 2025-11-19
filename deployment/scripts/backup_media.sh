@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# #FahanieCares Platform - Media Files Backup Script
+# BM Parliament Platform - Media Files Backup Script
 # Automated backup of uploaded media files with verification
 
 set -euo pipefail
 
 # Configuration from environment or defaults
 MEDIA_DIR="${MEDIA_DIR:-/app/media}"
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/fahaniecares/media}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/bmparliament/media}"
 RETENTION_DAYS="${RETENTION_DAYS:-30}"
 S3_BUCKET="${S3_BUCKET:-}"
 SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
@@ -34,7 +34,7 @@ send_notification() {
     
     if [ -n "$SLACK_WEBHOOK" ]; then
         curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"📁 #FahanieCares Media Backup $status: $message\"}" \
+            --data "{\"text\":\"📁 BM Parliament Media Backup $status: $message\"}" \
             "$SLACK_WEBHOOK" 2>/dev/null || true
     fi
 }
@@ -176,7 +176,7 @@ sync_media_to_s3() {
 
 # Main media backup process
 main() {
-    log "=== Starting #FahanieCares Media Backup Process ==="
+    log "=== Starting BM Parliament Media Backup Process ==="
     
     # Clean up old backups first
     cleanup_old_backups

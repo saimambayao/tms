@@ -1,10 +1,10 @@
-# #FahanieCares Technical Architecture
+# BM Parliament Technical Architecture
 
-This document outlines the technical architecture for the #FahanieCares website, describing the system components, data flow, integration points, and technical decisions.
+This document outlines the technical architecture for the BM Parliament website, describing the system components, data flow, integration points, and technical decisions.
 
 ## System Architecture Overview
 
-The #FahanieCares website will be built as a Django application using Notion as its primary database through the Notion API. The system follows a client-server architecture with multiple integration points.
+The BM Parliament website will be built as a Django application using Notion as its primary database through the Notion API. The system follows a client-server architecture with multiple integration points.
 
 ![System Architecture Diagram](https://i.imgur.com/placeholder.png)
 
@@ -52,7 +52,7 @@ The #FahanieCares website will be built as a Django application using Notion as 
   - Chapter relation
 
 #### 2. Programs Database
-- Catalog of #FahanieCares programs and services
+- Catalog of BM Parliament programs and services
 - Fields:
   - Program name (title)
   - Description
@@ -74,7 +74,7 @@ The #FahanieCares website will be built as a Django application using Notion as 
   - Notes and updates
 
 #### 4. Chapter Database
-- Information about local #FahanieCares chapters
+- Information about local BM Parliament chapters
 - Fields:
   - Chapter name (title)
   - Municipality
@@ -355,4 +355,4 @@ To ensure long-term maintainability:
    - Gradual improvement of legacy components
    - Monitoring of complexity metrics
 
-This technical architecture provides a blueprint for implementing the #FahanieCares website with Notion integration, balancing performance, security, and maintainability requirements.
+This technical architecture provides a blueprint for implementing the BM Parliament website with Notion integration, balancing performance, security, and maintainability requirements.

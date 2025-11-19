@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.test import RequestFactory
-from apps.constituents.member_forms import FahanieCaresMemberRegistrationForm
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_forms import BMParliamentMemberRegistrationForm
+from apps.constituents.member_models import BMParliamentMember
 from apps.users.models import User
 import tempfile
 
@@ -42,7 +42,7 @@ class Command(BaseCommand):
         
         try:
             # Test form validation
-            form = FahanieCaresMemberRegistrationForm(data=test_data)
+            form = BMParliamentMemberRegistrationForm(data=test_data)
             
             if form.is_valid():
                 self.stdout.write(
@@ -58,7 +58,7 @@ class Command(BaseCommand):
                     
                     # Check if member was created
                     try:
-                        member = FahanieCaresMember.objects.get(user=user)
+                        member = BMParliamentMember.objects.get(user=user)
                         self.stdout.write(
                             self.style.SUCCESS(f"Member creation: PASSED - {member.id}")
                         )
@@ -68,7 +68,7 @@ class Command(BaseCommand):
                         user.delete()
                         self.stdout.write("Test data cleaned up")
                         
-                    except FahanieCaresMember.DoesNotExist:
+                    except BMParliamentMember.DoesNotExist:
                         self.stdout.write(
                             self.style.ERROR("Member creation: FAILED - Member not created")
                         )
@@ -106,7 +106,7 @@ class Command(BaseCommand):
             duplicate_data['username'] = 'newuser123'
             duplicate_data['email'] = 'existing@example.com'
             
-            form = FahanieCaresMemberRegistrationForm(data=duplicate_data)
+            form = BMParliamentMemberRegistrationForm(data=duplicate_data)
             if not form.is_valid() and 'email' in form.errors:
                 self.stdout.write(
                     self.style.SUCCESS("Email uniqueness validation: PASSED")

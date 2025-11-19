@@ -2,7 +2,7 @@
 
 set -e
 
-echo "Starting FahanieCares application..."
+echo "Starting BM Parliament application..."
 
 # Change to Django project directory
 cd /app
@@ -33,7 +33,7 @@ if [ "$DJANGO_SETTINGS_MODULE" = "config.settings.development" ]; then
 from django.contrib.auth import get_user_model
 User = get_user_model()
 if not User.objects.filter(username='admin').exists():
-    User.objects.create_superuser('admin', 'admin@fahaniecares.ph', 'admin123')
+    User.objects.create_superuser('admin', 'admin@bmparliament.ph', 'admin123')
     print('Superuser created!')
 else:
     print('Superuser already exists.')
@@ -49,7 +49,7 @@ python manage.py setup_rbac || true
 if [ "$DJANGO_SETTINGS_MODULE" = "config.settings.production" ]; then
     echo "Starting Gunicorn server..."
     exec gunicorn config.wsgi:application \
-        --name fahaniecares \
+        --name bmparliament \
         --bind 0.0.0.0:8000 \
         --workers 4 \
         --worker-class gevent \

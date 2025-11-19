@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from apps.constituents.models import FahanieCaresMember
+from apps.constituents.models import BMParliamentMember
 
 User = get_user_model()
 
@@ -65,7 +65,7 @@ class CooperativeMembership(models.Model):
     ]
 
     cooperative = models.ForeignKey(Cooperative, on_delete=models.CASCADE, related_name='memberships')
-    fahaniecares_member = models.ForeignKey(FahanieCaresMember, on_delete=models.CASCADE, related_name='cooperative_memberships')
+    bmparliament_member = models.ForeignKey(BMParliamentMember, on_delete=models.CASCADE, related_name='cooperative_memberships')
     position = models.CharField(max_length=50, choices=POSITION_CHOICES)
     
     date_joined = models.DateField()
@@ -85,14 +85,14 @@ class CooperativeMembership(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('cooperative', 'fahaniecares_member', 'position')
+        unique_together = ('cooperative', 'bmparliament_member', 'position')
 
     def __str__(self):
-        return f"{self.fahaniecares_member} - {self.position} at {self.cooperative}"
+        return f"{self.bmparliament_member} - {self.position} at {self.cooperative}"
 
 class CooperativeOfficer(models.Model):
     cooperative = models.ForeignKey(Cooperative, on_delete=models.CASCADE, related_name='officers')
-    fahaniecares_member = models.ForeignKey(FahanieCaresMember, on_delete=models.CASCADE, related_name='cooperative_officer_positions')
+    bmparliament_member = models.ForeignKey(BMParliamentMember, on_delete=models.CASCADE, related_name='cooperative_officer_positions')
     position = models.CharField(max_length=50, choices=CooperativeMembership.POSITION_CHOICES)
     
     date_joined = models.DateField()
@@ -106,7 +106,7 @@ class CooperativeOfficer(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('cooperative', 'fahaniecares_member', 'position')
+        unique_together = ('cooperative', 'bmparliament_member', 'position')
 
     def __str__(self):
-        return f"{self.fahaniecares_member} - {self.position} (Officer) at {self.cooperative}"
+        return f"{self.bmparliament_member} - {self.position} (Officer) at {self.cooperative}"

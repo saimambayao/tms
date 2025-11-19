@@ -2,7 +2,7 @@
 
 ## Problem Summary
 
-The #FahanieCares Django application was experiencing issues with static files in both development and production environments:
+The BM Parliament Django application was experiencing issues with static files in both development and production environments:
 
 1. **Font Awesome icons not loading** - CDN requests were failing
 2. **Hero images not displaying** - All images in the `/static/HeroB/` directory were returning 404 errors
@@ -108,7 +108,7 @@ Created `docker-compose.frontend.yml` for better separation of concerns:
 services:
   frontend:
     image: node:20-alpine
-    container_name: fahaniecares_frontend
+    container_name: bmparliament_frontend
     working_dir: /app
     volumes:
       - ./src:/app

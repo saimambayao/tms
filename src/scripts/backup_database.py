@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Database backup script for #FahanieCares production database.
+Database backup script for #BM Parliament production database.
 Backs up PostgreSQL database to AWS S3 with encryption and retention policies.
 """
 
@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class DatabaseBackup:
     def __init__(self):
         self.database_url = os.environ.get('DATABASE_URL')
-        self.s3_bucket = os.environ.get('AWS_S3_BACKUP_BUCKET', 'fahaniecares-backups')
+        self.s3_bucket = os.environ.get('AWS_S3_BACKUP_BUCKET', 'bmparliament-backups')
         self.s3_prefix = os.environ.get('AWS_S3_BACKUP_PREFIX', 'database-backups/')
         self.retention_days = int(os.environ.get('BACKUP_RETENTION_DAYS', '30'))
         
@@ -46,7 +46,7 @@ class DatabaseBackup:
     def create_backup(self):
         """Create a PostgreSQL backup using pg_dump."""
         timestamp = datetime.datetime.utcnow().strftime('%Y%m%d_%H%M%S')
-        backup_filename = f"fahaniecares_backup_{timestamp}.sql.gz"
+        backup_filename = f"bmparliament_backup_{timestamp}.sql.gz"
         
         logger.info(f"Starting database backup: {backup_filename}")
         
@@ -262,7 +262,7 @@ class DatabaseBackup:
                     "color": color,
                     "title": "Database Backup Status",
                     "text": message,
-                    "footer": "#FahanieCares Backup System",
+                    "footer": "#BM Parliament Backup System",
                     "ts": int(datetime.datetime.utcnow().timestamp())
                 }]
             }

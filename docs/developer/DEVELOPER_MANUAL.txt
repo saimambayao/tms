@@ -23,7 +23,7 @@ TABLE OF CONTENTS
 1. SYSTEM OVERVIEW
 ========================================
 
-The #FahanieCares system is a Django-based web application designed to manage constituent services for MP Atty. Sittie Fahanie S. Uy-Oyod's office. The system integrates with Notion as its primary database and provides comprehensive tools for public service delivery.
+The #FahanieCares system is a Django-based web application designed to manage constituent services for MP Amiroddin Gayak's office. The system integrates with Notion as its primary database and provides comprehensive tools for public service delivery.
 
 Key Technologies:
 - Python 3.9+

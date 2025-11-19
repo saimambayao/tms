@@ -1,19 +1,19 @@
 #!/bin/bash
 
-# #FahanieCares Platform - Backup Verification Script
+# BM Parliament Platform - Backup Verification Script
 # Automated verification of database and media backups
 
 set -euo pipefail
 
 # Configuration from environment or defaults
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/fahaniecares}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/bmparliament}"
 S3_BUCKET="${S3_BUCKET:-}"
 SLACK_WEBHOOK="${SLACK_WEBHOOK:-}"
 MAX_BACKUP_AGE_HOURS="${MAX_BACKUP_AGE_HOURS:-25}" # Alert if latest backup is older than 25 hours
 DB_HOST="${DB_HOST:-localhost}"
 DB_PORT="${DB_PORT:-5432}"
 DB_USER="${DB_USER:-postgres}"
-TEST_DB_NAME="${TEST_DB_NAME:-fahaniecares_backup_test}"
+TEST_DB_NAME="${TEST_DB_NAME:-bmparliament_backup_test}"
 
 # Create backup directory if it doesn't exist
 mkdir -p "$BACKUP_DIR"
@@ -39,7 +39,7 @@ send_notification() {
         esac
         
         curl -X POST -H 'Content-type: application/json' \
-            --data "{\"text\":\"$emoji #FahanieCares Backup Verification: $message\"}" \
+            --data "{\"text\":\"$emoji BM Parliament Backup Verification: $message\"}" \
             "$SLACK_WEBHOOK" 2>/dev/null || true
     fi
 }
@@ -54,7 +54,7 @@ verify_database_backups() {
     local verification_errors=0
     
     # Find latest database backup
-    for backup in "$db_backup_dir"/fahaniecares_backup_*.sql.gz; do
+    for backup in "$db_backup_dir"/bmparliament_backup_*.sql.gz; do
         if [ -f "$backup" ]; then
             ((backup_count++))
             if [ -z "$latest_backup" ] || [ "$backup" -nt "$latest_backup" ]; then
@@ -84,7 +84,7 @@ verify_database_backups() {
     fi
     
     # Verify backup integrity
-    for backup in "$db_backup_dir"/fahaniecares_backup_*.sql.gz; do
+    for backup in "$db_backup_dir"/bmparliament_backup_*.sql.gz; do
         if [ -f "$backup" ]; then
             log "Verifying backup: $(basename "$backup")"
             
@@ -125,7 +125,7 @@ test_database_restore() {
     fi
     
     local latest_backup=""
-    for backup in "$BACKUP_DIR"/fahaniecares_backup_*.sql.gz; do
+    for backup in "$BACKUP_DIR"/bmparliament_backup_*.sql.gz; do
         if [ -f "$backup" ]; then
             if [ -z "$latest_backup" ] || [ "$backup" -nt "$latest_backup" ]; then
                 latest_backup="$backup"
@@ -257,7 +257,7 @@ generate_report() {
     log "=== Backup Verification Report ==="
     
     # Database backup summary
-    local db_backup_count=$(find "$BACKUP_DIR" -name "fahaniecares_backup_*.sql.gz" -type f | wc -l)
+    local db_backup_count=$(find "$BACKUP_DIR" -name "bmparliament_backup_*.sql.gz" -type f | wc -l)
     log "Local database backups: $db_backup_count"
     
     # Media backup summary
@@ -285,7 +285,7 @@ generate_report() {
 
 # Main verification process
 main() {
-    log "=== Starting #FahanieCares Backup Verification ==="
+    log "=== Starting BM Parliament Backup Verification ==="
     
     local total_errors=0
     

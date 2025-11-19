@@ -10,7 +10,7 @@ from django.utils import timezone
 from django.contrib.messages import get_messages
 from datetime import timedelta
 from apps.core.models import Announcement
-from apps.constituents.models import FahanieCaresMember
+from apps.constituents.models import BMParliamentMember
 from apps.communications.models import PartnershipSubmission, DonationSubmission
 from PIL import Image
 import io
@@ -49,7 +49,7 @@ class DatabaseIntegrationTestCase(TestCase):
             password='testpass123',
             user_type='mp',
             first_name='Fahanie',
-            last_name='Uy-Oyod'
+            last_name='Gayak'
         )
         
         # Chief of Staff
@@ -125,7 +125,7 @@ class DatabaseIntegrationTestCase(TestCase):
         )
         
         # Create test registrants
-        self.registrant1 = FahanieCaresMember.objects.create(
+        self.registrant1 = BMParliamentMember.objects.create(
             user=self.registrant1_user,
             first_name='Juan',
             last_name='Dela Cruz',
@@ -148,7 +148,7 @@ class DatabaseIntegrationTestCase(TestCase):
             approved_by=self.coordinator
         )
         
-        self.registrant2 = FahanieCaresMember.objects.create(
+        self.registrant2 = BMParliamentMember.objects.create(
             user=self.registrant2_user,
             first_name='Maria',
             last_name='Santos',

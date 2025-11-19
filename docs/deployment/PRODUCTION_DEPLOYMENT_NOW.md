@@ -5,7 +5,7 @@
 SSH to your production server and paste this:
 
 ```bash
-curl -s https://raw.githubusercontent.com/tech-bangsamoro/fahanie-cares/main/deploy-css-fix.sh | bash
+curl -s https://raw.githubusercontent.com/tech-bangsamoro/bm-parliament/main/deploy-css-fix.sh | bash
 ```
 
 **That's it!** The script will automatically:
@@ -22,7 +22,7 @@ If the automated script fails, run these manually:
 
 ```bash
 # 1. Pull latest code
-cd /path/to/fahanie-cares
+cd /path/to/bm-parliament
 git pull origin main
 
 # 2. Find your container
@@ -38,7 +38,7 @@ aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
 
 ## Option 3: GitHub Actions - 1 click
 
-1. Go to: https://github.com/tech-bangsamoro/fahanie-cares/actions
+1. Go to: https://github.com/tech-bangsamoro/bm-parliament/actions
 2. Click "Deploy CSS Fix to Production"
 3. Click "Run workflow"
 4. Click green "Run workflow" button
@@ -49,7 +49,7 @@ aws cloudfront create-invalidation --distribution-id YOUR_DIST_ID --paths "/*"
 
 After deployment:
 1. Wait 2-5 minutes for CloudFront
-2. Open https://fahaniecares.ph
+2. Open https://bmparliament.gov.ph
 3. Hard refresh: **Ctrl+F5** (Windows) or **Cmd+Shift+R** (Mac)
 4. Check navbar dropdown - should be scrollable now!
 

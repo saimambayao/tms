@@ -1,10 +1,10 @@
 #!/bin/bash
-# One-command production CSS fix for #FahanieCares
-# Just run: curl -s https://raw.githubusercontent.com/tech-bangsamoro/fahanie-cares/main/deploy-css-fix.sh | bash
+# One-command production CSS fix for BM Parliament
+# Just run: curl -s https://raw.githubusercontent.com/tech-bangsamoro/bmparliament/main/deploy-css-fix.sh | bash
 
 set -e
 
-echo "🚀 #FahanieCares Automated CSS Fix"
+echo "🚀 BM Parliament Automated CSS Fix"
 echo "=================================="
 echo ""
 
@@ -23,7 +23,7 @@ git pull origin main || {
 
 # Step 2: Find web container automatically
 echo -e "${YELLOW}🔍 Finding web container...${NC}"
-WEB_CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "(web|django|fahanie)" | head -1)
+WEB_CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "(web|django|bmparliament)" | head -1)
 
 if [ -z "$WEB_CONTAINER" ]; then
     # Try alternative search
@@ -60,7 +60,7 @@ echo -e "${YELLOW}🔄 Clearing CloudFront cache...${NC}"
 if command -v aws &> /dev/null; then
     # Try to find distribution automatically
     DIST_ID=$(aws cloudfront list-distributions \
-        --query "DistributionList.Items[?contains(Aliases.Items || [''], 'fahaniecares.ph')].Id" \
+        --query "DistributionList.Items[?contains(Aliases.Items || [''], 'bmparliament.ph')].Id" \
         --output text 2>/dev/null)
     
     if [ ! -z "$DIST_ID" ]; then
@@ -95,7 +95,7 @@ echo "==================================${NC}"
 echo ""
 echo "Next steps:"
 echo "1. Wait 2-5 minutes for CloudFront"
-echo "2. Visit https://fahaniecares.ph"
+echo "2. Visit https://bmparliament.ph"
 echo "3. Hard refresh (Ctrl+F5)"
 echo ""
 echo -e "${BLUE}The navbar dropdown should now be scrollable!${NC}"

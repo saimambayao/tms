@@ -230,7 +230,7 @@ class EmailNotificationSender:
             email_context = {
                 'user': user,
                 'notification': notification,
-                'site_name': getattr(settings, 'SITE_NAME', '#FahanieCares'),
+                'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
                 'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
             }
             

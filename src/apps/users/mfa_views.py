@@ -1,5 +1,5 @@
 """
-Multi-Factor Authentication views for #FahanieCares.
+Multi-Factor Authentication views for #BM Parliament.
 """
 
 import qrcode

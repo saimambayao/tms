@@ -5,6 +5,95 @@
 
 {% block extra_css %}
 <style>
+    .dashboard-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 0.5rem 0;
+    }
+
+    .dashboard-header {
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
+        color: white;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(30, 64, 175, 0.25), 0 0 0 1px rgba(5, 150, 105, 0.1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .dashboard-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 120px;
+        height: 120px;
+        background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%);
+        border-radius: 50%;
+        transform: translate(40%, -40%);
+    }
+
+    .dashboard-header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .dashboard-header h1 {
+        color: white;
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .dashboard-header p {
+        color: rgba(255, 255, 255, 0.9);
+        font-size: 1.125rem;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .header-icon {
+        width: 3rem;
+        height: 3rem;
+        background: rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-header {
+            padding: 1.5rem 1.5rem;
+        }
+
+        .dashboard-header h1 {
+            font-size: 1.75rem;
+        }
+
+        .dashboard-header p {
+            font-size: 1rem;
+        }
+    }
+
     .filter-card {
         background: white;
         border-radius: 8px;
@@ -45,20 +134,25 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold text-primary-800">Staff Directory</h1>
-            <p class="text-gray-600 mt-1">{{ staff_members|length }} staff members</p>
+<div class="dashboard-container">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <!-- Hero Section -->
+        <div class="dashboard-header">
+            <div class="dashboard-header-content">
+                <div class="header-left">
+                    <div class="header-icon">
+                        <i class="fas fa-users text-white text-2xl"></i>
+                    </div>
+                    <div>
+                        <h1>Staff Directory</h1>
+                        <p>
+                            <i class="fas fa-bolt text-white"></i>
+                            Comprehensive directory of all staff members
+                        </p>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="flex gap-3">
-            {% if user.user_type == 'mp' or user.is_superuser %}
-                {% include 'components/atoms/button.html' with variant='primary' text='Export to CSV' href='/staff/export/' %}
-            {% endif %}
-            {% include 'components/atoms/button.html' with variant='secondary' text='Back to Dashboard' href='/staff/dashboard/' %}
-        </div>
-    </div>
 
     <!-- Filters -->
     <div class="filter-card">
@@ -268,5 +362,6 @@
         </nav>
     </div>
     {% endif %}
+    </div>
 </div>
 {% endblock %}

@@ -58,10 +58,10 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('cooperative', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='memberships', to='cooperatives.cooperative')),
-                ('fahaniecares_member', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cooperative_memberships', to='constituents.fahaniecaresmember')),
+                ('bmparliament_member', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cooperative_memberships', to='constituents.bmparliamentmember')),
             ],
             options={
-                'unique_together': {('cooperative', 'fahaniecares_member', 'position')},
+                'unique_together': {('cooperative', 'bmparliament_member', 'position')},
             },
         ),
     ]

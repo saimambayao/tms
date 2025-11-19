@@ -1,5 +1,5 @@
 """
-Core middleware module for #FahanieCares
+Core middleware module for #BM Parliament
 """
 
 from .ssl_middleware import (

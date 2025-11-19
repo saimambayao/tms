@@ -1,5 +1,5 @@
 """
-Comprehensive tests for the #FahanieCares RBAC system.
+Comprehensive tests for the #BM Parliament RBAC system.
 Tests role hierarchy, permissions, decorators, and access control.
 """
 

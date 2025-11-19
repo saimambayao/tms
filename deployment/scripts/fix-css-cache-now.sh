@@ -1,8 +1,8 @@
 #!/bin/bash
-# Emergency CSS cache fix script for #FahanieCares
+# Emergency CSS cache fix script for BM Parliament
 # Run this to immediately clear CloudFront cache
 
-echo "🚨 #FahanieCares CSS Cache Fix"
+echo "🚨 BM Parliament CSS Cache Fix"
 echo "=============================="
 
 # Check if AWS CLI is installed
@@ -15,7 +15,7 @@ fi
 # Try to find CloudFront distribution
 echo "🔍 Looking for CloudFront distribution..."
 DISTRIBUTION_ID=$(aws cloudfront list-distributions \
-    --query "DistributionList.Items[?Aliases.Items[?contains(@, 'fahaniecares.ph')]].Id" \
+    --query "DistributionList.Items[?Aliases.Items[?contains(@, 'bmparliament.gov.ph')]].Id" \
     --output text 2>/dev/null)
 
 if [ -z "$DISTRIBUTION_ID" ]; then
@@ -74,7 +74,7 @@ echo "🎉 Done! Your CSS updates should now be visible."
 echo ""
 echo "📌 Next steps:"
 echo "1. Hard refresh your browser (Ctrl+F5 or Cmd+Shift+R)"
-echo "2. Check https://fahaniecares.ph"
+echo "2. Check https://bmparliament.gov.ph"
 echo "3. If still not working, wait 5 more minutes and try again"
 echo ""
 echo "💡 To automate this in the future:"

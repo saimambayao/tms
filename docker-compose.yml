@@ -2,30 +2,30 @@ services:
   # PostgreSQL Database
   db:
     image: postgres:15-alpine
-    container_name: fahaniecares_db
+    container_name: bmparliament_db
     restart: unless-stopped
     env_file:
       - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: fahaniecares_db
-      POSTGRES_USER: fahaniecares_user
+      POSTGRES_DB: bmparliament_db
+      POSTGRES_USER: bmparliament_user
       POSTGRES_PASSWORD: changeme
     ports:
       - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-fahaniecares_user}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bmparliament_user}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Redis Cache
   redis:
     image: redis:7-alpine
-    container_name: fahaniecares_redis
+    container_name: bmparliament_redis
     restart: unless-stopped
     ports:
       - "6379:6379"
@@ -38,14 +38,14 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Django Web Application
   web:
     build:
       context: .
       dockerfile: deployment/docker/Dockerfile.django
-    container_name: fahaniecares_web
+    container_name: bmparliament_web
     restart: unless-stopped
     env_file:
       - .env
@@ -87,8 +87,8 @@ services:
       
       # Database settings
       DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: fahaniecares_db
-      DB_USER: fahaniecares_user
+      DB_NAME: bmparliament_db
+      DB_USER: bmparliament_user
       DB_PASSWORD: changeme
       DB_HOST: db
       DB_PORT: 5432
@@ -110,14 +110,14 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Celery Worker
   celery_worker:
     build:
       context: .
       dockerfile: deployment/docker/Dockerfile.django
-    container_name: fahaniecares_celery_worker
+    container_name: bmparliament_celery_worker
     restart: unless-stopped
     env_file:
       - .env
@@ -138,8 +138,8 @@ services:
       SECRET_KEY: your-secret-key-here
       ALLOWED_HOSTS: localhost,127.0.0.1,[::1]
       DB_ENGINE: django.db.backends.postgresql
-      DB_NAME: fahaniecares_db
-      DB_USER: fahaniecares_user
+      DB_NAME: bmparliament_db
+      DB_USER: bmparliament_user
       DB_PASSWORD: changeme
       DB_HOST: db
       DB_PORT: 5432
@@ -156,12 +156,12 @@ services:
       web:
         condition: service_started
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
   # Nginx for serving static files (optional for development)
   nginx:
     image: nginx:alpine
-    container_name: fahaniecares_nginx
+    container_name: bmparliament_nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -173,15 +173,15 @@ services:
     depends_on:
       - web
     networks:
-      - fahaniecares_network
+      - bmparliament_network
 
 volumes:
   postgres_data:
-    name: fahaniecares_postgres_data
+    name: bmparliament_postgres_data
   redis_data:
-    name: fahaniecares_redis_data
+    name: bmparliament_redis_data
 
 networks:
-  fahaniecares_network:
-    name: fahaniecares_network
+  bmparliament_network:
+    name: bmparliament_network
     driver: bridge

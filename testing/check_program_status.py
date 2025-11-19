@@ -16,7 +16,7 @@ from apps.services.models import MinistryProgram
 
 program_titles = ["dasdwq", "sasa", "sample edit v2"]
 
-print("Checking status for #FahanieCares programs:")
+print("Checking status for BM Parliament programs:")
 for title in program_titles:
     try:
         program = MinistryProgram.objects.get(title=title, program_source='fahaniecares')

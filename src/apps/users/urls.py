@@ -15,7 +15,7 @@ urlpatterns = [
     path('register/success/', RegistrationSuccessView.as_view(), name='registration_success'),
     path('register/member/', MemberRegistrationView.as_view(), name='register_member'),
     
-    # Profile redirect - will check if user has FahanieCares member profile
+    # Profile redirect - will check if user has BM Parliament member profile
     path('profile/', RedirectView.as_view(pattern_name='member_profile', permanent=False), name='profile'),
     
     # Password reset URLs

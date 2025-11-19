@@ -1,7 +1,7 @@
 # CSS Production Update Fix
 
 ## Issue
-The navbar dropdown scroll fix works locally but not on fahaniecares.ph because CloudFront is caching the old CSS file.
+The navbar dropdown scroll fix works locally but not on bmparliament.gov.ph because CloudFront is caching the old CSS file.
 
 ## Root Cause
 1. **CloudFront CDN Caching**: Production uses CloudFront CDN which caches static files including CSS
@@ -28,7 +28,7 @@ The production Dockerfile already includes CSS build (Stage 1), but ensure it ru
 
 ```bash
 # Force rebuild without cache
-docker build --no-cache -t fahaniecares:latest -f deployment/docker/Dockerfile.production .
+docker build --no-cache -t bm-parliament:latest -f deployment/docker/Dockerfile.production .
 
 # Or if using the deployment script
 ./deployment/scripts/deploy.sh
@@ -39,7 +39,7 @@ docker build --no-cache -t fahaniecares:latest -f deployment/docker/Dockerfile.p
 Check if the new classes are in the production CSS:
 ```bash
 # SSH into production and check
-curl https://fahaniecares.ph/static/css/output.css | grep "max-h-\\\[85vh\\\]"
+curl https://bmparliament.gov.ph/static/css/output.css | grep "max-h-\\\[85vh\\\]"
 ```
 
 ### 5. Alternative Quick Fix - Inline Styles
@@ -70,7 +70,7 @@ This will append hash to filenames (e.g., `output.abc123.css`) forcing cache upd
 
 To find your distribution ID:
 ```bash
-aws cloudfront list-distributions --query "DistributionList.Items[?Contains(Aliases.Items, 'fahaniecares.ph')].Id" --output text
+aws cloudfront list-distributions --query "DistributionList.Items[?Contains(Aliases.Items, 'bmparliament.gov.ph')].Id" --output text
 ```
 
 ## Contact DevOps

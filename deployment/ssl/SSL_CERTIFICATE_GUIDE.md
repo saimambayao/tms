@@ -1,8 +1,8 @@
-# SSL Certificate Management Guide for #FahanieCares
+# SSL Certificate Management Guide for BM Parliament
 
 ## Overview
 
-This guide provides comprehensive instructions for managing SSL certificates for the #FahanieCares platform. We support both Let's Encrypt (free, automated) and commercial SSL certificates.
+This guide provides comprehensive instructions for managing SSL certificates for the BM Parliament platform. We support both Let's Encrypt (free, automated) and commercial SSL certificates.
 
 ## Table of Contents
 
@@ -62,7 +62,7 @@ If you need to manually manage Let's Encrypt certificates:
 
 ```bash
 # Obtain new certificate
-sudo certbot certonly --nginx -d fahaniecares.ph -d www.fahaniecares.ph -d cdn.fahaniecares.ph
+sudo certbot certonly --nginx -d bmparliament.gov.ph -d www.bmparliament.gov.ph -d cdn.bmparliament.gov.ph
 
 # Test renewal
 sudo certbot renew --dry-run
@@ -76,9 +76,9 @@ sudo certbot certificates
 
 ### Let's Encrypt File Locations
 
-- Certificate: `/etc/letsencrypt/live/fahaniecares.ph/fullchain.pem`
-- Private Key: `/etc/letsencrypt/live/fahaniecares.ph/privkey.pem`
-- Chain: `/etc/letsencrypt/live/fahaniecares.ph/chain.pem`
+- Certificate: `/etc/letsencrypt/live/bmparliament.gov.ph/fullchain.pem`
+- Private Key: `/etc/letsencrypt/live/bmparliament.gov.ph/privkey.pem`
+- Chain: `/etc/letsencrypt/live/bmparliament.gov.ph/chain.pem`
 
 ## Commercial SSL Setup
 
@@ -94,15 +94,15 @@ Recommended providers:
 
 ```bash
 # Create private key
-openssl genrsa -out /etc/ssl/fahaniecares/private/fahaniecares.key 4096
+openssl genrsa -out /etc/ssl/bm-parliament/private/bm-parliament.key 4096
 
 # Generate CSR
-openssl req -new -key /etc/ssl/fahaniecares/private/fahaniecares.key \
-  -out /etc/ssl/fahaniecares/fahaniecares.csr \
-  -subj "/C=PH/ST=NCR/L=Manila/O=FahanieCares/CN=fahaniecares.ph"
+openssl req -new -key /etc/ssl/bm-parliament/private/bm-parliament.key \
+  -out /etc/ssl/bm-parliament/bm-parliament.csr \
+  -subj "/C=PH/ST=NCR/L=Manila/O=BM Parliament/CN=bmparliament.gov.ph"
 
 # Add Subject Alternative Names
-cat > /etc/ssl/fahaniecares/san.cnf <<EOF
+cat > /etc/ssl/bm-parliament/san.cnf <<EOF
 [req]
 distinguished_name = req_distinguished_name
 req_extensions = v3_req
@@ -113,31 +113,31 @@ req_extensions = v3_req
 subjectAltName = @alt_names
 
 [alt_names]
-DNS.1 = fahaniecares.ph
-DNS.2 = www.fahaniecares.ph
-DNS.3 = cdn.fahaniecares.ph
+DNS.1 = bmparliament.gov.ph
+DNS.2 = www.bmparliament.gov.ph
+DNS.3 = cdn.bmparliament.gov.ph
 EOF
 
 # Generate CSR with SAN
-openssl req -new -key /etc/ssl/fahaniecares/private/fahaniecares.key \
-  -out /etc/ssl/fahaniecares/fahaniecares.csr \
-  -config /etc/ssl/fahaniecares/san.cnf
+openssl req -new -key /etc/ssl/bm-parliament/private/bm-parliament.key \
+  -out /etc/ssl/bm-parliament/bm-parliament.csr \
+  -config /etc/ssl/bm-parliament/san.cnf
 ```
 
 ### 3. Install Commercial Certificate
 
 ```bash
 # Place certificate files
-sudo cp your-certificate.crt /etc/ssl/fahaniecares/certs/fahaniecares.crt
-sudo cp your-ca-bundle.crt /etc/ssl/fahaniecares/certs/fahaniecares-ca.crt
-sudo cp your-private-key.key /etc/ssl/fahaniecares/private/fahaniecares.key
+sudo cp your-certificate.crt /etc/ssl/bm-parliament/certs/bm-parliament.crt
+sudo cp your-ca-bundle.crt /etc/ssl/bm-parliament/certs/bm-parliament-ca.crt
+sudo cp your-private-key.key /etc/ssl/bm-parliament/private/bm-parliament.key
 
 # Set permissions
-sudo chmod 644 /etc/ssl/fahaniecares/certs/*.crt
-sudo chmod 600 /etc/ssl/fahaniecares/private/*.key
+sudo chmod 644 /etc/ssl/bm-parliament/certs/*.crt
+sudo chmod 600 /etc/ssl/bm-parliament/private/*.key
 
 # Update Nginx configuration
-sudo nano /etc/nginx/snippets/ssl-fahaniecares.conf
+sudo nano /etc/nginx/snippets/ssl-bm-parliament.conf
 # Comment out Let's Encrypt lines and uncomment manual certificate lines
 ```
 
@@ -169,16 +169,16 @@ sudo certbot renew --dry-run
 
 ```bash
 # Backup current certificate
-sudo cp -r /etc/ssl/fahaniecares /etc/ssl/fahaniecares.backup.$(date +%Y%m%d)
+sudo cp -r /etc/ssl/bm-parliament /etc/ssl/bm-parliament.backup.$(date +%Y%m%d)
 
 # Install new certificate
-sudo cp new-certificate.crt /etc/ssl/fahaniecares/certs/fahaniecares.crt
+sudo cp new-certificate.crt /etc/ssl/bm-parliament/certs/bm-parliament.crt
 
 # Reload Nginx
 sudo nginx -t && sudo systemctl reload nginx
 
 # Verify installation
-echo | openssl s_client -servername fahaniecares.ph -connect fahaniecares.ph:443 2>/dev/null | openssl x509 -noout -dates
+echo | openssl s_client -servername bmparliament.gov.ph -connect bmparliament.gov.ph:443 2>/dev/null | openssl x509 -noout -dates
 ```
 
 ## Monitoring and Alerts
@@ -203,8 +203,8 @@ export SMTP_HOST="smtp.gmail.com"
 export SMTP_PORT="587"
 export SMTP_USER="your-email@gmail.com"
 export SMTP_PASSWORD="your-app-password"
-export SSL_ALERT_FROM="ssl-monitor@fahaniecares.ph"
-export SSL_ALERT_TO="admin@fahaniecares.ph,devops@fahaniecares.ph"
+export SSL_ALERT_FROM="ssl-monitor@bmparliament.gov.ph"
+export SSL_ALERT_TO="admin@bmparliament.gov.ph,devops@bmparliament.gov.ph"
 ```
 
 ### 3. Configure Slack Alerts (Optional)
@@ -234,7 +234,7 @@ cat /var/log/ssl-status.json
 
 ```bash
 # Check certificate chain
-openssl s_client -connect fahaniecares.ph:443 -showcerts
+openssl s_client -connect bmparliament.gov.ph:443 -showcerts
 
 # Verify certificate
 openssl verify -CAfile /etc/ssl/certs/ca-certificates.crt /path/to/certificate.crt
@@ -254,11 +254,11 @@ grep -r "http://" /path/to/static/
 
 ```bash
 # Test SSL/TLS versions
-openssl s_client -connect fahaniecares.ph:443 -tls1_2
-openssl s_client -connect fahaniecares.ph:443 -tls1_3
+openssl s_client -connect bmparliament.gov.ph:443 -tls1_2
+openssl s_client -connect bmparliament.gov.ph:443 -tls1_3
 
 # Check cipher suites
-nmap --script ssl-enum-ciphers -p 443 fahaniecares.ph
+nmap --script ssl-enum-ciphers -p 443 bmparliament.gov.ph
 ```
 
 #### 4. Certificate Renewal Failures
@@ -268,18 +268,18 @@ nmap --script ssl-enum-ciphers -p 443 fahaniecares.ph
 sudo journalctl -u certbot
 
 # Verify DNS
-dig fahaniecares.ph
-dig www.fahaniecares.ph
+dig bmparliament.gov.ph
+dig www.bmparliament.gov.ph
 
 # Test ACME challenge
-sudo certbot certonly --nginx -d fahaniecares.ph --dry-run
+sudo certbot certonly --nginx -d bmparliament.gov.ph --dry-run
 ```
 
 ### SSL Testing Tools
 
-1. **SSL Labs**: https://www.ssllabs.com/ssltest/analyze.html?d=fahaniecares.ph
+1. **SSL Labs**: https://www.ssllabs.com/ssltest/analyze.html?d=bmparliament.gov.ph
 2. **SSL Checker**: https://www.sslshopper.com/ssl-checker.html
-3. **Security Headers**: https://securityheaders.com/?q=fahaniecares.ph
+3. **Security Headers**: https://securityheaders.com/?q=bmparliament.gov.ph
 
 ## Security Best Practices
 
@@ -346,7 +346,7 @@ add_header Public-Key-Pins 'pin-sha256="base64+primary=="; pin-sha256="base64+ba
    openssl req -x509 -nodes -days 30 -newkey rsa:4096 \
      -keyout /etc/ssl/emergency.key \
      -out /etc/ssl/emergency.crt \
-     -subj "/CN=fahaniecares.ph"
+     -subj "/CN=bmparliament.gov.ph"
    ```
 
 3. **Notify Team**:
@@ -363,11 +363,11 @@ add_header Public-Key-Pins 'pin-sha256="base64+primary=="; pin-sha256="base64+ba
 2. **Generate New Keys**:
    ```bash
    # Generate new private key
-   openssl genrsa -out /etc/ssl/fahaniecares/private/fahaniecares-new.key 4096
+   openssl genrsa -out /etc/ssl/bm-parliament/private/bm-parliament-new.key 4096
    
    # Generate new CSR
-   openssl req -new -key /etc/ssl/fahaniecares/private/fahaniecares-new.key \
-     -out /etc/ssl/fahaniecares/fahaniecares-new.csr
+   openssl req -new -key /etc/ssl/bm-parliament/private/bm-parliament-new.key \
+     -out /etc/ssl/bm-parliament/bm-parliament-new.csr
    ```
 
 3. **Install New Certificate**:
@@ -387,11 +387,11 @@ add_header Public-Key-Pins 'pin-sha256="base64+primary=="; pin-sha256="base64+ba
 
 ## Contact Information
 
-- **Security Team**: security@fahaniecares.ph
-- **DevOps Team**: devops@fahaniecares.ph
+- **Security Team**: security@bmparliament.gov.ph
+- **DevOps Team**: devops@bmparliament.gov.ph
 - **Emergency**: +63-XXX-XXX-XXXX
 
 ---
 
 Last Updated: January 2025
-Maintained by: #FahanieCares Development Team
+Maintained by: BM Parliament Development Team

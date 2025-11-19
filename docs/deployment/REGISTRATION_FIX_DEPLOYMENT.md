@@ -2,7 +2,7 @@
 
 ## Summary of Fixes
 
-This deployment addresses critical registration issues reported on https://fahaniecares.ph/accounts/register/
+This deployment addresses critical registration issues reported on https://bmparliament.gov.ph/accounts/register/
 
 ### 1. Radio Button Form Submission Fix
 **Issue**: Radio button values were not being submitted with the form due to incorrect name attribute.
@@ -50,13 +50,13 @@ mkdir -p /app/media/temp  # Temporary uploads
 
 1. **Copy the deployment script to production server**:
 ```bash
-scp deploy-registration-fixes.sh user@production-server:/path/to/fahanie-cares/
+scp deploy-registration-fixes.sh user@production-server:/path/to/bm-parliament/
 ```
 
 2. **SSH into production server**:
 ```bash
 ssh user@production-server
-cd /path/to/fahanie-cares
+cd /path/to/bm-parliament
 ```
 
 3. **Run the deployment script**:
@@ -110,7 +110,7 @@ docker-compose logs -f web | grep -i "registration\|member"
 ```
 
 ### 3. Test Registration Form
-1. Navigate to https://fahaniecares.ph/accounts/register/
+1. Navigate to https://bmparliament.gov.ph/accounts/register/
 2. Fill out the form completely
 3. Verify:
    - Radio buttons show immediate visual feedback
@@ -123,9 +123,9 @@ docker-compose logs -f web | grep -i "registration\|member"
 docker-compose exec web python manage.py shell
 ```
 ```python
-from apps.constituents.models import FahanieCaresMember
+from apps.constituents.models import BM ParliamentMember
 # Check recent registrations
-recent = FahanieCaresMember.objects.order_by('-created_at')[:5]
+recent = BM ParliamentMember.objects.order_by('-created_at')[:5]
 for member in recent:
     print(f"{member.user.username} - {member.created_at} - Sector: {member.sector}")
 ```

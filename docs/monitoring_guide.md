@@ -1,8 +1,8 @@
-# #FahanieCares System Monitoring Guide
+# BM Parliament System Monitoring Guide
 
 ## Overview
 
-This guide outlines procedures for monitoring the #FahanieCares website to ensure optimal performance, security, and availability.
+This guide outlines procedures for monitoring the BM Parliament website to ensure optimal performance, security, and availability.
 
 ## Monitoring Components
 
@@ -69,7 +69,7 @@ vmstat 1
 
 # Disk Usage
 df -h
-du -sh /var/www/fahaniecares/*
+du -sh /var/www/bm-parliament/*
 
 # Network
 netstat -tuln
@@ -79,7 +79,7 @@ iftop
 ### 2. Application Monitoring
 ```bash
 # Django Logs
-tail -f /var/log/fahaniecares/django.log
+tail -f /var/log/bm-parliament/django.log
 
 # Nginx Logs
 tail -f /var/log/nginx/access.log
@@ -123,9 +123,9 @@ check_application() {
 
 # Send alert
 alert() {
-    echo "[$(date)] ALERT: $1" >> /var/log/fahaniecares/alerts.log
+    echo "[$(date)] ALERT: $1" >> /var/log/bm-parliament/alerts.log
     # Send email or SMS alert
-    echo "$1" | mail -s "FahanieCares Alert" admin@fahaniecares.gov.ph
+    echo "$1" | mail -s "BM Parliament Alert" admin@bm-parliament.gov.ph
 }
 
 # Run checks
@@ -282,7 +282,7 @@ class Command(BaseCommand):
 #!/bin/bash
 # verify_backup.sh
 
-BACKUP_DIR="/var/backups/fahaniecares"
+BACKUP_DIR="/var/backups/bm-parliament"
 TODAY=$(date +%Y%m%d)
 
 # Check if today's backup exists

@@ -1,13 +1,13 @@
-# #FahanieCares Website Training Plan
+# BM Parliament Website Training Plan
 
 ## Overview
 
-This training plan provides a structured approach to training all users of the #FahanieCares website system.
+This training plan provides a structured approach to training all users of the BM Parliament website system.
 
 ## Training Objectives
 
 By the end of training, participants will be able to:
-1. Navigate the #FahanieCares website effectively
+1. Navigate the BM Parliament website effectively
 2. Perform their role-specific tasks efficiently
 3. Understand system security and best practices
 4. Generate reports and analyze data
@@ -20,7 +20,7 @@ By the end of training, participants will be able to:
 **Format**: Presentation + Hands-on
 
 #### Topics Covered:
-1. Introduction to #FahanieCares
+1. Introduction to BM Parliament
 2. System architecture overview
 3. User roles and permissions
 4. Basic navigation

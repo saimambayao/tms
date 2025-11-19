@@ -85,7 +85,7 @@ def update_credentials_file():
     """Update the staff_login_credentials.txt file"""
     staff_credentials = get_staff_credentials()
     
-    content = "#FahanieCares Staff Login Credentials\n"
+    content = "#BM Parliament Staff Login Credentials\n"
     content += "=" * 60 + "\n\n"
     
     for staff in staff_credentials:

@@ -1,10 +1,10 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code when working with the #FahanieCares portal.
+This file provides guidance to Claude Code when working with the BM Parliament portal.
 
 ## Project Overview
 
-The #FahanieCares website is a Django-based web application serving as the digital platform for MP Atty. Sittie Fahanie S. Uy-Oyod's public service initiative. The system uses PostgreSQL as its primary database, leveraging Django's robust ORM capabilities to deliver the #FahanieCares mission of "Bringing Public Service Closer to You."
+The BM Parliament website is a Django-based web application serving as the digital platform for MP Amiroddin Gayak's public service initiative. The system uses PostgreSQL as its primary database, leveraging Django's robust ORM capabilities to deliver the BM Parliament mission of "Bringing Public Service Closer to You."
 
 Key features include:
 - Constituent management and service referral system
@@ -28,10 +28,10 @@ Key features include:
 
 ### Git Workflow
 
-All commits must be attributed to "#FahanieCares Development Team":
+All commits must be attributed to "BM Parliament Development Team":
 ```bash
-git config user.name "#FahanieCares Development Team"
-git config user.email "dev@fahaniecares.ph"
+git config user.name "BM Parliament Development Team"
+git config user.email "dev@bmparliament.gov.ph"
 ```
 
 **Security**: Always check for secrets before committing. Never commit `.env` files or sensitive data.
@@ -272,13 +272,13 @@ The platform uses a green-based color system with WCAG AA accessibility complian
 ## Production Deployment
 
 ### Automated Fork Sync Process
-The production site at https://fahaniecares.ph is deployed from a **forked repository** that automatically syncs with this main repository.
+The production site at https://bmparliament.gov.ph is deployed from a **forked repository** that automatically syncs with this main repository.
 
 **Deployment Workflow**:
 1. Push changes to `main` branch in this repository
 2. Fork automatically syncs from main repository
 3. Production rebuild triggers automatically
-4. Changes go live at https://fahaniecares.ph
+4. Changes go live at https://bmparliament.gov.ph
 
 **To Deploy Changes**:
 ```bash
@@ -291,7 +291,7 @@ git push origin main
 **Important**: No manual deployment scripts needed - just push to main for immediate production deployment.
 
 ### Production Environment
-- **Live Site**: https://fahaniecares.ph
+- **Live Site**: https://bmparliament.gov.ph
 - **CDN**: CloudFront for static file caching
 - **Container**: Docker production build via Coolify
 - **Database**: PostgreSQL with Redis caching
@@ -331,8 +331,8 @@ git push origin main
 ## Key Access Points
 
 - **Development**: http://localhost:3000 (Docker)
-- **Production**: https://fahaniecares.ph
-- **Admin**: http://localhost:3000/admin (dev) / https://fahaniecares.ph/admin (prod)
-- **Git Attribution**: "#FahanieCares Development Team"
+- **Production**: https://bmparliament.gov.ph
+- **Admin**: http://localhost:3000/admin (dev) / https://bmparliament.gov.ph/admin (prod)
+- **Git Attribution**: "BM Parliament Development Team"
 - **Environment**: PostgreSQL + Redis + Django + TailwindCSS
 

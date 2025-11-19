@@ -7,17 +7,17 @@ from django.utils.decorators import method_decorator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.views import View
-from .member_models import FahanieCaresMember
-from .member_forms import FahanieCaresMemberRegistrationForm, FahanieCaresMemberUpdateForm
+from .member_models import BMParliamentMember
+from .member_forms import BMParliamentMemberRegistrationForm, BMParliamentMemberUpdateForm
 from .models import Constituent # Import Constituent model
 from .utils import MUNICIPALITY_CHOICES_DATA # Import the centralized data
 
 
-class FahanieCaresMemberRegistrationView(CreateView):
+class BMParliamentMemberRegistrationView(CreateView):
     """
-    View for new #FahanieCares member registration
+    View for new #BM Parliament member registration
     """
-    form_class = FahanieCaresMemberRegistrationForm
+    form_class = BMParliamentMemberRegistrationForm
     template_name = 'constituents/member_registration.html'
     success_url = reverse_lazy('registration_success')
     
@@ -52,9 +52,9 @@ class FahanieCaresMemberRegistrationView(CreateView):
             
             response = super().form_valid(form)
             
-            # After FahanieCaresMember is saved, create a Constituent profile
-            # The user object is created implicitly by FahanieCaresMemberRegistrationForm
-            # and linked to the FahanieCaresMember instance.
+            # After BMParliamentMember is saved, create a Constituent profile
+            # The user object is created implicitly by BMParliamentMemberRegistrationForm
+            # and linked to the BMParliamentMember instance.
             # We can access the user via form.instance.user
             try:
                 if not hasattr(form.instance.user, 'constituent'):
@@ -68,8 +68,8 @@ class FahanieCaresMemberRegistrationView(CreateView):
                 return self.form_invalid(form)
 
             messages.success(
-                self.request, 
-                'Your #FahanieCares membership application has been submitted successfully! '
+                self.request,
+                'Your #BM Parliament membership application has been submitted successfully! '
                 'You will receive an email once your application is approved.'
             )
             return response
@@ -113,7 +113,7 @@ class FahanieCaresMemberRegistrationView(CreateView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = '#FahanieCares Member Registration'
+        context['title'] = '#BM Parliament Member Registration'
         return context
 
 
@@ -134,21 +134,21 @@ class MemberProfileView(DetailView):
     """
     View for members to see their own profile
     """
-    model = FahanieCaresMember
+    model = BMParliamentMember
     template_name = 'constituents/member_profile.html'
     context_object_name = 'member'
     
     def get_object(self, queryset=None):
         try:
-            return FahanieCaresMember.objects.get(user=self.request.user)
-        except FahanieCaresMember.DoesNotExist:
+            return BMParliamentMember.objects.get(user=self.request.user)
+        except BMParliamentMember.DoesNotExist:
             return None
     
     def get_context_data(self, **kwargs):
         # Override to handle None object
         context = {
             'member': self.get_object(),
-            'title': 'My #FahanieCares Profile',
+            'title': 'My #BM Parliament Profile',
             'view': self
         }
         return context
@@ -159,16 +159,16 @@ class MemberUpdateView(UpdateView):
     """
     View for members to update their profile
     """
-    model = FahanieCaresMember
-    form_class = FahanieCaresMemberUpdateForm
+    model = BMParliamentMember
+    form_class = BMParliamentMemberUpdateForm
     template_name = 'constituents/member_update.html'
     success_url = reverse_lazy('member_profile')
     
     def dispatch(self, request, *args, **kwargs):
         # Check if user has a member profile, redirect to registration if not
         try:
-            FahanieCaresMember.objects.get(user=request.user)
-        except FahanieCaresMember.DoesNotExist:
+            BMParliamentMember.objects.get(user=request.user)
+        except BMParliamentMember.DoesNotExist:
             messages.info(
                 request, 
                 'You need to complete your member registration first.'
@@ -177,7 +177,7 @@ class MemberUpdateView(UpdateView):
         return super().dispatch(request, *args, **kwargs)
     
     def get_object(self, queryset=None):
-        return FahanieCaresMember.objects.get(user=self.request.user)
+        return BMParliamentMember.objects.get(user=self.request.user)
     
     def form_valid(self, form):
         response = super().form_valid(form)
@@ -195,7 +195,7 @@ class MemberListView(ListView):
     """
     Staff view to see all members
     """
-    model = FahanieCaresMember
+    model = BMParliamentMember
     template_name = 'constituents/staff/member_list.html'
     context_object_name = 'members'
     paginate_by = 50
@@ -241,11 +241,11 @@ class MemberListView(ListView):
     
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = '#FahanieCares Members'
-        context['sector_choices'] = FahanieCaresMember.SECTOR_CHOICES
-        context['total_members'] = FahanieCaresMember.objects.count()
-        context['approved_members'] = FahanieCaresMember.objects.filter(is_approved=True).count()
-        context['pending_members'] = FahanieCaresMember.objects.filter(is_approved=False).count()
+        context['title'] = '#BM Parliament Members'
+        context['sector_choices'] = BMParliamentMember.SECTOR_CHOICES
+        context['total_members'] = BMParliamentMember.objects.count()
+        context['approved_members'] = BMParliamentMember.objects.filter(is_approved=True).count()
+        context['pending_members'] = BMParliamentMember.objects.filter(is_approved=False).count()
         return context
 
 
@@ -253,7 +253,7 @@ class MemberDetailView(DetailView):
     """
     Staff view for viewing member details
     """
-    model = FahanieCaresMember
+    model = BMParliamentMember
     template_name = 'constituents/member_profile.html'
     context_object_name = 'member'
     
@@ -267,8 +267,8 @@ class MemberCreateView(CreateView):
     """
     Staff view for creating new members
     """
-    model = FahanieCaresMember
-    form_class = FahanieCaresMemberRegistrationForm
+    model = BMParliamentMember
+    form_class = BMParliamentMemberRegistrationForm
     template_name = 'constituents/member_registration.html'
     success_url = reverse_lazy('staff_member_list')
     

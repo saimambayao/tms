@@ -13,7 +13,7 @@ def create_demo_users():
     staff_user, created = User.objects.get_or_create(
         username='staff_demo',
         defaults={
-            'email': 'staff@fahaniecares.com',
+            'email': 'staff@bmparliament.com',
             'first_name': 'Maria',
             'last_name': 'Santos',
             'user_type': 'staff',
@@ -27,7 +27,7 @@ def create_demo_users():
         print(f"✓ Staff user created:")
         print(f"  Username: staff_demo")
         print(f"  Password: staff123")
-        print(f"  Email: staff@fahaniecares.com")
+        print(f"  Email: staff@bmparliament.com")
         print(f"  Type: {staff_user.user_type}")
     else:
         print(f"Staff user already exists: {staff_user.username}")
@@ -36,7 +36,7 @@ def create_demo_users():
     member_user, created = User.objects.get_or_create(
         username='member_demo',
         defaults={
-            'email': 'member@fahaniecares.com',
+            'email': 'member@bmparliament.com',
             'first_name': 'Juan',
             'last_name': 'Dela Cruz',
             'user_type': 'member',
@@ -49,7 +49,7 @@ def create_demo_users():
         print(f"✓ Member user created:")
         print(f"  Username: member_demo")
         print(f"  Password: member123")
-        print(f"  Email: member@fahaniecares.com")
+        print(f"  Email: member@bmparliament.com")
         print(f"  Type: {member_user.user_type}")
     else:
         print(f"Member user already exists: {member_user.username}")
@@ -58,7 +58,7 @@ def create_demo_users():
     constituent_user, created = User.objects.get_or_create(
         username='constituent_demo',
         defaults={
-            'email': 'constituent@fahaniecares.com',
+            'email': 'constituent@bmparliament.com',
             'first_name': 'Ana',
             'last_name': 'Reyes',
             'user_type': 'constituent',
@@ -71,7 +71,7 @@ def create_demo_users():
         print(f"✓ Constituent user created:")
         print(f"  Username: constituent_demo")
         print(f"  Password: constituent123")
-        print(f"  Email: constituent@fahaniecares.com")
+        print(f"  Email: constituent@bmparliament.com")
         print(f"  Type: {constituent_user.user_type}")
     else:
         print(f"Constituent user already exists: {constituent_user.username}")

@@ -1,4 +1,4 @@
-# Multi-stage Dockerfile for FahanieCares Django Application
+# Multi-stage Dockerfile for BM Parliament Django Application
 
 # Stage 1: Base builder with system dependencies
 FROM python:3.11-slim AS builder

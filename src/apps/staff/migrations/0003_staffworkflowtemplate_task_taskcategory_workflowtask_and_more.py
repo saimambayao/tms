@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(help_text='Template name', max_length=255)),
                 ('description', models.TextField(blank=True)),
-                ('division', models.CharField(blank=True, choices=[('legislative_affairs', 'Legislative Affairs'), ('administrative_affairs', 'Administrative Affairs'), ('communications', 'Communications'), ('mp_office', "MP Uy-Oyod's Office"), ('it_unit', 'IT Unit')], max_length=30)),
+                ('division', models.CharField(blank=True, choices=[('legislative_affairs', 'Legislative Affairs'), ('administrative_affairs', 'Administrative Affairs'), ('communications', 'Communications'), ('mp_office', "MP Gayak's Office"), ('it_unit', 'IT Unit')], max_length=30)),
                 ('position', models.CharField(blank=True, help_text='Specific position this applies to', max_length=255)),
                 ('is_active', models.BooleanField(default=True)),
                 ('auto_assign', models.BooleanField(default=False, help_text='Automatically assign to matching staff')),

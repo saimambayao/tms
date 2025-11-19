@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='ministryprogram',
             name='program_source',
-            field=models.CharField(choices=[('ministry', 'Ministry Program'), ('fahaniecares', '#FahanieCares Program'), ('tdif_infra', 'TDIF Infrastructure Project'), ('tdif_non_infra', 'TDIF Non-Infrastructure Project')], default='ministry', help_text='Source/category of this program', max_length=20),
+            field=models.CharField(choices=[('ministry', 'Ministry Program'), ('bmparliament', '#BM Parliament Program'), ('tdif_infra', 'TDIF Infrastructure Project'), ('tdif_non_infra', 'TDIF Non-Infrastructure Project')], default='ministry', help_text='Source/category of this program', max_length=20),
         ),
     ]

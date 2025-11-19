@@ -5,9 +5,9 @@
 SSH to your production server and run:
 
 ```bash
-# Option 1: If your container is named 'fahanie-cares-web-1'
-docker exec fahanie-cares-web-1 npm run build-css
-docker exec fahanie-cares-web-1 python manage.py collectstatic --noinput
+# Option 1: If your container is named 'bm-parliament-web-1'
+docker exec bm-parliament-web-1 npm run build-css
+docker exec bm-parliament-web-1 python manage.py collectstatic --noinput
 
 # Option 2: Find container name first
 docker ps | grep web
@@ -21,7 +21,7 @@ docker exec [CONTAINER_NAME] python manage.py collectstatic --noinput
 ### If you have AWS CLI configured:
 ```bash
 # Find your distribution ID (if you don't know it)
-aws cloudfront list-distributions --query "DistributionList.Items[?contains(Aliases.Items || [''], 'fahaniecares.ph')].Id" --output text
+aws cloudfront list-distributions --query "DistributionList.Items[?contains(Aliases.Items || [''], 'bmparliament.gov.ph')].Id" --output text
 
 # Clear cache (replace E1234567890ABC with your ID)
 aws cloudfront create-invalidation --distribution-id E1234567890ABC --paths "/*"
@@ -38,7 +38,7 @@ aws cloudfront create-invalidation --distribution-id E1234567890ABC --paths "/*"
 ## ✅ Verification
 
 After 5-10 minutes:
-1. Open https://fahaniecares.ph
+1. Open https://bmparliament.gov.ph
 2. Hard refresh (Ctrl+F5 or Cmd+Shift+R)
 3. Check if navbar dropdown is scrollable
 

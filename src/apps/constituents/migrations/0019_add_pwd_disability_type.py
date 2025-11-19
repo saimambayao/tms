@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name='fahaniecaresmember',
+            model_name='bmparliamentmember',
             name='pwd_disability_type',
             field=models.CharField(blank=True, choices=[('physical', 'Physical Disability'), ('mental', 'Mental/Intellectual Disability')], help_text='Type of disability', max_length=20),
         ),

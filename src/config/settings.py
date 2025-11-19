@@ -26,15 +26,15 @@ SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-c3p*g=-@1&=5dq
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'fahaniecares.ph,www.fahaniecares.ph,127.0.0.1').split(',')
+ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'bmparliament.ph,www.bmparliament.ph,127.0.0.1').split(',')
 
 # CSRF Configuration - Secure environment-conditional setup
 CSRF_TRUSTED_ORIGINS = []
 
 # Production domains (always included - secure HTTPS only)
 PRODUCTION_DOMAINS = [
-    'https://fahaniecares.ph',
-    'https://www.fahaniecares.ph',
+    'https://bmparliament.ph',
+    'https://www.bmparliament.ph',
 ]
 CSRF_TRUSTED_ORIGINS.extend(PRODUCTION_DOMAINS)
 
@@ -45,8 +45,8 @@ if DEBUG:  # Development/testing only
         'http://127.0.0.1:3000',
         'http://localhost:8000', 
         'http://127.0.0.1:8000',
-        'http://fahaniecares.ph',      # For local testing with production domain
-        'http://www.fahaniecares.ph'   # For local testing with production domain
+        'http://bmparliament.ph',      # For local testing with production domain
+        'http://www.bmparliament.ph'   # For local testing with production domain
     ]
     CSRF_TRUSTED_ORIGINS.extend(DEVELOPMENT_DOMAINS)
 
@@ -133,13 +133,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'fahanie_cares_dev',
-        'USER': 'fariss',
-        'PASSWORD': 'glimpse2964',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'OPTIONS': {'options': '-c search_path=public'},
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 
@@ -206,7 +201,7 @@ CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_HTTPONLY = True
 
 # Optional: Set CSRF_COOKIE_DOMAIN if you have specific domain requirements (e.g., subdomains)
-# CSRF_COOKIE_DOMAIN = '.fahaniecares.ph' # Example for a domain and its subdomains
+# CSRF_COOKIE_DOMAIN = '.bmparliament.ph' # Example for a domain and its subdomains
 
 # Trust X-Forwarded-Proto header from reverse proxy for HTTPS detection
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')

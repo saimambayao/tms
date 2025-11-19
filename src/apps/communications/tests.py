@@ -288,7 +288,7 @@ class CommunicationTemplateModelTests(TestCase):
             name='Welcome Email',
             template_type='email',
             category='announcement',
-            subject='Welcome to #FahanieCares',
+            subject='Welcome to #BM Parliament',
             content='Dear {{name}}, welcome to our community...',
             is_active=True,
             created_by=self.creator
@@ -306,7 +306,7 @@ class CommunicationTemplateModelTests(TestCase):
             name='Holiday Greeting Template',
             template_type='sms',
             category='holiday',
-            content='Happy holidays from #FahanieCares!',
+            content='Happy holidays from #BM Parliament!',
             created_by=self.creator
         )
         
@@ -378,7 +378,7 @@ class CommunicationCampaignModelTests(TestCase):
             name='Monthly Newsletter',
             description='Regular updates for constituents',
             template=self.template,
-            subject='#FahanieCares Monthly Update',
+            subject='#BM Parliament Monthly Update',
             content='This month we accomplished...',
             status='draft',
             created_by=self.campaign_creator
@@ -734,7 +734,7 @@ class CommunicationWorkflowIntegrationTests(TestCase):
             name='Newsletter Template',
             template_type='email',
             category='newsletter',
-            subject='#FahanieCares Newsletter',
+            subject='#BM Parliament Newsletter',
             content='Dear {{name}}, here are this month\'s updates...',
             created_by=self.info_officer
         )
@@ -859,7 +859,7 @@ class CommunicationWorkflowIntegrationTests(TestCase):
 
 
 class CommunicationSystemIntegrationTests(TestCase):
-    """Integration tests with other #FahanieCares systems."""
+    """Integration tests with other #BM Parliament systems."""
     
     def setUp(self):
         self.client = Client()

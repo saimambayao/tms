@@ -78,15 +78,15 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>#FahanieCares</h1>
+            <h1>BM Parliament</h1>
             <p>Service Referral Portal</p>
         </div>
-        
+
         <div class="content">
             <h2>New Update on Your Referral</h2>
-            
+
             <p>Dear {{ user.get_full_name }},</p>
-            
+
             <p>A new update has been added to your service referral ({{ referral.reference_number }}).</p>
             
             <div class="details">
@@ -111,15 +111,15 @@
             <a href="{{ site_url }}{% url 'referral_detail' referral.reference_number %}" class="btn">View Referral</a>
             
             <p>If you have any questions, please don't hesitate to contact us.</p>
-            
-            <p>Thank you for using the #FahanieCares Service Referral Portal.</p>
-            
-            <p>Regards,<br>Team #FahanieCares</p>
+
+            <p>Thank you for using the BM Parliament Service Referral Portal.</p>
+
+            <p>Regards,<br>Team BM Parliament</p>
         </div>
         
         <div class="footer">
             <p>&copy; {{ site_name }} - {{ update.created_at|date:"Y" }}</p>
-            <p>Office of MP Atty. Sittie Fahanie S. Uy-Oyod</p>
+            <p>Office of MP Amiroddin Gayak</p>
         </div>
     </div>
 </body>

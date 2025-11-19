@@ -1,4 +1,4 @@
-# Fahanie Cares Website Proposal
+# BM Parliament Cares Website Proposal
 
 ## Submitted To:
 MP Uy-Oyod
@@ -8,13 +8,13 @@ May 23, 2025
 
 ## 1. Executive Summary
 
-This proposal outlines the development of a comprehensive web-based platform for Fahanie Cares. The primary goal is to establish a robust online presence that facilitates community engagement, streamlines administrative processes, and enhances the organization's outreach capabilities. The website will serve as a central hub for information dissemination, volunteer management, donation processing, and impact reporting, ultimately strengthening Fahanie Cares' mission to serve the community.
+This proposal outlines the development of a comprehensive web-based platform for BM Parliament Cares. The primary goal is to establish a robust online presence that facilitates community engagement, streamlines administrative processes, and enhances the organization's outreach capabilities. The website will serve as a central hub for information dissemination, volunteer management, donation processing, and impact reporting, ultimately strengthening BM Parliament Cares' mission to serve the community.
 
 ## 2. Project Goals and Objectives
 
-The Fahanie Cares website aims to achieve the following:
+The BM Parliament Cares website aims to achieve the following:
 
-*   **Enhance Online Presence:** Create a professional, user-friendly, and accessible website that accurately reflects Fahanie Cares' mission and values.
+*   **Enhance Online Presence:** Create a professional, user-friendly, and accessible website that accurately reflects BM Parliament Cares' mission and values.
 *   **Improve Community Engagement:** Provide features for volunteers to sign up, donors to contribute, and beneficiaries to access information and support.
 *   **Streamline Operations:** Integrate tools for efficient management of chapters, constituents, communications, and parliamentary activities.
 *   **Increase Transparency:** Offer clear reporting on organizational activities, financial stewardship, and community impact.
@@ -25,12 +25,12 @@ The Fahanie Cares website aims to achieve the following:
 
 The website will cater to a diverse audience, including:
 
-*   **Community Members/Beneficiaries:** Individuals seeking assistance, information, or support from Fahanie Cares.
+*   **Community Members/Beneficiaries:** Individuals seeking assistance, information, or support from BM Parliament Cares.
 *   **Volunteers:** Current and prospective individuals interested in contributing their time and skills.
-*   **Donors/Sponsors:** Individuals and organizations interested in financially supporting Fahanie Cares.
+*   **Donors/Sponsors:** Individuals and organizations interested in financially supporting BM Parliament Cares.
 *   **Chapter Leaders/Staff:** Internal users requiring tools for managing local operations, constituents, and activities.
-*   **Government Officials/Partners:** Stakeholders interested in Fahanie Cares' parliamentary activities and community impact.
-*   **General Public:** Anyone interested in learning more about Fahanie Cares and its initiatives.
+*   **Government Officials/Partners:** Stakeholders interested in BM Parliament Cares' parliamentary activities and community impact.
+*   **General Public:** Anyone interested in learning more about BM Parliament Cares and its initiatives.
 
 ## 4. Key Features and Functionality
 
@@ -38,7 +38,7 @@ The proposed website will include, but not be limited to, the following key feat
 
 *   **Public-Facing Website:**
     *   About Us: Mission, Vision, History, Team.
-    *   Programs & Initiatives: Detailed descriptions of Fahanie Cares' activities.
+    *   Programs & Initiatives: Detailed descriptions of BM Parliament Cares' activities.
     *   News & Events: Latest updates, upcoming events, and announcements.
     *   Get Involved: Volunteer sign-up, donation portal, partnership opportunities.
     *   Impact Stories: Testimonials and reports on community impact.
@@ -119,7 +119,7 @@ The project will be executed in the following phases:
 
 ## 7. Maintenance and Support
 
-Post-launch, Fahanie Cares will require ongoing maintenance and support to ensure the website remains secure, performs optimally, and evolves with organizational needs. This includes:
+Post-launch, BM Parliament Cares will require ongoing maintenance and support to ensure the website remains secure, performs optimally, and evolves with organizational needs. This includes:
 
 *   **Regular Backups:** Daily/weekly backups of the database and application files.
 *   **Security Monitoring:** Continuous monitoring for vulnerabilities and threats.
@@ -131,6 +131,6 @@ Post-launch, Fahanie Cares will require ongoing maintenance and support to ensur
 
 ## 8. Budget Proposal
 
-This budget proposal provides an estimated cost for the development and initial deployment of the Fahanie Cares website. Please note that these are estimates and the final cost may vary depending on the exact features, complexities, and any changes to the scope during the project lifecycle.
+This budget proposal provides an estimated cost for the development and initial deployment of the BM Parliament Cares website. Please note that these are estimates and the final cost may vary depending on the exact features, complexities, and any changes to the scope during the project lifecycle.
 
 | Category                      | Estimated Cost (USD) | Description

@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}{{ title }} - #FahanieCares{% endblock %}
+{% block title %}{{ title }} - BM Parliament{% endblock %}
 
 {% block extra_head %}
 {% include 'components/behaviors/common_behaviors.html' %}
@@ -29,13 +29,15 @@
     
     <div class="flex flex-wrap gap-2" x-data="staggerAnimation({staggerDelay: 50})">
         <a href="{% url 'tdif_projects' %}" 
-           class="{% if not current_sector %}bg-green-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+           class="{% if not current_sector %}{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center"
+           {% if not current_sector %}style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"{% endif %}>
             <i class="fas fa-th-large mr-2"></i>
             All Projects
         </a>
         {% for sector in sectors %}
         <a href="{% url 'tdif_projects' %}?sector={{ sector.code }}" 
-           class="{% if current_sector == sector.code %}bg-green-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+           class="{% if current_sector == sector.code %}{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center"
+           {% if current_sector == sector.code %}style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"{% endif %}>
             <i class="{{ sector.icon }} text-{{ sector.color }}-500 mr-2"></i>
             {{ sector.name }}
             <span class="ml-2 text-xs {% if current_sector == sector.code %}text-white/80{% else %}text-gray-500{% endif %}">({{ sector.count }})</span>
@@ -152,7 +154,7 @@
 </div>
 {% else %}
 <!-- Empty State -->
-{% include 'components/molecules/empty_state.html' with icon='fas fa-hammer' title='No TDIF Projects Available Yet' description='We are currently updating our TDIF project portfolio. Please check back soon for new development initiatives.' cta_text='View #FahanieCares Programs' cta_href=programs_url %}
+{% include 'components/molecules/empty_state.html' with icon='fas fa-hammer' title='No TDIF Projects Available Yet' description='We are currently updating our TDIF project portfolio. Please check back soon for new development initiatives.' cta_text='View BM Parliament Programs' cta_href=programs_url %}
 {% endif %}
 
 <!-- Frequently Asked Questions (Adapted for TDIF Projects) -->
@@ -204,16 +206,6 @@
 {% endblock %}
 
 {% block cta %}
-<!-- CTA Section (Adapted for TDIF Projects) -->
-<section class="py-12 bg-green-600 text-white">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-2xl font-bold mb-4">Partner with TDIF for Sustainable Development</h2>
-        <p class="text-white/80 max-w-2xl mx-auto mb-8">Join us in building a brighter future for the Bangsamoro region through impactful development initiatives.</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="{% url 'about' %}" class="bg-white text-green-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition inline-block">Learn More About TDIF</a>
-        </div>
-    </div>
-</section>
 {% endblock %}
 
 {% block extra_js %}

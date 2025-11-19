@@ -4,7 +4,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from .models import Cooperative, CooperativeMembership, CooperativeOfficer
-from apps.constituents.models import FahanieCaresMember
+from apps.constituents.models import BMParliamentMember
 
 User = get_user_model()
 
@@ -31,15 +31,15 @@ class CooperativeRegistrationForm(forms.ModelForm):
         }
 
 class CooperativeOfficerSelectionForm(forms.ModelForm):
-    fahaniecares_member = forms.ModelChoiceField(
-        queryset=FahanieCaresMember.objects.filter(status='approved'),
+    bmparliament_member = forms.ModelChoiceField(
+        queryset=BMParliamentMember.objects.filter(status='approved'),
         widget=forms.Select(attrs={'class': 'select2'})
     )
 
     class Meta:
         model = CooperativeMembership
         fields = [
-            'fahaniecares_member', 'position', 'date_joined', 'date_appointed',
+            'bmparliament_member', 'position', 'date_joined', 'date_appointed',
             'term_start', 'term_end', 'is_active', 'is_founding_member',
             'membership_number', 'shares_owned', 'notes'
         ]
@@ -51,15 +51,15 @@ class CooperativeOfficerSelectionForm(forms.ModelForm):
         }
 
 class CooperativeOfficerForm(forms.ModelForm):
-    fahaniecares_member = forms.ModelChoiceField(
-        queryset=FahanieCaresMember.objects.filter(status='approved'),
+    bmparliament_member = forms.ModelChoiceField(
+        queryset=BMParliamentMember.objects.filter(status='approved'),
         widget=forms.Select(attrs={'class': 'select2'})
     )
 
     class Meta:
         model = CooperativeOfficer
         fields = [
-            'fahaniecares_member', 'position', 'date_joined', 'date_appointed',
+            'bmparliament_member', 'position', 'date_joined', 'date_appointed',
             'term_start', 'term_end', 'is_active'
         ]
         widgets = {
@@ -71,10 +71,10 @@ class CooperativeOfficerForm(forms.ModelForm):
 
 class EnhancedOfficerRegistrationForm(forms.Form):
     """
-    Combined form for registering a new FahanieCares member and making them a cooperative officer
+    Combined form for registering a new BM Parliament member and making them a cooperative officer
     """
     
-    # FahanieCares Member Information
+    # BM Parliament Member Information
     last_name = forms.CharField(
         max_length=100,
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Last Name'})
@@ -101,7 +101,7 @@ class EnhancedOfficerRegistrationForm(forms.Form):
         widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Age'})
     )
     sex = forms.ChoiceField(
-        choices=FahanieCaresMember.SEX_CHOICES,
+        choices=BMParliamentMember.SEX_CHOICES,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     
@@ -137,11 +137,11 @@ class EnhancedOfficerRegistrationForm(forms.Form):
     
     # Sector and Education
     sector = forms.ChoiceField(
-        choices=FahanieCaresMember.SECTOR_CHOICES,
+        choices=BMParliamentMember.SECTOR_CHOICES,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     highest_education = forms.ChoiceField(
-        choices=FahanieCaresMember.EDUCATION_CHOICES,
+        choices=BMParliamentMember.EDUCATION_CHOICES,
         widget=forms.Select(attrs={'class': 'form-control'})
     )
     school_graduated = forms.CharField(
@@ -150,7 +150,7 @@ class EnhancedOfficerRegistrationForm(forms.Form):
         widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'School Graduated (Optional)'})
     )
     eligibility = forms.ChoiceField(
-        choices=FahanieCaresMember.ELIGIBILITY_CHOICES,
+        choices=BMParliamentMember.ELIGIBILITY_CHOICES,
         initial='none',
         widget=forms.Select(attrs={'class': 'form-control'})
     )
@@ -196,7 +196,7 @@ class EnhancedOfficerRegistrationForm(forms.Form):
         middle_name = cleaned_data.get('middle_name', '')
         
         if first_name and last_name:
-            existing_member = FahanieCaresMember.objects.filter(
+            existing_member = BMParliamentMember.objects.filter(
                 first_name=first_name,
                 last_name=last_name,
                 middle_name=middle_name
@@ -204,14 +204,14 @@ class EnhancedOfficerRegistrationForm(forms.Form):
             
             if existing_member:
                 raise ValidationError(
-                    f"A FahanieCares member with the name '{first_name} {middle_name} {last_name}' already exists."
+                    f"A BM Parliament member with the name '{first_name} {middle_name} {last_name}' already exists."
                 )
         
         return cleaned_data
     
     def save(self, cooperative, user):
         """
-        Create both FahanieCares member and cooperative officer in a single transaction
+        Create both BM Parliament member and cooperative officer in a single transaction
         """
         with transaction.atomic():
             # Create User account first
@@ -231,8 +231,8 @@ class EnhancedOfficerRegistrationForm(forms.Form):
                 password=User.objects.make_random_password()  # Generate random password
             )
             
-            # Create FahanieCares member
-            member = FahanieCaresMember.objects.create(
+            # Create BM Parliament member
+            member = BMParliamentMember.objects.create(
                 user=user_account,
                 last_name=self.cleaned_data['last_name'],
                 first_name=self.cleaned_data['first_name'],
@@ -260,7 +260,7 @@ class EnhancedOfficerRegistrationForm(forms.Form):
             # Create cooperative officer
             officer = CooperativeOfficer.objects.create(
                 cooperative=cooperative,
-                fahaniecares_member=member,
+                bmparliament_member=member,
                 position=self.cleaned_data['position'],
                 date_joined=self.cleaned_data['date_joined'],
                 date_appointed=self.cleaned_data.get('date_appointed'),

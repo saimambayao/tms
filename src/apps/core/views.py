@@ -20,7 +20,7 @@ import csv
 import os
 from datetime import datetime, timedelta
 import logging
-from apps.constituents.models import Constituent, FahanieCaresMember
+from apps.constituents.models import Constituent, BMParliamentMember
 from apps.referrals.models import ServiceCategory, Service
 from apps.chapters.models import Chapter, ChapterMembership
 from apps.services.models import ServiceProgram, MinistryProgram, MinistryProgramHistory
@@ -41,7 +41,7 @@ import secrets
 import string
 from django.db import transaction
 from django.contrib.auth import get_user_model
-from apps.constituents.forms import FahanieCaresMemberFormSet # Import the formset
+from apps.constituents.forms import BMParliamentMemberFormSet # Import the formset
 from django.core.exceptions import ValidationError # Import ValidationError
 
 class TestUrlView(TemplateView):
@@ -79,9 +79,9 @@ class HomePageView(TemplateView):
         
         # Production impact stats - dynamically fetched
         context['impact_stats'] = {
-            'registered_members': FahanieCaresMember.objects.count(),
+            'registered_members': BMParliamentMember.objects.count(),
             'active_chapters': Chapter.objects.filter(status='active').count(),
-            'community_events': MinistryProgram.objects.filter(program_source='fahaniecares', is_public=True).count(),
+            'community_events': MinistryProgram.objects.filter(program_source='bmparliament', is_public=True).count(),
             'volunteer_hours': ChapterMembership.objects.filter(is_volunteer=True, status='active').aggregate(total_hours=Sum('volunteer_hours'))['total_hours'] or 0
         }
         
@@ -338,7 +338,7 @@ class MinistriesPPAsView(TemplateView):
         return descriptions.get(ministry_code, 'Ministry programs and services for the Bangsamoro people.')
 
 class ProgramsView(TemplateView):
-    """#FahanieCares Programs view - unified with MinistryProgram model."""
+    """#BM Parliament Programs view - unified with MinistryProgram model."""
     template_name = 'core/programs.html'
     
     def get_context_data(self, **kwargs):
@@ -351,9 +351,9 @@ class ProgramsView(TemplateView):
         # Get sector mapping
         sector_mapping = self._get_sector_mapping()
         
-        # Get #FahanieCares programs using unified MinistryProgram model
+        # Get #BM Parliament programs using unified MinistryProgram model
         programs = MinistryProgram.objects.filter(
-            program_source='fahaniecares',  # Only #FahanieCares programs
+            program_source='bmparliament',  # Only #BM Parliament programs
             is_public=True,                 # Constituent-accessible programs
             is_deleted=False,               # Not deleted
             status__in=['active', 'pending_approval']  # Available statuses
@@ -605,9 +605,9 @@ class AboutPageView(TemplateView):
 
         # Impact stats for About page
         context['impact_stats'] = {
-            'registered_members': FahanieCaresMember.objects.count(),
+            'registered_members': BMParliamentMember.objects.count(),
             'active_chapters': Chapter.objects.filter(status='active').count(),
-            'community_events': MinistryProgram.objects.filter(program_source='fahaniecares', is_public=True).count(),
+            'community_events': MinistryProgram.objects.filter(program_source='bmparliament', is_public=True).count(),
             'volunteer_hours': ChapterMembership.objects.filter(is_volunteer=True, status='active').aggregate(total_hours=Sum('volunteer_hours'))['total_hours'] or 0
         }
         return context
@@ -623,7 +623,7 @@ class AboutPageView(TemplateView):
             submission.save()
             
             context = self.get_context_data(**kwargs)
-            context['message'] = "Thank you for contacting MP Uy-Oyod's office. We will get back to you soon."
+            context['message'] = "Thank you for contacting MP Gayak's office. We will get back to you soon."
             context['message_type'] = 'success'
             context['contact_form'] = ContactForm(default_subject='feedback')  # Fresh form
             return render(request, self.template_name, context)
@@ -772,10 +772,10 @@ class ChaptersPageView(LoginRequiredMixin, TemplateView):
         context['status_choices'] = Chapter.STATUS_CHOICES if hasattr(Chapter, 'STATUS_CHOICES') else []
         
         # Import constituents model for relationship functionality
-        from apps.constituents.models import Constituent, FahanieCaresMember
+        from apps.constituents.models import Constituent, BMParliamentMember
         
         # Get registrants that can be assigned to chapters
-        context['unassigned_registrants'] = FahanieCaresMember.objects.filter(
+        context['unassigned_registrants'] = BMParliamentMember.objects.filter(
             status='approved',
             assigned_chapter__isnull=True
         )[:10]  # Show recent 10 for quick assignment
@@ -842,17 +842,17 @@ class AssignChapterView(View):
                 }, 400)
             
             # Import models
-            from apps.constituents.models import FahanieCaresMember
+            from apps.constituents.models import BMParliamentMember
             from apps.chapters.models import Chapter
             
             # Get registrant and chapter
             try:
-                registrant = FahanieCaresMember.objects.get(
+                registrant = BMParliamentMember.objects.get(
                     id=registrant_id, 
                     status='approved',
                     assigned_chapter__isnull=True
                 )
-            except FahanieCaresMember.DoesNotExist:
+            except BMParliamentMember.DoesNotExist:
                 return JsonResponse({
                     'success': False, 
                     'error': 'Registrant not found or already assigned'
@@ -1065,7 +1065,7 @@ class CompletedProgramsView(TemplateView):
             status='completed',
             is_public=True,
             is_deleted=False,
-            program_source__in=['fahaniecares', 'ministry'] # Include programs from these sources
+            program_source__in=['bmparliament', 'ministry'] # Include programs from these sources
         )
 
         # Apply filters
@@ -1541,7 +1541,7 @@ class DatabaseStaffView(TemplateView):
             ('administrative_affairs', 'Administrative Affairs'),
             ('communications', 'Communications'),
             ('it_unit', 'IT Unit'),
-            ('mp_office', "MP Uy-Oyod's Office"),
+            ('mp_office', "MP Gayak's Office"),
         ]
         
         # Employment status choices for filter
@@ -2392,7 +2392,7 @@ User = get_user_model() # Get the active User model
 
 class DatabaseMembersView(LoginRequiredMixin, TemplateView):
     """
-    Displays a list of FahanieCares members for authorized users.
+    Displays a list of BM Parliament members for authorized users.
     Accessible to Superuser, MP, Chief of Staff, Admin, and Coordinator roles.
     """
     template_name = 'core/database_members.html'
@@ -2426,7 +2426,7 @@ class DatabaseMembersView(LoginRequiredMixin, TemplateView):
         context['current_filters'] = current_filters
 
         # Get members from the database
-        members = FahanieCaresMember.objects.all()
+        members = BMParliamentMember.objects.all()
 
         # Apply filters
         if current_filters['search']:
@@ -2482,10 +2482,10 @@ class DatabaseMembersView(LoginRequiredMixin, TemplateView):
         context['members'] = page_obj
 
         # Filter options for template
-        context['status_choices'] = FahanieCaresMember.STATUS_CHOICES if hasattr(FahanieCaresMember, 'STATUS_CHOICES') else []
-        context['sex_choices'] = FahanieCaresMember.SEX_CHOICES if hasattr(FahanieCaresMember, 'SEX_CHOICES') else []
-        context['sector_choices'] = FahanieCaresMember.SECTOR_CHOICES if hasattr(FahanieCaresMember, 'SECTOR_CHOICES') else []
-        context['municipality_choices'] = FahanieCaresMember.MUNICIPALITY_CHOICES if hasattr(FahanieCaresMember, 'MUNICIPALITY_CHOICES') else []
+        context['status_choices'] = BMParliamentMember.STATUS_CHOICES if hasattr(BMParliamentMember, 'STATUS_CHOICES') else []
+        context['sex_choices'] = BMParliamentMember.SEX_CHOICES if hasattr(BMParliamentMember, 'SEX_CHOICES') else []
+        context['sector_choices'] = BMParliamentMember.SECTOR_CHOICES if hasattr(BMParliamentMember, 'SECTOR_CHOICES') else []
+        context['municipality_choices'] = BMParliamentMember.MUNICIPALITY_CHOICES if hasattr(BMParliamentMember, 'MUNICIPALITY_CHOICES') else []
         context['chapter_choices'] = Chapter.objects.all().order_by('name') # Assuming Chapter model is available
 
         return context
@@ -2508,13 +2508,13 @@ class MemberBulkRegistrationView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Bulk Member Registration'
         if self.request.POST:
-            context['formset'] = FahanieCaresMemberFormSet(self.request.POST, self.request.FILES)
+            context['formset'] = BMParliamentMemberFormSet(self.request.POST, self.request.FILES)
         else:
-            context['formset'] = FahanieCaresMemberFormSet()
+            context['formset'] = BMParliamentMemberFormSet()
         return context
 
     def post(self, request, *args, **kwargs):
-        formset = FahanieCaresMemberFormSet(request.POST, request.FILES)
+        formset = BMParliamentMemberFormSet(request.POST, request.FILES)
         if formset.is_valid():
             registered_count = 0
             registered_members_info = [] # Initialize list to store info of successfully registered members
@@ -2532,7 +2532,7 @@ class MemberBulkRegistrationView(LoginRequiredMixin, TemplateView):
                                 username = f"{original_username}{counter}"
                                 counter += 1
 
-                            temp_password = 'fahaniecares123' # Set fixed password
+                            temp_password = 'bmparliament123' # Set fixed password
 
                             # Create a new User instance
                             new_user = User.objects.create_user(
@@ -2546,7 +2546,7 @@ class MemberBulkRegistrationView(LoginRequiredMixin, TemplateView):
                             )
                             new_user.save()
 
-                            # Create FahanieCaresMember instance
+                            # Create BMParliamentMember instance
                             member = form.save(commit=False)
                             member.user = new_user
                             # Use the status from the form, defaulting to 'pending' if not provided

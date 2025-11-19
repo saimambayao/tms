@@ -1,16 +1,16 @@
 l {% extends 'base/base.html' %}
 
-{% block title %}#FahanieCares Programs{% endblock %}
-{% block meta_description %}Explore #FahanieCares Programs offering educational support, healthcare outreach, skills training, and more for Bangsamoro residents{% endblock %}
+{% block title %}BM Parliament Programs{% endblock %}
+{% block meta_description %}Explore BM Parliament Programs offering educational support, healthcare outreach, skills training, and more for Bangsamoro residents{% endblock %}
 
 {% block hero %}
 <!-- Hero Section -->
 <section class="relative overflow-hidden" style="background: var(--gradient-hero);">
     <div class="container mx-auto px-4 py-16 md:py-20">
         <div class="text-center text-white">
-            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">#FahanieCares Programs</h1>
-            <p class="text-xl md:text-2xl mb-2 text-white/90">Explore our community development programs and services designed to support Bangsamoro residents</p>
-            <p class="text-lg mb-8 text-white/80 max-w-3xl mx-auto">Our programs offer educational support, healthcare outreach, skills training, and more for Bangsamoro residents.</p>
+            <h1 class="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Our Programs</h1>
+            <p class="text-xl md:text-2xl mb-2 text-white/90">Explore our programs and services designed to support Bangsamoro people</p>
+            <p class="text-lg mb-8 text-white/80 max-w-3xl mx-auto">Our programs offer educational support, healthcare outreach, skills training, and more for the Bangsamoro people.</p>
         </div>
     </div>
 </section>
@@ -21,17 +21,19 @@ l {% extends 'base/base.html' %}
 <!-- Program Filters -->
 <div class="bg-white rounded-lg shadow-sm p-6 border border-gray-100 mb-8">
     <h2 class="text-xl font-semibold text-slate-800 mb-4">Browse Programs</h2>
-    <p class="text-gray-600 mb-6">Filter #FahanieCares programs by category to find the right support for your needs.</p>
+    <p class="text-gray-600 mb-6">Filter the programs by category to find the right support for your needs.</p>
     
     <div class="flex flex-wrap gap-2" x-data="staggerAnimation({staggerDelay: 50})">
         <a href="{% url 'programs' %}" 
-           class="{% if not current_sector %}bg-primary-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+           class="{% if not current_sector %}{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center"
+           {% if not current_sector %}style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"{% endif %}>
             <i class="fas fa-th-large mr-2"></i>
             All Programs
         </a>
         {% for sector in sectors %}
         <a href="{% url 'programs' %}?sector={{ sector.code }}" 
-           class="{% if current_sector == sector.code %}bg-primary-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+           class="{% if current_sector == sector.code %}{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center"
+           {% if current_sector == sector.code %}style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"{% endif %}>
             <i class="{{ sector.icon }} text-{{ sector.color }}-500 mr-2"></i>
             {{ sector.name }}
             <span class="ml-2 text-xs {% if current_sector == sector.code %}text-white/80{% else %}text-gray-500{% endif %}">({{ sector.count }})</span>
@@ -153,16 +155,16 @@ l {% extends 'base/base.html' %}
 
 <!-- Registration for Non-Members -->
 {% if not user.is_member_or_above %}
-<div class="bg-primary-50 rounded-lg p-8 border border-primary-100 mb-8">
+<div class="bg-white rounded-lg p-8 border border-primary-100 mb-8">
     <div class="flex flex-col md:flex-row items-center">
         <div class="md:w-2/3">
-            <h2 class="text-2xl font-bold text-primary-800 mb-2">Join #FahanieCares as a Member</h2>
-            <p class="text-gray-700 mb-4">Register as a #FahanieCares member to access all our programs and services. Membership is free and provides exclusive benefits and opportunities to engage with our initiatives.</p>
-            <a href="{% url 'register' %}" class="bg-gradient-to-r from-primary-600 to-primary-700 text-white px-6 py-3 rounded-md font-medium hover:from-primary-700 hover:to-primary-800 shadow-sm hover:shadow-lg transition-all duration-200 inline-block">Register Now</a>
+            <h2 class="text-2xl font-bold text-primary-800 mb-2">Join as a Member</h2>
+            <p class="text-gray-700 mb-4">Register as a member to access all our programs and services. Membership is free and provides exclusive benefits and opportunities to engage with our initiatives.</p>
+            <a href="{% url 'register' %}" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; padding: 0.75rem 1.5rem; border-radius: 0.375rem; font-weight: 500; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s ease; display: inline-block;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)'; this.style.boxShadow='0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)'; this.style.boxShadow='0 1px 2px 0 rgba(0, 0, 0, 0.05)';" class="inline-block">Register Now</a>
         </div>
         <div class="md:w-1/3 mt-6 md:mt-0 flex justify-center">
-            <div class="text-primary-600 text-6xl">
-                <i class="fas fa-user-plus"></i>
+            <div class="text-6xl">
+                <i class="fas fa-user-plus" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
             </div>
         </div>
     </div>
@@ -177,7 +179,7 @@ l {% extends 'base/base.html' %}
         <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
             <div class="bg-primary-100 h-12 w-12 rounded-full flex items-center justify-center text-primary-600 text-xl font-bold mb-4">1</div>
             <h3 class="text-lg font-semibold mb-2">Register as a Member</h3>
-            <p class="text-gray-600">Create your #FahanieCares member account to unlock access to all programs and services.</p>
+            <p class="text-gray-600">Create your member account to unlock access to all programs and services.</p>
         </div>
         
         <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
@@ -194,7 +196,7 @@ l {% extends 'base/base.html' %}
     </div>
     
     <div class="mt-6 text-center">
-        <p class="text-gray-600">Need assistance with your application? Contact our support team at <a href="mailto:support@fahaniecares.gov" class="text-primary-600 hover:underline">support@fahaniecares.gov</a> or call <a href="tel:+123456789" class="text-primary-600 hover:underline">(123) 456-7890</a>.</p>
+        <p class="text-gray-600">Need assistance with your application? Contact our support team at <a href="mailto:support@bmparliament.gov.ph" class="text-primary-600 hover:underline">support@bmparliament.gov.ph</a> or call <a href="tel:+123456789" class="text-primary-600 hover:underline">(123) 456-7890</a>.</p>
     </div>
 </div>
 
@@ -205,11 +207,11 @@ l {% extends 'base/base.html' %}
     <div class="space-y-4">
         <div class="border border-gray-200 rounded-lg overflow-hidden">
             <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none">
-                <span>Who is eligible for #FahanieCares programs?</span>
+                <span>Who is eligible for BM Parliament programs?</span>
                 <i class="fas fa-chevron-down text-gray-400"></i>
             </button>
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                <p class="text-gray-600">Most #FahanieCares programs are available to registered members who are residents of the Bangsamoro region. Specific eligibility requirements vary by program and are outlined in each program description.</p>
+                <p class="text-gray-600">Most BM Parliament programs are available to registered members who are residents of the Bangsamoro region. Specific eligibility requirements vary by program and are outlined in each program description.</p>
             </div>
         </div>
         
@@ -247,17 +249,6 @@ l {% extends 'base/base.html' %}
 {% endblock %}
 
 {% block cta %}
-<!-- CTA Section -->
-<section class="py-12 bg-primary-600 text-white">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-2xl font-bold mb-4">Ready to Make a Difference?</h2>
-        <p class="text-white/80 max-w-2xl mx-auto mb-8">Join our community-led initiatives and help build a stronger, more inclusive Bangsamoro region.</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="{% url 'register' %}" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition inline-block">Register as a Member</a>
-            <a href="{% url 'chapters_overview' %}" class="bg-transparent border-2 border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white/10 transition inline-block">Volunteer Opportunities</a>
-        </div>
-    </div>
-</section>
 {% endblock %}
 
 {% block extra_js %}

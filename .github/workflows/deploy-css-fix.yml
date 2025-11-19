@@ -34,13 +34,13 @@ jobs:
         key: ${{ secrets.PRODUCTION_SSH_KEY }}
         port: ${{ secrets.PRODUCTION_PORT || 22 }}
         script: |
-          cd /path/to/fahanie-cares
-          
+          cd /path/to/bmparliament
+
           # Pull latest changes
           git pull origin main
-          
+
           # Find web container
-          WEB_CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "(web|django|fahanie)" | head -1)
+          WEB_CONTAINER=$(docker ps --format "{{.Names}}" | grep -E "(web|django|bmparliament)" | head -1)
           
           if [ ! -z "$WEB_CONTAINER" ]; then
             # Rebuild CSS
@@ -67,7 +67,7 @@ jobs:
         
         # Find distribution
         DIST_ID=$(aws cloudfront list-distributions \
-          --query "DistributionList.Items[?contains(Aliases.Items || [''], 'fahaniecares.ph')].Id" \
+          --query "DistributionList.Items[?contains(Aliases.Items || [''], 'bmparliament.ph')].Id" \
           --output text)
         
         if [ ! -z "$DIST_ID" ]; then

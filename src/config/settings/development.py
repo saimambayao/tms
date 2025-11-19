@@ -1,5 +1,5 @@
 """
-Development settings for #FahanieCares project.
+Development settings for #BM Parliament project.
 """
 
 import os
@@ -22,15 +22,11 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 # Database configuration
-# Use PostgreSQL for development (consistent with production)
+# Use SQLite for local development
 DATABASES = {
     'default': {
-        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),
-        'NAME': os.environ.get('DB_NAME', 'fahaniecares_db'),
-        'USER': os.environ.get('DB_USER', 'fahaniecares_user'),
-        'PASSWORD': os.environ.get('DB_PASSWORD', 'changeme'),
-        'HOST': os.environ.get('DB_HOST', 'localhost'),  # Use 'db' if in Docker
-        'PORT': os.environ.get('DB_PORT', '5432'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
 
@@ -84,5 +80,7 @@ LOGGING = {
 }
 
 # Celery configuration for development
-CELERY_BROKER_URL = 'redis://redis:6379/0'
-CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+# Using in-memory broker for local development without Redis
+CELERY_BROKER_URL = 'memory://'
+CELERY_RESULT_BACKEND = 'cache+locmem://'
+CELERY_ALWAYS_EAGER = True  # Execute tasks synchronously in development

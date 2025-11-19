@@ -1,17 +1,17 @@
 #!/bin/bash
-# Weekly Maintenance Script for #FahanieCares Platform
+# Weekly Maintenance Script for BM Parliament Platform
 # Run this script weekly (preferably during low-traffic hours)
 
 set -e
 
-echo "=== #FahanieCares Weekly Maintenance ==="
+echo "=== BM Parliament Weekly Maintenance ==="
 echo "Starting at: $(date)"
 echo "========================================"
 
 # Configuration
-DJANGO_ROOT="/Users/macbookpro/Documents/fahanie-cares/src"
+DJANGO_ROOT="/Users/macbookpro/Documents/bmparliament/src"
 LOG_DIR="${LOG_DIR:-${DJANGO_ROOT}/logs}"
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/fahaniecares}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/bmparliament}"
 MAINTENANCE_LOG="${LOG_DIR}/maintenance/weekly_$(date +%Y%m%d_%H%M%S).log"
 
 # Color codes
@@ -116,7 +116,7 @@ find "$LOG_DIR" -name "*.gz" -mtime +90 -type f -delete 2>/dev/null || true
 
 # Clean temporary files
 TEMP_DIRS=(
-    "/tmp/fahaniecares_*"
+    "/tmp/bmparliament_*"
     "${DJANGO_ROOT}/media/temp/*"
     "${DJANGO_ROOT}/staticfiles/CACHE/*"
 )
@@ -368,7 +368,7 @@ log "======================="
 REPORT_FILE="${LOG_DIR}/maintenance/weekly_report_$(date +%Y%m%d).txt"
 
 cat > "$REPORT_FILE" << EOF
-#FahanieCares Weekly Maintenance Report
+BM Parliament Weekly Maintenance Report
 ======================================
 Date: $(date)
 Duration: $SECONDS seconds
@@ -403,7 +403,7 @@ with open('${MAINTENANCE_LOG}', 'r') as f:
     log_content = f.read()
 
 email = EmailMessage(
-    subject=f'#FahanieCares Weekly Maintenance Report - {timezone.now().strftime("%Y-%m-%d")}',
+    subject=f'BM Parliament Weekly Maintenance Report - {timezone.now().strftime("%Y-%m-%d")}',
     body=report_content + "\n\n--- Detailed Log ---\n\n" + log_content[-5000:],  # Last 5000 chars
     from_email=settings.DEFAULT_FROM_EMAIL,
     to=['${MAINTENANCE_EMAIL}'],

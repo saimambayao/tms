@@ -5,7 +5,7 @@ from django.utils import timezone
 
 class User(AbstractUser):
     """
-    Enhanced custom user model for #FahanieCares application with comprehensive RBAC support.
+    Enhanced custom user model for #BM Parliament application with comprehensive RBAC support.
     Extends Django's built-in AbstractUser to add custom fields and role-based access control.
     """
     USER_TYPES = (

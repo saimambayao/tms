@@ -1,15 +1,15 @@
 #!/bin/bash
-# Daily Operations Checklist for #FahanieCares Platform
+# Daily Operations Checklist for BM Parliament Platform
 # Run this script daily to ensure system health and performance
 
 set -e
 
-echo "=== #FahanieCares Daily Operations Check ==="
+echo "=== BM Parliament Daily Operations Check ==="
 echo "Date: $(date)"
 echo "==========================================="
 
 # Configuration
-DJANGO_ROOT="/Users/macbookpro/Documents/fahanie-cares/src"
+DJANGO_ROOT="/Users/macbookpro/Documents/bmparliament/src"
 LOG_DIR="${LOG_DIR:-${DJANGO_ROOT}/logs}"
 REPORT_DIR="${REPORT_DIR:-${LOG_DIR}/daily_reports}"
 REPORT_FILE="${REPORT_DIR}/daily_report_$(date +%Y%m%d).txt"
@@ -43,7 +43,7 @@ check_status() {
 
 # Initialize report
 cat > "$REPORT_FILE" << EOF
-#FahanieCares Daily Operations Report
+BM Parliament Daily Operations Report
 =====================================
 Date: $(date)
 Server: $(hostname)
@@ -157,7 +157,7 @@ report ""
 report "4. BACKUP STATUS"
 report "----------------"
 
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/fahaniecares}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/bmparliament}"
 if [ -d "$BACKUP_DIR" ]; then
     LATEST_BACKUP=$(find "$BACKUP_DIR" -name "*.tar.gz" -type f -mtime -1 | sort -r | head -1)
     if [ ! -z "$LATEST_BACKUP" ]; then
@@ -383,7 +383,7 @@ with open('${REPORT_FILE}', 'r') as f:
     report_content = f.read()
 
 email = EmailMessage(
-    subject=f'#FahanieCares Daily Operations Report - {timezone.now().strftime("%Y-%m-%d")}',
+    subject=f'BM Parliament Daily Operations Report - {timezone.now().strftime("%Y-%m-%d")}',
     body=report_content,
     from_email=settings.DEFAULT_FROM_EMAIL,
     to=['${DAILY_REPORT_EMAIL}'],

@@ -1,6 +1,6 @@
-# SSL/TLS Configuration for #FahanieCares Production
+# SSL/TLS Configuration for BM Parliament Production
 
-This directory contains all SSL/TLS configuration files and scripts needed for secure HTTPS deployment of the #FahanieCares platform.
+This directory contains all SSL/TLS configuration files and scripts needed for secure HTTPS deployment of the BM Parliament platform.
 
 ## Overview
 
@@ -55,7 +55,7 @@ cp .env.example .env.production
 docker-compose -f docker-compose.yml -f ssl/docker-compose.ssl.yml up -d
 
 # Verify SSL in Docker environment
-docker exec fahaniecares_nginx_ssl nginx -t
+docker exec bmparliament_nginx_ssl nginx -t
 ```
 
 ### 3. Verify SSL is Working
@@ -65,7 +65,7 @@ docker exec fahaniecares_nginx_ssl nginx -t
 ./verify_ssl.sh
 
 # Test HTTPS access
-curl -I https://fahaniecares.gov.ph
+curl -I https://bm-parliament.gov.ph
 
 # Check SSL Labs rating (external)
 # Visit: https://www.ssllabs.com/ssltest/
@@ -77,8 +77,8 @@ curl -I https://fahaniecares.gov.ph
 
 1. **DNS Configuration**
    ```
-   A    fahaniecares.gov.ph    → YOUR_SERVER_IP
-   A    www.fahaniecares.gov.ph → YOUR_SERVER_IP
+   A    bm-parliament.gov.ph    → YOUR_SERVER_IP
+   A    www.bm-parliament.gov.ph → YOUR_SERVER_IP
    ```
 
 2. **Firewall Configuration**
@@ -94,8 +94,8 @@ curl -I https://fahaniecares.gov.ph
 3. **Domain Verification**
    ```bash
    # Verify DNS resolution
-   nslookup fahaniecares.gov.ph
-   nslookup www.fahaniecares.gov.ph
+   nslookup bm-parliament.gov.ph
+   nslookup www.bm-parliament.gov.ph
    ```
 
 ### SSL Certificate Setup
@@ -118,11 +118,11 @@ sudo ./setup_ssl.sh
 sudo certbot certonly \
   --webroot \
   --webroot-path=/var/www/certbot \
-  --email admin@fahaniecares.gov.ph \
+  --email admin@bm-parliament.gov.ph \
   --agree-tos \
   --no-eff-email \
-  -d fahaniecares.gov.ph \
-  -d www.fahaniecares.gov.ph
+  -d bm-parliament.gov.ph \
+  -d www.bm-parliament.gov.ph
 ```
 
 ### Security Configuration
@@ -139,7 +139,7 @@ Include in your nginx configuration:
 ```nginx
 server {
     listen 443 ssl http2;
-    server_name fahaniecares.gov.ph www.fahaniecares.gov.ph;
+    server_name bm-parliament.gov.ph www.bm-parliament.gov.ph;
     
     # Include SSL security configuration
     include /etc/nginx/ssl/ssl_security.conf;
@@ -187,13 +187,13 @@ sudo certbot certificates
 
 #### SSL Labs Rating
 - Visit [SSL Labs](https://www.ssllabs.com/ssltest/)
-- Enter: `fahaniecares.gov.ph`
+- Enter: `bm-parliament.gov.ph`
 - Target: **A+ rating**
 
 #### Security Headers Check
 ```bash
 # Check security headers
-curl -I https://fahaniecares.gov.ph | grep -E "(Strict-Transport|X-Content|X-Frame|Content-Security)"
+curl -I https://bm-parliament.gov.ph | grep -E "(Strict-Transport|X-Content|X-Frame|Content-Security)"
 ```
 
 ## Docker Integration
@@ -250,10 +250,10 @@ docker-compose logs nginx | grep SSL
 #### 1. Certificate Request Failed
 ```bash
 # Check DNS resolution
-nslookup fahaniecares.gov.ph
+nslookup bm-parliament.gov.ph
 
 # Verify domain points to server
-dig fahaniecares.gov.ph
+dig bm-parliament.gov.ph
 
 # Check firewall allows port 80
 sudo ufw status | grep 80
@@ -265,10 +265,10 @@ sudo ufw status | grep 80
 sudo nginx -t
 
 # Check certificate files exist
-ls -la /etc/letsencrypt/live/fahaniecares.gov.ph/
+ls -la /etc/letsencrypt/live/bm-parliament.gov.ph/
 
 # Check certificate validity
-openssl x509 -in /etc/letsencrypt/live/fahaniecares.gov.ph/fullchain.pem -noout -dates
+openssl x509 -in /etc/letsencrypt/live/bm-parliament.gov.ph/fullchain.pem -noout -dates
 ```
 
 #### 3. Renewal Issues
@@ -277,7 +277,7 @@ openssl x509 -in /etc/letsencrypt/live/fahaniecares.gov.ph/fullchain.pem -noout 
 sudo certbot renew --dry-run
 
 # Check renewal configuration
-sudo cat /etc/letsencrypt/renewal/fahaniecares.gov.ph.conf
+sudo cat /etc/letsencrypt/renewal/bm-parliament.gov.ph.conf
 
 # Check cron job
 sudo crontab -l | grep certbot
@@ -293,7 +293,7 @@ docker-compose logs certbot
 docker-compose exec nginx ls -la /etc/letsencrypt/live/
 
 # Test certificate in container
-docker-compose exec nginx openssl x509 -in /etc/letsencrypt/live/fahaniecares.gov.ph/fullchain.pem -noout -dates
+docker-compose exec nginx openssl x509 -in /etc/letsencrypt/live/bm-parliament.gov.ph/fullchain.pem -noout -dates
 ```
 
 ### Emergency Procedures
@@ -349,12 +349,12 @@ sudo nginx -t && sudo nginx -s reload
 - Docker configuration: `../docker-compose.yml`
 
 ### Emergency Contacts
-- **System Administrator**: admin@fahaniecares.gov.ph
-- **Security Team**: security@fahaniecares.gov.ph
-- **MP Office**: mp@fahaniecares.gov.ph
+- **System Administrator**: admin@bm-parliament.gov.ph
+- **Security Team**: security@bmparliament.gov.ph
+- **MP Office**: mp@bm-parliament.gov.ph
 
 ---
 
 **Last Updated**: June 7, 2024  
 **Version**: 1.0  
-**Prepared by**: #FahanieCares Development Team
+**Prepared by**: BM Parliament Development Team

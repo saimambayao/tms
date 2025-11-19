@@ -15,7 +15,7 @@ from difflib import SequenceMatcher
 
 # Import models
 from .models import GeneralDatabase, DatabaseEntry, DatabaseField, PersonLink
-from apps.constituents.models import FahanieCaresMember, Constituent
+from apps.constituents.models import BMParliamentMember, Constituent
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,7 @@ class HighAccessRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
 class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
     """
     Main search interface for finding people across all databases.
-    Prioritizes FahanieCaresMember results as requested.
+    Prioritizes BMParliamentMember results as requested.
     """
     template_name = 'unified_db/person_search.html'
 
@@ -73,14 +73,14 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
     def perform_unified_search(self, query):
         """
         Perform unified search across all person-related models.
-        Returns results in priority order: FahanieCaresMember first, then others.
+        Returns results in priority order: BMParliamentMember first, then others.
         """
         results = []
 
         # Normalize search query for better matching
         normalized_query = self.normalize_name(query)
 
-        # Search FahanieCaresMember first (highest priority)
+        # Search BMParliamentMember first (highest priority)
         fahanie_results = self.search_fahanie_cares_members(query, normalized_query)
         results.extend(fahanie_results)
 
@@ -97,10 +97,10 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
         return sorted(unique_results, key=lambda x: x['relevance_score'], reverse=True)
 
     def search_fahanie_cares_members(self, query, normalized_query):
-        """Search FahanieCaresMember records"""
+        """Search BMParliamentMember records"""
         results = []
 
-        # Build search query for FahanieCaresMember
+        # Build search query for BMParliamentMember
         search_filter = (
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
@@ -110,7 +110,7 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
             Q(member_id__icontains=query)
         )
 
-        members = FahanieCaresMember.objects.select_related('user').filter(search_filter)
+        members = BMParliamentMember.objects.select_related('user').filter(search_filter)
 
         for member in members:
             # Calculate relevance score
@@ -122,18 +122,18 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
 
             # Debug logging to check if member data is correct
             full_name = member.get_full_name()
-            logger.info(f"Processing FahanieCaresMember: ID={member.id}, Name='{full_name}', First='{member.first_name}', Last='{member.last_name}', Middle='{member.middle_name}'")
+            logger.info(f"Processing BMParliamentMember: ID={member.id}, Name='{full_name}', First='{member.first_name}', Last='{member.last_name}', Middle='{member.middle_name}'")
 
             results.append({
                 'type': 'fahanie_cares_member',
                 'id': member.id,
-                'title': f"FahanieCares Member: {full_name}",
+                'title': f"BM Parliament Member: {full_name}",
                 'subtitle': f"Member ID: {member.member_id} | Sector: {member.get_sector_display()}",
                 'description': f"Status: {member.get_status_display()} | Email: {member.email}",
                 'url': reverse('database_registrant_detail', args=[member.id]),
-                'relevance_score': relevance_score + 100,  # Boost FahanieCaresMember results
+                'relevance_score': relevance_score + 100,  # Boost BMParliamentMember results
                 'data': member,
-                'matched_field': 'FahanieCares Member Database'
+                'matched_field': 'BM Parliament Member Database'
             })
 
         return results
@@ -173,7 +173,7 @@ class UnifiedPersonSearchView(HighAccessRequiredMixin, TemplateView):
                 'subtitle': f"Voter ID: {constituent.voter_id or 'N/A'} | Engagement: {constituent.engagement_level}/10",
                 'description': f"Email: {constituent.user.email} | Member since: {constituent.membership_date or 'N/A'}",
                 'url': reverse('staff_constituent_detail', args=[constituent.id]),
-                'relevance_score': relevance_score + 50,  # Boost constituent results but less than FahanieCares
+                'relevance_score': relevance_score + 50,  # Boost constituent results but less than BM Parliament
                 'data': constituent,
                 'matched_field': 'Constituent Database'
             })
@@ -331,7 +331,7 @@ class UnifiedPersonDetailView(HighAccessRequiredMixin, DetailView):
         person_id = self.kwargs.get('person_id')
 
         if person_type == 'fahanie_cares_member':
-            return FahanieCaresMember.objects.select_related('user').get(id=person_id)
+            return BMParliamentMember.objects.select_related('user').get(id=person_id)
         elif person_type == 'constituent':
             return Constituent.objects.select_related('user').get(id=person_id)
         elif person_type == 'database_entry':
@@ -356,10 +356,10 @@ class UnifiedPersonDetailView(HighAccessRequiredMixin, DetailView):
         """Get all records linked to this person"""
         records = []
 
-        if isinstance(person_obj, FahanieCaresMember):
+        if isinstance(person_obj, BMParliamentMember):
             records.append({
                 'type': 'fahanie_cares_member',
-                'title': 'FahanieCares Member',
+                'title': 'BM Parliament Member',
                 'data': person_obj,
                 'url': reverse('database_registrant_detail', args=[person_obj.id]),
                 'is_primary': True
@@ -398,7 +398,7 @@ class UnifiedPersonDetailView(HighAccessRequiredMixin, DetailView):
 
     def get_person_links(self, person_obj):
         """Get PersonLink objects for this person"""
-        if isinstance(person_obj, FahanieCaresMember):
+        if isinstance(person_obj, BMParliamentMember):
             return PersonLink.objects.filter(fahanie_cares_member=person_obj)
         elif isinstance(person_obj, Constituent):
             return PersonLink.objects.filter(constituent=person_obj)
@@ -407,12 +407,12 @@ class UnifiedPersonDetailView(HighAccessRequiredMixin, DetailView):
 
     def get_primary_person_info(self, person_obj):
         """Get primary information for display"""
-        if isinstance(person_obj, FahanieCaresMember):
+        if isinstance(person_obj, BMParliamentMember):
             return {
                 'name': person_obj.get_full_name(),
                 'email': person_obj.email,
                 'phone': person_obj.contact_number,
-                'primary_type': 'FahanieCares Member',
+                'primary_type': 'BM Parliament Member',
                 'member_id': person_obj.member_id,
                 'sector': person_obj.get_sector_display(),
                 'status': person_obj.get_status_display()

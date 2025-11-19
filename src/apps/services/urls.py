@@ -7,7 +7,7 @@ urlpatterns = [
     # Public views
     path('programs/', views.ServiceProgramListView.as_view(), name='service_program_list'), # Changed URL path
     path('program/<slug:slug>/', views.ServiceProgramDetailView.as_view(), name='service_program_detail'),
-    path('fahaniecares-program/<slug:slug>/', views.MinistryProgramDetailView.as_view(), name='fahaniecares_program_detail'),
+    path('bmparliament-program/<slug:slug>/', views.MinistryProgramDetailView.as_view(), name='bmparliament_program_detail'),
     
     # Application views
     path('apply/', views.ApplicationFormView.as_view(), name='application_form'),

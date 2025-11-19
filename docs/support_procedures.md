@@ -1,13 +1,13 @@
-# #FahanieCares Support Procedures
+# BM Parliament Support Procedures
 
 ## Overview
 
-This document outlines support procedures for the #FahanieCares website system, including issue handling, escalation processes, and resolution guidelines.
+This document outlines support procedures for the BM Parliament website system, including issue handling, escalation processes, and resolution guidelines.
 
 ## Support Channels
 
 ### 1. Help Desk
-- **Email**: support@fahaniecares.gov.ph
+- **Email**: support@bmparliament.gov.ph
 - **Phone**: (02) 8123-4567
 - **Hours**: Monday-Friday, 8:00 AM - 5:00 PM
 - **Response Time**: Within 4 hours
@@ -18,7 +18,7 @@ This document outlines support procedures for the #FahanieCares website system, 
 - **Response Time**: Within 30 minutes
 
 ### 3. Self-Service
-- **Knowledge Base**: kb.fahaniecares.gov.ph
+- **Knowledge Base**: kb.bm-parliament.gov.ph
 - **User Guide**: Available in Help menu
 - **Video Tutorials**: Training portal
 - **FAQ**: Common issues and solutions
@@ -272,11 +272,11 @@ Update based on:
 
 #### Maintenance Notice
 ```
-Subject: Scheduled Maintenance - #FahanieCares Website
+Subject: Scheduled Maintenance - BM Parliament Website
 
 Dear Users,
 
-We will be performing scheduled maintenance on the #FahanieCares website:
+We will be performing scheduled maintenance on the BM Parliament website:
 
 Date: [Date]
 Time: [Time]
@@ -287,7 +287,7 @@ During this time, the system will be unavailable. We apologize for any inconveni
 
 Thank you for your understanding.
 
-#FahanieCares Support Team
+BM Parliament Support Team
 ```
 
 #### Issue Resolution
@@ -305,7 +305,7 @@ Ticket: #[Number]
 If you continue to experience problems, please contact us.
 
 Best regards,
-#FahanieCares Support Team
+BM Parliament Support Team
 ```
 
 ## Metrics and Reporting

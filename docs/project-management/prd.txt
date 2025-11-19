@@ -2,7 +2,7 @@
 
 ## Executive Summary
 
-This document outlines the product requirements for the #FahanieCares website, the digital platform supporting MP Atty. Sittie Fahanie S. Uy-Oyod's public service initiative. The system will leverage Notion as its primary database infrastructure, integrated with modern web technologies (Python/Django backend) to deliver the #FahanieCares mission of "Bringing Bangsamoro Public Service Closer to You." The website will serve as the primary digital touchpoint for constituent engagement, membership management, service delivery, chapter coordination, and information dissemination about Bangsamoro Ministries' Programs, Projects, Activities, and Services (PPAS).
+This document outlines the product requirements for the #FahanieCares website, the digital platform supporting MP Amiroddin Gayak's public service initiative. The system will leverage Notion as its primary database infrastructure, integrated with modern web technologies (Python/Django backend) to deliver the #FahanieCares mission of "Bringing Bangsamoro Public Service Closer to You." The website will serve as the primary digital touchpoint for constituent engagement, membership management, service delivery, chapter coordination, and information dissemination about Bangsamoro Ministries' Programs, Projects, Activities, and Services (PPAS).
 
 The system architecture will implement a modular design approach aligned with both parliamentary function requirements and the specific goals of the #FahanieCares initiative, while utilizing Notion's powerful database and collaboration features as its foundation.
 
@@ -10,7 +10,7 @@ The system architecture will implement a modular design approach aligned with bo
 
 ### Purpose and Vision
 
-The #FahanieCares website will provide a centralized digital platform to operationalize MP Uy-Oyod's representation function by:
+The #FahanieCares website will provide a centralized digital platform to operationalize MP Gayak's representation function by:
 
 1. Managing membership registration through integrated Notion Forms
 2. Supporting Direct Service Delivery through digital access to #FahanieCares Programs and Services for registered members
@@ -27,7 +27,7 @@ The #FahanieCares website will provide a centralized digital platform to operati
 3. **Chapter Members**: Registered beneficiaries organized by municipality
 4. **Chapter Coordinators**: Local leaders managing municipal chapters
 5. **Parliamentary Office Staff**: Administrators managing member requests and constituent services
-6. **MP Uy-Oyod**: Primary stakeholder overseeing the platform
+6. **MP Gayak**: Primary stakeholder overseeing the platform
 
 ### Core Functions
 
@@ -129,7 +129,7 @@ The main public-facing component of the website delivering #FahanieCares informa
    - Calendar of upcoming events and outreach activities
 
 2. **About Section**:
-   - MP Uy-Oyod's profile and commitment
+   - MP Gayak's profile and commitment
    - #FahanieCares mission and objectives
    - Parliamentary agenda and accomplishments
    - Team structure and contact information
@@ -362,7 +362,7 @@ Comprehensive data analysis and visualization system for monitoring #FahanieCare
 
 ### 8. Parliamentary Work Module
 
-System for managing and sharing MP Uy-Oyod's legislative and oversight activities, connecting constituents to her parliamentary functions.
+System for managing and sharing MP Gayak's legislative and oversight activities, connecting constituents to his parliamentary functions.
 
 #### Features
 

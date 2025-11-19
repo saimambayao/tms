@@ -35,7 +35,7 @@ RUN cat > /app/entrypoint.sh << 'EOF'
 #!/bin/bash
 set -e
 
-echo "🚀 Starting #FahanieCares Production Server"
+echo "🚀 Starting BM Parliament Production Server"
 echo "================================================"
 
 # Function to wait for database
@@ -137,7 +137,7 @@ warm_cache
 exec su appuser -c "gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --max-requests 1000 --max-requests-jitter 50 --worker-class sync --worker-connections 1000 --preload config.wsgi:application"
 
 echo "================================================"
-echo "🎉 #FahanieCares Production Server Ready!"
+echo "🎉 BM Parliament Production Server Ready!"
 echo "================================================"
 
 # Execute the main command

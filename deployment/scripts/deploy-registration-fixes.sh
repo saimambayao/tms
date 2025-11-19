@@ -56,7 +56,7 @@ fi
 # Test registration endpoint
 echo ""
 echo "🧪 Testing registration endpoint..."
-HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://fahaniecares.ph/accounts/register/)
+HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://bmparliament.gov.ph/accounts/register/)
 
 if [ "$HTTP_STATUS" = "200" ]; then
     echo "✅ Registration page is accessible (HTTP $HTTP_STATUS)"

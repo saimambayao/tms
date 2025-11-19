@@ -3,7 +3,7 @@
 ## Navigate to Project Root
 
 ```bash
-cd /Users/macbookpro/Documents/fahanie-cares
+cd /Users/macbookpro/Documents/bm-parliament
 ```
 
 ## Method 1: Using Docker (Recommended)
@@ -54,13 +54,13 @@ npm run build-css
 ```bash
 # Ensure PostgreSQL is running locally
 # Create database and user
-createdb fahaniecares_db
-createuser fahaniecares_user
+createdb bmparliament_db
+createuser bmparliament_user
 
 # Set environment variables
 export DB_HOST=localhost
-export DB_NAME=fahaniecares_db
-export DB_USER=fahaniecares_user
+export DB_NAME=bmparliament_db
+export DB_USER=bmparliament_user
 export DB_PASSWORD=changeme
 ```
 
@@ -109,8 +109,8 @@ SECRET_KEY=your-secret-key-here
 
 # Database settings
 DB_ENGINE=django.db.backends.postgresql
-DB_NAME=fahaniecares_db
-DB_USER=fahaniecares_user
+DB_NAME=bmparliament_db
+DB_USER=bmparliament_user
 DB_PASSWORD=changeme
 DB_HOST=localhost
 DB_PORT=5432
@@ -122,7 +122,7 @@ REDIS_URL=redis://localhost:6379/0
 ## Notes
 
 - PostgreSQL is now required (SQLite has been removed)
-- The project root is `/Users/macbookpro/Documents/fahanie-cares`
+- The project root is `/Users/macbookpro/Documents/bm-parliament`
 - The Django source code is in the `src/` directory
 - Static files are served from `src/staticfiles/` after running collectstatic
 - Media files are stored in `src/media/`

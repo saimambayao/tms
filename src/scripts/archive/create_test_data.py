@@ -1,5 +1,5 @@
 """
-Script to create test data for #FahanieCares system.
+Script to create test data for #BM Parliament system.
 """
 
 import os
@@ -29,7 +29,7 @@ def create_users():
     # MP user
     mp_user = User.objects.create_user(
         username='mp_fahanie',
-        email='mp@fahaniecares.ph',
+        email='mp@bmparliament.ph',
         password='Test@Pass123!',
         first_name='Sittie Fahanie',
         last_name='Uy-Oyod',
@@ -46,7 +46,7 @@ def create_users():
     for i in range(3):
         staff_user = User.objects.create_user(
             username=f'staff{i+1}',
-            email=f'staff{i+1}@fahaniecares.ph',
+            email=f'staff{i+1}@bmparliament.ph',
             password='Test@Pass123!',
             first_name=f'Staff',
             last_name=f'Member {i+1}',
@@ -65,7 +65,7 @@ def create_users():
         
         coordinator = User.objects.create_user(
             username=f'coord_{username}',
-            email=f'coordinator.{email}@fahaniecares.ph',
+            email=f'coordinator.{email}@bmparliament.ph',
             password='Test@Pass123!',
             first_name=f'Coordinator',
             last_name=municipality,
@@ -183,12 +183,12 @@ def create_chapters(users):
         municipality='Buluan',  # Provincial capital
         province='Maguindanao del Sur',
         country='Philippines',
-        description="The provincial chapter of #FahanieCares in Maguindanao del Sur, focusing on serving communities across the province.",
+        description="The provincial chapter of #BM Parliament in Maguindanao del Sur, focusing on serving communities across the province.",
         mission_statement="To bring quality public service and community support to all municipalities of Maguindanao del Sur.",
         established_date=datetime.now().date() - timedelta(days=random.randint(90, 365)),
         status='active',
         coordinator=users['mp'],  # MP as provincial coordinator
-        email="maguindanaodelsur@fahaniecares.ph",
+        email="maguindanaodelsur@bmparliament.ph",
         phone=f'09{random.randint(100000000, 999999999)}',
         address='Provincial Capitol, Buluan, Maguindanao del Sur',
         meeting_location='Provincial Capitol Conference Hall',
@@ -217,7 +217,7 @@ def create_chapters(users):
             established_date=datetime.now().date() - timedelta(days=random.randint(90, 365)),
             status='active',
             coordinator=coordinator,
-            email=f'{email}@fahaniecares.ph',
+            email=f'{email}@bmparliament.ph',
             phone=f'09{random.randint(100000000, 999999999)}',
             address=f'{municipality} Municipal Hall',
             meeting_location=f'{municipality} Municipal Gymnasium',

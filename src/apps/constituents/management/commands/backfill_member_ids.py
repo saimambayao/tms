@@ -1,21 +1,21 @@
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember
 
 class Command(BaseCommand):
-    help = 'Backfills member_id for existing approved FahanieCaresMember instances that do not have one.'
+    help = 'Backfills member_id for existing approved BMParliamentMember instances that do not have one.'
 
     def handle(self, *args, **kwargs):
         self.stdout.write(self.style.SUCCESS('Starting backfill of member IDs...'))
         
         # Find approved members without a member_id
-        approved_members_to_update = FahanieCaresMember.objects.filter(
+        approved_members_to_update = BMParliamentMember.objects.filter(
             is_approved=True,
             member_id__isnull=True
         )
         
         # Find pending members without a member_id
-        pending_members_to_update = FahanieCaresMember.objects.filter(
+        pending_members_to_update = BMParliamentMember.objects.filter(
             is_approved=False,
             member_id__isnull=True
         )

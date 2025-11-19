@@ -9,6 +9,6 @@ class CooperativeAdmin(admin.ModelAdmin):
 
 @admin.register(CooperativeMembership)
 class CooperativeMembershipAdmin(admin.ModelAdmin):
-    list_display = ('cooperative', 'fahaniecares_member', 'position', 'is_active')
+    list_display = ('cooperative', 'bmparliament_member', 'position', 'is_active')
     list_filter = ('position', 'is_active')
-    search_fields = ('cooperative__name', 'fahaniecares_member__last_name', 'fahaniecares_member__first_name')
+    search_fields = ('cooperative__name', 'bmparliament_member__last_name', 'bmparliament_member__first_name')

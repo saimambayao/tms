@@ -1,6 +1,6 @@
 {% extends 'base/base.html' %}
 
-{% block title %}Ministry Programs - #FahanieCares{% endblock %}
+{% block title %}Ministry Programs - BM Parliament{% endblock %}
 {% block meta_description %}Curated selection of Bangsamoro ministry programs designed for easy access and streamlined application processes{% endblock %}
 
 {% block extra_head %}
@@ -39,13 +39,15 @@
     
     <div class="flex flex-wrap gap-2" x-data="staggerAnimation({staggerDelay: 50})">
         <a href="{% url 'accessible_ministry_programs' %}" 
-           class="{% if not current_sector %}bg-primary-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+           class="{% if not current_sector %}{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center"
+           {% if not current_sector %}style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"{% endif %}>
             <i class="fas fa-th-large mr-2"></i>
             All Programs
         </a>
         {% for sector in sectors %}
         <a href="{% url 'accessible_ministry_programs' %}?sector={{ sector.code }}" 
-           class="{% if current_sector == sector.code %}bg-primary-600 text-white{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center">
+           class="{% if current_sector == sector.code %}{% else %}bg-white border border-gray-300 text-gray-700 hover:bg-gray-50{% endif %} px-4 py-2 rounded-md transition-all duration-300 animate-fade-in-up hover-scale focus-ring flex items-center"
+           {% if current_sector == sector.code %}style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';"{% endif %}>
             <i class="{{ sector.icon }} text-{{ sector.color }}-500 mr-2"></i>
             {{ sector.name }}
             <span class="ml-2 text-xs {% if current_sector == sector.code %}text-white/80{% else %}text-gray-500{% endif %}">({{ sector.count }})</span>
@@ -224,17 +226,6 @@
 {% endblock %}
 
 {% block cta %}
-<!-- CTA Section -->
-<section class="py-12 bg-primary-600 text-white">
-    <div class="container mx-auto px-4 text-center">
-        <h2 class="text-2xl font-bold mb-4">Empowering Communities Through Ministry Programs</h2>
-        <p class="text-white/80 max-w-2xl mx-auto mb-8">Discover how our programs are making a difference and find the support you need.</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-            <a href="{% url 'contact' %}" class="bg-white text-primary-600 px-6 py-3 rounded-md font-medium hover:bg-gray-100 transition inline-block">Get Assistance</a>
-            <a href="{% url 'about' %}" class="border border-white text-white px-6 py-3 rounded-md font-medium hover:bg-white hover:text-primary-600 transition inline-block">Learn More About Us</a>
-        </div>
-    </div>
-</section>
 {% endblock %}
 
 {% block extra_js %}

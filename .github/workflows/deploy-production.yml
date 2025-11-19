@@ -59,8 +59,8 @@ jobs:
           docker build \
             --build-arg STATIC_VERSION=${{ steps.version.outputs.sha_short }} \
             --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-            --tag fahaniecares:${{ steps.version.outputs.sha_short }} \
-            --tag fahaniecares:latest \
+            --tag bmparliament:${{ steps.version.outputs.sha_short }} \
+            --tag bmparliament:latest \
             --file deployment/docker/Dockerfile.production \
             .
 
@@ -78,7 +78,7 @@ jobs:
           
           # Deploy
           ssh -i ~/.ssh/deploy_key $DEPLOY_USER@$DEPLOY_HOST << 'ENDSSH'
-            cd /opt/fahaniecares
+            cd /opt/bmparliament
             git pull origin main
             docker-compose -f docker-compose.production.yml build
             docker-compose -f docker-compose.production.yml up -d
@@ -93,7 +93,7 @@ jobs:
       - name: Health check
         id: health
         run: |
-          response=$(curl -s -o /dev/null -w "%{http_code}" https://fahaniecares.ph/health/)
+          response=$(curl -s -o /dev/null -w "%{http_code}" https://bmparliament.ph/health/)
           echo "status=$response" >> $GITHUB_OUTPUT
           if [ "$response" != "200" ]; then
             echo "Health check failed with status: $response"
@@ -126,7 +126,7 @@ jobs:
       - name: Verify CSS update
         run: |
           # Check if new CSS is being served
-          css_headers=$(curl -s -I https://fahaniecares.ph/static/css/output.css)
+          css_headers=$(curl -s -I https://bmparliament.ph/static/css/output.css)
           echo "CSS Headers:"
           echo "$css_headers" | grep -E "(last-modified|etag|x-cache|cache-control)"
 
@@ -150,7 +150,7 @@ jobs:
               repo: context.repo.repo,
               deployment_id: deployment.data.id,
               state: '${{ job.status }}',
-              environment_url: 'https://fahaniecares.ph',
+              environment_url: 'https://bmparliament.ph',
               description: 'Deployment ${{ job.status }}'
             });
 
@@ -163,7 +163,7 @@ jobs:
             Deployment ${{ job.status }}
             Version: ${{ steps.version.outputs.sha_short }}
             Health: ${{ steps.health.outputs.status }}
-            URL: https://fahaniecares.ph
+            URL: https://bmparliament.ph
           webhook_url: ${{ secrets.SLACK_WEBHOOK }}
           
   post-deployment:
@@ -178,7 +178,7 @@ jobs:
           # Test critical pages
           for url in "/" "/about/" "/programs/" "/static/css/output.css"; do
             echo "Testing $url..."
-            status=$(curl -s -o /dev/null -w "%{http_code}" "https://fahaniecares.ph$url")
+            status=$(curl -s -o /dev/null -w "%{http_code}" "https://bmparliament.ph$url")
             if [ "$status" != "200" ] && [ "$status" != "304" ]; then
               echo "Failed: $url returned $status"
               exit 1
@@ -189,4 +189,4 @@ jobs:
       - name: Check static version
         run: |
           # Check if static version endpoint exists
-          curl -s https://fahaniecares.ph/health/static-version/ | jq . || echo "No version endpoint yet"
+          curl -s https://bmparliament.ph/health/static-version/ | jq . || echo "No version endpoint yet"

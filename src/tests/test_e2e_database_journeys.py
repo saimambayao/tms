@@ -9,7 +9,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils import timezone
 from datetime import timedelta
 from apps.core.models import Announcement
-from apps.constituents.models import FahanieCaresMember
+from apps.constituents.models import BMParliamentMember
 from apps.communications.models import PartnershipSubmission, DonationSubmission
 from PIL import Image
 import io
@@ -27,7 +27,7 @@ class E2ECoordinatorJourneyTest(TestCase):
         # Create coordinator user
         self.coordinator = User.objects.create_user(
             username='area_coordinator',
-            email='coordinator@fahaniecares.ph',
+            email='coordinator@bmparliament.ph',
             password='SecurePass123!',
             user_type='coordinator',
             first_name='Area',
@@ -68,7 +68,7 @@ class E2ECoordinatorJourneyTest(TestCase):
         self.assertContains(registrants_response, 'Database of Registrants')
         
         # 4. Create a new registrant
-        new_registrant = FahanieCaresMember.objects.create(
+        new_registrant = BMParliamentMember.objects.create(
             user=self.registrant_user,
             first_name='New',
             last_name='Registrant',
@@ -160,7 +160,7 @@ class E2EInformationOfficerJourneyTest(TestCase):
         # Create information officer
         self.info_officer = User.objects.create_user(
             username='info_officer',
-            email='info@fahaniecares.ph',
+            email='info@bmparliament.ph',
             password='InfoPass123!',
             user_type='information_officer',
             first_name='Info',
@@ -302,11 +302,11 @@ class E2EMPUserJourneyTest(TestCase):
         # Create MP user
         self.mp_user = User.objects.create_user(
             username='mp_fahanie',
-            email='mp@fahaniecares.ph',
+            email='mp@bmparliament.ph',
             password='MPSecure123!',
             user_type='mp',
             first_name='Fahanie',
-            last_name='Uy-Oyod'
+            last_name='Gayak'
         )
         
         # Create test data across all databases
@@ -331,7 +331,7 @@ class E2EMPUserJourneyTest(TestCase):
                 last_name='Test'
             )
             
-            FahanieCaresMember.objects.create(
+            BMParliamentMember.objects.create(
                 user=user,
                 first_name=f'Member{i}',
                 last_name='Test',
@@ -460,7 +460,7 @@ class E2EMPUserJourneyTest(TestCase):
         priority_announcement = self.client.post(
             reverse('database_announcement_create'),
             {
-                'title': 'Important Policy Update from MP Uy-Oyod',
+                'title': 'Important Policy Update from MP Gayak',
                 'category': 'update',
                 'status': 'published',
                 'excerpt': 'New policies for constituent services',
@@ -553,7 +553,7 @@ class E2EPublicUserJourneyTest(TestCase):
         # 1. Visit home page
         home_response = self.client.get(reverse('home'))
         self.assertEqual(home_response.status_code, 200)
-        self.assertContains(home_response, '#FahanieCares')
+        self.assertContains(home_response, '#BM Parliament')
         
         # 2. View announcements
         announcements_response = self.client.get(reverse('announcements'))
@@ -706,7 +706,7 @@ class E2ECompleteSystemWorkflowTest(TestCase):
                 'title': 'New Partnership: Free WiFi for Community Centers',
                 'category': 'news',
                 'status': 'published',
-                'excerpt': 'Tech Solutions Corp partners with #FahanieCares',
+                'excerpt': 'Tech Solutions Corp partners with #BM Parliament',
                 'content': '''<p>We are pleased to announce our new partnership with Tech Solutions Corp!</p>
                 <p>This partnership will provide:</p>
                 <ul>

@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# #FahanieCares Website Rollback Script
+# BM Parliament Website Rollback Script
 
 set -e
 
 # Configuration
-APP_NAME="fahaniecares"
+APP_NAME="bmparliament"
 APP_DIR="/var/www/$APP_NAME"
 BACKUP_DIR="/var/backups/$APP_NAME"
 
@@ -16,7 +16,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 echo "============================================"
-echo "#FahanieCares Website Rollback"
+echo "BM Parliament Website Rollback"
 echo "============================================"
 
 # Check if backup directory exists

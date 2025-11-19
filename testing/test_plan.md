@@ -1,8 +1,8 @@
-# #FahanieCares Website Test Plan
+# BM Parliament Website Test Plan
 
 ## 1. Overview
 
-This document outlines the comprehensive testing strategy for the #FahanieCares website system.
+This document outlines the comprehensive testing strategy for the BM Parliament website system.
 
 ### Objectives
 - Ensure all functionality works as designed

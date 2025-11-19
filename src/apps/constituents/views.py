@@ -20,7 +20,7 @@ from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from io import BytesIO
 from .models import Constituent, ConstituentInteraction, ConstituentGroup
-from .member_models import FahanieCaresMember
+from .member_models import BMParliamentMember
 from .forms import ExcelUploadForm
 from apps.users.models import User
 
@@ -63,15 +63,15 @@ class DatabaseAccessMixin(LoginRequiredMixin, UserPassesTestMixin):
 class DatabaseRegistrantsView(DatabaseAccessMixin, ListView):
     """
     Comprehensive Database of Registrants for authorized users.
-    Shows all FahanieCaresMember registrations with search, filtering, and editing capabilities.
+    Shows all BMParliamentMember registrations with search, filtering, and editing capabilities.
     """
-    model = FahanieCaresMember
+    model = BMParliamentMember
     template_name = 'constituents/database_registrants.html'
     context_object_name = 'registrants'
     paginate_by = 25
     
     def get_queryset(self):
-        queryset = FahanieCaresMember.objects.all().select_related('user', 'approved_by')
+        queryset = BMParliamentMember.objects.all().select_related('user', 'approved_by')
         
         # Search functionality
         search_query = self.request.GET.get('search')
@@ -171,13 +171,13 @@ class DatabaseRegistrantsView(DatabaseAccessMixin, ListView):
         context = super().get_context_data(**kwargs)
         
         # Statistics for dashboard cards
-        context['total_registrants'] = FahanieCaresMember.objects.count()
-        context['approved_count'] = FahanieCaresMember.objects.filter(status='approved').count()
-        context['pending_count'] = FahanieCaresMember.objects.filter(status='pending').count()
-        context['incomplete_count'] = FahanieCaresMember.objects.filter(status='incomplete').count()
-        context['non_compliant_count'] = FahanieCaresMember.objects.filter(status='non_compliant').count()
-        context['denied_count'] = FahanieCaresMember.objects.filter(status='denied').count() # Keep for backward compatibility if needed, or remove if 'denied' is fully replaced
-        context['this_month_count'] = FahanieCaresMember.objects.filter(
+        context['total_registrants'] = BMParliamentMember.objects.count()
+        context['approved_count'] = BMParliamentMember.objects.filter(status='approved').count()
+        context['pending_count'] = BMParliamentMember.objects.filter(status='pending').count()
+        context['incomplete_count'] = BMParliamentMember.objects.filter(status='incomplete').count()
+        context['non_compliant_count'] = BMParliamentMember.objects.filter(status='non_compliant').count()
+        context['denied_count'] = BMParliamentMember.objects.filter(status='denied').count() # Keep for backward compatibility if needed, or remove if 'denied' is fully replaced
+        context['this_month_count'] = BMParliamentMember.objects.filter(
             date_of_application__gte=timezone.now().replace(day=1, hour=0, minute=0)
         ).count()
         
@@ -216,10 +216,10 @@ class DatabaseRegistrantsView(DatabaseAccessMixin, ListView):
         ]
         
         # Sector choices
-        context['sectors'] = FahanieCaresMember.SECTOR_CHOICES
+        context['sectors'] = BMParliamentMember.SECTOR_CHOICES
         
         # Education choices
-        context['education_levels'] = FahanieCaresMember.EDUCATION_CHOICES
+        context['education_levels'] = BMParliamentMember.EDUCATION_CHOICES
         
         # Age range options
         context['age_ranges'] = [
@@ -231,7 +231,7 @@ class DatabaseRegistrantsView(DatabaseAccessMixin, ListView):
         ]
         
         # Gender options
-        context['genders'] = FahanieCaresMember.SEX_CHOICES
+        context['genders'] = BMParliamentMember.SEX_CHOICES
         
         # Current filter values for maintaining state
         context['current_filters'] = {
@@ -410,7 +410,7 @@ class ExcelNameCheckView(DatabaseAccessMixin, View):
 
     def find_name_matches(self, name):
         """
-        Search for precise name matches in both FahanieCaresMember and Constituent databases.
+        Search for precise name matches in both BMParliamentMember and Constituent databases.
         Parses full names properly and uses exact matching for accuracy.
         Returns a list of matching member/constituent details from unified databases.
         """
@@ -449,8 +449,8 @@ class ExcelNameCheckView(DatabaseAccessMixin, View):
             for query in search_queries[1:]:
                 combined_query |= query
 
-            # Search FahanieCaresMember database
-            fahanie_queryset = FahanieCaresMember.objects.filter(combined_query).distinct()
+            # Search BMParliamentMember database
+            fahanie_queryset = BMParliamentMember.objects.filter(combined_query).distinct()
 
             for member in fahanie_queryset[:10]:  # Allow more matches since we're more precise
                 # Additional validation - check if names actually match closely
@@ -465,7 +465,7 @@ class ExcelNameCheckView(DatabaseAccessMixin, View):
                         'contact_number': member.contact_number,
                         'email': member.email,
                         'date_of_application': member.date_of_application.strftime('%Y-%m-%d') if member.date_of_application else '',
-                        'database': 'FahanieCares Members',
+                        'database': 'BM Parliament Members',
                         'database_type': 'member'
                     }
                     matches.append(match_info)
@@ -694,10 +694,10 @@ class ExcelNameCheckView(DatabaseAccessMixin, View):
 
 class ExportRegistrantsCSVView(DatabaseAccessMixin, View):
     """
-    View to export filtered FahanieCaresMember data as a CSV file.
+    View to export filtered BMParliamentMember data as a CSV file.
     """
     def get(self, request, *args, **kwargs):
-        queryset = FahanieCaresMember.objects.all().select_related('user')
+        queryset = BMParliamentMember.objects.all().select_related('user')
 
         # Apply filters similar to DatabaseRegistrantsView
         search_query = self.request.GET.get('search')
@@ -789,7 +789,7 @@ class DatabaseRegistrantDetailView(DatabaseAccessMixin, DetailView):
     """
     Detailed view of a single registrant with editing capabilities.
     """
-    model = FahanieCaresMember
+    model = BMParliamentMember
     template_name = 'constituents/database_registrant_detail.html'
     context_object_name = 'registrant'
 
@@ -819,7 +819,7 @@ class RegistrantApproveView(DatabaseAccessMixin, View):
     View to approve a registrant directly.
     """
     def post(self, request, pk, *args, **kwargs):
-        registrant = get_object_or_404(FahanieCaresMember, pk=pk)
+        registrant = get_object_or_404(BMParliamentMember, pk=pk)
         
         # Check permissions
         authorized_approve_roles = ['superuser', 'mp', 'chief_of_staff', 'admin', 'coordinator']
@@ -845,7 +845,7 @@ class RegistrantMarkIncompleteView(DatabaseAccessMixin, View):
     View to mark a registrant as incomplete.
     """
     def post(self, request, pk, *args, **kwargs):
-        registrant = get_object_or_404(FahanieCaresMember, pk=pk)
+        registrant = get_object_or_404(BMParliamentMember, pk=pk)
 
         # Check permissions - same as approve roles for now
         authorized_roles = ['superuser', 'mp', 'chief_of_staff', 'admin', 'coordinator']
@@ -871,7 +871,7 @@ class RegistrantMarkNonCompliantView(DatabaseAccessMixin, View):
     View to mark a registrant as non-compliant.
     """
     def post(self, request, pk, *args, **kwargs):
-        registrant = get_object_or_404(FahanieCaresMember, pk=pk)
+        registrant = get_object_or_404(BMParliamentMember, pk=pk)
 
         # Check permissions - same as approve roles for now
         authorized_roles = ['superuser', 'mp', 'chief_of_staff', 'admin', 'coordinator']
@@ -896,7 +896,7 @@ class DatabaseRegistrantUpdateView(DatabaseAccessMixin, UpdateView):
     """
     Update view for registrant information.
     """
-    model = FahanieCaresMember
+    model = BMParliamentMember
     template_name = 'constituents/database_registrant_edit.html'
     fields = [
         'first_name', 'last_name', 'middle_name', 'email', 'contact_number', 'age', 'sex',
@@ -937,7 +937,7 @@ class DatabaseRegistrantDeleteView(DatabaseAccessMixin, UserPassesTestMixin, Det
     """
     View to delete a registrant.
     """
-    model = FahanieCaresMember
+    model = BMParliamentMember
     template_name = 'constituents/database_registrant_confirm_delete.html'
     context_object_name = 'registrant'
 
@@ -967,14 +967,14 @@ class AdminPasswordResetView(DatabaseAccessMixin, View):
         user_to_reset = get_object_or_404(User, pk=user_pk)
         
         try:
-            user_to_reset.set_password('fahaniecares123')
+            user_to_reset.set_password('bmparliament123')
             user_to_reset.save()
             messages.success(request, f"Password for {user_to_reset.username} has been reset to the default.")
         except Exception as e:
             messages.error(request, f"Could not reset password: {e}")
 
         # Redirect back to the registrant detail page
-        member = get_object_or_404(FahanieCaresMember, user=user_to_reset)
+        member = get_object_or_404(BMParliamentMember, user=user_to_reset)
         return redirect('database_registrant_detail', pk=member.pk)
 
 
@@ -986,11 +986,11 @@ class AddRegistrantGroupView(DatabaseAccessMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['all_members'] = FahanieCaresMember.objects.all().order_by('last_name', 'first_name')
+        context['all_members'] = BMParliamentMember.objects.all().order_by('last_name', 'first_name')
         
         # Pass filter choices to the template for dynamic filtering
-        context['sectors'] = FahanieCaresMember.SECTOR_CHOICES
-        context['education_levels'] = FahanieCaresMember.EDUCATION_CHOICES
+        context['sectors'] = BMParliamentMember.SECTOR_CHOICES
+        context['education_levels'] = BMParliamentMember.EDUCATION_CHOICES
         context['age_ranges'] = [
             ('18-25', '18-25 years'),
             ('26-35', '26-35 years'),
@@ -998,7 +998,7 @@ class AddRegistrantGroupView(DatabaseAccessMixin, TemplateView):
             ('51-65', '51-65 years'),
             ('65+', '65+ years'),
         ]
-        context['genders'] = FahanieCaresMember.SEX_CHOICES
+        context['genders'] = BMParliamentMember.SEX_CHOICES
         
         return context
 
@@ -1025,7 +1025,7 @@ class AddRegistrantGroupView(DatabaseAccessMixin, TemplateView):
 
         # Add members to the group and save remarks
         for i, member_id in enumerate(member_ids):
-            member = get_object_or_404(FahanieCaresMember, pk=member_id) # Fetch FahanieCaresMember
+            member = get_object_or_404(BMParliamentMember, pk=member_id) # Fetch BMParliamentMember
             group.registrant_members.add(member) # Use the new ManyToManyField
             
             # Save remark for this member in this group (this requires a many-to-many through model)
@@ -1059,7 +1059,7 @@ class CheckMembershipView(TemplateView):
             normalized_query = ' '.join(search_query.split()).lower()
 
             # Annotate queryset with full name combinations for robust searching
-            members = FahanieCaresMember.objects.annotate(
+            members = BMParliamentMember.objects.annotate(
                 full_name_first_last=Concat('first_name', Value(' '), 'last_name'),
                 full_name_last_first=Concat('last_name', Value(' '), 'first_name'),
                 full_name_all=Concat('first_name', Value(' '), 'middle_name', Value(' '), 'last_name')
@@ -1711,7 +1711,7 @@ class MemberCountReportView(DatabaseAccessMixin, TemplateView):
         context = super().get_context_data(**kwargs)
 
         # Get all members
-        all_members = FahanieCaresMember.objects.all()
+        all_members = BMParliamentMember.objects.all()
 
         # General statistics
         context['total_members'] = all_members.count()
@@ -1728,9 +1728,9 @@ class MemberCountReportView(DatabaseAccessMixin, TemplateView):
 
         # Sector-wise breakdown
         sector_stats = []
-        sector_choices = dict(FahanieCaresMember.SECTOR_CHOICES)
+        sector_choices = dict(BMParliamentMember.SECTOR_CHOICES)
 
-        for sector_code, sector_name in FahanieCaresMember.SECTOR_CHOICES:
+        for sector_code, sector_name in BMParliamentMember.SECTOR_CHOICES:
             sector_members = all_members.filter(sector=sector_code)
             sector_total = sector_members.count()
 
@@ -1825,7 +1825,7 @@ class StaffConstituentAnalyticsView(StaffRequiredMixin, TemplateView):
         sector_filter = self.request.GET.get('sector')
 
         # Base queryset
-        queryset = FahanieCaresMember.objects.filter(status='approved')
+        queryset = BMParliamentMember.objects.filter(status='approved')
 
         # Apply filters
         if province_filter:
@@ -1841,7 +1841,7 @@ class StaffConstituentAnalyticsView(StaffRequiredMixin, TemplateView):
             approved_date__gte=timezone.now().replace(day=1)
         ).count()
 
-        total_approved = FahanieCaresMember.objects.filter(status='approved').count()
+        total_approved = BMParliamentMember.objects.filter(status='approved').count()
         if total_approved > 0:
             active_percentage = (queryset.count() / total_approved) * 100
         else:
@@ -1859,7 +1859,7 @@ class StaffConstituentAnalyticsView(StaffRequiredMixin, TemplateView):
 
         # Sector distribution
         sector_distribution = queryset.values('sector').annotate(count=Count('id')).order_by('-count')
-        sector_choices_dict = dict(FahanieCaresMember.SECTOR_CHOICES)
+        sector_choices_dict = dict(BMParliamentMember.SECTOR_CHOICES)
         context['sector_distribution'] = [
             {'sector': sector_choices_dict.get(item['sector'], item['sector']), 'count': item['count']}
             for item in sector_distribution
@@ -1868,9 +1868,9 @@ class StaffConstituentAnalyticsView(StaffRequiredMixin, TemplateView):
         context['sector_distribution_data'] = json.dumps([item['count'] for item in context['sector_distribution']])
 
         # Filter options
-        context['provinces'] = FahanieCaresMember.objects.values_list('address_province', flat=True).distinct()
-        context['municipalities'] = FahanieCaresMember.objects.values_list('address_municipality', flat=True).distinct()
-        context['sectors'] = FahanieCaresMember.SECTOR_CHOICES
+        context['provinces'] = BMParliamentMember.objects.values_list('address_province', flat=True).distinct()
+        context['municipalities'] = BMParliamentMember.objects.values_list('address_municipality', flat=True).distinct()
+        context['sectors'] = BMParliamentMember.SECTOR_CHOICES
 
         # Current filter values
         context['current_filters'] = {

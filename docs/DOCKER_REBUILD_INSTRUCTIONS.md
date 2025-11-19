@@ -55,7 +55,7 @@ docker-compose -f docker-compose.production.yml exec web python manage.py collec
 After rebuild and deployment:
 ```bash
 # Check if new CSS is included
-curl https://fahaniecares.ph/static/css/output.css | grep "max-h-\\\[85vh\\\]"
+curl https://bmparliament.gov.ph/static/css/output.css | grep "max-h-\\\[85vh\\\]"
 
 # Should return CSS rules for the new classes
 ```

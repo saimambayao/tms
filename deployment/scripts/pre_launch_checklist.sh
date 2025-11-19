@@ -1,10 +1,10 @@
 #!/bin/bash
-# Pre-Launch Checklist for #FahanieCares Platform
+# Pre-Launch Checklist for BM Parliament Platform
 # This script performs comprehensive pre-deployment verification
 
 set -e
 
-echo "=== #FahanieCares Pre-Launch Checklist ==="
+echo "=== BM Parliament Pre-Launch Checklist ==="
 echo "Timestamp: $(date)"
 echo "=========================================="
 
@@ -98,7 +98,7 @@ echo ""
 echo "--- 3. Database Checks ---"
 
 # Test database connectivity
-cd /Users/macbookpro/Documents/fahanie-cares/src
+cd /Users/macbookpro/Documents/bmparliament/src
 python manage.py check --database default > /dev/null 2>&1
 check_status "Database connectivity"
 
@@ -172,7 +172,7 @@ echo ""
 echo "--- 7. Backup & Recovery ---"
 
 # Check backup directory
-BACKUP_DIR="${BACKUP_DIR:-/var/backups/fahaniecares}"
+BACKUP_DIR="${BACKUP_DIR:-/var/backups/bmparliament}"
 if [ -d "$BACKUP_DIR" ]; then
     echo -e "${GREEN}✅ Backup directory exists${NC}"
 else
@@ -192,7 +192,7 @@ echo ""
 echo "--- 8. Monitoring & Logging ---"
 
 # Check log directory
-LOG_DIR="${LOG_DIR:-/Users/macbookpro/Documents/fahanie-cares/src/logs}"
+LOG_DIR="${LOG_DIR:-/Users/macbookpro/Documents/bmparliament/src/logs}"
 if [ -d "$LOG_DIR" ]; then
     echo -e "${GREEN}✅ Log directory exists${NC}"
 else
@@ -218,7 +218,7 @@ docker-compose version > /dev/null 2>&1
 check_warning "Docker Compose available"
 
 # Check if images can be built
-cd /Users/macbookpro/Documents/fahanie-cares
+cd /Users/macbookpro/Documents/bmparliament
 docker-compose build --dry-run > /dev/null 2>&1
 check_warning "Docker images can be built"
 
@@ -226,7 +226,7 @@ echo ""
 echo "--- 10. Feature Flags ---"
 
 # Check feature flags configuration
-cd /Users/macbookpro/Documents/fahanie-cares/src
+cd /Users/macbookpro/Documents/bmparliament/src
 python -c "
 from django.conf import settings
 features = settings.FEATURES

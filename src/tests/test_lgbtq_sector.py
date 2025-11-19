@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings.base')
 django.setup()
 
-from apps.constituents.member_models import FahanieCaresMember
+from apps.constituents.member_models import BMParliamentMember
 
 def test_lgbtq_sector():
     """Test that the LGBTQ sector is properly configured"""
@@ -21,7 +21,7 @@ def test_lgbtq_sector():
     print("Testing LGBTQ sector implementation...")
 
     # Test 1: Check if LGBTQ sector is in SECTOR_CHOICES
-    sector_choices = dict(FahanieCaresMember.SECTOR_CHOICES)
+    sector_choices = dict(BMParliamentMember.SECTOR_CHOICES)
     if 'lgbtq_community' in sector_choices:
         print("✓ LGBTQ sector found in SECTOR_CHOICES")
         print(f"  Display name: {sector_choices['lgbtq_community']}")
@@ -30,9 +30,9 @@ def test_lgbtq_sector():
         return False
 
     # Test 2: Check if LGBTQ sector has ID prefix
-    if 'lgbtq_community' in FahanieCaresMember.SECTOR_ID_PREFIXES:
+    if 'lgbtq_community' in BMParliamentMember.SECTOR_ID_PREFIXES:
         print("✓ LGBTQ sector found in SECTOR_ID_PREFIXES")
-        print(f"  ID prefix: {FahanieCaresMember.SECTOR_ID_PREFIXES['lgbtq_community']}")
+        print(f"  ID prefix: {BMParliamentMember.SECTOR_ID_PREFIXES['lgbtq_community']}")
     else:
         print("✗ LGBTQ sector NOT found in SECTOR_ID_PREFIXES")
         return False
@@ -43,7 +43,7 @@ def test_lgbtq_sector():
         class MockMember:
             def __init__(self, sector):
                 self.sector = sector
-                self.SECTOR_ID_PREFIXES = FahanieCaresMember.SECTOR_ID_PREFIXES
+                self.SECTOR_ID_PREFIXES = BMParliamentMember.SECTOR_ID_PREFIXES
 
             def _generate_member_id(self):
                 prefix = self.SECTOR_ID_PREFIXES.get(self.sector, 'GEN')

@@ -4,14 +4,14 @@
 # Replace YOUR_REPOSITORY_NAME with the repository name you created
 
 echo "Setting up GitHub remote..."
-cd /Users/macbookpro/Documents/fahanie-cares
+cd /Users/macbookpro/Documents/bmparliament
 
 # Remove existing remote if any
 git remote remove origin 2>/dev/null
 
 # Add your GitHub repository as origin
 # IMPORTANT: Replace the URL below with your actual GitHub repository URL
-git remote add origin https://github.com/mpuyoyod/fahanie-cares.git
+git remote add origin https://github.com/mpuyoyod/bmparliament.git
 
 # Push to GitHub
 echo "Pushing to GitHub..."

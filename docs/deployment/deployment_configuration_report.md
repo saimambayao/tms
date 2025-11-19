@@ -1,4 +1,4 @@
-# 🚀 #FahanieCares Deployment Configuration Report
+# 🚀 BM Parliament Deployment Configuration Report
 
 **Comprehensive Migration from Notion-Based to PostgreSQL-Native Deployment**
 
@@ -6,7 +6,7 @@
 
 ## 📋 Executive Summary
 
-The #FahanieCares platform has been successfully modernized from a Notion-dependent architecture to a pure PostgreSQL-based system. This report documents the complete migration of deployment configurations, dependency management, and infrastructure setup to support the updated Django 4.2.22 application.
+The BM Parliament platform has been successfully modernized from a Notion-dependent architecture to a pure PostgreSQL-based system. This report documents the complete migration of deployment configurations, dependency management, and infrastructure setup to support the updated Django 4.2.22 application.
 
 **Migration Status**: ✅ **COMPLETE AND PRODUCTION-READY**
 
@@ -143,7 +143,7 @@ ALLOWED_HOSTS=localhost,127.0.0.1
 CSRF_TRUSTED_ORIGINS='localhost,https://domain.tld'
 
 # Database settings (for production)
-DB_NAME=fahanie_cares
+DB_NAME=bm parliament_cares
 DB_USER=db_user
 DB_PASSWORD=db_password
 DB_HOST=localhost
@@ -154,7 +154,7 @@ EMAIL_HOST=smtp.example.com
 EMAIL_PORT=587
 EMAIL_HOST_USER=user@example.com
 EMAIL_HOST_PASSWORD=your-email-password
-DEFAULT_FROM_EMAIL=noreply@fahaniecares.gov
+DEFAULT_FROM_EMAIL=noreply@bm-parliament.gov
 
 # Notion API settings - EXTERNAL DEPENDENCIES
 NOTION_API_KEY=your-notion-api-key                    # ❌ REMOVED
@@ -320,7 +320,7 @@ EXPOSE 8000
 
 #### **Updated .env.example (Notion-Free)**
 ```bash
-# #FahanieCares Environment Configuration Template
+# BM Parliament Environment Configuration Template
 # Copy this file to .env and update with your actual values
 
 # =============================================================================
@@ -334,8 +334,8 @@ ALLOWED_HOSTS=localhost,127.0.0.1,[::1],yourdomain.com
 # Database Configuration - POSTGRESQL ONLY
 # =============================================================================
 DB_ENGINE=django.db.backends.postgresql
-DB_NAME=fahaniecares_db
-DB_USER=fahaniecares_user
+DB_NAME=bmparliament_db
+DB_USER=bmparliament_user
 DB_PASSWORD=your_secure_database_password
 DB_HOST=db                       # ✅ UPDATED - Docker-aware
 DB_PORT=5432
@@ -363,7 +363,7 @@ EMAIL_BACKEND=django.core.mail.backends.console.EmailBackend
 # EMAIL_USE_TLS=True
 # EMAIL_HOST_USER=your_email@gmail.com
 # EMAIL_HOST_PASSWORD=your_app_password
-# DEFAULT_FROM_EMAIL=#FahanieCares <noreply@fahaniecares.gov.ph>
+# DEFAULT_FROM_EMAIL=BM Parliament <noreply@bm-parliament.gov.ph>
 
 # =============================================================================
 # AWS S3 Configuration (Optional - for media files)
@@ -495,7 +495,7 @@ graph TD
 
 ```bash
 # Clone and navigate
-cd /Users/macbookpro/Documents/fahanie-cares
+cd /Users/macbookpro/Documents/bm-parliament
 
 # Copy environment configuration
 cp .env.example .env
@@ -524,14 +524,14 @@ docker-compose -f deployment/docker/docker-compose/coolify-django.yml up -d
 
 ```bash
 # Build production image
-docker build -f deployment/docker/Dockerfile.django -t fahaniecares:latest .
+docker build -f deployment/docker/Dockerfile.django -t bm-parliament:latest .
 
 # Run with production settings
 docker run -d \
-  --name fahaniecares_prod \
+  --name bmparliament_prod \
   -p 8000:8000 \
   --env-file deployment/.env \
-  fahaniecares:latest
+  bm-parliament:latest
 ```
 
 ---
@@ -661,7 +661,7 @@ All elements from the previous deployment configuration have been thoroughly ana
 
 ### **Deployment Status: PRODUCTION READY**
 
-The #FahanieCares platform deployment configuration has been successfully modernized and is **ready for immediate production deployment**. The system now operates as a fully self-contained Django application with PostgreSQL, offering superior performance, security, and reliability compared to the previous Notion-dependent architecture.
+The BM Parliament platform deployment configuration has been successfully modernized and is **ready for immediate production deployment**. The system now operates as a fully self-contained Django application with PostgreSQL, offering superior performance, security, and reliability compared to the previous Notion-dependent architecture.
 
 **Final Recommendation**: ✅ **PROCEED WITH PRODUCTION DEPLOYMENT**
 
@@ -683,4 +683,4 @@ For deployment issues, refer to the comprehensive logs in:
 ---
 
 *Report generated on June 8, 2025*  
-*#FahanieCares Development Team*
+*BM Parliament Development Team*

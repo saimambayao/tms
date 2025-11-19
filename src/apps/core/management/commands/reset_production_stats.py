@@ -50,7 +50,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write(
             self.style.WARNING(
-                '\n=== #FahanieCares Production Statistics Reset ===\n'
+                '\n=== #BM Parliament Production Statistics Reset ===\n'
             )
         )
         
@@ -109,10 +109,10 @@ class Command(BaseCommand):
                 if not options['preserve_staff']:
                     # Would delete all users except developers
                     keep_users = User.objects.filter(
-                        email__in=['dev@fahaniecares.gov.ph', 'admin@fahaniecares.gov.ph']
+                        email__in=['dev@bmparliament.gov.ph', 'admin@bmparliament.gov.ph']
                     )
                     all_users = User.objects.exclude(
-                        email__in=['dev@fahaniecares.gov.ph', 'admin@fahaniecares.gov.ph']
+                        email__in=['dev@bmparliament.gov.ph', 'admin@bmparliament.gov.ph']
                     )
                 else:
                     # Would delete non-staff users
@@ -150,7 +150,7 @@ class Command(BaseCommand):
         if not options['preserve_superusers']:
             if not options['preserve_staff']:
                 # Delete all users except essential developers
-                keep_emails = ['dev@fahaniecares.gov.ph', 'admin@fahaniecares.gov.ph']
+                keep_emails = ['dev@bmparliament.gov.ph', 'admin@bmparliament.gov.ph']
                 users_to_delete = User.objects.exclude(email__in=keep_emails)
                 deleted_counts['total'] = users_to_delete.count()
                 users_to_delete.delete()

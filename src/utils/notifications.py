@@ -1,5 +1,5 @@
 """
-Notification system for #FahanieCares.
+Notification system for #BM Parliament.
 Manages sending notifications to users about various events in the system.
 """
 
@@ -36,7 +36,7 @@ class NotificationService:
                 'user': user,
                 'referral': referral,
                 'update': update,
-                'site_name': getattr(settings, 'SITE_NAME', '#FahanieCares'),
+                'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
                 'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
             }
             
@@ -91,7 +91,7 @@ class NotificationService:
                 'referral': referral,
                 'update': update,
                 'commenter': update.created_by,
-                'site_name': getattr(settings, 'SITE_NAME', '#FahanieCares'),
+                'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
                 'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
             }
             
@@ -146,7 +146,7 @@ class NotificationService:
                 'referral': referral,
                 'document': document,
                 'uploader': document.uploaded_by,
-                'site_name': getattr(settings, 'SITE_NAME', '#FahanieCares'),
+                'site_name': getattr(settings, 'SITE_NAME', '#BM Parliament'),
                 'site_url': getattr(settings, 'SITE_URL', 'https://fahanie-cares.gov.ph'),
             }
             

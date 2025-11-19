@@ -1,4 +1,4 @@
-# Systematic Cache Management Solution for #FahanieCares
+# Systematic Cache Management Solution for BM Parliament
 
 ## Executive Summary
 This document provides a comprehensive, long-term solution to prevent CSS and static file caching issues in production. It addresses CloudFront CDN caching, deployment automation, and monitoring.
@@ -81,10 +81,10 @@ class VersionedStaticFilesStorage(ManifestStaticFilesStorage):
 
 ```json
 {
-  "Comment": "#FahanieCares CloudFront Distribution",
+  "Comment": "BM Parliament CloudFront Distribution",
   "Origins": [{
-    "DomainName": "origin.fahaniecares.ph",
-    "Id": "fahaniecares-origin",
+    "DomainName": "origin.bmparliament.gov.ph",
+    "Id": "bm-parliament-origin",
     "CustomOriginConfig": {
       "OriginProtocolPolicy": "https-only"
     }
@@ -92,7 +92,7 @@ class VersionedStaticFilesStorage(ManifestStaticFilesStorage):
   "DefaultRootObject": "index.html",
   "CacheBehaviors": [{
     "PathPattern": "/static/*",
-    "TargetOriginId": "fahaniecares-origin",
+    "TargetOriginId": "bm-parliament-origin",
     "ViewerProtocolPolicy": "redirect-to-https",
     "AllowedMethods": ["GET", "HEAD"],
     "CachedMethods": ["GET", "HEAD"],
@@ -121,12 +121,12 @@ class VersionedStaticFilesStorage(ManifestStaticFilesStorage):
 ```yaml
 # cloudfront-headers-policy.yaml
 ResponseHeadersPolicy:
-  Name: fahaniecares-cache-policy
+  Name: bm-parliament-cache-policy
   CorsConfig:
     AccessControlAllowOrigins:
       Items:
-        - "https://fahaniecares.ph"
-        - "https://www.fahaniecares.ph"
+        - "https://bmparliament.gov.ph"
+        - "https://www.bmparliament.gov.ph"
   CustomHeadersConfig:
     Items:
       - Header: "X-Content-Type-Options"
@@ -155,9 +155,9 @@ on:
 
 env:
   AWS_REGION: ap-southeast-1
-  ECR_REPOSITORY: fahaniecares
-  ECS_SERVICE: fahaniecares-service
-  ECS_CLUSTER: fahaniecares-cluster
+  ECR_REPOSITORY: bm-parliament
+  ECS_SERVICE: bm-parliament-service
+  ECS_CLUSTER: bm-parliament-cluster
 
 jobs:
   deploy:
@@ -199,7 +199,7 @@ jobs:
       - name: Invalidate CloudFront Cache
         run: |
           DISTRIBUTION_ID=$(aws cloudfront list-distributions \
-            --query "DistributionList.Items[?Aliases.Items[?contains(@, 'fahaniecares.ph')]].Id" \
+            --query "DistributionList.Items[?Aliases.Items[?contains(@, 'bmparliament.gov.ph')]].Id" \
             --output text)
           
           aws cloudfront create-invalidation \
@@ -209,7 +209,7 @@ jobs:
       - name: Verify Deployment
         run: |
           sleep 60
-          curl -f https://fahaniecares.ph/health/ || exit 1
+          curl -f https://bmparliament.gov.ph/health/ || exit 1
           
       - name: Notify Deployment Status
         if: always()
@@ -239,29 +239,29 @@ echo "📦 Static version: ${STATIC_VERSION}"
 docker build \
   --build-arg STATIC_VERSION=${STATIC_VERSION} \
   --build-arg BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ") \
-  -t fahaniecares:${STATIC_VERSION} \
+  -t bm-parliament:${STATIC_VERSION} \
   -f deployment/docker/Dockerfile.production .
 
 # Tag for registry
-docker tag fahaniecares:${STATIC_VERSION} ${ECR_REGISTRY}/fahaniecares:${STATIC_VERSION}
-docker tag fahaniecares:${STATIC_VERSION} ${ECR_REGISTRY}/fahaniecares:latest
+docker tag bm-parliament:${STATIC_VERSION} ${ECR_REGISTRY}/bm-parliament:${STATIC_VERSION}
+docker tag bm-parliament:${STATIC_VERSION} ${ECR_REGISTRY}/bm-parliament:latest
 
 # Push to registry
-docker push ${ECR_REGISTRY}/fahaniecares:${STATIC_VERSION}
-docker push ${ECR_REGISTRY}/fahaniecares:latest
+docker push ${ECR_REGISTRY}/bm-parliament:${STATIC_VERSION}
+docker push ${ECR_REGISTRY}/bm-parliament:latest
 
 # Update service
 aws ecs update-service \
-  --cluster fahaniecares-cluster \
-  --service fahaniecares-service \
-  --task-definition fahaniecares:${STATIC_VERSION} \
+  --cluster bm-parliament-cluster \
+  --service bm-parliament-service \
+  --task-definition bm-parliament:${STATIC_VERSION} \
   --force-new-deployment
 
 # Wait for deployment
 echo "⏳ Waiting for deployment to stabilize..."
 aws ecs wait services-stable \
-  --cluster fahaniecares-cluster \
-  --services fahaniecares-service
+  --cluster bm-parliament-cluster \
+  --services bm-parliament-service
 
 # Invalidate CloudFront
 echo "🔄 Invalidating CloudFront cache..."
@@ -385,9 +385,9 @@ urlpatterns = [
 StaticFileVersionMismatch:
   Type: AWS::CloudWatch::Alarm
   Properties:
-    AlarmName: FahanieCares-StaticVersionMismatch
+    AlarmName: BM Parliament-StaticVersionMismatch
     MetricName: StaticVersionMismatch
-    Namespace: FahanieCares
+    Namespace: BM Parliament
     Statistic: Sum
     Period: 300
     EvaluationPeriods: 1
@@ -412,11 +412,11 @@ def check_static_versions():
     """Compare static versions across origin and CDN"""
     
     # Check origin
-    origin_response = requests.get('https://origin.fahaniecares.ph/health/static-version/')
+    origin_response = requests.get('https://origin.bmparliament.gov.ph/health/static-version/')
     origin_data = origin_response.json()
     
     # Check CDN
-    cdn_response = requests.get('https://fahaniecares.ph/health/static-version/')
+    cdn_response = requests.get('https://bmparliament.gov.ph/health/static-version/')
     cdn_data = cdn_response.json()
     
     # Compare versions
@@ -424,7 +424,7 @@ def check_static_versions():
         # Send alert
         cloudwatch = boto3.client('cloudwatch')
         cloudwatch.put_metric_data(
-            Namespace='FahanieCares',
+            Namespace='BM Parliament',
             MetricData=[{
                 'MetricName': 'StaticVersionMismatch',
                 'Value': 1,
@@ -520,7 +520,7 @@ After deployment:
 
 1. Check static version:
    ```bash
-   curl https://fahaniecares.ph/health/static-version/
+   curl https://bmparliament.gov.ph/health/static-version/
    ```
 
 2. Force CloudFront invalidation:
@@ -532,14 +532,14 @@ After deployment:
 
 3. Check CSS directly:
    ```bash
-   curl -I https://fahaniecares.ph/static/css/output.css
+   curl -I https://bmparliament.gov.ph/static/css/output.css
    # Look for: x-cache: Miss from cloudfront (good)
    # Or: x-cache: Hit from cloudfront (cached)
    ```
 
 4. Bypass cache for testing:
    ```
-   https://fahaniecares.ph/static/css/output.css?nocache=timestamp
+   https://bmparliament.gov.ph/static/css/output.css?nocache=timestamp
    ```
 ```
 
