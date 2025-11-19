@@ -58,7 +58,7 @@ django-crispy-forms==2.1
 crispy-bootstrap5==2023.10
 crispy-tailwind==1.0.3
 django-widget-tweaks==1.4.12
-setuptools # Added to resolve ModuleNotFoundError: No module named 'pkg_resources'
+setuptools<81  # Pin to avoid deprecated pkg_resources removal (scheduled for setuptools 81+)
 
 
 # Email
