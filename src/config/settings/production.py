@@ -34,6 +34,13 @@ if RAILWAY_PUBLIC_DOMAIN:
 if RAILWAY_STATIC_URL:
     ALLOWED_HOSTS.append(RAILWAY_STATIC_URL)
 
+# Add Railway auto-generated domains (*.up.railway.app)
+# Railway generates domains like: <service-name>.up.railway.app
+ALLOWED_HOSTS.extend([
+    '*.up.railway.app',  # All Railway auto-generated domains
+    'up.railway.app',     # Base Railway domain
+])
+
 # Add any additional allowed hosts from environment
 ADDITIONAL_ALLOWED_HOSTS = os.getenv('ADDITIONAL_ALLOWED_HOSTS', '').split(',')
 ALLOWED_HOSTS.extend([host.strip() for host in ADDITIONAL_ALLOWED_HOSTS if host.strip()])
