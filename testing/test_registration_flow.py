@@ -11,7 +11,7 @@ from PIL import Image
 import os
 
 # Configuration
-BASE_URL = "http://localhost:3000"
+BASE_URL = "http://localhost:3080"
 REGISTER_URL = f"{BASE_URL}/accounts/register/"
 
 # Test user data

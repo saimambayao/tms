@@ -64,7 +64,7 @@ def test_admin_login(base_url, username, password):
 
 def main():
     """Main verification function."""
-    base_url = "http://localhost:3000"
+    base_url = "http://localhost:3080"
     
     print("🔍 #BM Parliament Admin Access Verification")
     print("=" * 50)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
     try:
         main()
     except requests.exceptions.ConnectionError:
-        print("❌ Cannot connect to Django server at http://localhost:3000")
-        print("   Make sure the server is running with: python3 manage.py runserver 3000")
+        print("❌ Cannot connect to Django server at http://localhost:3080")
+        print("   Make sure the server is running with: python3 manage.py runserver 3080")
     except Exception as e:
         print(f"❌ Verification failed: {e}")

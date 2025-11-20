@@ -251,7 +251,7 @@ def run_load_test():
     import argparse
     
     parser = argparse.ArgumentParser(description='Run BM Parliament load tests')
-    parser.add_argument('--host', default='http://localhost:3000', help='Target host')
+    parser.add_argument('--host', default='http://localhost:3080', help='Target host')
     parser.add_argument('--users', type=int, default=50, help='Number of concurrent users')
     parser.add_argument('--spawn-rate', type=int, default=5, help='Users spawned per second')
     parser.add_argument('--time', default='5m', help='Test duration')
@@ -303,4 +303,4 @@ if __name__ == '__main__':
         print("  python load_test.py --scenario high-volume --users 200")
         print("  python load_test.py --host https://bmparliament.gov.ph --users 50")
         print("\nTo run with locust web UI:")
-        print("  locust --host http://localhost:3000")
+        print("  locust --host http://localhost:3080")

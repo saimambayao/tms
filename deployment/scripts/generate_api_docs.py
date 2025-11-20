@@ -177,7 +177,7 @@ def generate_openapi_spec(patterns):
         },
         "servers": [
             {
-                "url": "http://localhost:3000",
+                "url": "http://localhost:3080",
                 "description": "Development server"
             },
             {
@@ -327,7 +327,7 @@ Generated on: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 This document provides comprehensive API documentation for the BM Parliament platform.
 
 ### Base URLs
-- Development: `http://localhost:3000`
+- Development: `http://localhost:3080`
 - Production: `https://bmparliament.gov.ph`
 
 ### Authentication
@@ -381,7 +381,7 @@ def generate_postman_collection(patterns):
         "variable": [
             {
                 "key": "baseUrl",
-                "value": "http://localhost:3000",
+                "value": "http://localhost:3080",
                 "type": "string"
             },
             {
