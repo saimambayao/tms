@@ -1,0 +1,68 @@
+# Task ID: 036
+# Title: Add Madrasah Capacity and Status Fields
+# Status: pending
+# Dependencies: 035
+# Priority: medium
+# Description: Add capacity and operational status fields: total_capacity, current_enrollment, operational_status.
+
+# Details:
+Add capacity and operational status fields: total_capacity, current_enrollment, operational_status.
+
+## Implementation Steps:
+1. Add capacity/status fields:
+   ```python
+   class Madrasah(models.Model):
+       ...
+       # Enrollment Capacity
+       total_capacity = PositiveIntegerField(
+           default=0,
+           help_text="Maximum student capacity"
+       )
+       current_enrollment = PositiveIntegerField(
+           default=0,
+           help_text="Current enrolled students"
+       )
+
+       # Operational Status
+       class OperationalStatus(models.TextChoices):
+           ACTIVE = 'active', 'Active'
+           INACTIVE = 'inactive', 'Inactive'
+           UNDER_CONSTRUCTION = 'construction', 'Under Construction'
+           TEMPORARILY_CLOSED = 'temp_closed', 'Temporarily Closed'
+           CLOSED = 'closed', 'Permanently Closed'
+
+       operational_status = CharField(
+           max_length=20,
+           choices=OperationalStatus.choices,
+           default='active'
+       )
+
+       def capacity_percentage(self):
+           if self.total_capacity == 0:
+               return 0
+           return (self.current_enrollment / self.total_capacity) * 100
+   ```
+2. Create migration
+3. Add capacity_percentage to admin display
+
+## Acceptance Criteria:
+- total_capacity field added (PositiveIntegerField)
+- current_enrollment field added (PositiveIntegerField)
+- operational_status field with choices
+- Migration created
+- Can calculate capacity percentage
+- Status includes "Permanently Closed" option
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_add_capacity_status_fields.py`
+
+## Important Notes:
+- current_enrollment can be auto-calculated from enrollments
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

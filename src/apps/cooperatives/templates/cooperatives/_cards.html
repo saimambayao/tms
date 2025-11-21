@@ -1,0 +1,53 @@
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+    <!-- Total Cooperatives -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Total Cooperatives</p>
+                <p class="text-3xl font-bold text-gray-900">{{ total_cooperatives|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-primary-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Cooperatives -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Active Cooperatives</p>
+                <p class="text-3xl font-bold text-green-600">{{ active_cooperatives|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Total Members -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Total Members</p>
+                <p class="text-3xl font-bold text-yellow-600">{{ total_members|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-user-friends text-yellow-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Registrations -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600">Pending Registrations</p>
+                <p class="text-3xl font-bold text-orange-600">{{ pending_registrations|default:0 }}</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-clock text-orange-600 text-xl"></i>
+            </div>
+        </div>
+    </div>
+</div>

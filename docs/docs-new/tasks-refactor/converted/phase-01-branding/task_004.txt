@@ -1,0 +1,66 @@
+# Task ID: 004
+# Title: Set Up Staging Environment
+# Status: pending
+# Dependencies: 001, 002
+# Priority: high
+# Description: Create or verify staging environment that mirrors production for testing all migrations and refactoring changes.
+
+# Details:
+Create or verify staging environment that mirrors production for testing all migrations and refactoring changes.
+
+## Implementation Steps:
+1. Set up staging server (if not exists)
+2. Create staging database:
+   ```bash
+   createdb madaris_staging
+   ```
+3. Restore production backup to staging:
+   ```bash
+   gunzip -c backup_*.sql.gz | psql madaris_staging
+   ```
+4. Copy media files to staging:
+   ```bash
+   tar -xzf media_backup_*.tar.gz -C /staging/path/
+   ```
+5. Configure staging settings:
+   - Copy .env.example → .env.staging
+   - Update DATABASE_URL for staging
+   - Set DEBUG=True for staging
+   - Configure different SECRET_KEY
+6. Run Django checks:
+   ```bash
+   python manage.py check --settings=config.settings.staging
+   ```
+7. Test staging access
+8. Document staging URLs in README.md
+
+## Acceptance Criteria:
+- Staging server/environment configured
+- Staging database created and populated with production backup
+- Staging media files match production
+- Staging environment variables configured
+- Staging is accessible via URL (staging.domain.com)
+- Staging Django admin is accessible
+- All production apps work correctly on staging
+
+## Files Modified:
+- `Staging server configuration`
+- `.env.staging`
+- `README.md (add staging info)`
+
+## Important Notes:
+- Staging should be isolated from production
+- Use separate database credentials
+- Consider using Docker for consistent environments
+- Estimate: 1-2 hours
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Run test suite with `python manage.py test`
+7. Verify test coverage meets requirements
+8. Check for any failing tests
+9. Verify test assertions are correct

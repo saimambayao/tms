@@ -1,0 +1,72 @@
+<!-- Frequently Asked Questions Accordion Component -->
+<!-- Usage: {% include 'components/molecules/faq_accordion.html' with faqs=page_faqs title="Page Title FAQs" %}
+
+faqs parameter should be a list of dictionaries with 'question' and 'answer' keys
+-->
+<div class="faq-accordion-container">
+    {% if title %}
+    <h2 class="text-2xl font-bold text-slate-800 mb-6">{{ title }}</h2>
+    {% endif %}
+
+    <div class="space-y-4">
+        {% for faq in faqs %}
+        <div class="border border-gray-200 rounded-lg overflow-hidden faq-item">
+            <button class="w-full text-left px-6 py-4 font-medium flex justify-between items-center focus:outline-none hover:bg-gray-50 transition-colors faq-button"
+                    type="button">
+                <span>{{ faq.question }}</span>
+                <i class="fas fa-chevron-down text-gray-400 faq-icon"></i>
+            </button>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 faq-content" style="max-height: 0; overflow: hidden; transition: max-height 0.3s ease;">
+                <p class="text-gray-600">{{ faq.answer }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+if (!window.faqAccordionInitialized) {
+    window.faqAccordionInitialized = true;
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // FAQ accordion functionality
+        const faqButtons = document.querySelectorAll('.faq-button');
+
+        faqButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const content = this.nextElementSibling;
+                const icon = this.querySelector('.faq-icon');
+
+                // Close all other FAQs
+                faqButtons.forEach(otherButton => {
+                    if (otherButton !== button) {
+                        const otherContent = otherButton.nextElementSibling;
+                        const otherIcon = otherButton.querySelector('.faq-icon');
+                        if (otherContent) {
+                            otherContent.style.maxHeight = null;
+                            if (otherIcon) {
+                                otherIcon.classList.remove('fa-chevron-up');
+                                otherIcon.classList.add('fa-chevron-down');
+                            }
+                        }
+                    }
+                });
+
+                // Toggle current FAQ
+                if (content) {
+                    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+                        content.style.maxHeight = null;
+                        icon.classList.remove('fa-chevron-up');
+                        icon.classList.add('fa-chevron-down');
+                    } else {
+                        content.style.maxHeight = content.scrollHeight + 'px';
+                        icon.classList.remove('fa-chevron-down');
+                        icon.classList.add('fa-chevron-up');
+                    }
+                }
+            });
+        });
+    });
+}
+</script>

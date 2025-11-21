@@ -1,0 +1,109 @@
+# Task ID: 019
+# Title: Update Role Display in Templates
+# Status: pending
+# Dependencies: 018
+# Priority: high
+# Description: Update templates to display new role names correctly. Replace "Coordinator" with "Madrasah Admin" in user profile displays, lists, and badges.
+
+# Details:
+Update templates to display new role names correctly. Replace "Coordinator" with "Madrasah Admin" in user profile displays, lists, and badges.
+
+## Implementation Steps:
+1. Find templates displaying user roles:
+   ```bash
+   grep -r "user.role\|get_role_display" /Users/saidamenmambayao/apps/madaris-ms/src/templates/ --include="*.html"
+   ```
+2. Update user profile template:
+   ```html
+   <!-- Before -->
+   <span class="badge badge-primary">{{ user.get_role_display }}</span>
+
+   <!-- After - still works, but now shows new role names -->
+   <span class="badge badge-{{ user.role|role_badge_class }}">
+     {{ user.get_role_display }}
+   </span>
+   ```
+3. Create template filter for role badge colors:
+   ```python
+   # apps/users/templatetags/user_tags.py
+   from django import template
+
+   register = template.Library()
+
+   @register.filter
+   def role_badge_class(role):
+       """Return Bootstrap badge class for user role"""
+       role_classes = {
+           'superuser': 'danger',
+           'tarbiyyah_admin': 'warning',
+           'madrasah_admin': 'info',
+           'muder': 'primary',
+           'asatidz': 'success',
+           'student': 'secondary',
+           'parent': 'light',
+       }
+       return role_classes.get(role, 'secondary')
+   ```
+4. Update user list template to show role with icon:
+   ```html
+   {% load user_tags %}
+   <td>
+     <span class="badge badge-{{ user.role|role_badge_class }}">
+       {{ user.get_role_display }}
+     </span>
+     {% if user.role == 'muder' %}
+       <small class="text-muted">(مدير)</small>
+     {% elif user.role == 'asatidz' %}
+       <small class="text-muted">(أساتذة)</small>
+     {% endif %}
+   </td>
+   ```
+5. Update user registration form to show new role choices:
+   ```html
+   <select name="role" class="form-control">
+     {% for value, label in role_choices %}
+       <option value="{{ value }}">{{ label }}</option>
+     {% endfor %}
+   </select>
+   ```
+6. Search for "coordinator" in templates:
+   ```bash
+   grep -ri "coordinator" /Users/saidamenmambayao/apps/madaris-ms/src/templates/ --include="*.html"
+   ```
+7. Replace "Coordinator" with "Madrasah Admin" in templates
+
+## Acceptance Criteria:
+- User profile template shows new role names
+- User list template displays correct role badges
+- Role labels use get_role_display() method
+- Arabic role names shown where appropriate
+- Role colors/badges updated for new roles
+- No "Coordinator" text visible in UI
+- Admin interface shows new role labels
+
+## Files Modified:
+- `src/templates/users/profile.html`
+- `src/templates/users/list.html`
+- `src/templates/users/detail.html`
+- `src/apps/users/templatetags/user_tags.py (create if doesn't exist)`
+- `src/templates/registration/register.html`
+
+## Important Notes:
+- get_role_display() automatically uses updated Role.choices labels
+- Add template filters for role-specific formatting
+- Consider adding role icons using Font Awesome
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Verify new roles appear in Django admin dropdown
+6. Create test users with new roles
+7. Verify permissions work correctly
+8. Test role-based access control
+9. Login to Django admin as superuser
+10. Verify models appear in admin interface
+11. Test create, read, update, delete operations
+12. Verify list display, filters, and search work

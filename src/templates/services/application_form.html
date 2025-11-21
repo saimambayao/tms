@@ -1,0 +1,774 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Apply for Program{% endblock %}
+
+{% block content %}
+<div class="application-container">
+    <div class="application-wrapper">
+        <!-- Header Section -->
+        <div class="application-header">
+            <div class="header-icon-wrapper">
+                <svg class="header-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <h1 class="application-title">Program Application</h1>
+            <p class="application-subtitle">
+                Take the next step in your journey. Fill out this form to apply for our programs and unlock new opportunities.
+            </p>
+        </div>
+
+        <!-- Application Form Card -->
+        <div class="application-form-card">
+            <!-- Card Header -->
+            <div class="form-card-header">
+                <h2 class="form-card-title">
+                    <svg class="form-card-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Application Details
+                </h2>
+                <p class="form-card-subtitle">Please provide accurate information for your application</p>
+            </div>
+
+            <!-- Form Content -->
+            <div class="form-card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Error Messages -->
+                    {% if form.errors %}
+                        <div class="alert alert-error">
+                            <div class="alert-content">
+                                <h3 class="alert-title">Please correct the following errors:</h3>
+                                <ul class="alert-list">
+                                    {% for field in form %}
+                                        {% if field.errors %}
+                                            {% for error in field.errors %}
+                                                <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    {% for error in form.non_field_errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Success/Info Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }}">
+                                <div class="alert-content">
+                                    <p>{{ message }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Program Selection -->
+                    <div class="form-group">
+                        <label class="form-label" for="id_program_of_interest">
+                            <svg class="form-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            Program of Interest <span class="required-star">*</span>
+                        </label>
+                        <div class="select-container">
+                            <select name="program_of_interest" id="id_program_of_interest" class="form-select" required>
+                                <option value="">-- Select a Program --</option>
+                                {% if programs %}
+                                {% for program in programs %}
+                                    <option value="{{ program.id }}">
+                                        {% if "service_" in program.id %}
+                                            {{ program.name }}
+                                        {% elif "ministry_" in program.id %}
+                                            {{ program.name }}
+                                        {% else %}
+                                            {{ program.name }}
+                                        {% endif %}
+                                    </option>
+                                {% endfor %}
+                                {% else %}
+                                    <option value="">No active programs found</option>
+                                {% endif %}
+                            </select>
+                        </div>
+                        {% if form.program_of_interest.errors %}
+                            <div class="form-error">
+                                {% for error in form.program_of_interest.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="form-group">
+                        <label for="id_requirements" class="form-label">
+                            <svg class="form-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"></path>
+                            </svg>
+                            Requirements (Files/Images)
+                        </label>
+                        <div class="file-upload-area" id="file-drop-zone">
+                            <input type="file" name="requirements" id="id_requirements" class="file-input" multiple onchange="handleFileSelect(event)">
+                            <div class="upload-content" id="upload-prompt">
+                                <div class="upload-icon-container">
+                                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                </div>
+                                <p class="upload-text">
+                                    <span class="upload-link">Click to upload</span> or drag and drop
+                                </p>
+                                <p class="upload-hint">PNG, JPG, PDF up to 10MB each</p>
+                            </div>
+                            <div id="file-list" class="file-list" style="display: none;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Message Textarea -->
+                    <div class="form-group">
+                        <label for="id_message" class="form-label">
+                            <svg class="form-label-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                            Why are you interested in this program?
+                        </label>
+                        <textarea name="message" id="id_message" rows="5" 
+                                  placeholder="Share your motivation, goals, and what you hope to achieve through this program..."
+                                  class="form-textarea"></textarea>
+                        <p class="form-help">
+                            Help us understand your passion and commitment to this program
+                        </p>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="form-submit">
+                        <button type="submit" class="submit-btn">
+                            <svg class="submit-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                            </svg>
+                            Submit Application
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="help-section">
+            <div class="help-card">
+                <h3 class="help-title">Need Help?</h3>
+                <p class="help-text">
+                    If you have any questions about the application process or need assistance, 
+                    please don't hesitate to contact our support team.
+                </p>
+                <div class="help-actions">
+                    <a href="mailto:support@example.com" class="help-link help-email">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.256a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        Email Support
+                    </a>
+                    <a href="tel:+1234567890" class="help-link help-phone">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+                        </svg>
+                        Call Us
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Application Form Styles - Scoped to avoid navbar conflicts */
+.application-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #ecfdf5 100%);
+    padding: 48px 16px;
+}
+
+.application-wrapper {
+    max-width: 1024px;
+    margin: 0 auto;
+}
+
+/* Header */
+.application-header {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.header-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 64px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 50%;
+    margin-bottom: 24px;
+}
+
+.header-icon {
+    width: 32px;
+    height: 32px;
+    color: white;
+}
+
+.application-title {
+    font-size: 48px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #1f2937, #16a34a, #15803d);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin: 0 0 16px 0;
+}
+
+.application-subtitle {
+    font-size: 20px;
+    color: #6b7280;
+    max-width: 512px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Form Card */
+.application-form-card {
+    background: white;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+}
+
+.form-card-header {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    padding: 32px;
+}
+
+.form-card-title {
+    font-size: 24px;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    margin: 0 0 8px 0;
+}
+
+.form-card-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+}
+
+.form-card-subtitle {
+    color: #dcfce7;
+    margin: 0;
+}
+
+.form-card-body {
+    padding: 32px;
+}
+
+/* Form Elements */
+.form-group {
+    margin-bottom: 32px;
+}
+
+.form-label {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 12px;
+}
+
+.form-label-icon {
+    width: 20px;
+    height: 20px;
+    color: #22c55e;
+    margin-right: 8px;
+}
+
+.required-star {
+    color: #ef4444;
+    margin-left: 4px;
+}
+
+/* Select */
+.select-container {
+    position: relative;
+}
+
+.form-select {
+    width: 100%;
+    padding: 16px;
+    color: #374151;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    padding-right: 48px;
+}
+
+.form-select:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+/* File Upload */
+.file-upload-area {
+    border: 2px dashed #d1d5db;
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.file-upload-area:hover {
+    border-color: #22c55e;
+    background-color: #f0fdf4;
+}
+
+.file-input {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.upload-content {
+    pointer-events: none;
+}
+
+.upload-icon-container {
+    width: 48px;
+    height: 48px;
+    background-color: #f3f4f6;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px;
+    transition: all 0.2s ease;
+}
+
+.file-upload-area:hover .upload-icon-container {
+    background-color: #dcfce7;
+}
+
+.upload-icon {
+    width: 24px;
+    height: 24px;
+    color: #9ca3af;
+}
+
+.file-upload-area:hover .upload-icon {
+    color: #22c55e;
+}
+
+.upload-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin: 0 0 4px 0;
+}
+
+.upload-link {
+    color: #22c55e;
+    font-weight: 600;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+
+/* File List */
+.file-list {
+    margin-top: 16px;
+    text-align: left;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f9fafb;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+}
+
+.file-info svg {
+    width: 20px;
+    height: 20px;
+    color: #22c55e;
+    margin-right: 12px;
+}
+
+.file-details h4 {
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin: 0 0 2px 0;
+}
+
+.file-details p {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 0;
+}
+
+.file-remove {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.file-remove:hover {
+    background-color: #fee2e2;
+}
+
+.file-remove svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Textarea */
+.form-textarea {
+    width: 100%;
+    padding: 16px;
+    color: #374151;
+    background-color: white;
+    border: 1px solid #d1d5db;
+    border-radius: 12px;
+    font-size: 16px;
+    line-height: 1.5;
+    resize: vertical;
+    outline: none;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.form-textarea:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-help {
+    font-size: 12px;
+    color: #6b7280;
+    margin: 8px 0 0 0;
+}
+
+/* Submit Button */
+.form-submit {
+    padding-top: 24px;
+    padding-bottom: 16px;
+}
+
+.submit-btn {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.submit-btn:hover {
+    background: linear-gradient(135deg, #16a34a, #15803d);
+    transform: translateY(-1px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.submit-icon {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+/* Alerts */
+.alert {
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    border-left: 4px solid;
+}
+
+.alert-error {
+    background-color: #fef2f2;
+    border-left-color: #ef4444;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border-left-color: #22c55e;
+}
+
+.alert-warning {
+    background-color: #fffbeb;
+    border-left-color: #f59e0b;
+}
+
+.alert-info {
+    background-color: #eff6ff;
+    border-left-color: #3b82f6;
+}
+
+.alert-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #991b1b;
+    margin: 0 0 8px 0;
+}
+
+.alert-list {
+    margin: 0;
+    padding-left: 20px;
+    color: #991b1b;
+}
+
+.alert-content p {
+    margin: 0;
+    color: #166534;
+    font-weight: 500;
+}
+
+.form-error {
+    color: #dc2626;
+    font-size: 14px;
+    margin-top: 8px;
+}
+
+/* Help Section */
+.help-section {
+    margin-top: 48px;
+    text-align: center;
+}
+
+.help-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    max-width: 512px;
+    margin: 0 auto;
+    border: 1px solid #e5e7eb;
+}
+
+.help-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+}
+
+.help-text {
+    color: #6b7280;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0 0 16px 0;
+}
+
+.help-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.help-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.help-link svg {
+    width: 16px;
+    height: 16px;
+    margin-right: 8px;
+}
+
+.help-email {
+    color: #22c55e;
+    background-color: #f0fdf4;
+}
+
+.help-email:hover {
+    background-color: #dcfce7;
+}
+
+.help-phone {
+    color: #059669;
+    background-color: #ecfdf5;
+}
+
+.help-phone:hover {
+    background-color: #d1fae5;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .application-container {
+        padding: 24px 16px;
+    }
+    
+    .application-title {
+        font-size: 32px;
+    }
+    
+    .form-card-body {
+        padding: 24px;
+    }
+    
+    .help-actions {
+        flex-direction: column;
+    }
+}
+</style>
+
+<script>
+// File upload handling
+let selectedFiles = [];
+
+function handleFileSelect(event) {
+    const files = Array.from(event.target.files);
+    selectedFiles = files;
+    displayFiles();
+}
+
+function displayFiles() {
+    const fileList = document.getElementById('file-list');
+    const uploadPrompt = document.getElementById('upload-prompt');
+    
+    if (selectedFiles.length > 0) {
+        uploadPrompt.style.display = 'none';
+        fileList.style.display = 'block';
+        
+        fileList.innerHTML = selectedFiles.map((file, index) => `
+            <div class="file-item">
+                <div class="file-info">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <div class="file-details">
+                        <h4>${file.name}</h4>
+                        <p>${formatFileSize(file.size)}</p>
+                    </div>
+                </div>
+                <button type="button" class="file-remove" onclick="removeFile(${index})">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+        `).join('');
+    } else {
+        uploadPrompt.style.display = 'block';
+        fileList.style.display = 'none';
+    }
+}
+
+function removeFile(index) {
+    selectedFiles.splice(index, 1);
+    
+    // Update the file input
+    const fileInput = document.getElementById('id_requirements');
+    const dt = new DataTransfer();
+    selectedFiles.forEach(file => dt.items.add(file));
+    fileInput.files = dt.files;
+    
+    displayFiles();
+}
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Drag and drop functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const dropZone = document.getElementById('file-drop-zone');
+    
+    if (dropZone) {
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.style.borderColor = '#22c55e';
+            dropZone.style.backgroundColor = '#f0fdf4';
+        });
+        
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropZone.style.borderColor = '#d1d5db';
+            dropZone.style.backgroundColor = 'transparent';
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.style.borderColor = '#d1d5db';
+            dropZone.style.backgroundColor = 'transparent';
+            
+            const files = Array.from(e.dataTransfer.files);
+            selectedFiles = files;
+            
+            // Update the file input
+            const fileInput = document.getElementById('id_requirements');
+            const dt = new DataTransfer();
+            files.forEach(file => dt.items.add(file));
+            fileInput.files = dt.files;
+            
+            displayFiles();
+        });
+    }
+});
+</script>
+{% endblock %}

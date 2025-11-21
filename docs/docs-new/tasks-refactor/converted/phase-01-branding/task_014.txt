@@ -1,0 +1,62 @@
+# Task ID: 014
+# Title: Update Page Titles - Template Blocks
+# Status: pending
+# Dependencies: 010, 013
+# Priority: medium
+# Description: Update page title blocks across all major templates to use Tarbiyyah terminology and context variables.
+
+# Details:
+Update page title blocks across all major templates to use Tarbiyyah terminology and context variables.
+
+## Implementation Steps:
+1. Find all template files with title blocks:
+   ```bash
+   grep -r "{% block title %}" /Users/saidamenmambayao/apps/madaris-ms/src/templates/ | cut -d: -f1 | sort | uniq
+   ```
+2. Update template title blocks pattern:
+   ```html
+   <!-- Before -->
+   {% block title %}Chapters List - BM Parliament{% endblock %}
+
+   <!-- After -->
+   {% block title %}{{ MADRASAH_LABEL }} List - {{ SITE_NAME }}{% endblock %}
+   ```
+3. Update common template patterns:
+   - chapters/list.html: `{{ MADRASAH_LABEL }} List - {{ SITE_NAME }}`
+   - chapters/detail.html: `{{ madrasah.name }} - {{ SITE_NAME }}`
+   - constituents/list.html: `{{ STUDENT_LABEL }} List - {{ SITE_NAME }}`
+   - constituents/detail.html: `{{ student.full_name }} - {{ SITE_NAME }}`
+4. Batch search and replace:
+   ```bash
+   # Find all templates with "BM Parliament" in title
+   grep -r "BM Parliament" /Users/saidamenmambayao/apps/madaris-ms/src/templates/ --include="*.html"
+   ```
+5. Test sample pages and verify browser tab titles
+
+## Acceptance Criteria:
+- All major template files identified
+- Title blocks updated to use {{ SITE_NAME }}
+- Page-specific titles use education terminology
+- Browser tab shows correct page titles
+- Search for remaining "BM Parliament" in titles completed
+- At least 20 template files updated
+
+## Files Modified:
+- `src/templates/chapters/*.html (all templates)`
+- `src/templates/constituents/*.html (all templates)`
+- `src/templates/services/*.html`
+- `src/templates/dashboards/*.html`
+- `src/templates/users/*.html`
+- `(20+ template files)`
+
+## Important Notes:
+- Use variables instead of hardcoded text for future flexibility
+- Keep consistent pattern: "Page Name - {{ SITE_NAME }}"
+- Document count of files updated
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable

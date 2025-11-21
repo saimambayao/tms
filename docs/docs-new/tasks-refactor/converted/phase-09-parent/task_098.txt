@@ -1,0 +1,439 @@
+# Task ID: 098
+# Title: Add Parent-Teacher Messaging
+# Status: pending
+# Dependencies: 097
+# Priority: medium
+# Description: Create messaging system allowing parents to communicate with their children's teachers. Includes message composition, inbox/sent views, thread convers
+
+# Details:
+Create messaging system allowing parents to communicate with their children's teachers. Includes message composition, inbox/sent views, thread conversations, and teacher directory for parent access.
+
+## Implementation Steps:
+1. Create Message model:
+   ```python
+   # apps/parents/models.py
+   from django.db import models
+   from apps.users.models import User
+   from django.utils import timezone
+
+   class ParentTeacherMessage(models.Model):
+       """Messages between parents and teachers"""
+
+       class MessageType(models.TextChoices):
+           GENERAL = 'general', 'General Inquiry'
+           ACADEMIC = 'academic', 'Academic Progress'
+           BEHAVIOR = 'behavior', 'Behavior/Conduct'
+           ATTENDANCE = 'attendance', 'Attendance Issue'
+           OTHER = 'other', 'Other'
+
+       sender = models.ForeignKey(
+           User,
+           on_delete=models.CASCADE,
+           related_name='sent_messages',
+           help_text="Message sender (parent or teacher)"
+       )
+
+       recipient = models.ForeignKey(
+           User,
+           on_delete=models.CASCADE,
+           related_name='received_messages',
+           help_text="Message recipient (parent or teacher)"
+       )
+
+       student = models.ForeignKey(
+           User,
+           on_delete=models.CASCADE,
+           related_name='regarding_messages',
+           limit_choices_to={'role': 'student'},
+           help_text="Student this message is regarding",
+           null=True,
+           blank=True
+       )
+
+       subject = models.CharField(
+           max_length=200,
+           help_text="Message subject line"
+       )
+
+       message_type = models.CharField(
+           max_length=20,
+           choices=MessageType.choices,
+           default=MessageType.GENERAL,
+           help_text="Category of message"
+       )
+
+       body = models.TextField(
+           help_text="Message content"
+       )
+
+       parent_message = models.ForeignKey(
+           'self',
+           on_delete=models.CASCADE,
+           null=True,
+           blank=True,
+           related_name='replies',
+           help_text="Parent message if this is a reply (for threading)"
+       )
+
+       is_read = models.BooleanField(
+           default=False,
+           help_text="Has recipient read this message"
+       )
+
+       read_at = models.DateTimeField(
+           null=True,
+           blank=True,
+           help_text="When message was read"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           verbose_name = "Parent-Teacher Message"
+           verbose_name_plural = "Parent-Teacher Messages"
+           ordering = ['-created_at']
+
+       def __str__(self):
+           return f"{self.sender.get_full_name()} to {self.recipient.get_full_name()}: {self.subject}"
+
+       def mark_as_read(self):
+           """Mark message as read"""
+           if not self.is_read:
+               self.is_read = True
+               self.read_at = timezone.now()
+               self.save(update_fields=['is_read', 'read_at'])
+
+       def get_thread(self):
+           """Get all messages in this conversation thread"""
+           if self.parent_message:
+               root = self.parent_message
+           else:
+               root = self
+
+           return ParentTeacherMessage.objects.filter(
+               models.Q(id=root.id) | models.Q(parent_message=root)
+           ).order_by('created_at')
+   ```
+
+2. Create message forms:
+   ```python
+   # apps/parents/forms.py
+   from django import forms
+   from apps.parents.models import ParentTeacherMessage
+
+   class ComposeMessageForm(forms.ModelForm):
+       """Form for composing new message"""
+
+       class Meta:
+           model = ParentTeacherMessage
+           fields = ['recipient', 'student', 'subject', 'message_type', 'body']
+           widgets = {
+               'body': forms.Textarea(attrs={
+                   'rows': 6,
+                   'placeholder': 'Type your message here...'
+               }),
+               'subject': forms.TextInput(attrs={
+                   'placeholder': 'Message subject'
+               }),
+           }
+
+       def __init__(self, *args, sender=None, **kwargs):
+           super().__init__(*args, **kwargs)
+           self.sender = sender
+
+           # If sender is parent, limit recipients to their students' teachers
+           if sender and sender.role == 'parent':
+               # TODO: Filter to teachers of linked students
+               # student_ids = ParentStudent.objects.filter(
+               #     parent=sender
+               # ).values_list('student_id', flat=True)
+               # teacher_ids = TeacherAssignment.objects.filter(
+               #     class__students__in=student_ids
+               # ).values_list('teacher_id', flat=True).distinct()
+               # self.fields['recipient'].queryset = User.objects.filter(
+               #     id__in=teacher_ids
+               # )
+               pass
+
+       def save(self, commit=True):
+           message = super().save(commit=False)
+           message.sender = self.sender
+           if commit:
+               message.save()
+           return message
+
+   class ReplyMessageForm(forms.ModelForm):
+       """Form for replying to message"""
+
+       class Meta:
+           model = ParentTeacherMessage
+           fields = ['body']
+           widgets = {
+               'body': forms.Textarea(attrs={
+                   'rows': 4,
+                   'placeholder': 'Type your reply...'
+               }),
+           }
+   ```
+
+3. Create message views:
+   ```python
+   # apps/parents/views.py
+   from django.views.generic import ListView, DetailView, CreateView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.shortcuts import redirect, get_object_or_404
+   from django.contrib import messages
+   from django.urls import reverse_lazy
+   from apps.parents.models import ParentTeacherMessage
+   from apps.parents.forms import ComposeMessageForm, ReplyMessageForm
+
+   class MessageInboxView(LoginRequiredMixin, ListView):
+       """View received messages"""
+       template_name = 'parents/message_inbox.html'
+       context_object_name = 'messages'
+       paginate_by = 20
+
+       def get_queryset(self):
+           return ParentTeacherMessage.objects.filter(
+               recipient=self.request.user
+           ).select_related('sender', 'student')
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           # Count unread messages
+           context['unread_count'] = ParentTeacherMessage.objects.filter(
+               recipient=self.request.user,
+               is_read=False
+           ).count()
+           return context
+
+   class MessageSentView(LoginRequiredMixin, ListView):
+       """View sent messages"""
+       template_name = 'parents/message_sent.html'
+       context_object_name = 'messages'
+       paginate_by = 20
+
+       def get_queryset(self):
+           return ParentTeacherMessage.objects.filter(
+               sender=self.request.user
+           ).select_related('recipient', 'student')
+
+   class MessageDetailView(LoginRequiredMixin, DetailView):
+       """View message thread"""
+       template_name = 'parents/message_detail.html'
+       context_object_name = 'message'
+
+       def get_queryset(self):
+           return ParentTeacherMessage.objects.filter(
+               models.Q(sender=self.request.user) | models.Q(recipient=self.request.user)
+           )
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           message = self.object
+
+           # Mark as read if recipient is viewing
+           if message.recipient == self.request.user:
+               message.mark_as_read()
+
+           # Get conversation thread
+           context['thread'] = message.get_thread()
+           context['reply_form'] = ReplyMessageForm()
+
+           return context
+
+   class ComposeMessageView(LoginRequiredMixin, CreateView):
+       """Compose new message"""
+       template_name = 'parents/message_compose.html'
+       form_class = ComposeMessageForm
+       success_url = reverse_lazy('parents:message-sent')
+
+       def get_form_kwargs(self):
+           kwargs = super().get_form_kwargs()
+           kwargs['sender'] = self.request.user
+           return kwargs
+
+       def form_valid(self, form):
+           messages.success(self.request, 'Message sent successfully!')
+           return super().form_valid(form)
+
+   class TeacherDirectoryView(LoginRequiredMixin, ListView):
+       """View teachers of linked students (for parents)"""
+       template_name = 'parents/teacher_directory.html'
+       context_object_name = 'teachers'
+
+       def get_queryset(self):
+           # TODO: Get teachers of parent's linked students
+           # student_ids = ParentStudent.objects.filter(
+           #     parent=self.request.user,
+           #     status='active'
+           # ).values_list('student_id', flat=True)
+           #
+           # teacher_ids = TeacherAssignment.objects.filter(
+           #     class__students__in=student_ids
+           # ).values_list('teacher_id', flat=True).distinct()
+           #
+           # return User.objects.filter(id__in=teacher_ids, role='asatidz')
+           return []  # Placeholder
+   ```
+
+4. Add messaging URLs:
+   ```python
+   # apps/parents/urls.py
+   urlpatterns = [
+       # ... existing patterns ...
+
+       # Messaging
+       path('messages/inbox/',
+            views.MessageInboxView.as_view(),
+            name='message-inbox'),
+       path('messages/sent/',
+            views.MessageSentView.as_view(),
+            name='message-sent'),
+       path('messages/compose/',
+            views.ComposeMessageView.as_view(),
+            name='message-compose'),
+       path('messages/<int:pk>/',
+            views.MessageDetailView.as_view(),
+            name='message-detail'),
+       path('teachers/',
+            views.TeacherDirectoryView.as_view(),
+            name='teacher-directory'),
+   ]
+   ```
+
+5. Create message inbox template:
+   ```html
+   <!-- templates/parents/message_inbox.html -->
+   {% extends "base.html" %}
+
+   {% block title %}Messages - Inbox{% endblock %}
+
+   {% block content %}
+   <div class="container mx-auto px-4 py-8">
+       <div class="flex justify-between items-center mb-6">
+           <h1 class="text-2xl font-bold text-gray-800">Messages</h1>
+           <a href="{% url 'parents:message-compose' %}" class="btn btn-primary">
+               Compose Message
+           </a>
+       </div>
+
+       <!-- Message Navigation -->
+       <div class="mb-4 border-b border-gray-200">
+           <nav class="flex space-x-4">
+               <a href="{% url 'parents:message-inbox' %}"
+                  class="pb-2 px-1 border-b-2 border-blue-600 font-medium text-blue-600">
+                   Inbox
+                   {% if unread_count > 0 %}
+                   <span class="ml-1 bg-red-500 text-white text-xs rounded-full px-2 py-1">
+                       {{ unread_count }}
+                   </span>
+                   {% endif %}
+               </a>
+               <a href="{% url 'parents:message-sent' %}"
+                  class="pb-2 px-1 text-gray-600 hover:text-gray-800">
+                   Sent
+               </a>
+           </nav>
+       </div>
+
+       <!-- Messages List -->
+       <div class="bg-white rounded-lg shadow-md">
+           {% if messages %}
+               <ul class="divide-y divide-gray-200">
+                   {% for message in messages %}
+                   <li>
+                       <a href="{% url 'parents:message-detail' message.id %}"
+                          class="block hover:bg-gray-50 p-4 {% if not message.is_read %}bg-blue-50{% endif %}">
+                           <div class="flex items-center justify-between">
+                               <div class="flex-1">
+                                   <div class="flex items-center">
+                                       {% if not message.is_read %}
+                                       <span class="w-2 h-2 bg-blue-600 rounded-full mr-2"></span>
+                                       {% endif %}
+                                       <span class="font-semibold text-gray-800">
+                                           {{ message.sender.get_full_name }}
+                                       </span>
+                                       {% if message.student %}
+                                       <span class="ml-2 text-sm text-gray-600">
+                                           Re: {{ message.student.get_full_name }}
+                                       </span>
+                                       {% endif %}
+                                   </div>
+                                   <p class="text-gray-800 mt-1">{{ message.subject }}</p>
+                                   <p class="text-gray-600 text-sm mt-1 truncate">
+                                       {{ message.body|truncatewords:20 }}
+                                   </p>
+                               </div>
+                               <div class="ml-4 text-sm text-gray-500">
+                                   {{ message.created_at|timesince }} ago
+                               </div>
+                           </div>
+                       </a>
+                   </li>
+                   {% endfor %}
+               </ul>
+           {% else %}
+               <div class="text-center py-12">
+                   <p class="text-gray-600">No messages in your inbox</p>
+               </div>
+           {% endif %}
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+6. Create migration and test:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations parents
+   python manage.py migrate parents
+   ```
+
+7. Test messaging functionality:
+   - Test composing new message
+   - Test viewing inbox/sent messages
+   - Test message thread view
+   - Test marking messages as read
+   - Test unread count display
+
+## Acceptance Criteria:
+- Message model created for parent-teacher communications
+- Message composition form created
+- Inbox view created showing received messages
+- Sent messages view created
+- Message thread/conversation view created
+- Teacher directory view for parents (shows teachers of their students)
+- Email notifications for new messages (optional)
+- Permission checks (parents can only message their students' teachers)
+- Unread message count displayed in dashboard
+- Messages tested with sample data
+
+## Files Modified:
+- `src/apps/parents/models.py`
+- `src/apps/parents/forms.py`
+- `src/apps/parents/views.py`
+- `src/apps/parents/urls.py`
+- `src/apps/parents/templates/parents/message_inbox.html (new file)`
+- `src/apps/parents/templates/parents/message_sent.html (new file)`
+- `src/apps/parents/templates/parents/message_detail.html (new file)`
+- `src/apps/parents/templates/parents/message_compose.html (new file)`
+- `src/apps/parents/templates/parents/teacher_directory.html (new file)`
+- `src/apps/parents/migrations/000X_parentteachermessage.py`
+
+## Important Notes:
+- Messages support threading (replies to original message)
+- Tracks read/unread status with timestamps
+- Student reference allows context-specific conversations
+- Message types help categorize communications
+- Teacher directory filters to only teachers of linked students
+- Consider adding email notifications for new messages
+- Future: Add file attachments, read receipts, message archiving
+- Estimate: 120 minutes
+
+# Test Strategy:
+1. Access view URL and verify HTTP 200 response
+2. Test with different user permissions
+3. Verify context data passed to template
+4. Test any query parameters or filters

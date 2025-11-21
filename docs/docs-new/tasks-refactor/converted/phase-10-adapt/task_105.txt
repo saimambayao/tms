@@ -1,0 +1,649 @@
+# Task ID: 105
+# Title: Update Search Functionality
+# Status: pending
+# Dependencies: 045, 050, 103
+# Priority: medium
+# Description: Update global search functionality to work with education models (Students, Teachers, Madaris, Subjects) instead of parliamentary models. Adapt existi
+
+# Details:
+Update global search functionality to work with education models (Students, Teachers, Madaris, Subjects) instead of parliamentary models. Adapt existing search infrastructure for education context.
+
+## Implementation Steps:
+1. Review existing search implementation:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   find . -name "*search*" -type f
+   grep -r "def search" apps/
+   ```
+
+2. Update search models in `apps/core/search.py` (or create if doesn't exist):
+   ```python
+   from django.db.models import Q
+   from apps.students.models import Student
+   from apps.teachers.models import TeacherProfile
+   from apps.madaris.models import Madrasah
+   from apps.academic.models import Subject, Class
+
+   class UnifiedSearch:
+       """Unified search across all education models"""
+
+       def __init__(self, query, user, category=None, limit=20):
+           self.query = query.strip()
+           self.user = user
+           self.category = category
+           self.limit = limit
+
+       def search(self):
+           """Perform search and return categorized results"""
+           results = {
+               'students': [],
+               'teachers': [],
+               'madaris': [],
+               'subjects': [],
+               'classes': [],
+               'query': self.query,
+               'total': 0
+           }
+
+           if len(self.query) < 2:
+               return results
+
+           # Search based on category or search all
+           if not self.category or self.category == 'students':
+               results['students'] = self.search_students()
+
+           if not self.category or self.category == 'teachers':
+               results['teachers'] = self.search_teachers()
+
+           if not self.category or self.category == 'madaris':
+               results['madaris'] = self.search_madaris()
+
+           if not self.category or self.category == 'subjects':
+               results['subjects'] = self.search_subjects()
+
+           if not self.category or self.category == 'classes':
+               results['classes'] = self.search_classes()
+
+           results['total'] = (
+               len(results['students']) +
+               len(results['teachers']) +
+               len(results['madaris']) +
+               len(results['subjects']) +
+               len(results['classes'])
+           )
+
+           return results
+
+       def search_students(self):
+           """Search students"""
+           if not self.user.has_perm('students.view_student'):
+               return []
+
+           queryset = Student.objects.filter(status='active')
+
+           # Filter based on user role
+           if self.user.has_role('asatidz'):
+               # Teachers see only their students
+               queryset = queryset.filter(
+                   enrollments__class__teacher=self.user.teacher_profile
+               )
+           elif self.user.has_role('madrasah_admin'):
+               # Madrasah admin sees only their madrasah students
+               queryset = queryset.filter(
+                   enrollments__madrasah__admins=self.user
+               )
+
+           # Search by name, student ID, email
+           queryset = queryset.filter(
+               Q(user__first_name__icontains=self.query) |
+               Q(user__last_name__icontains=self.query) |
+               Q(student_id__icontains=self.query) |
+               Q(user__email__icontains=self.query)
+           ).select_related('user').distinct()[:self.limit]
+
+           return [{
+               'id': student.id,
+               'name': student.user.get_full_name(),
+               'student_id': student.student_id,
+               'grade_level': student.grade_level,
+               'madrasah': student.get_current_madrasah(),
+               'url': student.get_absolute_url()
+           } for student in queryset]
+
+       def search_teachers(self):
+           """Search teachers"""
+           if not self.user.has_perm('teachers.view_teacherprofile'):
+               return []
+
+           queryset = TeacherProfile.objects.filter(status='active')
+
+           # Filter based on user role
+           if self.user.has_role('madrasah_admin'):
+               queryset = queryset.filter(madrasah__admins=self.user)
+
+           # Search by name, specialization, employee ID
+           queryset = queryset.filter(
+               Q(user__first_name__icontains=self.query) |
+               Q(user__last_name__icontains=self.query) |
+               Q(specialization__icontains=self.query) |
+               Q(employee_id__icontains=self.query) |
+               Q(user__email__icontains=self.query)
+           ).select_related('user', 'madrasah').distinct()[:self.limit]
+
+           return [{
+               'id': teacher.id,
+               'name': teacher.user.get_full_name(),
+               'employee_id': teacher.employee_id,
+               'specialization': teacher.specialization,
+               'madrasah': teacher.madrasah.name if teacher.madrasah else None,
+               'url': teacher.get_absolute_url()
+           } for teacher in queryset]
+
+       def search_madaris(self):
+           """Search madaris"""
+           if not self.user.has_perm('madaris.view_madrasah'):
+               return []
+
+           queryset = Madrasah.objects.filter(status='active')
+
+           # Search by name, location, madrasah type
+           queryset = queryset.filter(
+               Q(name__icontains=self.query) |
+               Q(arabic_name__icontains=self.query) |
+               Q(location__icontains=self.query) |
+               Q(region__icontains=self.query) |
+               Q(madrasah_type__icontains=self.query)
+           ).distinct()[:self.limit]
+
+           return [{
+               'id': madrasah.id,
+               'name': madrasah.name,
+               'arabic_name': madrasah.arabic_name,
+               'location': madrasah.location,
+               'madrasah_type': madrasah.get_madrasah_type_display(),
+               'students_count': madrasah.get_student_count(),
+               'url': madrasah.get_absolute_url()
+           } for madrasah in queryset]
+
+       def search_subjects(self):
+           """Search subjects"""
+           if not self.user.has_perm('academic.view_subject'):
+               return []
+
+           queryset = Subject.objects.filter(is_active=True)
+
+           queryset = queryset.filter(
+               Q(name__icontains=self.query) |
+               Q(arabic_name__icontains=self.query) |
+               Q(code__icontains=self.query) |
+               Q(description__icontains=self.query)
+           ).distinct()[:self.limit]
+
+           return [{
+               'id': subject.id,
+               'name': subject.name,
+               'arabic_name': subject.arabic_name,
+               'code': subject.code,
+               'category': subject.category,
+               'url': subject.get_absolute_url()
+           } for subject in queryset]
+
+       def search_classes(self):
+           """Search classes"""
+           if not self.user.has_perm('academic.view_class'):
+               return []
+
+           queryset = Class.objects.filter(is_active=True)
+
+           # Filter based on user role
+           if self.user.has_role('asatidz'):
+               queryset = queryset.filter(teacher=self.user.teacher_profile)
+           elif self.user.has_role('madrasah_admin'):
+               queryset = queryset.filter(madrasah__admins=self.user)
+
+           queryset = queryset.filter(
+               Q(name__icontains=self.query) |
+               Q(subject__name__icontains=self.query) |
+               Q(teacher__user__first_name__icontains=self.query) |
+               Q(teacher__user__last_name__icontains=self.query)
+           ).select_related('teacher__user', 'subject', 'madrasah').distinct()[:self.limit]
+
+           return [{
+               'id': cls.id,
+               'name': cls.name,
+               'subject': cls.subject.name,
+               'teacher': cls.teacher.user.get_full_name(),
+               'madrasah': cls.madrasah.name,
+               'students_count': cls.students.count(),
+               'url': cls.get_absolute_url()
+           } for cls in queryset]
+
+   class SearchAutocomplete:
+       """Autocomplete search for quick results"""
+
+       def __init__(self, query, user, limit=5):
+           self.query = query.strip()
+           self.user = user
+           self.limit = limit
+
+       def get_suggestions(self):
+           """Get quick suggestions for autocomplete"""
+           if len(self.query) < 2:
+               return []
+
+           suggestions = []
+
+           # Students
+           students = Student.objects.filter(
+               Q(user__first_name__icontains=self.query) |
+               Q(user__last_name__icontains=self.query) |
+               Q(student_id__icontains=self.query)
+           ).select_related('user')[:self.limit]
+
+           for student in students:
+               suggestions.append({
+                   'label': f"{student.user.get_full_name()} ({student.student_id})",
+                   'category': 'Student',
+                   'url': student.get_absolute_url()
+               })
+
+           # Teachers
+           teachers = TeacherProfile.objects.filter(
+               Q(user__first_name__icontains=self.query) |
+               Q(user__last_name__icontains=self.query)
+           ).select_related('user')[:self.limit]
+
+           for teacher in teachers:
+               suggestions.append({
+                   'label': f"{teacher.user.get_full_name()} - {teacher.specialization}",
+                   'category': 'Teacher',
+                   'url': teacher.get_absolute_url()
+               })
+
+           # Madaris
+           madaris = Madrasah.objects.filter(
+               name__icontains=self.query
+           )[:self.limit]
+
+           for madrasah in madaris:
+               suggestions.append({
+                   'label': madrasah.name,
+                   'category': 'Madrasah',
+                   'url': madrasah.get_absolute_url()
+               })
+
+           return suggestions[:10]  # Limit total suggestions
+   ```
+
+3. Create search views in `apps/core/views.py`:
+   ```python
+   from django.views.generic import TemplateView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.http import JsonResponse
+   from django.views import View
+   from .search import UnifiedSearch, SearchAutocomplete
+
+   class SearchView(LoginRequiredMixin, TemplateView):
+       template_name = 'core/search_results.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           query = self.request.GET.get('q', '')
+           category = self.request.GET.get('category', None)
+
+           search = UnifiedSearch(query, self.request.user, category)
+           context['results'] = search.search()
+           context['query'] = query
+           context['category'] = category
+
+           return context
+
+   class SearchAutocompleteView(LoginRequiredMixin, View):
+       def get(self, request):
+           query = request.GET.get('q', '')
+           autocomplete = SearchAutocomplete(query, request.user)
+           suggestions = autocomplete.get_suggestions()
+
+           return JsonResponse({
+               'suggestions': suggestions
+           })
+   ```
+
+4. Create search templates:
+   ```html
+   <!-- templates/core/search_results.html -->
+   {% extends "base.html" %}
+
+   {% block title %}Search Results - {{ query }}{% endblock %}
+
+   {% block content %}
+   <div class="search-results-container">
+       <div class="search-header">
+           <h1>Search Results for "{{ query }}"</h1>
+           <p>{{ results.total }} results found</p>
+
+           <!-- Search form -->
+           <form method="get" action="{% url 'core:search' %}" class="search-form">
+               <input type="text" name="q" value="{{ query }}" placeholder="Search students, teachers, madaris...">
+               <select name="category">
+                   <option value="">All Categories</option>
+                   <option value="students" {% if category == 'students' %}selected{% endif %}>Students</option>
+                   <option value="teachers" {% if category == 'teachers' %}selected{% endif %}>Teachers</option>
+                   <option value="madaris" {% if category == 'madaris' %}selected{% endif %}>Madaris</option>
+                   <option value="subjects" {% if category == 'subjects' %}selected{% endif %}>Subjects</option>
+                   <option value="classes" {% if category == 'classes' %}selected{% endif %}>Classes</option>
+               </select>
+               <button type="submit">Search</button>
+           </form>
+       </div>
+
+       {% if results.students %}
+       <div class="results-section">
+           <h2>Students ({{ results.students|length }})</h2>
+           <div class="results-list">
+               {% for student in results.students %}
+               <div class="result-item">
+                   <div class="result-icon">👨‍🎓</div>
+                   <div class="result-details">
+                       <h3><a href="{{ student.url }}">{{ student.name }}</a></h3>
+                       <p>ID: {{ student.student_id }} | Grade: {{ student.grade_level }}</p>
+                       {% if student.madrasah %}
+                       <p>Madrasah: {{ student.madrasah.name }}</p>
+                       {% endif %}
+                   </div>
+               </div>
+               {% endfor %}
+           </div>
+       </div>
+       {% endif %}
+
+       {% if results.teachers %}
+       <div class="results-section">
+           <h2>Teachers ({{ results.teachers|length }})</h2>
+           <div class="results-list">
+               {% for teacher in results.teachers %}
+               <div class="result-item">
+                   <div class="result-icon">👨‍🏫</div>
+                   <div class="result-details">
+                       <h3><a href="{{ teacher.url }}">{{ teacher.name }}</a></h3>
+                       <p>ID: {{ teacher.employee_id }} | {{ teacher.specialization }}</p>
+                       {% if teacher.madrasah %}
+                       <p>Madrasah: {{ teacher.madrasah }}</p>
+                       {% endif %}
+                   </div>
+               </div>
+               {% endfor %}
+           </div>
+       </div>
+       {% endif %}
+
+       {% if results.madaris %}
+       <div class="results-section">
+           <h2>Madaris ({{ results.madaris|length }})</h2>
+           <div class="results-list">
+               {% for madrasah in results.madaris %}
+               <div class="result-item">
+                   <div class="result-icon">🏫</div>
+                   <div class="result-details">
+                       <h3><a href="{{ madrasah.url }}">{{ madrasah.name }}</a></h3>
+                       {% if madrasah.arabic_name %}
+                       <p>{{ madrasah.arabic_name }}</p>
+                       {% endif %}
+                       <p>{{ madrasah.location }} | {{ madrasah.madrasah_type }}</p>
+                       <p>Students: {{ madrasah.students_count }}</p>
+                   </div>
+               </div>
+               {% endfor %}
+           </div>
+       </div>
+       {% endif %}
+
+       {% if results.subjects %}
+       <div class="results-section">
+           <h2>Subjects ({{ results.subjects|length }})</h2>
+           <div class="results-list">
+               {% for subject in results.subjects %}
+               <div class="result-item">
+                   <div class="result-icon">📚</div>
+                   <div class="result-details">
+                       <h3><a href="{{ subject.url }}">{{ subject.name }}</a></h3>
+                       {% if subject.arabic_name %}
+                       <p>{{ subject.arabic_name }}</p>
+                       {% endif %}
+                       <p>Code: {{ subject.code }} | {{ subject.category }}</p>
+                   </div>
+               </div>
+               {% endfor %}
+           </div>
+       </div>
+       {% endif %}
+
+       {% if results.classes %}
+       <div class="results-section">
+           <h2>Classes ({{ results.classes|length }})</h2>
+           <div class="results-list">
+               {% for class in results.classes %}
+               <div class="result-item">
+                   <div class="result-icon">🏛️</div>
+                   <div class="result-details">
+                       <h3><a href="{{ class.url }}">{{ class.name }}</a></h3>
+                       <p>{{ class.subject }} | Teacher: {{ class.teacher }}</p>
+                       <p>{{ class.madrasah }} | Students: {{ class.students_count }}</p>
+                   </div>
+               </div>
+               {% endfor %}
+           </div>
+       </div>
+       {% endif %}
+
+       {% if results.total == 0 %}
+       <div class="no-results">
+           <p>No results found for "{{ query }}"</p>
+           <p>Try searching with different keywords or check the spelling.</p>
+       </div>
+       {% endif %}
+   </div>
+   {% endblock %}
+
+   {% block extra_js %}
+   <script>
+   // Autocomplete functionality
+   document.addEventListener('DOMContentLoaded', function() {
+       const searchInput = document.querySelector('input[name="q"]');
+       const autocompleteContainer = document.createElement('div');
+       autocompleteContainer.className = 'autocomplete-results';
+       searchInput.parentNode.appendChild(autocompleteContainer);
+
+       let timeout = null;
+       searchInput.addEventListener('input', function(e) {
+           clearTimeout(timeout);
+           const query = e.target.value;
+
+           if (query.length < 2) {
+               autocompleteContainer.innerHTML = '';
+               return;
+           }
+
+           timeout = setTimeout(function() {
+               fetch(`/search/autocomplete/?q=${encodeURIComponent(query)}`)
+                   .then(response => response.json())
+                   .then(data => {
+                       autocompleteContainer.innerHTML = '';
+                       data.suggestions.forEach(suggestion => {
+                           const item = document.createElement('div');
+                           item.className = 'autocomplete-item';
+                           item.innerHTML = `
+                               <span class="category">${suggestion.category}</span>
+                               <a href="${suggestion.url}">${suggestion.label}</a>
+                           `;
+                           autocompleteContainer.appendChild(item);
+                       });
+                   });
+           }, 300);
+       });
+   });
+   </script>
+   {% endblock %}
+   ```
+
+5. Update search URLs:
+   ```python
+   # apps/core/urls.py
+   from django.urls import path
+   from .views import SearchView, SearchAutocompleteView
+
+   app_name = 'core'
+
+   urlpatterns = [
+       # ... existing patterns ...
+       path('search/', SearchView.as_view(), name='search'),
+       path('search/autocomplete/', SearchAutocompleteView.as_view(), name='search_autocomplete'),
+   ]
+   ```
+
+6. Add search box to base template:
+   ```html
+   <!-- In base.html navbar -->
+   <div class="search-box">
+       <form method="get" action="{% url 'core:search' %}">
+           <input type="text"
+                  name="q"
+                  placeholder="Search students, teachers, madaris..."
+                  class="search-input"
+                  autocomplete="off">
+           <button type="submit" class="search-btn">
+               <svg><!-- search icon --></svg>
+           </button>
+       </form>
+   </div>
+   ```
+
+7. Add database indexes for search performance:
+   ```python
+   # In respective models
+   class Student(models.Model):
+       # ... existing fields ...
+       class Meta:
+           indexes = [
+               models.Index(fields=['student_id']),
+               models.Index(fields=['user__first_name', 'user__last_name']),
+           ]
+
+   class TeacherProfile(models.Model):
+       # ... existing fields ...
+       class Meta:
+           indexes = [
+               models.Index(fields=['employee_id']),
+               models.Index(fields=['specialization']),
+           ]
+
+   class Madrasah(models.Model):
+       # ... existing fields ...
+       class Meta:
+           indexes = [
+               models.Index(fields=['name']),
+               models.Index(fields=['location']),
+           ]
+   ```
+
+8. Create migration for indexes:
+   ```bash
+   python manage.py makemigrations
+   python manage.py migrate
+   ```
+
+9. Create search styles:
+   ```css
+   /* static/css/search.css */
+   .search-box {
+       flex: 1;
+       max-width: 600px;
+       margin: 0 20px;
+   }
+
+   .search-input {
+       width: 100%;
+       padding: 10px 40px 10px 15px;
+       border: 1px solid #ddd;
+       border-radius: 20px;
+   }
+
+   .autocomplete-results {
+       position: absolute;
+       background: white;
+       border: 1px solid #ddd;
+       border-radius: 8px;
+       margin-top: 5px;
+       max-height: 400px;
+       overflow-y: auto;
+       z-index: 1000;
+   }
+
+   .autocomplete-item {
+       padding: 10px;
+       border-bottom: 1px solid #f0f0f0;
+       cursor: pointer;
+   }
+
+   .autocomplete-item:hover {
+       background: #f9f9f9;
+   }
+
+   .result-item {
+       display: flex;
+       gap: 15px;
+       padding: 15px;
+       border: 1px solid #e2e8f0;
+       border-radius: 8px;
+       margin-bottom: 10px;
+   }
+
+   .result-icon {
+       font-size: 32px;
+   }
+   ```
+
+10. Test search functionality:
+    ```bash
+    python manage.py test apps.core.tests.test_search
+    ```
+
+## Acceptance Criteria:
+- Search includes Students, Teachers, Madaris, Subjects
+- Search results properly categorized
+- Search autocomplete works
+- Search filters by category
+- Search respects user permissions
+- Search results paginated
+- Search performance optimized (indexes added)
+- Search UI updated for education context
+- Search accessible from all pages
+- Search results display relevant information
+
+## Files Modified:
+- `src/apps/core/search.py (new)`
+- `src/apps/core/views.py (add search views)`
+- `src/apps/core/urls.py (add search URLs)`
+- `src/apps/core/templates/core/search_results.html (new)`
+- `src/templates/base.html (add search box)`
+- `src/static/css/search.css (new)`
+- `src/static/js/search.js (new)`
+- `src/apps/students/models.py (add indexes)`
+- `src/apps/teachers/models.py (add indexes)`
+- `src/apps/madaris/models.py (add indexes)`
+- `src/apps/core/tests/test_search.py (new)`
+
+## Important Notes:
+- Search must respect user permissions (teachers see only their students, etc.)
+- Add pagination for large result sets
+- Consider using PostgreSQL full-text search for better performance
+- Add search analytics to track popular queries
+- Implement search result caching for frequently searched terms
+- Ensure search works in both English and Arabic
+- Estimate: 3-4 hours
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

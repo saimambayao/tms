@@ -1,0 +1,70 @@
+# Task ID: 044
+# Title: Update Madrasah Views (List, Detail, Create, Update)
+# Status: pending
+# Dependencies: 042, 043
+# Priority: medium
+# Description: Create or update views for madrasah CRUD operations: list, detail, create, update. Use class-based views where appropriate.
+
+# Details:
+Create or update views for madrasah CRUD operations: list, detail, create, update. Use class-based views where appropriate.
+
+## Implementation Steps:
+1. Update chapters/views.py:
+   ```python
+   from django.views.generic import ListView, DetailView
+   from apps.users.mixins import RoleRequiredMixin
+
+   class MadrasahListView(ListView):
+       model = Madrasah
+       template_name = 'chapters/madrasah_list.html'
+       context_object_name = 'madaris'
+       paginate_by = 20
+
+       def get_queryset(self):
+           qs = super().get_queryset()
+           search = self.request.GET.get('search')
+           if search:
+               qs = qs.filter(name__icontains=search)
+           province = self.request.GET.get('province')
+           if province:
+               qs = qs.filter(province=province)
+           return qs.order_by('name')
+
+   class MadrasahDetailView(DetailView):
+       model = Madrasah
+       template_name = 'chapters/madrasah_detail.html'
+       context_object_name = 'madrasah'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['enrollments'] = self.object.enrollments.all()
+           context['activities'] = self.object.activities.all()[:5]
+           return context
+   ```
+2. Test views with sample data
+3. Add permissions to views
+
+## Acceptance Criteria:
+- MadrasahListView with search and filters
+- MadrasahDetailView showing all madrasah info
+- Create and update views working
+- Role-based access control applied
+- Views tested with different user roles
+
+## Files Modified:
+- `src/apps/chapters/views.py`
+
+## Important Notes:
+- Keep views simple initially
+- Add more features in iterations
+- Estimate: 50 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin
+5. Access view URL and verify HTTP 200 response
+6. Test with different user permissions
+7. Verify context data passed to template
+8. Test any query parameters or filters

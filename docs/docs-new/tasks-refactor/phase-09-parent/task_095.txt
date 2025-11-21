@@ -1,0 +1,269 @@
+# Task ID: 095
+# Title: Create Parent Registration Workflow
+# Status: pending
+# Dependencies: 094
+# Priority: high
+# Description: Create parent registration workflow including signup form, email verification, student linking process, and initial portal access. Supports self-regis
+
+# Details:
+Create parent registration workflow including signup form, email verification, student linking process, and initial portal access. Supports self-registration and admin-initiated registration.
+
+## Implementation Steps:
+1. Create parent registration form:
+   ```python
+   # apps/parents/forms.py
+   from django import forms
+   from django.contrib.auth.forms import UserCreationForm
+   from apps.users.models import User
+   from apps.parents.models import ParentStudent
+
+   class ParentRegistrationForm(UserCreationForm):
+       """Parent self-registration form"""
+
+       email = forms.EmailField(
+           required=True,
+           help_text="Email address for account verification and notifications"
+       )
+
+       first_name = forms.CharField(
+           max_length=150,
+           required=True,
+           help_text="First name (Nama Pertama)"
+       )
+
+       last_name = forms.CharField(
+           max_length=150,
+           required=True,
+           help_text="Last name (Nama Keluarga)"
+       )
+
+       phone_number = forms.CharField(
+           max_length=20,
+           required=True,
+           help_text="Contact number for school communications"
+       )
+
+       class Meta:
+           model = User
+           fields = ['email', 'first_name', 'last_name', 'phone_number',
+                    'password1', 'password2']
+
+       def save(self, commit=True):
+           user = super().save(commit=False)
+           user.role = User.Role.PARENT
+           user.is_active = False  # Require email verification
+           if commit:
+               user.save()
+           return user
+
+   class StudentLinkForm(forms.Form):
+       """Form to link parent to student"""
+
+       student_id = forms.CharField(
+           max_length=50,
+           required=False,
+           help_text="Student ID number"
+       )
+
+       verification_code = forms.CharField(
+           max_length=20,
+           required=False,
+           help_text="Verification code provided by school"
+       )
+
+       relationship_type = forms.ChoiceField(
+           choices=ParentStudent.RelationshipType.choices,
+           help_text="Your relationship to the student"
+       )
+
+       is_primary_contact = forms.BooleanField(
+           required=False,
+           initial=False,
+           help_text="I am the primary contact for this student"
+       )
+
+       is_emergency_contact = forms.BooleanField(
+           required=False,
+           initial=False,
+           help_text="I am an emergency contact for this student"
+       )
+
+       def clean(self):
+           cleaned_data = super().clean()
+           student_id = cleaned_data.get('student_id')
+           verification_code = cleaned_data.get('verification_code')
+
+           if not student_id and not verification_code:
+               raise forms.ValidationError(
+                   "Please provide either Student ID or Verification Code"
+               )
+
+           return cleaned_data
+   ```
+
+2. Create registration views:
+   ```python
+   # apps/parents/views.py
+   from django.contrib.auth import login
+   from django.contrib import messages
+   from django.shortcuts import render, redirect
+   from django.urls import reverse_lazy
+   from django.views.generic import CreateView, FormView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from apps.parents.forms import ParentRegistrationForm, StudentLinkForm
+   from apps.parents.models import ParentStudent
+   from apps.users.models import User
+
+   class ParentRegistrationView(CreateView):
+       """Parent self-registration view"""
+       template_name = 'parents/register.html'
+       form_class = ParentRegistrationForm
+       success_url = reverse_lazy('parents:registration-success')
+
+       def form_valid(self, form):
+           response = super().form_valid(form)
+           # TODO: Send verification email
+           messages.success(
+               self.request,
+               'Registration successful! Please check your email to verify your account.'
+           )
+           return response
+
+   class LinkStudentView(LoginRequiredMixin, FormView):
+       """Link parent account to student"""
+       template_name = 'parents/link_student.html'
+       form_class = StudentLinkForm
+       success_url = reverse_lazy('parents:dashboard')
+
+       def form_valid(self, form):
+           parent = self.request.user
+           student_id = form.cleaned_data.get('student_id')
+           verification_code = form.cleaned_data.get('verification_code')
+
+           # TODO: Implement student lookup and verification logic
+           # For now, simplified version:
+           try:
+               if student_id:
+                   student = User.objects.get(
+                       role=User.Role.STUDENT,
+                       username=student_id  # Or use student_number field
+                   )
+               else:
+                   # TODO: Implement verification code lookup
+                   raise User.DoesNotExist
+
+               # Create parent-student relationship
+               ParentStudent.objects.create(
+                   parent=parent,
+                   student=student,
+                   relationship_type=form.cleaned_data['relationship_type'],
+                   is_primary_contact=form.cleaned_data.get('is_primary_contact', False),
+                   is_emergency_contact=form.cleaned_data.get('is_emergency_contact', False),
+                   status=ParentStudent.Status.ACTIVE
+               )
+
+               messages.success(
+                   self.request,
+                   f'Successfully linked to student: {student.get_full_name()}'
+               )
+               return super().form_valid(form)
+
+           except User.DoesNotExist:
+               messages.error(
+                   self.request,
+                   'Student not found. Please check the ID or verification code.'
+               )
+               return self.form_invalid(form)
+   ```
+
+3. Create URL patterns:
+   ```python
+   # apps/parents/urls.py
+   from django.urls import path
+   from apps.parents import views
+
+   app_name = 'parents'
+
+   urlpatterns = [
+       path('register/', views.ParentRegistrationView.as_view(), name='register'),
+       path('registration-success/',
+            views.RegistrationSuccessView.as_view(),
+            name='registration-success'),
+       path('link-student/', views.LinkStudentView.as_view(), name='link-student'),
+   ]
+   ```
+
+4. Include in main URLs:
+   ```python
+   # config/urls.py
+   urlpatterns = [
+       ...
+       path('parents/', include('apps.parents.urls')),
+       ...
+   ]
+   ```
+
+5. Create registration templates (basic structure):
+   ```html
+   <!-- templates/parents/register.html -->
+   {% extends "base.html" %}
+   {% load crispy_forms_tags %}
+
+   {% block content %}
+   <div class="max-w-md mx-auto mt-8">
+       <h1 class="text-2xl font-bold mb-4">Parent Registration</h1>
+       <form method="post" class="space-y-4">
+           {% csrf_token %}
+           {{ form|crispy }}
+           <button type="submit" class="btn btn-primary">Register</button>
+       </form>
+   </div>
+   {% endblock %}
+   ```
+
+6. Test registration workflow:
+   - Test parent registration form validation
+   - Test student linking process
+   - Test error handling (duplicate registration, invalid student ID)
+   - Verify parent role assignment
+   - Verify email verification flow (when implemented)
+
+## Acceptance Criteria:
+- Parent registration form created with validation
+- Email verification workflow implemented
+- Student linking process created (via student ID or verification code)
+- Registration views and URLs configured
+- Registration templates created (signup, verify email, link student)
+- Success/error messages implemented
+- Parent role automatically assigned on registration
+- Admin can manually create parent accounts
+- Registration tested with complete workflow
+
+## Files Modified:
+- `src/apps/parents/forms.py (new file)`
+- `src/apps/parents/views.py`
+- `src/apps/parents/urls.py (new file)`
+- `src/apps/parents/templates/parents/register.html (new file)`
+- `src/apps/parents/templates/parents/registration_success.html (new file)`
+- `src/apps/parents/templates/parents/link_student.html (new file)`
+- `src/config/urls.py`
+
+## Important Notes:
+- Email verification to be implemented with django-allauth or similar
+- Verification codes should be generated by school admins
+- Consider security: prevent parents from linking to any student without verification
+- Student ID lookup may use different field (student_number vs username)
+- Support both self-registration and admin-created accounts
+- Bilingual support (English/Malay) for forms and messages
+- Estimate: 90 minutes
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection
+6. Login to Django admin as superuser
+7. Verify models appear in admin interface
+8. Test create, read, update, delete operations
+9. Verify list display, filters, and search work

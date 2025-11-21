@@ -1,0 +1,326 @@
+# Task ID: 091
+# Title: Update Program-Related Templates and Text
+# Status: pending
+# Dependencies: 090
+# Priority: medium
+# Description: Update existing program-related templates to use educational context terminology. Replace ministry-focused text with education-focused text using cont
+
+# Details:
+Update existing program-related templates to use educational context terminology. Replace ministry-focused text with education-focused text using context variables. Ensure consistent branding across all program templates.
+
+## Implementation Steps:
+1. Find all existing program-related templates:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   find apps/services/templates -name "*.html" -type f
+   find apps/core/templates -name "*program*.html" -type f
+   ```
+2. Review and update program_list.html if it exists:
+   ```bash
+   # Check if file exists
+   if [ -f apps/services/templates/services/program_list.html ]; then
+       echo "File exists, needs updating"
+       # Backup first
+       cp apps/services/templates/services/program_list.html \
+          apps/services/templates/services/program_list.html.backup
+   else
+       echo "File does not exist, will use program_catalog.html"
+   fi
+   ```
+3. Update public_program_list.html if it exists:
+   ```bash
+   if [ -f apps/services/templates/services/public_program_list.html ]; then
+       cat apps/services/templates/services/public_program_list.html
+   fi
+   ```
+4. Check for hardcoded ministry references:
+   ```bash
+   grep -r "Ministry Program" apps/services/templates/ apps/core/templates/core/*program*.html 2>/dev/null || echo "No files found"
+   grep -r "BM Parliament" apps/services/templates/ 2>/dev/null || echo "No references found"
+   ```
+5. Update ministry_program_detail_new.html in core templates:
+   ```bash
+   if [ -f apps/core/templates/core/ministry_program_detail_new.html ]; then
+       # This template should be deprecated or updated
+       echo "Found ministry_program_detail_new.html - needs update"
+       cat apps/core/templates/core/ministry_program_detail_new.html | head -50
+   fi
+   ```
+6. Update fahaniecares_program_detail.html if it exists:
+   ```bash
+   if [ -f apps/core/templates/core/fahaniecares_program_detail.html ]; then
+       echo "Found fahaniecares_program_detail.html"
+       # This might be legacy and can be archived
+   fi
+   ```
+7. Create/update enrollment_detail.html template:
+   ```bash
+   cat > apps/services/templates/services/enrollment_detail.html << 'EOF'
+   {% extends 'base.html' %}
+
+   {% block title %}Enrollment Details - {{ SYSTEM_NAME }}{% endblock %}
+
+   {% block content %}
+   <div class="container mt-4">
+       <nav aria-label="breadcrumb">
+           <ol class="breadcrumb">
+               <li class="breadcrumb-item"><a href="{% url 'services:my_enrollments' %}">My Enrollments</a></li>
+               <li class="breadcrumb-item active">{{ enrollment.program.title }}</li>
+           </ol>
+       </nav>
+
+       <div class="row">
+           <div class="col-lg-8">
+               <h1>{{ enrollment.program.title }}</h1>
+               <p class="lead">{{ enrollment.program.get_program_category_display }}</p>
+
+               <!-- Status Card -->
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h4>Application Status</h4>
+                       <p>
+                           <strong>Current Status:</strong>
+                           <span class="badge
+                               {% if enrollment.status == 'pending' %}bg-warning
+                               {% elif enrollment.status == 'approved' %}bg-info
+                               {% elif enrollment.status == 'enrolled' %}bg-primary
+                               {% elif enrollment.status == 'completed' %}bg-success
+                               {% elif enrollment.status == 'rejected' %}bg-danger
+                               {% endif %}">
+                               {{ enrollment.get_status_display }}
+                           </span>
+                       </p>
+
+                       <div class="row">
+                           <div class="col-md-6">
+                               <p class="mb-1"><strong>Applied:</strong> {{ enrollment.application_date|date:"M d, Y" }}</p>
+                               {% if enrollment.approval_date %}
+                               <p class="mb-1"><strong>Approved:</strong> {{ enrollment.approval_date|date:"M d, Y" }}</p>
+                               {% endif %}
+                               {% if enrollment.enrollment_date %}
+                               <p class="mb-1"><strong>Enrolled:</strong> {{ enrollment.enrollment_date|date:"M d, Y" }}</p>
+                               {% endif %}
+                               {% if enrollment.completion_date %}
+                               <p class="mb-1"><strong>Completed:</strong> {{ enrollment.completion_date|date:"M d, Y" }}</p>
+                               {% endif %}
+                           </div>
+                           <div class="col-md-6">
+                               {% if enrollment.approved_by %}
+                               <p class="mb-1"><strong>Approved By:</strong> {{ enrollment.approved_by.get_full_name }}</p>
+                               {% endif %}
+                               {% if enrollment.performance_rating %}
+                               <p class="mb-1"><strong>Performance:</strong> {{ enrollment.get_performance_rating_display }}</p>
+                               {% endif %}
+                           </div>
+                       </div>
+
+                       {% if enrollment.rejection_reason %}
+                       <div class="alert alert-danger mt-3">
+                           <strong>Rejection Reason:</strong> {{ enrollment.rejection_reason }}
+                       </div>
+                       {% endif %}
+                   </div>
+               </div>
+
+               <!-- Progress Card -->
+               {% if enrollment.status == 'enrolled' or enrollment.status == 'completed' %}
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h4>Progress</h4>
+                       <div class="mb-3">
+                           <label>Overall Progress: {{ enrollment.progress_percentage }}%</label>
+                           <div class="progress" style="height: 25px;">
+                               <div class="progress-bar
+                                   {% if enrollment.progress_percentage == 100 %}bg-success
+                                   {% elif enrollment.progress_percentage >= 75 %}bg-info
+                                   {% elif enrollment.progress_percentage >= 50 %}bg-warning
+                                   {% else %}bg-danger{% endif %}"
+                                    role="progressbar"
+                                    style="width: {{ enrollment.progress_percentage }}%;"
+                                    aria-valuenow="{{ enrollment.progress_percentage }}"
+                                    aria-valuemin="0"
+                                    aria-valuemax="100">
+                                   {{ enrollment.progress_percentage }}%
+                               </div>
+                           </div>
+                       </div>
+
+                       {% if enrollment.attendance_rate %}
+                       <p><strong>Attendance Rate:</strong> {{ enrollment.attendance_rate }}%</p>
+                       {% endif %}
+
+                       <p><strong>Requirements Completed:</strong> {{ requirements_progress }}%</p>
+                   </div>
+               </div>
+               {% endif %}
+
+               <!-- Requirements Tracking -->
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h4>Requirements</h4>
+
+                       {% for req_type, statuses in requirement_statuses.items %}
+                           {% if statuses %}
+                           <h5 class="mt-3">{{ req_type|title }} Requirements</h5>
+                           <div class="list-group">
+                               {% for status in statuses %}
+                               <div class="list-group-item">
+                                   <div class="d-flex w-100 justify-content-between">
+                                       <h6 class="mb-1">
+                                           {% if status.is_met %}
+                                           <i class="bi bi-check-circle-fill text-success"></i>
+                                           {% else %}
+                                           <i class="bi bi-circle text-muted"></i>
+                                           {% endif %}
+                                           {{ status.requirement.title }}
+                                           {% if status.requirement.is_mandatory %}
+                                           <span class="badge bg-danger">Required</span>
+                                           {% endif %}
+                                       </h6>
+                                       {% if status.is_met %}
+                                       <small class="text-success">Verified</small>
+                                       {% else %}
+                                       <small class="text-muted">Pending</small>
+                                       {% endif %}
+                                   </div>
+                                   <p class="mb-1 small">{{ status.requirement.description }}</p>
+                                   {% if status.verification_date %}
+                                   <small class="text-muted">
+                                       Verified on {{ status.verification_date|date:"M d, Y" }}
+                                       by {{ status.verified_by.get_full_name }}
+                                   </small>
+                                   {% endif %}
+                                   {% if status.notes %}
+                                   <p class="mb-0 small text-info"><em>{{ status.notes }}</em></p>
+                                   {% endif %}
+                               </div>
+                               {% endfor %}
+                           </div>
+                           {% endif %}
+                       {% endfor %}
+                   </div>
+               </div>
+
+               <!-- Application Details -->
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h4>Application Details</h4>
+                       {% if enrollment.application_notes %}
+                       <p><strong>Application Statement:</strong></p>
+                       <p>{{ enrollment.application_notes }}</p>
+                       {% endif %}
+
+                       {% if enrollment.submitted_documents %}
+                       <p>
+                           <strong>Submitted Documents:</strong>
+                           <a href="{{ enrollment.submitted_documents.url }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                               <i class="bi bi-file-earmark-arrow-down"></i> Download
+                           </a>
+                       </p>
+                       {% endif %}
+
+                       {% if enrollment.notes %}
+                       <div class="alert alert-info">
+                           <strong>Notes:</strong> {{ enrollment.notes }}
+                       </div>
+                       {% endif %}
+                   </div>
+               </div>
+           </div>
+
+           <div class="col-lg-4">
+               <!-- Program Info Card -->
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h5>Program Information</h5>
+                       <p><strong>Category:</strong> {{ enrollment.program.get_program_category_display }}</p>
+                       <p><strong>Duration:</strong><br>
+                          {{ enrollment.program.start_date|date:"M d, Y" }} -
+                          {{ enrollment.program.end_date|date:"M d, Y" }}</p>
+                       {% if enrollment.program.program_coordinator %}
+                       <p><strong>Coordinator:</strong><br>{{ enrollment.program.program_coordinator.get_full_name }}</p>
+                       {% endif %}
+                       <a href="{% url 'services:program_detail' enrollment.program.slug %}" class="btn btn-outline-primary btn-sm">
+                           View Program Details
+                       </a>
+                   </div>
+               </div>
+
+               <!-- Actions Card -->
+               {% if user.is_staff %}
+               <div class="card">
+                   <div class="card-body">
+                       <h5>Administrative Actions</h5>
+                       <a href="{% url 'admin:services_programenrollment_change' enrollment.pk %}" class="btn btn-primary w-100 mb-2">
+                           Edit in Admin
+                       </a>
+                   </div>
+               </div>
+               {% endif %}
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   EOF
+   ```
+8. Update context processor to include program-related variables:
+   ```bash
+   # Check if branding context processor exists
+   grep -n "PROGRAM_LABEL" apps/core/context_processors.py || echo "Add PROGRAM_LABEL to context processor"
+   ```
+9. Search and replace any remaining ministry-specific text:
+   ```bash
+   # Create a script to find all ministry references
+   cat > /tmp/check_ministry_refs.sh << 'EOF'
+   #!/bin/bash
+   echo "Checking for ministry-specific text in program templates..."
+   grep -r "Ministry Program" apps/services/templates/ 2>/dev/null | grep -v ".backup" | grep -v "binary"
+   grep -r "Ministry Project" apps/services/templates/ 2>/dev/null | grep -v ".backup" | grep -v "binary"
+   grep -r "BM Parliament" apps/services/templates/ 2>/dev/null | grep -v ".backup" | grep -v "binary"
+   echo "Done."
+   EOF
+   chmod +x /tmp/check_ministry_refs.sh
+   bash /tmp/check_ministry_refs.sh
+   ```
+10. Verify all templates render without errors:
+    ```bash
+    python manage.py check --deploy
+    ```
+
+## Acceptance Criteria:
+- Existing program templates identified
+- Text updated for educational context
+- Context variables used where appropriate
+- Template inheritance maintained
+- Static text replaced with dynamic text
+- All templates validated
+- Broken links fixed
+- Images/icons updated if needed
+- Templates tested in browser
+- No hardcoded "Ministry" references remain
+
+## Files Modified:
+- `src/apps/services/templates/services/program_list.html (updated)`
+- `src/apps/services/templates/services/public_program_list.html (updated)`
+- `src/apps/services/templates/services/enrollment_detail.html (new/updated)`
+- `src/apps/core/templates/core/ministry_program_detail_new.html (deprecated or updated)`
+- `src/apps/core/context_processors.py (updated if needed)`
+
+## Important Notes:
+- Replace "Ministry Program" with "Educational Program" or just "Program"
+- Replace "Ministry Project" with "Educational Project"
+- Use context variables like {{ SYSTEM_NAME }} for consistency
+- Keep templates DRY (Don't Repeat Yourself) by using template inheritance
+- Ensure all URLs are updated to new URL patterns
+- Old ministry-specific templates can be moved to archive folder
+- Test all templates in browser with real data
+- Check both authenticated and anonymous user views
+- Ensure responsive design is maintained
+- Update any inline help text or instructions
+- Estimate: 50 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable

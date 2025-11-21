@@ -1,0 +1,136 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Create Task - Staff Management{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-primary-800">Create New Task</h1>
+            <p class="text-gray-600 mt-1">Assign a new task to staff member</p>
+        </div>
+        <div class="flex gap-3">
+            {% include 'components/atoms/button.html' with variant='outline' text='Cancel' href='/staff/tasks/' %}
+        </div>
+    </div>
+
+    <!-- Task Form -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="title" class="block text-sm font-medium text-gray-700 mb-2">Task Title *</label>
+                        <input type="text" name="title" id="title" required 
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    
+                    <div>
+                        <label for="assigned_to" class="block text-sm font-medium text-gray-700 mb-2">Assign To *</label>
+                        <select name="assigned_to" id="assigned_to" required 
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Select Staff Member</option>
+                            {% for staff in staff_list %}
+                            <option value="{{ staff.id }}">{{ staff.full_name }} - {{ staff.position }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="category" class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                        <select name="category" id="category" 
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">Priority *</label>
+                        <select name="priority" id="priority" required 
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="">Select Priority</option>
+                            <option value="urgent">Urgent</option>
+                            <option value="high">High</option>
+                            <option value="medium">Medium</option>
+                            <option value="low">Low</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Right Column -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="due_date" class="block text-sm font-medium text-gray-700 mb-2">Due Date</label>
+                        <input type="datetime-local" name="due_date" id="due_date" 
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    
+                    <div>
+                        <label for="estimated_hours" class="block text-sm font-medium text-gray-700 mb-2">Estimated Hours</label>
+                        <input type="number" name="estimated_hours" id="estimated_hours" step="0.5" min="0" 
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                    </div>
+                    
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Initial Status</label>
+                        <select name="status" id="status" 
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            <option value="pending">Pending</option>
+                            <option value="in_progress">In Progress</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="depends_on" class="block text-sm font-medium text-gray-700 mb-2">Depends On (Optional)</label>
+                        <select name="depends_on" id="depends_on" multiple 
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                            {% for task in existing_tasks %}
+                            <option value="{{ task.id }}">{{ task.title }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Hold Ctrl/Cmd to select multiple tasks</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Description -->
+            <div class="mt-6">
+                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                <textarea name="description" id="description" rows="4" 
+                          class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                          placeholder="Provide detailed description of the task..."></textarea>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 mt-6 pt-6 border-t">
+                <a href="{% url 'staff:task_list' %}" 
+                   class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary-500">
+                    Cancel
+                </a>
+                {% include 'components/atoms/button.html' with variant='primary' text='Create Task' type='submit' %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-set due date to one week from now
+document.addEventListener('DOMContentLoaded', function() {
+    const dueDateInput = document.getElementById('due_date');
+    if (dueDateInput && !dueDateInput.value) {
+        const oneWeekFromNow = new Date();
+        oneWeekFromNow.setDate(oneWeekFromNow.getDate() + 7);
+        oneWeekFromNow.setHours(17, 0, 0, 0); // Set to 5 PM
+        dueDateInput.value = oneWeekFromNow.toISOString().slice(0, 16);
+    }
+});
+</script>
+{% endblock %}

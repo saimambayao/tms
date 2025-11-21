@@ -1,0 +1,64 @@
+# Task ID: 009
+# Title: Update Static Files - Logos and Favicons
+# Status: pending
+# Dependencies: 008
+# Priority: medium
+# Description: Replace BM Parliament logos, favicons, and branding images with Tarbiyyah Management System branding. Prepare placeholder images if final logos not re
+
+# Details:
+Replace BM Parliament logos, favicons, and branding images with Tarbiyyah Management System branding. Prepare placeholder images if final logos not ready.
+
+## Implementation Steps:
+1. Identify all logo/branding files:
+   ```bash
+   find /Users/saidamenmambayao/apps/madaris-ms/src/static -type f -name "*logo*" -o -name "*favicon*"
+   ```
+2. Create backup directory:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/static/branding_backup
+   cp src/static/images/logo* src/static/branding_backup/
+   ```
+3. Add new TMS branding files (or create placeholders):
+   - logo.png (main logo)
+   - logo-small.png (navbar)
+   - favicon.ico
+   - favicon-16x16.png
+   - favicon-32x32.png
+   - apple-touch-icon.png (180x180)
+4. Update image references in templates if paths changed
+5. Run collectstatic:
+   ```bash
+   python manage.py collectstatic --noinput
+   ```
+6. Clear browser cache and verify logos appear correctly
+
+## Acceptance Criteria:
+- All BM Parliament logos identified and backed up
+- New TMS logo files added to static directory
+- Favicon updated (16x16, 32x32, 180x180)
+- Apple touch icons updated
+- Logo displays correctly in navigation bar
+- Favicon appears in browser tab
+- No broken image links
+
+## Files Modified:
+- `src/static/images/logo.png`
+- `src/static/images/logo-small.png`
+- `src/static/favicon.ico`
+- `src/static/images/favicon-16x16.png`
+- `src/static/images/favicon-32x32.png`
+- `src/static/images/apple-touch-icon.png`
+- `src/static/branding_backup/* (backup files)`
+
+## Important Notes:
+- Use placeholder images if final branding not ready
+- Keep original aspect ratios for logos
+- Optimize image file sizes for web
+- Consider using SVG for scalable logo
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

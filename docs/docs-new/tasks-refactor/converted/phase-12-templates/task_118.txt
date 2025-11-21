@@ -1,0 +1,154 @@
+# Task ID: 118
+# Title: Update Breadcrumbs System-Wide
+# Status: pending
+# Dependencies: 117
+# Priority: medium
+# Description: Update breadcrumb navigation throughout the system to use TMS terminology and ensure consistent navigation paths across all pages.
+
+# Details:
+Update breadcrumb navigation throughout the system to use TMS terminology and ensure consistent navigation paths across all pages.
+
+## Implementation Steps:
+1. Locate breadcrumb templates:
+   ```bash
+   find /Users/saidamenmambayao/apps/madaris-ms/src -name "*breadcrumb*.html"
+   grep -r "breadcrumb" /Users/saidamenmambayao/apps/madaris-ms/src/templates --include="*.html"
+   ```
+2. Review breadcrumb component:
+   ```bash
+   # Common location
+   cat /Users/saidamenmambayao/apps/madaris-ms/src/templates/components/breadcrumbs.html
+   ```
+3. Update breadcrumb terminology:
+   ```html
+   <!-- Before -->
+   <nav aria-label="breadcrumb">
+     <ol class="breadcrumb">
+       <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+       <li class="breadcrumb-item"><a href="{% url 'chapters:chapter-list' %}">Chapters</a></li>
+       <li class="breadcrumb-item active">Chapter Detail</li>
+     </ol>
+   </nav>
+
+   <!-- After -->
+   <nav aria-label="breadcrumb">
+     <ol class="breadcrumb">
+       <li class="breadcrumb-item"><a href="{% url 'home' %}">Home</a></li>
+       <li class="breadcrumb-item"><a href="{% url 'chapters:madrasah-list' %}">Madaris</a></li>
+       <li class="breadcrumb-item active">{{ madrasah.name }}</li>
+     </ol>
+   </nav>
+   ```
+4. Create breadcrumb context processor (if not exists):
+   ```python
+   # apps/core/context_processors.py
+   def breadcrumbs_context(request):
+       """Provides breadcrumb navigation data"""
+       breadcrumbs = []
+
+       # Always include home
+       breadcrumbs.append({
+           'label': 'Home',
+           'url': reverse('home'),
+           'active': False
+       })
+
+       # Add path-specific breadcrumbs
+       # (Logic based on current URL)
+
+       return {'breadcrumbs': breadcrumbs}
+   ```
+5. Update breadcrumbs for each major section:
+   - **Madaris**: Home > Madaris > [Madrasah Name]
+   - **Students**: Home > Students > [Student Name]
+   - **Asatidz**: Home > Teachers > [Teacher Name]
+   - **Curriculum**: Home > Curriculum > [Subject]
+   - **Academics**: Home > Academics > Classes/Grades/Attendance
+   - **Programs**: Home > Programs > [Program Name]
+   - **Parent Portal**: Home > Parent Portal > [Child Name]
+6. Add structured data for breadcrumbs (SEO):
+   ```html
+   <script type="application/ld+json">
+   {
+     "@context": "https://schema.org",
+     "@type": "BreadcrumbList",
+     "itemListElement": [
+       {
+         "@type": "ListItem",
+         "position": 1,
+         "name": "Home",
+         "item": "{{ request.scheme }}://{{ request.get_host }}/"
+       },
+       {
+         "@type": "ListItem",
+         "position": 2,
+         "name": "Madaris",
+         "item": "{{ request.scheme }}://{{ request.get_host }}{% url 'chapters:madrasah-list' %}"
+       }
+     ]
+   }
+   </script>
+   ```
+7. Test breadcrumb navigation on all pages:
+   - Click each breadcrumb link
+   - Verify correct page loads
+   - Check active state styling
+8. Verify mobile responsiveness:
+   ```bash
+   # Test on mobile viewports
+   # Breadcrumbs should truncate or collapse on small screens
+   ```
+9. Update breadcrumb styling (if needed):
+   - Ensure consistent font sizes
+   - Check color contrast (accessibility)
+   - Verify separator icons display correctly
+10. Document breadcrumb patterns:
+    ```markdown
+    # Breadcrumb Patterns
+
+    ## Madaris
+    - List: Home > Madaris
+    - Detail: Home > Madaris > [Madrasah Name]
+    - Edit: Home > Madaris > [Madrasah Name] > Edit
+    - Enroll: Home > Madaris > [Madrasah Name] > Enroll Student
+
+    ## Students
+    - List: Home > Students
+    - Detail: Home > Students > [Student Name]
+    - Edit: Home > Students > [Student Name] > Edit
+    ```
+
+## Acceptance Criteria:
+- All breadcrumb templates updated with TMS terms
+- Breadcrumb structure consistent across apps
+- "Home" > "Madaris" > "Madrasah Detail" paths correct
+- Parent-child relationships clear in breadcrumbs
+- Arabic terms displayed correctly in breadcrumbs
+- Mobile-responsive breadcrumb design verified
+- Breadcrumb schema markup updated (SEO)
+
+## Files Modified:
+- `src/templates/components/breadcrumbs.html`
+- `src/apps/core/context_processors.py (create or update)`
+- `src/apps/chapters/templates/chapters/*.html (madaris templates)`
+- `src/apps/constituents/templates/constituents/*.html (student templates)`
+- `src/apps/teachers/templates/teachers/*.html (asatidz templates)`
+- `src/apps/curriculum/templates/curriculum/*.html`
+- `src/apps/academics/templates/academics/*.html`
+- `src/apps/services/templates/services/*.html (programs)`
+- `src/config/settings/base.py (add context processor)`
+
+## Important Notes:
+- Breadcrumbs improve user navigation and SEO
+- Keep breadcrumb trails short (max 4-5 levels)
+- Use clear, descriptive labels
+- Maintain consistent separator styling
+- Ensure screen reader accessibility
+- Test with Django Debug Toolbar for query optimization
+- Estimate: 75 minutes
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

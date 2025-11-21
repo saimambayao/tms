@@ -1,0 +1,95 @@
+# Task ID: 025
+# Title: Verify Phase 2 Role System Complete
+# Status: pending
+# Dependencies: 016, 017, 018, 019, 020, 021, 022, 023, 024
+# Priority: high
+# Description: Comprehensive verification that Phase 2 role system is complete and functional. All new roles should work end-to-end with proper permissions and acces
+
+# Details:
+Comprehensive verification that Phase 2 role system is complete and functional. All new roles should work end-to-end with proper permissions and access control.
+
+## Implementation Steps:
+1. Verify roles in database:
+   ```bash
+   python manage.py shell
+   from apps.users.models import User
+   # Should show all new roles
+   print(User.Role.choices)
+   # Should be 0
+   print(User.objects.filter(role='coordinator').count())
+   ```
+2. Test user creation with each role:
+   ```bash
+   python manage.py createsuperuser --username test_super
+   # Then via Django admin, create users with each role
+   ```
+3. Test dashboard routing:
+   - Login as tarbiyyah_admin → should route to tarbiyyah_dashboard
+   - Login as madrasah_admin → should route to madrasah_admin_dashboard
+   - Login as asatidz → should route to teacher_dashboard
+   - Login as student → should route to student_dashboard
+   - Login as parent → should route to parent_dashboard
+4. Test access control:
+   - As student, try to access `/dashboards/tarbiyyah/` → should get 403
+   - As asatidz, try to access teacher dashboard → should work
+   - As madrasah_admin, try to access system settings → should get 403
+5. Run all tests:
+   ```bash
+   python manage.py test apps.users
+   # All tests should pass
+   ```
+6. Check migrations are applied:
+   ```bash
+   python manage.py showmigrations users
+   # All migrations should have [X]
+   ```
+7. Verify templates show new role names:
+   - Check user profile page
+   - Check user list page
+   - Check admin interface
+   - No "Coordinator" text should appear (except in old data)
+8. Check permission mappings:
+   ```python
+   from apps.users.permissions import ROLE_PERMISSIONS
+   print(ROLE_PERMISSIONS['tarbiyyah_admin'])
+   print(ROLE_PERMISSIONS['asatidz'])
+   # Verify permissions are defined
+   ```
+9. Test role-based form filters:
+   - Login as madrasah_admin
+   - Try to create user → should only see asatidz, student, parent roles
+   - Login as tarbiyyah_admin
+   - Try to create user → should see all roles except superuser
+10. Review error logs:
+    ```bash
+    tail -f logs/django.log
+    # Should be no permission errors
+    ```
+
+## Acceptance Criteria:
+- All 6 new roles exist in database
+- Migration renamed coordinator to madrasah_admin
+- Role permissions properly enforced
+- Dashboard routing works for each role
+- Forms show appropriate role choices
+- Templates display correct role labels
+- Access control decorators work
+- All role tests pass
+- Sample users created for each role
+- No errors in logs
+
+## Files Modified:
+- `None - verification task only`
+
+## Important Notes:
+- This is a critical checkpoint before Phase 3 (model renaming)
+- All issues must be resolved before proceeding
+- Document any edge cases discovered
+- Phase 2 changes are database-level (migrations applied)
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control

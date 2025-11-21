@@ -1,0 +1,24 @@
+{% extends "base/base.html" %}
+
+{% block title %}Cooperatives{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6">Cooperatives</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for cooperative in cooperatives %}
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h2 class="text-xl font-semibold mb-2">
+                <a href="{% url 'cooperatives:cooperative-detail' cooperative.pk %}" class="text-blue-600 hover:underline">
+                    {{ cooperative.name }}
+                </a>
+            </h2>
+            <p class="text-gray-600">{{ cooperative.cooperative_type }}</p>
+            <p class="text-gray-600">{{ cooperative.address }}, {{ cooperative.municipality }}</p>
+        </div>
+        {% empty %}
+        <p>No active cooperatives found.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,67 @@
+# Task ID: 031
+# Title: Add Madrasah-Specific Fields - Basic Info
+# Status: pending
+# Dependencies: 030
+# Priority: medium
+# Description: Add madrasah-specific fields to Madrasah model: name_arabic, school_code, madrasah_types (JSONField).
+
+# Details:
+Add madrasah-specific fields to Madrasah model: name_arabic, school_code, madrasah_types (JSONField).
+
+## Implementation Steps:
+1. Add fields to Madrasah model:
+   ```python
+   class Madrasah(models.Model):
+       name = CharField(max_length=255)
+       name_arabic = CharField(max_length=255, blank=True, help_text="Arabic name of madrasah")
+       school_code = CharField(max_length=50, unique=True, help_text="Unique school code (e.g., MAD-LDS-001)")
+
+       class MadrasahType(models.TextChoices):
+           IBTIDAIYYAH = 'ibtidaiyyah', 'Ibtidaiyyah (Elementary)'
+           IDADIYYAH = 'idadiyyah', "I'dadiyyah (Preparatory)"
+           THANAWIYYAH = 'thanawiyyah', 'Thanawiyyah (Secondary)'
+           KULLIYAH = 'kulliyah', 'Kulliyah (Tertiary)'
+           INTEGRATED = 'integrated', 'Integrated (Multi-level)'
+           TAHFIDZ = 'tahfidz', 'Tahfidz (Quran Memorization)'
+
+       madrasah_types = JSONField(
+           default=list,
+           help_text="Select one or more education levels offered"
+       )
+       ...
+   ```
+2. Create migration:
+   ```bash
+   python manage.py makemigrations chapters
+   ```
+3. Generate school codes for existing madaris:
+   ```python
+   # In migration or management command
+   for madrasah in Madrasah.objects.filter(school_code=''):
+       madrasah.school_code = f"MAD-{madrasah.province[:3].upper()}-{madrasah.id:03d}"
+       madrasah.save()
+   ```
+4. Test in admin
+
+## Acceptance Criteria:
+- name_arabic field added (CharField, blank=True)
+- school_code field added (CharField, unique=True)
+- madrasah_types field added (JSONField, default=list)
+- Migration created and tested
+- Fields appear in Django admin
+- Can create madrasah with multiple types
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_add_madrasah_basic_fields.py`
+
+## Important Notes:
+- school_code must be unique
+- madrasah_types is JSONField for multiple selections
+- Estimate: 40 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

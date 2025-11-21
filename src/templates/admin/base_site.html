@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | BM Parliament Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    #header { 
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
+    }
+    .module h2, .module caption, .inline-group h2 { 
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
+    }
+    #branding h1 { color: #fff; }
+    #branding h1 a:link, #branding h1 a:visited { color: #fff; }
+    .button, input[type=submit], input[type=button], .submit-row input, a.button { 
+        background: linear-gradient(135deg, #1e40af 0%, #059669 100%);
+    }
+    .button:hover, input[type=submit]:hover, input[type=button]:hover { 
+        background: linear-gradient(135deg, #1e3a8a 0%, #047857 100%);
+    }
+    .monitoring-link { 
+        display: inline-block; 
+        margin-left: 20px; 
+        padding: 5px 15px; 
+        background: rgba(255,255,255,0.2); 
+        border-radius: 4px; 
+        color: #fff !important;
+        text-decoration: none;
+        font-size: 13px;
+    }
+    .monitoring-link:hover { background: rgba(255,255,255,0.3); }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}">Administration</a>
+    {% if user.is_authenticated and user.is_staff %}
+    <a href="{% url 'monitoring_dashboard' %}" class="monitoring-link" target="_blank">
+        <i class="fas fa-chart-line"></i> System Monitoring
+    </a>
+    {% endif %}
+</h1>
+{% endblock %}
+
+{% block nav-global %}{% endblock %}

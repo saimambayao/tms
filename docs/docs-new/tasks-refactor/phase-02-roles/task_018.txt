@@ -1,0 +1,155 @@
+# Task ID: 018
+# Title: Update Role Permission Mappings
+# Status: pending
+# Dependencies: 017
+# Priority: high
+# Description: Update role permission mappings to include new Tarbiyyah roles (TARBIYYAH_ADMIN, MADRASAH_ADMIN, MUDER, ASATIDZ, STUDENT, PARENT). Define access level
+
+# Details:
+Update role permission mappings to include new Tarbiyyah roles (TARBIYYAH_ADMIN, MADRASAH_ADMIN, MUDER, ASATIDZ, STUDENT, PARENT). Define access levels for each role.
+
+## Implementation Steps:
+1. Locate permission configuration:
+   ```bash
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps/users -name "*permission*" -o -name "*role*"
+   grep -r "RolePermission\|ROLE_PERMISSIONS" /Users/saidamenmambayao/apps/madaris-ms/src/apps/users/
+   ```
+2. Update or create ROLE_PERMISSIONS dictionary:
+   ```python
+   # apps/users/permissions.py or models.py
+   ROLE_PERMISSIONS = {
+       'superuser': ['*'],  # All permissions
+
+       'tarbiyyah_admin': [
+           'view_all_madaris',
+           'manage_madaris',
+           'view_all_users',
+           'manage_users',
+           'view_analytics',
+           'manage_system_settings',
+           'coordinate_accreditation',  # Coordinate with MBHTE, not approve directly
+       ],
+
+       'madrasah_admin': [
+           'view_own_madrasah',
+           'manage_own_madrasah',
+           'enroll_students',
+           'assign_teachers',
+           'view_madrasah_analytics',
+           'manage_madrasah_activities',
+       ],
+
+       'muder': [
+           'view_own_madrasah',
+           'update_madrasah_info',
+           'view_teachers',
+           'view_students',
+           'approve_enrollments',
+           'create_activities',
+           'view_grades',
+       ],
+
+       'asatidz': [
+           'view_assigned_classes',
+           'manage_grades',
+           'take_attendance',
+           'create_lesson_plans',
+           'view_own_schedule',
+           'communicate_with_parents',
+       ],
+
+       'student': [
+           'view_own_profile',
+           'view_own_grades',
+           'view_own_attendance',
+           'view_class_schedule',
+       ],
+
+       'parent': [
+           'view_children_profiles',
+           'view_children_grades',
+           'view_children_attendance',
+           'communicate_with_teachers',
+       ],
+   }
+   ```
+3. Update permission checking function:
+   ```python
+   def user_has_permission(user, permission):
+       """Check if user's role has given permission"""
+       if user.role == 'superuser':
+           return True
+
+       user_permissions = ROLE_PERMISSIONS.get(user.role, [])
+
+       if '*' in user_permissions:
+           return True
+
+       return permission in user_permissions
+   ```
+4. Update middleware or decorators if they check roles
+5. Create permission checking decorator:
+   ```python
+   from functools import wraps
+   from django.core.exceptions import PermissionDenied
+
+   def role_required(*allowed_roles):
+       def decorator(view_func):
+           @wraps(view_func)
+           def wrapped(request, *args, **kwargs):
+               if request.user.role not in allowed_roles:
+                   raise PermissionDenied
+               return view_func(request, *args, **kwargs)
+           return wrapped
+       return decorator
+   ```
+6. Test permission checks in Django shell:
+   ```python
+   from apps.users.models import User
+   from apps.users.permissions import user_has_permission
+
+   admin = User.objects.get(role='tarbiyyah_admin')
+   print(user_has_permission(admin, 'manage_madaris'))  # True
+
+   student = User.objects.get(role='student')
+   print(user_has_permission(student, 'manage_madaris'))  # False
+   ```
+
+## Acceptance Criteria:
+- Permission mapping file located (likely in users app)
+- TARBIYYAH_ADMIN permissions defined (system-wide access)
+- MADRASAH_ADMIN permissions defined (school-level access)
+- MUDER permissions defined (school director access)
+- ASATIDZ permissions defined (teacher access)
+- STUDENT permissions defined (read-only, own records)
+- PARENT permissions defined (view children's records)
+- Role hierarchy enforced
+- Permission tests pass
+
+## Files Modified:
+- `src/apps/users/permissions.py (create if doesn't exist)`
+- `src/apps/users/decorators.py (update role decorators)`
+- `src/apps/users/middleware.py (update if exists)`
+
+## Important Notes:
+- Permission names are descriptive strings, not Django permissions yet
+- Will integrate with Django permissions system in later tasks
+- Focus on role-based access control (RBAC)
+- Hierarchy: higher roles inherit lower role permissions
+- 'coordinate_accreditation' for TARBIYYAH_ADMIN means coordinating with MBHTE (Ministry of Basic, Higher, and Technical Education), not approving accreditation directly
+- Accreditation is granted by MBHTE; Tarbiyyah Committee maintains records and coordinates process
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Login to Django admin as superuser
+10. Verify models appear in admin interface
+11. Test create, read, update, delete operations
+12. Verify list display, filters, and search work

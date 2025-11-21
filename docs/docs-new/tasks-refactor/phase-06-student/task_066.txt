@@ -1,0 +1,220 @@
+# Task ID: 066
+# Title: Update Foreign Key References
+# Status: pending
+# Dependencies: 065
+# Priority: high
+# Description: Update all import statements and foreign key references throughout the codebase from BMParliamentMember to Student. This includes models, views, forms
+
+# Details:
+Update all import statements and foreign key references throughout the codebase from BMParliamentMember to Student. This includes models, views, forms, serializers, and admin files.
+
+## Implementation Steps:
+1. Find all references to BMParliamentMember:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   grep -r "BMParliamentMember" --include="*.py" . > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-06-student/bmparlimentmember_references.txt
+
+   # Display summary
+   echo "Files with BMParliamentMember references:"
+   grep -l "BMParliamentMember" --include="*.py" -r .
+   ```
+2. Update model imports across all apps:
+   ```bash
+   # Update imports in models.py files
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "models.py" -exec sed -i.bak 's/from apps.constituents.models import BMParliamentMember/from apps.constituents.models import Student/g' {} \;
+
+   # Update ForeignKey references
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "models.py" -exec sed -i.bak "s/ForeignKey(BMParliamentMember/ForeignKey(Student/g" {} \;
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "models.py" -exec sed -i.bak "s/ForeignKey('BMParliamentMember'/ForeignKey('Student'/g" {} \;
+   ```
+3. Update admin.py files:
+   ```bash
+   # Update admin imports
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "admin.py" -exec sed -i.bak 's/from apps.constituents.models import BMParliamentMember/from apps.constituents.models import Student/g' {} \;
+
+   # Update admin registrations
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "admin.py" -exec sed -i.bak 's/BMParliamentMember/Student/g' {} \;
+   ```
+4. Update views.py files:
+   ```bash
+   # Update view imports
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "views.py" -exec sed -i.bak 's/from apps.constituents.models import BMParliamentMember/from apps.constituents.models import Student/g' {} \;
+
+   # Update query references
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "views.py" -exec sed -i.bak 's/BMParliamentMember\.objects/Student.objects/g' {} \;
+   ```
+5. Update forms.py files:
+   ```bash
+   # Update form imports
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "forms.py" -exec sed -i.bak 's/from apps.constituents.models import BMParliamentMember/from apps.constituents.models import Student/g' {} \;
+
+   # Update form Meta models
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "forms.py" -exec sed -i.bak 's/model = BMParliamentMember/model = Student/g' {} \;
+   ```
+6. Update serializers.py files (if DRF is used):
+   ```bash
+   # Check if serializers exist
+   if find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "serializers.py" | grep -q .; then
+       # Update serializer imports
+       find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "serializers.py" -exec sed -i.bak 's/from apps.constituents.models import BMParliamentMember/from apps.constituents.models import Student/g' {} \;
+
+       # Update serializer Meta models
+       find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "serializers.py" -exec sed -i.bak 's/model = BMParliamentMember/model = Student/g' {} \;
+   fi
+   ```
+7. Update test files:
+   ```bash
+   # Update test imports
+   find /Users/saidamenmambayao/apps/madaris-ms/src -name "test*.py" -exec sed -i.bak 's/from apps.constituents.models import BMParliamentMember/from apps.constituents.models import Student/g' {} \;
+
+   # Update test references
+   find /Users/saidamenmambayao/apps/madaris-ms/src -name "test*.py" -exec sed -i.bak 's/BMParliamentMember/Student/g' {} \;
+   ```
+8. Update management commands:
+   ```bash
+   # Update command imports
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -path "*/management/commands/*.py" -exec sed -i.bak 's/from apps.constituents.models import BMParliamentMember/from apps.constituents.models import Student/g' {} \;
+
+   # Update command references
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -path "*/management/commands/*.py" -exec sed -i.bak 's/BMParliamentMember/Student/g' {} \;
+   ```
+9. Update URL configurations:
+   ```bash
+   # Update urls.py files
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "urls.py" -exec sed -i.bak 's/bmparlimentmember/student/g' {} \;
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "urls.py" -exec sed -i.bak 's/bmparliamentmember/student/g' {} \;
+   ```
+10. Verify no references remain:
+    ```bash
+    echo "Checking for remaining BMParliamentMember references..."
+    remaining=$(grep -r "BMParliamentMember" --include="*.py" /Users/saidamenmambayao/apps/madaris-ms/src | grep -v ".bak" | wc -l)
+
+    if [ $remaining -eq 0 ]; then
+        echo "✓ All BMParliamentMember references updated to Student"
+    else
+        echo "⚠️  WARNING: $remaining references still found:"
+        grep -r "BMParliamentMember" --include="*.py" /Users/saidamenmambayao/apps/madaris-ms/src | grep -v ".bak"
+    fi
+    ```
+11. Clean up backup files:
+    ```bash
+    # Remove .bak files created by sed
+    find /Users/saidamenmambayao/apps/madaris-ms/src -name "*.py.bak" -delete
+    echo "Backup files cleaned up"
+    ```
+12. Run Python syntax check:
+    ```bash
+    cd /Users/saidamenmambayao/apps/madaris-ms/src
+    python -m py_compile apps/constituents/models.py
+    python -m py_compile apps/constituents/admin.py
+    python -m py_compile apps/constituents/views.py
+
+    echo "✓ Python syntax check passed"
+    ```
+13. Test imports in Django shell:
+    ```bash
+    python manage.py shell << 'EOF'
+    # Test new imports
+    from apps.constituents.models import Student
+    print(f"✓ Student model imported successfully")
+
+    # Verify old import fails
+    try:
+        from apps.constituents.models import BMParliamentMember
+        print("⚠️  WARNING: BMParliamentMember still importable")
+    except ImportError:
+        print("✓ BMParliamentMember import correctly fails")
+
+    # Test model functionality
+    count = Student.objects.count()
+    print(f"✓ Student.objects.count() works: {count} students")
+    EOF
+    ```
+14. Document changes:
+    ```bash
+    cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-06-student/IMPORT_UPDATE_REPORT.txt << EOF
+    Import Update Report
+    Generated: $(date)
+
+    Files updated:
+    $(grep -l "Student" --include="*.py" -r /Users/saidamenmambayao/apps/madaris-ms/src/apps | wc -l) Python files updated
+
+    Verification:
+    - Remaining BMParliamentMember references: $(grep -r "BMParliamentMember" --include="*.py" /Users/saidamenmambayao/apps/madaris-ms/src | grep -v ".bak" | wc -l)
+    - Student import test: PASSED
+    - Model functionality: VERIFIED
+
+    Updated components:
+    - Models (ForeignKey references)
+    - Admin registrations
+    - Views
+    - Forms
+    - Serializers (if applicable)
+    - Tests
+    - Management commands
+    - URL configurations
+    EOF
+    ```
+
+## Acceptance Criteria:
+- All imports updated to use Student
+- Foreign key references updated
+- Views updated
+- Forms updated
+- Serializers updated (if any)
+- Admin registrations updated
+- Tests updated
+- No references to BMParliamentMember remain
+- All apps still functional
+
+## Files Modified:
+- `src/apps/*/models.py (multiple apps)`
+- `src/apps/*/admin.py (multiple apps)`
+- `src/apps/*/views.py (multiple apps)`
+- `src/apps/*/forms.py (multiple apps)`
+- `src/apps/*/serializers.py (multiple apps, if exists)`
+- `src/apps/*/tests/*.py (multiple apps)`
+- `src/apps/*/management/commands/*.py (multiple apps)`
+- `src/apps/*/urls.py (multiple apps)`
+- `docs/docs-new/tasks-refactor/phase-06-student/IMPORT_UPDATE_REPORT.txt`
+
+## Important Notes:
+- Uses sed for bulk find-and-replace
+- Creates .bak files temporarily (cleaned up at end)
+- Updates all Python files in src/apps/
+- Preserves functionality while changing names
+- Must test thoroughly after updates
+- Estimate: 1 hour
+
+## Testing Checklist:
+- [ ] Import Student in Django shell
+- [ ] Verify BMParliamentMember import fails
+- [ ] Test admin interface loads
+- [ ] Test Student.objects queries work
+- [ ] Run existing tests
+- [ ] Check for syntax errors
+
+## Risk Mitigation:
+- ⚠️ Creates backup (.bak) files before changes
+- ⚠️ Run syntax check after updates
+- ⚠️ Test imports before proceeding
+- ⚠️ Keep git history for rollback
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Login to Django admin as superuser
+11. Verify models appear in admin interface
+12. Test create, read, update, delete operations
+13. Verify list display, filters, and search work
+14. Access view URL and verify HTTP 200 response
+15. Test with different user permissions
+16. Verify context data passed to template
+17. Test any query parameters or filters

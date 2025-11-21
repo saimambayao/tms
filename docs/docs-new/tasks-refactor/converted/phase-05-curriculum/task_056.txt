@@ -1,0 +1,516 @@
+# Task ID: 056
+# Title: Create Curriculum Forms
+# Status: pending
+# Dependencies: 052, 053, 054
+# Priority: medium
+# Description: Create Django forms for curriculum management including forms for creating and editing subjects, curriculum frameworks, and lesson plans. Forms should
+
+# Details:
+Create Django forms for curriculum management including forms for creating and editing subjects, curriculum frameworks, and lesson plans. Forms should include validation, help text, and proper widgets for a good user experience.
+
+## Implementation Steps:
+1. Create apps/curriculum/forms.py:
+   ```python
+   from django import forms
+   from django.core.exceptions import ValidationError
+   from django.utils.translation import gettext_lazy as _
+   from crispy_forms.helper import FormHelper
+   from crispy_forms.layout import Layout, Fieldset, Row, Column, Submit, HTML
+   from .models import Subject, CurriculumFramework, CurriculumSubject, LessonPlan
+
+
+   class SubjectForm(forms.ModelForm):
+       """Form for creating and editing subjects."""
+
+       class Meta:
+           model = Subject
+           fields = [
+               'code', 'name', 'name_arabic', 'description',
+               'category', 'credit_hours', 'lecture_hours', 'lab_hours',
+               'prerequisites', 'is_active', 'is_core'
+           ]
+           widgets = {
+               'code': forms.TextInput(attrs={
+                   'placeholder': 'e.g., QRN101, ARB201',
+                   'class': 'uppercase'
+               }),
+               'name': forms.TextInput(attrs={
+                   'placeholder': 'e.g., Introduction to Tajweed'
+               }),
+               'name_arabic': forms.TextInput(attrs={
+                   'placeholder': 'مقدمة في التجويد',
+                   'dir': 'rtl'
+               }),
+               'description': forms.Textarea(attrs={
+                   'rows': 4,
+                   'placeholder': 'Detailed description of the subject...'
+               }),
+               'credit_hours': forms.NumberInput(attrs={
+                   'step': '0.5',
+                   'min': '0.25',
+                   'max': '10'
+               }),
+               'lecture_hours': forms.NumberInput(attrs={
+                   'step': '0.5',
+                   'min': '0'
+               }),
+               'lab_hours': forms.NumberInput(attrs={
+                   'step': '0.5',
+                   'min': '0'
+               }),
+               'prerequisites': forms.CheckboxSelectMultiple(),
+           }
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           self.helper = FormHelper()
+           self.helper.form_method = 'post'
+           self.helper.layout = Layout(
+               Fieldset(
+                   _('Basic Information'),
+                   Row(
+                       Column('code', css_class='form-group col-md-4'),
+                       Column('category', css_class='form-group col-md-8'),
+                   ),
+                   Row(
+                       Column('name', css_class='form-group col-md-6'),
+                       Column('name_arabic', css_class='form-group col-md-6'),
+                   ),
+                   'description',
+               ),
+               Fieldset(
+                   _('Academic Details'),
+                   Row(
+                       Column('credit_hours', css_class='form-group col-md-4'),
+                       Column('lecture_hours', css_class='form-group col-md-4'),
+                       Column('lab_hours', css_class='form-group col-md-4'),
+                   ),
+                   'prerequisites',
+               ),
+               Fieldset(
+                   _('Status'),
+                   Row(
+                       Column('is_core', css_class='form-group col-md-6'),
+                       Column('is_active', css_class='form-group col-md-6'),
+                   ),
+               ),
+               Submit('submit', _('Save Subject'), css_class='btn btn-primary')
+           )
+
+       def clean_code(self):
+           """Validate and format subject code."""
+           code = self.cleaned_data.get('code', '').upper().strip()
+           if not code:
+               raise ValidationError(_('Subject code is required.'))
+           # Check for duplicate codes (excluding current instance)
+           existing = Subject.objects.filter(code=code)
+           if self.instance.pk:
+               existing = existing.exclude(pk=self.instance.pk)
+           if existing.exists():
+               raise ValidationError(_('A subject with this code already exists.'))
+           return code
+
+       def clean(self):
+           """Validate total hours."""
+           cleaned_data = super().clean()
+           credit_hours = cleaned_data.get('credit_hours', 0)
+           lecture_hours = cleaned_data.get('lecture_hours', 0)
+           lab_hours = cleaned_data.get('lab_hours', 0)
+
+           total_hours = float(lecture_hours) + float(lab_hours)
+           if total_hours > float(credit_hours) * 2:
+               raise ValidationError(
+                   _('Total contact hours cannot exceed twice the credit hours.')
+               )
+           return cleaned_data
+
+
+   class CurriculumFrameworkForm(forms.ModelForm):
+       """Form for creating and editing curriculum frameworks."""
+
+       # Additional field for easier grade level input
+       grade_levels_input = forms.CharField(
+           required=False,
+           widget=forms.Textarea(attrs={
+               'rows': 3,
+               'placeholder': 'Enter grade levels, one per line (e.g., Grade 1, Grade 2)'
+           }),
+           help_text=_('Enter grade levels, one per line')
+       )
+
+       class Meta:
+           model = CurriculumFramework
+           fields = [
+               'name', 'name_arabic', 'code', 'description',
+               'education_level', 'grade_levels',
+               'total_credit_hours', 'academic_year_structure',
+               'is_mbhte_approved', 'mbhte_approval_date',
+               'mbhte_approval_number', 'effective_date',
+               'end_date', 'is_active'
+           ]
+           widgets = {
+               'name': forms.TextInput(attrs={
+                   'placeholder': 'e.g., MBHTE Islamic Education Framework'
+               }),
+               'name_arabic': forms.TextInput(attrs={
+                   'placeholder': 'إطار التعليم الإسلامي',
+                   'dir': 'rtl'
+               }),
+               'code': forms.TextInput(attrs={
+                   'placeholder': 'e.g., MBHTE-IED-IBT-2024'
+               }),
+               'description': forms.Textarea(attrs={
+                   'rows': 4
+               }),
+               'grade_levels': forms.HiddenInput(),  # Will be populated from grade_levels_input
+               'academic_year_structure': forms.Textarea(attrs={
+                   'rows': 3,
+                   'placeholder': '{"semesters": 2, "weeks_per_semester": 18}'
+               }),
+               'mbhte_approval_date': forms.DateInput(attrs={
+                   'type': 'date'
+               }),
+               'effective_date': forms.DateInput(attrs={
+                   'type': 'date'
+               }),
+               'end_date': forms.DateInput(attrs={
+                   'type': 'date'
+               }),
+           }
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           # Populate grade_levels_input from grade_levels JSON
+           if self.instance.pk and self.instance.grade_levels:
+               self.fields['grade_levels_input'].initial = '\n'.join(
+                   self.instance.grade_levels
+               )
+
+           self.helper = FormHelper()
+           self.helper.form_method = 'post'
+           self.helper.layout = Layout(
+               Fieldset(
+                   _('Basic Information'),
+                   Row(
+                       Column('code', css_class='form-group col-md-6'),
+                       Column('education_level', css_class='form-group col-md-6'),
+                   ),
+                   Row(
+                       Column('name', css_class='form-group col-md-6'),
+                       Column('name_arabic', css_class='form-group col-md-6'),
+                   ),
+                   'description',
+               ),
+               Fieldset(
+                   _('Grade Levels'),
+                   'grade_levels_input',
+                   'grade_levels',
+               ),
+               Fieldset(
+                   _('Academic Structure'),
+                   Row(
+                       Column('total_credit_hours', css_class='form-group col-md-6'),
+                       Column('academic_year_structure', css_class='form-group col-md-6'),
+                   ),
+               ),
+               Fieldset(
+                   _('MBHTE Compliance'),
+                   'is_mbhte_approved',
+                   Row(
+                       Column('mbhte_approval_date', css_class='form-group col-md-6'),
+                       Column('mbhte_approval_number', css_class='form-group col-md-6'),
+                   ),
+               ),
+               Fieldset(
+                   _('Implementation Dates'),
+                   Row(
+                       Column('effective_date', css_class='form-group col-md-4'),
+                       Column('end_date', css_class='form-group col-md-4'),
+                       Column('is_active', css_class='form-group col-md-4'),
+                   ),
+               ),
+               Submit('submit', _('Save Framework'), css_class='btn btn-primary')
+           )
+
+       def clean_grade_levels_input(self):
+           """Convert grade levels input to list."""
+           text = self.cleaned_data.get('grade_levels_input', '')
+           if text:
+               # Split by newlines and clean up
+               levels = [line.strip() for line in text.split('\n') if line.strip()]
+               return levels
+           return []
+
+       def clean(self):
+           """Process grade levels."""
+           cleaned_data = super().clean()
+           grade_levels = self.clean_grade_levels_input()
+           if grade_levels:
+               cleaned_data['grade_levels'] = grade_levels
+           return cleaned_data
+
+
+   class LessonPlanForm(forms.ModelForm):
+       """Form for creating and editing lesson plans."""
+
+       # Helper fields for JSON data
+       learning_objectives_text = forms.CharField(
+           required=False,
+           widget=forms.Textarea(attrs={
+               'rows': 4,
+               'placeholder': 'Enter learning objectives, one per line'
+           }),
+           help_text=_('Enter each objective on a new line')
+       )
+       materials_needed_text = forms.CharField(
+           required=False,
+           widget=forms.Textarea(attrs={
+               'rows': 3,
+               'placeholder': 'Enter materials needed, one per line'
+           }),
+           help_text=_('Enter each item on a new line')
+       )
+
+       class Meta:
+           model = LessonPlan
+           fields = [
+               'title', 'subject', 'grade_level', 'madrasah',
+               'academic_year', 'semester', 'description',
+               'learning_objectives', 'content', 'teaching_methods',
+               'assessment_methods', 'materials_needed',
+               'duration_minutes', 'quranic_references',
+               'hadith_references', 'attachment',
+               'is_public', 'is_template'
+           ]
+           widgets = {
+               'title': forms.TextInput(attrs={
+                   'placeholder': 'e.g., Introduction to Tajweed Rules'
+               }),
+               'description': forms.Textarea(attrs={
+                   'rows': 3,
+                   'placeholder': 'Brief description of the lesson...'
+               }),
+               'content': forms.Textarea(attrs={
+                   'rows': 10,
+                   'placeholder': 'Detailed lesson plan content...'
+               }),
+               'teaching_methods': forms.Textarea(attrs={
+                   'rows': 4,
+                   'placeholder': 'Teaching methods and strategies...'
+               }),
+               'assessment_methods': forms.Textarea(attrs={
+                   'rows': 4,
+                   'placeholder': 'How will student learning be assessed?'
+               }),
+               'quranic_references': forms.Textarea(attrs={
+                   'rows': 3,
+                   'placeholder': 'Relevant Quranic verses...',
+                   'dir': 'rtl'
+               }),
+               'hadith_references': forms.Textarea(attrs={
+                   'rows': 3,
+                   'placeholder': 'Relevant Hadith references...',
+                   'dir': 'rtl'
+               }),
+               'learning_objectives': forms.HiddenInput(),
+               'materials_needed': forms.HiddenInput(),
+               'academic_year': forms.TextInput(attrs={
+                   'placeholder': '2024-2025'
+               }),
+               'duration_minutes': forms.NumberInput(attrs={
+                   'min': '15',
+                   'step': '15'
+               }),
+           }
+
+       def __init__(self, *args, **kwargs):
+           # Get current user for teacher field
+           self.user = kwargs.pop('user', None)
+           super().__init__(*args, **kwargs)
+
+           # Set teacher to current user if creating new
+           if self.user and not self.instance.pk:
+               self.instance.teacher = self.user
+
+           # Populate helper fields from JSON
+           if self.instance.pk:
+               if self.instance.learning_objectives:
+                   self.fields['learning_objectives_text'].initial = '\n'.join(
+                       self.instance.learning_objectives
+                   )
+               if self.instance.materials_needed:
+                   self.fields['materials_needed_text'].initial = '\n'.join(
+                       self.instance.materials_needed
+                   )
+
+           self.helper = FormHelper()
+           self.helper.form_method = 'post'
+           self.helper.form_enctype = 'multipart/form-data'
+           self.helper.layout = Layout(
+               Fieldset(
+                   _('Basic Information'),
+                   'title',
+                   Row(
+                       Column('subject', css_class='form-group col-md-6'),
+                       Column('grade_level', css_class='form-group col-md-6'),
+                   ),
+                   Row(
+                       Column('madrasah', css_class='form-group col-md-4'),
+                       Column('academic_year', css_class='form-group col-md-4'),
+                       Column('semester', css_class='form-group col-md-4'),
+                   ),
+                   'description',
+               ),
+               Fieldset(
+                   _('Learning Plan'),
+                   'learning_objectives_text',
+                   'learning_objectives',
+                   'content',
+                   Row(
+                       Column('teaching_methods', css_class='form-group col-md-6'),
+                       Column('assessment_methods', css_class='form-group col-md-6'),
+                   ),
+                   'materials_needed_text',
+                   'materials_needed',
+                   'duration_minutes',
+               ),
+               Fieldset(
+                   _('Islamic Education References'),
+                   Row(
+                       Column('quranic_references', css_class='form-group col-md-6'),
+                       Column('hadith_references', css_class='form-group col-md-6'),
+                   ),
+               ),
+               Fieldset(
+                   _('Attachments & Options'),
+                   'attachment',
+                   Row(
+                       Column('is_public', css_class='form-group col-md-6'),
+                       Column('is_template', css_class='form-group col-md-6'),
+                   ),
+               ),
+               Submit('submit', _('Save Lesson Plan'), css_class='btn btn-primary')
+           )
+
+       def clean_learning_objectives_text(self):
+           """Convert text to list."""
+           text = self.cleaned_data.get('learning_objectives_text', '')
+           if text:
+               return [line.strip() for line in text.split('\n') if line.strip()]
+           return []
+
+       def clean_materials_needed_text(self):
+           """Convert text to list."""
+           text = self.cleaned_data.get('materials_needed_text', '')
+           if text:
+               return [line.strip() for line in text.split('\n') if line.strip()]
+           return []
+
+       def clean(self):
+           """Process JSON fields."""
+           cleaned_data = super().clean()
+           # Convert text fields to JSON
+           objectives = self.clean_learning_objectives_text()
+           if objectives:
+               cleaned_data['learning_objectives'] = objectives
+           materials = self.clean_materials_needed_text()
+           if materials:
+               cleaned_data['materials_needed'] = materials
+           return cleaned_data
+   ```
+
+2. Create form tests in apps/curriculum/tests.py:
+   ```python
+   from django.test import TestCase
+   from apps.curriculum.forms import SubjectForm, CurriculumFrameworkForm, LessonPlanForm
+   from apps.curriculum.models import Subject
+
+
+   class SubjectFormTest(TestCase):
+       def test_valid_subject_form(self):
+           """Test form with valid data."""
+           form_data = {
+               'code': 'QRN101',
+               'name': 'Introduction to Tajweed',
+               'category': 'tajweed',
+               'credit_hours': 3.0,
+               'is_core': True,
+               'is_active': True,
+           }
+           form = SubjectForm(data=form_data)
+           self.assertTrue(form.is_valid())
+
+       def test_duplicate_code(self):
+           """Test form rejects duplicate codes."""
+           Subject.objects.create(
+               code='QRN101',
+               name='Test Subject',
+               category='quran',
+               credit_hours=3.0
+           )
+           form_data = {
+               'code': 'QRN101',
+               'name': 'Another Subject',
+               'category': 'quran',
+               'credit_hours': 3.0,
+           }
+           form = SubjectForm(data=form_data)
+           self.assertFalse(form.is_valid())
+           self.assertIn('code', form.errors)
+   ```
+
+3. Test forms in Django shell:
+   ```python
+   from apps.curriculum.forms import SubjectForm, CurriculumFrameworkForm, LessonPlanForm
+
+   # Test SubjectForm
+   form = SubjectForm(data={
+       'code': 'QRN101',
+       'name': 'Test Subject',
+       'category': 'quran',
+       'credit_hours': 3.0,
+       'is_core': True,
+       'is_active': True
+   })
+   print(form.is_valid())
+   if form.is_valid():
+       subject = form.save()
+       print(f"Created: {subject}")
+   ```
+
+4. Run tests:
+   ```bash
+   python manage.py test apps.curriculum.tests
+   ```
+
+## Acceptance Criteria:
+- SubjectForm created with validation
+- CurriculumFrameworkForm created with custom widgets
+- LessonPlanForm created with file upload support
+- Forms use crispy forms for styling
+- Custom validation methods implemented
+- Help text and placeholders added
+- Forms tested with valid and invalid data
+
+## Files Modified:
+- `apps/curriculum/forms.py (new file)`
+- `apps/curriculum/tests.py (add form tests)`
+
+## Important Notes:
+- Forms use crispy-forms for consistent styling
+- JSON fields have helper text fields for better UX
+- Custom validation ensures data integrity
+- Forms support both creation and editing
+- RTL support for Arabic text fields
+- Estimate: 2.5 hours
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection
+6. Review planning documentation
+7. Verify all risks identified
+8. Confirm rollback procedures documented
+9. Ensure dependencies are mapped

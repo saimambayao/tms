@@ -1,0 +1,104 @@
+# Task ID: 117
+# Title: Audit Templates for Parliamentary Terms
+# Status: pending
+# Dependencies: 11
+# Priority: high
+# Description: Comprehensive audit of all Django templates to identify and remove any remaining parliamentary terminology. Replace with appropriate TMS educational t
+
+# Details:
+Comprehensive audit of all Django templates to identify and remove any remaining parliamentary terminology. Replace with appropriate TMS educational terminology.
+
+## Implementation Steps:
+1. Search for parliamentary terms in templates:
+   ```bash
+   grep -r "BM Parliament" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html"
+   grep -r "parliament" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" -i
+   grep -r "constituent" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" -i
+   grep -r "chapter" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" -i
+   grep -r "coordinator" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" -i
+   ```
+2. Create audit report document:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/phase-12-audit
+   touch /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/phase-12-audit/TEMPLATE_AUDIT_REPORT.md
+   ```
+3. Document all findings:
+   - Template file path
+   - Line number
+   - Current text
+   - Replacement text
+   - Priority (high/medium/low)
+4. Replace parliamentary terminology:
+   ```bash
+   # Replace "BM Parliament" with "Tarbiyyah Management System"
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "*.html" -exec sed -i '' 's/BM Parliament/Tarbiyyah Management System/g' {} +
+
+   # Replace "Parliament Member" with "Student"
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "*.html" -exec sed -i '' 's/Parliament Member/Student/g' {} +
+
+   # Replace "Chapter Coordinator" with "Madrasah Administrator"
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "*.html" -exec sed -i '' 's/Chapter Coordinator/Madrasah Administrator/g' {} +
+   ```
+5. Check base templates specifically:
+   ```bash
+   # Base template files
+   find /Users/saidamenmambayao/apps/madaris-ms/src/templates -name "base*.html"
+   # Review each for terminology
+   ```
+6. Update page titles and headers:
+   - Check all {% block title %} sections
+   - Update h1, h2, h3 headings
+   - Update page descriptions and help text
+7. Review navigation templates:
+   - navbar.html
+   - sidebar.html
+   - breadcrumbs.html
+   - footer.html
+8. Update confirmation messages:
+   - Success messages
+   - Error messages
+   - Warning messages
+   - Info messages
+9. Review email templates:
+   ```bash
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps -name "*email*.html"
+   ```
+10. Create list of manual review templates (complex cases)
+
+## Acceptance Criteria:
+- All templates scanned for parliamentary terms
+- "BM Parliament" references removed/replaced
+- "Constituent" replaced with Student/Teacher/Parent
+- "Chapter" replaced with Madrasah
+- "Member" replaced with Student
+- "Ministry" context updated to Tarbiyyah Committee
+- "Coordinator" replaced with Madrasah Admin
+- All user-facing text uses TMS terminology
+- Template audit report created
+
+## Files Modified:
+- `src/templates/base.html`
+- `src/templates/components/navbar.html`
+- `src/templates/components/breadcrumbs.html`
+- `src/templates/components/footer.html`
+- `src/apps/*/templates/*.html (100+ templates estimated)`
+- `docs/docs-new/phase-12-audit/TEMPLATE_AUDIT_REPORT.md (created)`
+
+## Important Notes:
+- Some terms may need context-specific replacement
+- Preserve technical variable names (e.g., {{ chapter_obj }})
+- Focus on user-facing text only
+- May need manual review for ambiguous cases
+- Create backup before bulk replacements
+- Test after replacements to ensure no broken templates
+- Estimate: 90 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin

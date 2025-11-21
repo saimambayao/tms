@@ -1,0 +1,295 @@
+# Task ID: 122
+# Title: Identify Unused Database Tables
+# Status: pending
+# Dependencies: 121
+# Priority: high
+# Description: Conduct a comprehensive audit of the database to identify unused tables, deprecated columns, and orphaned data. This is a READ-ONLY analysis task with
+
+# Details:
+Conduct a comprehensive audit of the database to identify unused tables, deprecated columns, and orphaned data. This is a READ-ONLY analysis task with no destructive operations. Generate a detailed report of all findings for review before any cleanup operations.
+
+## Implementation Steps:
+1. **Create Database Backup (MANDATORY)**:
+   ```bash
+   # PostgreSQL backup
+   pg_dump -h localhost -U postgres -d madaris_db \
+     -F c -b -v -f "backups/db_backup_phase13_$(date +%Y%m%d_%H%M%S).dump"
+
+   # Verify backup
+   pg_restore --list "backups/db_backup_phase13_*.dump" | head -20
+
+   # Create backup log
+   echo "Database backup created: $(date)" >> backups/BACKUP_LOG.md
+   echo "Backup size: $(du -h backups/db_backup_phase13_*.dump)" >> backups/BACKUP_LOG.md
+   ```
+
+2. **Create database analysis script**:
+   ```python
+   # scripts/analyze_database_tables.py
+   import django
+   import os
+   from django.db import connection
+   from django.apps import apps
+   from datetime import datetime
+
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   def analyze_database():
+       """Analyze database for unused tables and columns"""
+
+       results = {
+           'all_tables': [],
+           'unused_tables': [],
+           'deprecated_columns': [],
+           'table_sizes': {},
+           'orphaned_data': []
+       }
+
+       with connection.cursor() as cursor:
+           # Get all tables
+           cursor.execute("""
+               SELECT
+                   table_name,
+                   pg_size_pretty(pg_total_relation_size(quote_ident(table_name))) as size,
+                   (SELECT COUNT(*)
+                    FROM information_schema.columns
+                    WHERE table_name = t.table_name) as column_count
+               FROM information_schema.tables t
+               WHERE table_schema = 'public'
+               AND table_type = 'BASE TABLE'
+               ORDER BY pg_total_relation_size(quote_ident(table_name)) DESC;
+           """)
+
+           all_tables = cursor.fetchall()
+
+           # Get row counts for each table
+           for table, size, col_count in all_tables:
+               cursor.execute(f'SELECT COUNT(*) FROM "{table}";')
+               row_count = cursor.fetchone()[0]
+
+               results['all_tables'].append({
+                   'name': table,
+                   'size': size,
+                   'columns': col_count,
+                   'rows': row_count
+               })
+
+       # Get registered Django models
+       registered_models = set()
+       for model in apps.get_models():
+           registered_models.add(model._meta.db_table)
+
+       # Find tables not mapped to models
+       all_table_names = {t['name'] for t in results['all_tables']}
+       unmapped_tables = all_table_names - registered_models
+
+       # Filter out Django system tables
+       system_tables = {
+           'django_migrations', 'django_session', 'django_admin_log',
+           'django_content_type', 'auth_permission', 'auth_group',
+           'auth_group_permissions'
+       }
+
+       unused_tables = unmapped_tables - system_tables
+
+       for table_name in unused_tables:
+           table_info = next(t for t in results['all_tables'] if t['name'] == table_name)
+           results['unused_tables'].append({
+               'name': table_name,
+               'size': table_info['size'],
+               'rows': table_info['rows'],
+               'risk_level': 'HIGH' if table_info['rows'] > 0 else 'LOW'
+           })
+
+       # Check for deprecated columns (columns with 'old_', 'legacy_', 'deprecated_' prefix)
+       with connection.cursor() as cursor:
+           cursor.execute("""
+               SELECT table_name, column_name, data_type
+               FROM information_schema.columns
+               WHERE table_schema = 'public'
+               AND (
+                   column_name LIKE 'old_%'
+                   OR column_name LIKE 'legacy_%'
+                   OR column_name LIKE 'deprecated_%'
+                   OR column_name LIKE '%_backup'
+               )
+               ORDER BY table_name, column_name;
+           """)
+
+           for table, column, dtype in cursor.fetchall():
+               results['deprecated_columns'].append({
+                   'table': table,
+                   'column': column,
+                   'type': dtype
+               })
+
+       return results
+
+   def generate_report(results):
+       """Generate markdown report of findings"""
+
+       report = f"""# Database Analysis Report
+
+   **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+   **Phase:** 13 - Database Final Cleanup
+   **Risk Level:** MEDIUM
+
+   ---
+
+   ## Executive Summary
+
+   - **Total Tables:** {len(results['all_tables'])}
+   - **Unused Tables:** {len(results['unused_tables'])}
+   - **Deprecated Columns:** {len(results['deprecated_columns'])}
+   - **Orphaned Records:** {len(results['orphaned_data'])}
+
+   ---
+
+   ## All Database Tables
+
+   | Table Name | Size | Rows | Columns |
+   |------------|------|------|---------|
+   """
+
+       for table in results['all_tables']:
+           report += f"| {table['name']} | {table['size']} | {table['rows']:,} | {table['columns']} |\n"
+
+       report += "\n---\n\n## Unused Tables (Not Mapped to Django Models)\n\n"
+
+       if results['unused_tables']:
+           report += "| Table Name | Size | Rows | Risk Level |\n"
+           report += "|------------|------|------|------------|\n"
+
+           for table in results['unused_tables']:
+               report += f"| {table['name']} | {table['size']} | {table['rows']:,} | {table['risk_level']} |\n"
+
+           report += "\n**⚠️ WARNING:** Do NOT delete tables with HIGH risk level without stakeholder approval.\n"
+       else:
+           report += "\n✅ No unused tables found.\n"
+
+       report += "\n---\n\n## Deprecated Columns\n\n"
+
+       if results['deprecated_columns']:
+           report += "| Table | Column | Type |\n"
+           report += "|-------|--------|------|\n"
+
+           for col in results['deprecated_columns']:
+               report += f"| {col['table']} | {col['column']} | {col['type']} |\n"
+       else:
+           report += "\n✅ No deprecated columns found.\n"
+
+       report += "\n---\n\n## Recommendations\n\n"
+       report += "1. **Review unused tables** - Verify with stakeholders before archival\n"
+       report += "2. **Analyze deprecated columns** - Check if safe to remove\n"
+       report += "3. **Create archive plan** - Document tables to archive vs delete\n"
+       report += "4. **Test on staging** - Never delete in production first\n\n"
+
+       report += "---\n\n"
+       report += "**Next Steps:**\n"
+       report += "- Share this report with stakeholders\n"
+       report += "- Get approval for cleanup operations\n"
+       report += "- Proceed to task_123.txt (Archive/Remove Deprecated Tables)\n"
+
+       return report
+
+   if __name__ == '__main__':
+       print("Starting database analysis...")
+       results = analyze_database()
+       report = generate_report(results)
+
+       # Save report
+       with open('docs/DATABASE_ANALYSIS_REPORT.md', 'w') as f:
+           f.write(report)
+
+       print("\n✅ Analysis complete!")
+       print(f"Report saved to: docs/DATABASE_ANALYSIS_REPORT.md")
+       print(f"\nFound:")
+       print(f"  - {len(results['unused_tables'])} unused tables")
+       print(f"  - {len(results['deprecated_columns'])} deprecated columns")
+   ```
+
+3. **Run analysis script**:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python scripts/analyze_database_tables.py
+   ```
+
+4. **Review generated report**:
+   ```bash
+   cat docs/DATABASE_ANALYSIS_REPORT.md
+   ```
+
+5. **Identify specific concerns**:
+   - Tables with data (rows > 0) - HIGH RISK if deleted
+   - Tables referenced by foreign keys - CRITICAL RISK
+   - Large tables (> 1GB) - Archive before deletion
+   - Empty tables (rows = 0) - LOW RISK to delete
+
+6. **Create stakeholder review document**:
+   ```markdown
+   # Database Cleanup - Stakeholder Review Required
+
+   ## Tables Proposed for Removal
+
+   | Table | Rows | Size | Business Impact | Approval |
+   |-------|------|------|-----------------|----------|
+   | [table_name] | [count] | [size] | [description] | [ ] Approved |
+
+   ## Sign-off Required By:
+   - [ ] Technical Lead
+   - [ ] Database Administrator
+   - [ ] MBASICED Representative
+   - [ ] System Administrator
+   ```
+
+7. **Document findings in Phase 13 log**:
+   ```bash
+   echo "## Task 122 Complete - $(date)" >> docs/PHASE_13_LOG.md
+   echo "- Database analysis completed" >> docs/PHASE_13_LOG.md
+   echo "- Report generated: DATABASE_ANALYSIS_REPORT.md" >> docs/PHASE_13_LOG.md
+   echo "- Unused tables identified: [count]" >> docs/PHASE_13_LOG.md
+   ```
+
+## Acceptance Criteria:
+- Full database backup created and verified before analysis
+- All database tables catalogued with usage statistics
+- Unused tables identified with last_modified dates
+- Deprecated columns documented with references
+- Orphaned data (foreign key violations) identified
+- Table size and row counts recorded
+- Report generated with findings and recommendations
+- Stakeholder review completed before proceeding
+
+## Files Modified:
+- `scripts/analyze_database_tables.py (create)`
+- `docs/DATABASE_ANALYSIS_REPORT.md (create)`
+- `docs/PHASE_13_LOG.md (create)`
+- `backups/db_backup_phase13_[timestamp].dump (create)`
+- `backups/BACKUP_LOG.md (update)`
+
+## Important Notes:
+- **CRITICAL**: This is READ-ONLY analysis - no deletions
+- Create database backup before starting
+- All findings must be reviewed by stakeholders
+- Do not proceed to task_123.txt without approval
+- Estimate: 90 minutes
+- Risk Level: LOW (analysis only, no modifications)
+
+## Backup Requirements:
+1. **Pre-Analysis Backup**: Full PostgreSQL dump
+2. **Backup Verification**: Test restore capability
+3. **Backup Storage**: Store in at least 2 locations
+4. **Backup Documentation**: Log in BACKUP_LOG.md
+
+## Data Integrity Checks:
+- Verify all tables are catalogued
+- Check foreign key relationships
+- Validate row counts are accurate
+- Ensure no tables are missed in analysis
+
+# Test Strategy:
+1. Access view URL and verify HTTP 200 response
+2. Test with different user permissions
+3. Verify context data passed to template
+4. Test any query parameters or filters

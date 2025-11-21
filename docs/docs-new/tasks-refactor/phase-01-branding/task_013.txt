@@ -1,0 +1,81 @@
+# Task ID: 013
+# Title: Update Home Page Template - Welcome Text
+# Status: pending
+# Dependencies: 010
+# Priority: medium
+# Description: Update the home page (index.html or dashboard.html) to display Tarbiyyah Management System welcome message and remove BM Parliament references.
+
+# Details:
+Update the home page (index.html or dashboard.html) to display Tarbiyyah Management System welcome message and remove BM Parliament references.
+
+## Implementation Steps:
+1. Locate home page template:
+   ```bash
+   find /Users/saidamenmambayao/apps/madaris-ms/src/templates -name "index.html" -o -name "home.html" -o -name "dashboard.html"
+   ```
+2. Update hero section:
+   ```html
+   <div class="hero">
+     <h1>Welcome to {{ SITE_NAME }}</h1>
+     <p class="lead">
+       Islamic Education Management System for BARMM Madaris
+     </p>
+     <p>
+       Empowering Islamic education through technology.
+       Manage madaris, track student progress, and support teachers across the Bangsamoro region.
+     </p>
+   </div>
+   ```
+3. Update quick stats cards:
+   ```html
+   <div class="stats-grid">
+     <div class="stat-card">
+       <h3>{{ total_madaris }}</h3>
+       <p>Registered {{ MADRASAH_LABEL }}s</p>
+     </div>
+     <div class="stat-card">
+       <h3>{{ total_students }}</h3>
+       <p>Enrolled {{ STUDENT_LABEL }}s</p>
+     </div>
+     <div class="stat-card">
+       <h3>{{ total_teachers }}</h3>
+       <p>{{ TEACHER_LABEL }} (Teachers)</p>
+     </div>
+   </div>
+   ```
+4. Update feature highlights section:
+   ```html
+   <ul class="features">
+     <li>Madrasah registration and management</li>
+     <li>Student enrollment tracking</li>
+     <li>Teacher assignments and curriculum planning</li>
+     <li>Academic records and grading</li>
+     <li>Parent portal access</li>
+   </ul>
+   ```
+5. Test page rendering for different user roles
+
+## Acceptance Criteria:
+- Home page template located
+- Welcome heading uses {{ SITE_NAME }} variable
+- Description text updated to Islamic education context
+- Hero section reflects madrasah management purpose
+- Quick stats cards updated with education terminology
+- No "BM Parliament" text on home page
+- Page renders correctly for authenticated and anonymous users
+
+## Files Modified:
+- `src/templates/index.html (or home.html/dashboard.html)`
+- `src/apps/core/views.py (may need to update stats context)`
+
+## Important Notes:
+- Keep existing page structure and styling
+- Update only text content, not layout
+- Coordinate with dashboard metrics (task for later)
+- Estimate: 40 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable

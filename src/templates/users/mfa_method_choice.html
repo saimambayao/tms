@@ -1,0 +1,105 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Choose Two-Factor Authentication Method{% endblock %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+        <div>
+            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                Choose Your Two-Factor Authentication Method
+            </h2>
+            <p class="mt-2 text-center text-sm text-gray-600">
+                Select how you'd like to secure your account
+            </p>
+        </div>
+
+        <form class="mt-8 space-y-6" method="post">
+            {% csrf_token %}
+            
+            <div class="space-y-4">
+                <!-- SMS Option -->
+                <div class="relative">
+                    <label class="block p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 cursor-pointer transition-all">
+                        <input type="radio" name="method" value="sms" class="sr-only peer" />
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 mt-1">
+                                <i class="fas fa-mobile-alt text-2xl text-primary-600 peer-checked:text-primary-700"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-medium text-gray-900">SMS Text Message</h3>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Receive a verification code via SMS on your mobile phone
+                                </p>
+                                <div class="mt-2 text-xs text-green-600 font-medium">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Recommended for most users
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 border-2 border-primary-500 rounded-lg pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                    </label>
+                </div>
+
+                <!-- Authenticator App Option -->
+                <div class="relative">
+                    <label class="block p-4 border-2 border-gray-200 rounded-lg hover:border-primary-500 cursor-pointer transition-all">
+                        <input type="radio" name="method" value="totp" class="sr-only peer" />
+                        <div class="flex items-start space-x-4">
+                            <div class="flex-shrink-0 mt-1">
+                                <i class="fas fa-shield-alt text-2xl text-primary-600 peer-checked:text-primary-700"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-medium text-gray-900">Authenticator App</h3>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    Use an app like Google Authenticator or Microsoft Authenticator
+                                </p>
+                                <div class="mt-2 text-xs text-blue-600">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Requires smartphone with authenticator app
+                                </div>
+                            </div>
+                        </div>
+                        <div class="absolute inset-0 border-2 border-primary-500 rounded-lg pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity"></div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Cost Notice for SMS -->
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-info-circle text-yellow-400"></i>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-yellow-800">
+                            SMS Service Information
+                        </h3>
+                        <div class="mt-1 text-sm text-yellow-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>SMS messages are sent to Philippine mobile numbers only</li>
+                                <li>Standard SMS rates may apply from your carrier</li>
+                                <li>The government covers the cost of sending verification codes</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <button type="submit" class="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md shadow-sm hover:shadow-lg text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200">
+                    Continue
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// Auto-select SMS by default as it's recommended
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('input[value="sms"]').checked = true;
+});
+</script>
+{% endblock %}

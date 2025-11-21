@@ -1,0 +1,437 @@
+# Task ID: 112
+# Title: Update Form Field Labels and Help Text
+# Status: pending
+# Dependencies: 027, 037, 111
+# Priority: high
+# Description: Update all form field labels, placeholders, and help text to use education terminology. Replace parliamentary/chapter references with madrasah/student
+
+# Details:
+Update all form field labels, placeholders, and help text to use education terminology. Replace parliamentary/chapter references with madrasah/student terminology.
+
+## Implementation Steps:
+### 1. Update ChapterForm (apps/chapters/forms.py)
+
+```bash
+cd /Users/saidamenmambayao/apps/madaris-ms/src/apps/chapters
+```
+
+Update the form class:
+```python
+class ChapterForm(forms.ModelForm):
+    """Form for creating and updating madaris (Islamic schools)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Update parent chapter reference for madrasah hierarchy
+        self.fields['parent_chapter'].queryset = Chapter.objects.filter(
+            tier__in=['provincial', 'municipal']
+        )
+        self.fields['parent_chapter'].label = 'Parent Madrasah'
+        self.fields['parent_chapter'].help_text = 'Select parent madrasah if this is a satellite school'
+
+    class Meta:
+        model = Chapter
+        fields = [
+            'name', 'tier', 'municipality', 'province', 'country',
+            'description', 'mission_statement', 'established_date',
+            'coordinator', 'email', 'phone', 'address',
+            'meeting_location', 'meeting_schedule',
+            'facebook_page', 'twitter_handle', 'instagram_handle',
+            'parent_chapter'
+        ]
+        labels = {
+            'name': 'Madrasah Name',
+            'tier': 'Education Level',  # Will be replaced by madrasah_types in Phase 3
+            'municipality': 'Municipality/City',
+            'province': 'Province',
+            'description': 'Madrasah Description',
+            'mission_statement': 'Mission Statement',
+            'established_date': 'Founded Date',
+            'coordinator': 'Madrasah Administrator',  # Will be 'muder' after Phase 3
+            'email': 'Official Email',
+            'phone': 'Contact Number',
+            'address': 'Complete Address',
+            'meeting_location': 'Main Campus Location',
+            'meeting_schedule': 'Class Schedule',
+            'facebook_page': 'Facebook Page',
+            'twitter_handle': 'Twitter Handle',
+            'instagram_handle': 'Instagram Handle',
+            'parent_chapter': 'Parent Madrasah',
+        }
+        help_texts = {
+            'name': 'Official name of the madrasah (e.g., Madrasah Al-Furqan)',
+            'tier': 'Select the primary education level offered',
+            'description': 'Brief description of the madrasah, its focus, and community served',
+            'mission_statement': 'The madrasah\'s educational mission and Islamic values',
+            'coordinator': 'Select the madrasah administrator or director (Muder)',
+            'email': 'Official contact email for the madrasah',
+            'phone': 'Primary contact number',
+            'meeting_location': 'Location of the main campus or administrative office',
+            'meeting_schedule': 'Regular class schedule (e.g., Monday-Friday, 8:00 AM - 3:00 PM)',
+        }
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'placeholder': 'e.g., Madrasah Al-Furqan',
+                'required': True,
+                'class': 'form-input'
+            }),
+            'tier': forms.Select(attrs={'required': True, 'class': 'form-select'}),
+            'municipality': forms.TextInput(attrs={
+                'placeholder': 'Municipality or City name',
+                'required': True,
+                'class': 'form-input'
+            }),
+            'province': forms.TextInput(attrs={
+                'placeholder': 'Province name (e.g., Lanao del Sur)',
+                'required': True,
+                'class': 'form-input'
+            }),
+            'country': forms.TextInput(attrs={
+                'value': 'Philippines',
+                'required': True,
+                'class': 'form-input'
+            }),
+            'description': forms.Textarea(attrs={
+                'rows': 4,
+                'placeholder': 'Brief description of the madrasah and the community it serves',
+                'required': True,
+                'class': 'form-textarea'
+            }),
+            'mission_statement': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'The madrasah\'s educational mission and Islamic values',
+                'class': 'form-textarea'
+            }),
+            'established_date': forms.DateInput(attrs={
+                'type': 'date',
+                'class': 'form-input'
+            }),
+            'coordinator': forms.Select(attrs={'class': 'form-select'}),
+            'email': forms.EmailInput(attrs={
+                'placeholder': 'info@madrasah-alfurqan.edu.ph',
+                'class': 'form-input'
+            }),
+            'phone': forms.TextInput(attrs={
+                'placeholder': '+63 XXX XXX XXXX',
+                'class': 'form-input'
+            }),
+            'address': forms.Textarea(attrs={
+                'rows': 3,
+                'placeholder': 'Complete address including street, barangay, and landmarks',
+                'class': 'form-textarea'
+            }),
+            'meeting_location': forms.TextInput(attrs={
+                'placeholder': 'e.g., Main Building, Ground Floor',
+                'class': 'form-input'
+            }),
+            'meeting_schedule': forms.TextInput(attrs={
+                'placeholder': 'e.g., Monday-Friday, 8:00 AM - 3:00 PM',
+                'class': 'form-input'
+            }),
+            'facebook_page': forms.URLInput(attrs={
+                'placeholder': 'https://facebook.com/madrasah-alfurqan',
+                'class': 'form-input'
+            }),
+            'twitter_handle': forms.TextInput(attrs={
+                'placeholder': 'username (without @)',
+                'class': 'form-input'
+            }),
+            'instagram_handle': forms.TextInput(attrs={
+                'placeholder': 'username (without @)',
+                'class': 'form-input'
+            }),
+            'parent_chapter': forms.Select(attrs={'class': 'form-select'}),
+        }
+```
+
+### 2. Update MembershipForm (apps/chapters/forms.py)
+
+```python
+class MembershipForm(forms.ModelForm):
+    """Form for managing madrasah enrollments (students and staff)."""
+
+    class Meta:
+        model = ChapterMembership  # Will be MadrasahEnrollment after Phase 3
+        fields = [
+            'user', 'role', 'status', 'is_volunteer',
+            'volunteer_skills', 'availability', 'committees',
+            'notes'
+        ]
+        labels = {
+            'user': 'Student/Staff Member',
+            'role': 'Enrollment Type',
+            'status': 'Enrollment Status',
+            'is_volunteer': 'Community Service Volunteer',
+            'volunteer_skills': 'Skills/Expertise',
+            'availability': 'Available Schedule',
+            'committees': 'Sections/Departments',
+            'notes': 'Additional Notes',
+        }
+        help_texts = {
+            'user': 'Select the student or staff member to enroll',
+            'role': 'Select enrollment type: Student, Asatidz (Teacher), or Staff',
+            'is_volunteer': 'Check if this person participates in community service',
+            'volunteer_skills': 'List skills or subjects for teaching staff',
+            'committees': 'List sections, departments, or classes assigned',
+        }
+        widgets = {
+            'user': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
+            }),
+            'role': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
+            }),
+            'status': forms.Select(attrs={
+                'class': 'form-select',
+                'required': True
+            }),
+            'volunteer_skills': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'rows': 3,
+                'placeholder': 'e.g., Quran recitation, Arabic language, Mathematics'
+            }),
+            'availability': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'e.g., Monday-Friday, 8 AM - 12 PM'
+            }),
+            'committees': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'e.g., Grade 5 Section A, Arabic Department'
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'rows': 3,
+                'placeholder': 'Additional information about enrollment'
+            }),
+        }
+```
+
+### 3. Update BMParliamentMemberRegistrationForm (apps/constituents/forms.py)
+
+Update labels and help text:
+```python
+class BMParliamentMemberRegistrationForm(forms.ModelForm):
+    """Student registration form for Tarbiyyah Management System."""
+
+    address_province = forms.ChoiceField(
+        choices=PROVINCE_CHOICES,
+        required=True,
+        label='Home Address - Province',
+        help_text='Select the province where the student currently resides'
+    )
+    address_municipality = forms.ChoiceField(
+        choices=[('', 'Select Municipality')],
+        required=True,
+        label='Home Address - Municipality'
+    )
+    voter_address_province = forms.ChoiceField(
+        choices=PROVINCE_CHOICES,
+        required=True,
+        label='Permanent Address - Province',
+        help_text='Province listed on birth certificate or permanent residence'
+    )
+    voter_address_municipality = forms.ChoiceField(
+        choices=[('', 'Select Municipality')],
+        required=True,
+        label='Permanent Address - Municipality'
+    )
+
+    class Meta:
+        model = BMParliamentMember  # Will be Student after Phase 6
+        fields = [
+            'last_name', 'first_name', 'middle_name', 'contact_number', 'email',
+            'age', 'sex', 'address_barangay', 'address_municipality', 'address_province',
+            'voter_address_barangay', 'voter_address_municipality', 'voter_address_province',
+            'sector', 'highest_education', 'school_graduated', 'eligibility',
+            'cancer_patient', 'dialysis_patient',
+            'voter_id_photo', 'status'
+        ]
+        labels = {
+            'last_name': 'Last Name',
+            'first_name': 'First Name',
+            'middle_name': 'Middle Name',
+            'contact_number': 'Contact Number',
+            'email': 'Email Address',
+            'age': 'Age',
+            'sex': 'Gender',
+            'address_barangay': 'Home Address - Barangay',
+            'voter_address_barangay': 'Permanent Address - Barangay',
+            'sector': 'Special Sector (if applicable)',
+            'highest_education': 'Current Education Level',
+            'school_graduated': 'Previous School',
+            'eligibility': 'Enrollment Eligibility',
+            'cancer_patient': 'Has Critical Illness (Cancer)',
+            'dialysis_patient': 'Requires Dialysis',
+            'voter_id_photo': 'Student ID Photo',
+            'status': 'Registration Status',
+        }
+        help_texts = {
+            'email': 'Parent/Guardian email if student is a minor',
+            'sector': 'Select if student belongs to special sector (PWD, Indigenous, etc.)',
+            'highest_education': 'Current or most recent education level completed',
+            'school_graduated': 'Name of previous school attended',
+            'eligibility': 'Enrollment eligibility status',
+            'voter_id_photo': 'Upload a clear photo for student ID (passport size preferred)',
+        }
+        widgets = {
+            'sex': forms.Select(choices=BMParliamentMember.SEX_CHOICES),
+            'highest_education': forms.Select(choices=BMParliamentMember.EDUCATION_CHOICES),
+            'sector': forms.Select(choices=BMParliamentMember.SECTOR_CHOICES),
+            'eligibility': forms.Select(choices=BMParliamentMember.ELIGIBILITY_CHOICES),
+            'status': forms.Select(choices=BMParliamentMember.STATUS_CHOICES),
+            'address_province': forms.Select(),
+            'address_municipality': forms.Select(),
+            'voter_address_province': forms.Select(),
+            'voter_address_municipality': forms.Select(),
+            'contact_number': forms.TextInput(attrs={
+                'placeholder': '+63 XXX XXX XXXX'
+            }),
+            'email': forms.EmailInput(attrs={
+                'placeholder': 'parent@example.com or student@example.com'
+            }),
+            'school_graduated': forms.TextInput(attrs={
+                'placeholder': 'e.g., Madrasah Al-Nur Elementary'
+            }),
+        }
+```
+
+### 4. Update UserRegistrationForm (apps/users/forms.py)
+
+```python
+class UserRegistrationForm(UserCreationForm):
+    """
+    User registration form for Tarbiyyah Management System.
+    Extends Django's UserCreationForm for education context.
+    """
+    first_name = forms.CharField(
+        max_length=30,
+        required=True,
+        help_text='Student or staff member first name'
+    )
+    last_name = forms.CharField(
+        max_length=30,
+        required=True,
+        help_text='Student or staff member last name'
+    )
+    email = forms.EmailField(
+        max_length=254,
+        required=True,
+        help_text='Valid email address for account verification'
+    )
+    phone_regex = RegexValidator(
+        regex=r'^\+?1?\d{9,15}$',
+        message="Phone number must be entered in the format: '+63XXXXXXXXXX'. Up to 15 digits allowed."
+    )
+    phone_number = forms.CharField(
+        validators=[phone_regex],
+        max_length=15,
+        required=True,
+        label='Contact Number',
+        help_text='Philippine mobile number format: +63XXXXXXXXXX'
+    )
+    address = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 2}),
+        required=True,
+        label='Complete Address',
+        help_text='Include barangay, municipality, and province'
+    )
+    municipality = forms.CharField(
+        max_length=100,
+        required=True,
+        label='Municipality/City',
+        help_text='Municipality or city of residence'
+    )
+    terms = forms.BooleanField(
+        required=True,
+        label='I agree to the Terms of Service and Privacy Policy'
+    )
+
+    class Meta:
+        model = User
+        fields = (
+            'first_name', 'last_name', 'username', 'email', 'phone_number',
+            'address', 'municipality', 'password1', 'password2'
+        )
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.user_type = 'student'  # Set user as student by default
+        user.is_approved = False  # Require approval before full access
+
+        if commit:
+            user.save()
+
+        return user
+```
+
+### 5. Test form rendering:
+
+```bash
+cd /Users/saidamenmambayao/apps/madaris-ms
+python manage.py shell << 'EOF'
+from apps.chapters.forms import ChapterForm, MembershipForm
+from apps.constituents.forms import BMParliamentMemberRegistrationForm
+from apps.users.forms import UserRegistrationForm
+
+# Test ChapterForm
+chapter_form = ChapterForm()
+print("ChapterForm updated labels:")
+for field_name, field in chapter_form.fields.items():
+    print(f"  {field_name}: {field.label}")
+
+# Test MembershipForm
+membership_form = MembershipForm()
+print("\nMembershipForm updated labels:")
+for field_name, field in membership_form.fields.items():
+    print(f"  {field_name}: {field.label}")
+
+print("\nForms loaded successfully with new terminology!")
+EOF
+```
+
+### 6. Create migration if model field labels changed:
+
+```bash
+python manage.py makemigrations
+```
+
+### 7. Verify no broken references:
+
+```bash
+python manage.py check
+```
+
+## Acceptance Criteria:
+- ChapterForm updated with madrasah terminology
+- MembershipForm updated with enrollment terminology
+- BMParliamentMemberRegistrationForm updated with student terminology
+- UserRegistrationForm updated with education context
+- All placeholders updated (no "BM Parliament" references)
+- All help text updated with education context
+- Forms still render correctly in templates
+- No broken field references
+
+## Files Modified:
+- `src/apps/chapters/forms.py (ChapterForm, MembershipForm)`
+- `src/apps/constituents/forms.py (BMParliamentMemberRegistrationForm)`
+- `src/apps/users/forms.py (UserRegistrationForm)`
+
+## Important Notes:
+- All form class docstrings updated
+- All field labels updated to education terminology
+- All placeholders updated (no "BM Parliament" references)
+- Help text provides education context
+- Widget classes maintained for styling consistency
+- Form validation logic unchanged (that's task 113)
+- These updates are safe - no database changes needed
+- Forms will work with existing templates (templates updated in Phase 12)
+- Estimate: 2-3 hours
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

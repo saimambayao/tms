@@ -1,0 +1,451 @@
+# Task ID: 100
+# Title: Update Parent Portal Admin
+# Status: pending
+# Dependencies: 099
+# Priority: medium
+# Description: Configure Django admin interface for parent portal models including ParentStudent relationships, messages, notifications, and preferences. Add inline 
+
+# Details:
+Configure Django admin interface for parent portal models including ParentStudent relationships, messages, notifications, and preferences. Add inline editing, filters, search, and custom actions for efficient administration.
+
+## Implementation Steps:
+1. Create comprehensive admin configuration:
+   ```python
+   # apps/parents/admin.py
+   from django.contrib import admin
+   from django.utils.html import format_html
+   from django.db.models import Count
+   from apps.parents.models import (
+       ParentStudent,
+       ParentTeacherMessage,
+       ParentNotification,
+       ParentNotificationPreference
+   )
+
+   @admin.register(ParentStudent)
+   class ParentStudentAdmin(admin.ModelAdmin):
+       """Admin for parent-student relationships"""
+
+       list_display = [
+           'parent_name',
+           'student_name',
+           'relationship_type',
+           'is_primary_contact_badge',
+           'is_emergency_contact_badge',
+           'can_pickup_badge',
+           'status_badge',
+           'created_at'
+       ]
+
+       list_filter = [
+           'relationship_type',
+           'status',
+           'is_primary_contact',
+           'is_emergency_contact',
+           'can_pickup',
+           'created_at'
+       ]
+
+       search_fields = [
+           'parent__first_name',
+           'parent__last_name',
+           'parent__email',
+           'student__first_name',
+           'student__last_name',
+           'student__email'
+       ]
+
+       readonly_fields = ['created_at', 'updated_at']
+
+       fieldsets = (
+           ('Relationship', {
+               'fields': ('parent', 'student', 'relationship_type', 'status')
+           }),
+           ('Permissions & Access', {
+               'fields': ('is_primary_contact', 'is_emergency_contact', 'can_pickup')
+           }),
+           ('Additional Information', {
+               'fields': ('notes',)
+           }),
+           ('Timestamps', {
+               'fields': ('created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+
+       def parent_name(self, obj):
+           return obj.parent.get_full_name()
+       parent_name.short_description = 'Parent'
+       parent_name.admin_order_field = 'parent__last_name'
+
+       def student_name(self, obj):
+           return obj.student.get_full_name()
+       student_name.short_description = 'Student'
+       student_name.admin_order_field = 'student__last_name'
+
+       def is_primary_contact_badge(self, obj):
+           if obj.is_primary_contact:
+               return format_html('<span style="color: green;">✓ Primary</span>')
+           return format_html('<span style="color: gray;">—</span>')
+       is_primary_contact_badge.short_description = 'Primary Contact'
+
+       def is_emergency_contact_badge(self, obj):
+           if obj.is_emergency_contact:
+               return format_html('<span style="color: orange;">✓ Emergency</span>')
+           return format_html('<span style="color: gray;">—</span>')
+       is_emergency_contact_badge.short_description = 'Emergency'
+
+       def can_pickup_badge(self, obj):
+           if obj.can_pickup:
+               return format_html('<span style="color: blue;">✓ Can Pickup</span>')
+           return format_html('<span style="color: gray;">✗ Cannot Pickup</span>')
+       can_pickup_badge.short_description = 'Pickup'
+
+       def status_badge(self, obj):
+           colors = {
+               'active': 'green',
+               'inactive': 'red'
+           }
+           color = colors.get(obj.status, 'gray')
+           return format_html(
+               '<span style="color: {};">{}</span>',
+               color,
+               obj.get_status_display()
+           )
+       status_badge.short_description = 'Status'
+
+       def get_queryset(self, request):
+           """Optimize queryset with select_related"""
+           return super().get_queryset(request).select_related('parent', 'student')
+
+   class ParentStudentInline(admin.TabularInline):
+       """Inline for parent-student relationships"""
+       model = ParentStudent
+       extra = 0
+       fields = ['student', 'relationship_type', 'is_primary_contact',
+                 'is_emergency_contact', 'status']
+       readonly_fields = ['created_at']
+
+   @admin.register(ParentTeacherMessage)
+   class ParentTeacherMessageAdmin(admin.ModelAdmin):
+       """Admin for parent-teacher messages"""
+
+       list_display = [
+           'id',
+           'sender_name',
+           'recipient_name',
+           'subject',
+           'message_type',
+           'student_name',
+           'is_read_badge',
+           'created_at'
+       ]
+
+       list_filter = [
+           'message_type',
+           'is_read',
+           'created_at'
+       ]
+
+       search_fields = [
+           'sender__first_name',
+           'sender__last_name',
+           'recipient__first_name',
+           'recipient__last_name',
+           'subject',
+           'body'
+       ]
+
+       readonly_fields = ['created_at', 'updated_at', 'read_at']
+
+       fieldsets = (
+           ('Message Details', {
+               'fields': ('sender', 'recipient', 'student', 'subject',
+                         'message_type', 'body')
+           }),
+           ('Thread', {
+               'fields': ('parent_message',)
+           }),
+           ('Status', {
+               'fields': ('is_read', 'read_at')
+           }),
+           ('Timestamps', {
+               'fields': ('created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+
+       actions = ['mark_as_read', 'mark_as_unread']
+
+       def sender_name(self, obj):
+           return obj.sender.get_full_name()
+       sender_name.short_description = 'From'
+       sender_name.admin_order_field = 'sender__last_name'
+
+       def recipient_name(self, obj):
+           return obj.recipient.get_full_name()
+       recipient_name.short_description = 'To'
+       recipient_name.admin_order_field = 'recipient__last_name'
+
+       def student_name(self, obj):
+           return obj.student.get_full_name() if obj.student else '—'
+       student_name.short_description = 'Regarding Student'
+
+       def is_read_badge(self, obj):
+           if obj.is_read:
+               return format_html('<span style="color: gray;">✓ Read</span>')
+           return format_html('<span style="color: blue; font-weight: bold;">● Unread</span>')
+       is_read_badge.short_description = 'Status'
+
+       def mark_as_read(self, request, queryset):
+           """Mark selected messages as read"""
+           updated = queryset.filter(is_read=False).update(
+               is_read=True,
+               read_at=timezone.now()
+           )
+           self.message_user(request, f'{updated} message(s) marked as read.')
+       mark_as_read.short_description = 'Mark selected messages as read'
+
+       def mark_as_unread(self, request, queryset):
+           """Mark selected messages as unread"""
+           updated = queryset.update(is_read=False, read_at=None)
+           self.message_user(request, f'{updated} message(s) marked as unread.')
+       mark_as_unread.short_description = 'Mark selected messages as unread'
+
+       def get_queryset(self, request):
+           """Optimize queryset"""
+           return super().get_queryset(request).select_related(
+               'sender', 'recipient', 'student'
+           )
+
+   @admin.register(ParentNotification)
+   class ParentNotificationAdmin(admin.ModelAdmin):
+       """Admin for parent notifications"""
+
+       list_display = [
+           'id',
+           'parent_name',
+           'title',
+           'notification_type',
+           'priority_badge',
+           'student_name',
+           'is_read_badge',
+           'email_sent_badge',
+           'created_at'
+       ]
+
+       list_filter = [
+           'notification_type',
+           'priority',
+           'is_read',
+           'email_sent',
+           'sms_sent',
+           'created_at'
+       ]
+
+       search_fields = [
+           'parent__first_name',
+           'parent__last_name',
+           'title',
+           'message'
+       ]
+
+       readonly_fields = ['created_at', 'read_at']
+
+       fieldsets = (
+           ('Notification Details', {
+               'fields': ('parent', 'student', 'notification_type', 'priority',
+                         'title', 'message', 'action_url')
+           }),
+           ('Status', {
+               'fields': ('is_read', 'read_at', 'email_sent', 'sms_sent')
+           }),
+           ('Timestamps', {
+               'fields': ('created_at',),
+               'classes': ('collapse',)
+           }),
+       )
+
+       actions = ['mark_as_read', 'send_email_notification']
+
+       def parent_name(self, obj):
+           return obj.parent.get_full_name()
+       parent_name.short_description = 'Parent'
+       parent_name.admin_order_field = 'parent__last_name'
+
+       def student_name(self, obj):
+           return obj.student.get_full_name() if obj.student else '—'
+       student_name.short_description = 'Student'
+
+       def priority_badge(self, obj):
+           colors = {
+               'urgent': 'red',
+               'high': 'orange',
+               'normal': 'blue',
+               'low': 'gray'
+           }
+           color = colors.get(obj.priority, 'gray')
+           return format_html(
+               '<span style="color: {}; font-weight: bold;">{}</span>',
+               color,
+               obj.get_priority_display().upper()
+           )
+       priority_badge.short_description = 'Priority'
+
+       def is_read_badge(self, obj):
+           if obj.is_read:
+               return format_html('<span style="color: gray;">✓ Read</span>')
+           return format_html('<span style="color: blue; font-weight: bold;">● Unread</span>')
+       is_read_badge.short_description = 'Read'
+
+       def email_sent_badge(self, obj):
+           if obj.email_sent:
+               return format_html('<span style="color: green;">✓ Sent</span>')
+           return format_html('<span style="color: gray;">—</span>')
+       email_sent_badge.short_description = 'Email'
+
+       def mark_as_read(self, request, queryset):
+           """Mark selected notifications as read"""
+           updated = queryset.filter(is_read=False).update(
+               is_read=True,
+               read_at=timezone.now()
+           )
+           self.message_user(request, f'{updated} notification(s) marked as read.')
+       mark_as_read.short_description = 'Mark selected as read'
+
+       def send_email_notification(self, request, queryset):
+           """Send email for selected notifications"""
+           # TODO: Implement email sending
+           count = queryset.filter(email_sent=False).count()
+           self.message_user(
+               request,
+               f'Email sending not yet implemented. {count} notification(s) selected.',
+               level='warning'
+           )
+       send_email_notification.short_description = 'Send email notifications'
+
+       def get_queryset(self, request):
+           """Optimize queryset"""
+           return super().get_queryset(request).select_related('parent', 'student')
+
+   @admin.register(ParentNotificationPreference)
+   class ParentNotificationPreferenceAdmin(admin.ModelAdmin):
+       """Admin for notification preferences"""
+
+       list_display = [
+           'parent_name',
+           'enable_email',
+           'enable_sms',
+           'digest_mode',
+           'digest_time',
+           'updated_at'
+       ]
+
+       list_filter = [
+           'enable_email',
+           'enable_sms',
+           'digest_mode'
+       ]
+
+       search_fields = [
+           'parent__first_name',
+           'parent__last_name',
+           'parent__email'
+       ]
+
+       readonly_fields = ['created_at', 'updated_at']
+
+       fieldsets = (
+           ('Parent', {
+               'fields': ('parent',)
+           }),
+           ('In-App Notifications', {
+               'fields': ('enable_in_app',)
+           }),
+           ('Email Notifications', {
+               'fields': ('enable_email', 'email_announcements', 'email_grades',
+                         'email_attendance', 'email_events', 'email_messages')
+           }),
+           ('SMS Notifications', {
+               'fields': ('enable_sms', 'sms_urgent_only')
+           }),
+           ('Digest Settings', {
+               'fields': ('digest_mode', 'digest_time')
+           }),
+           ('Timestamps', {
+               'fields': ('created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+
+       def parent_name(self, obj):
+           return obj.parent.get_full_name()
+       parent_name.short_description = 'Parent'
+       parent_name.admin_order_field = 'parent__last_name'
+
+       def get_queryset(self, request):
+           """Optimize queryset"""
+           return super().get_queryset(request).select_related('parent')
+   ```
+
+2. Update User admin to show parent relationships inline:
+   ```python
+   # apps/users/admin.py (add import and inline)
+   from apps.parents.admin import ParentStudentInline
+
+   class UserAdmin(BaseUserAdmin):
+       # ... existing configuration ...
+
+       def get_inlines(self, request, obj=None):
+           """Show ParentStudentInline for parent users"""
+           inlines = list(super().get_inlines(request, obj))
+           if obj and obj.role == 'parent':
+               inlines.append(ParentStudentInline)
+           return inlines
+   ```
+
+3. Test admin interface:
+   - Test ParentStudent admin (list, filter, search, edit)
+   - Test message admin with bulk actions
+   - Test notification admin with filters
+   - Test inline editing in User admin for parents
+   - Verify select_related optimization (check query count)
+   - Test custom admin actions (mark as read, etc.)
+
+## Acceptance Criteria:
+- ParentStudent admin registered with inline display
+- ParentTeacherMessage admin registered with filters and search
+- ParentNotification admin registered with actions
+- ParentNotificationPreference admin registered
+- Inline editors configured for related models
+- List filters added for status, relationship type, message type
+- Search fields configured for all models
+- Custom admin actions added (bulk operations)
+- Admin list displays optimized with select_related
+- Admin tested with sample data
+
+## Files Modified:
+- `src/apps/parents/admin.py`
+- `src/apps/users/admin.py (optional inline addition)`
+
+## Important Notes:
+- Custom list displays use select_related for performance
+- Colored badges provide visual status indicators
+- Custom admin actions enable bulk operations
+- Search fields cover common lookup patterns
+- List filters allow efficient data navigation
+- Fieldsets organize forms logically
+- Readonly fields prevent accidental changes to timestamps
+- Inline editing improves workflow for parent-student relationships
+- Admin optimized for common administrative tasks
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Login to Django admin as superuser
+6. Verify models appear in admin interface
+7. Test create, read, update, delete operations
+8. Verify list display, filters, and search work

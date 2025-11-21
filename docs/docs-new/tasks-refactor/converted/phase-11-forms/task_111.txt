@@ -1,0 +1,237 @@
+# Task ID: 111
+# Title: Audit All ModelForms for Terminology
+# Status: pending
+# Dependencies: 027, 037, 110
+# Priority: medium
+# Description: Audit all Django ModelForms across the application to identify forms that need terminology updates from parliamentary/chapter language to education la
+
+# Details:
+Audit all Django ModelForms across the application to identify forms that need terminology updates from parliamentary/chapter language to education language. Document all forms requiring changes.
+
+## Implementation Steps:
+1. Create audit directory:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-11-forms/audit
+   ```
+
+2. List all forms files:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   find apps -name "forms.py" -type f > ../docs/docs-new/tasks-refactor/phase-11-forms/audit/forms_files.txt
+   ```
+
+3. Create audit spreadsheet for key forms:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-11-forms/audit/FORMS_AUDIT.md << 'EOF'
+   # Forms Terminology Audit
+
+   ## High Priority Forms (Madaris/Student Related)
+
+   ### 1. apps/chapters/forms.py
+   - ChapterForm → Will become MadrasahForm
+     - Field: 'name' - placeholder: "e.g., #BM Parliament Cotabato Chapter"
+     - Field: 'coordinator' - label needs update to 'muder' or 'madrasah_admin'
+     - Field: 'email' - placeholder: "chapter@bmparliament.ph"
+     - Field: 'tier' - needs replacement with 'madrasah_types'
+     - Field: 'meeting_location' - needs contextual update
+     - Field: 'meeting_schedule' - needs contextual update
+
+   - MembershipForm → Will become EnrollmentForm
+     - Field: 'volunteer_skills' - may need education context
+     - Field: 'committees' - needs update to 'sections' or 'classes'
+
+   ### 2. apps/constituents/forms.py
+   - BMParliamentMemberRegistrationForm → Will become StudentRegistrationForm
+     - Field: 'sector' - needs update to education sectors
+     - Field: 'highest_education' - label needs update
+     - Field: 'voter_id_photo' - needs replacement with student_id_photo
+     - Field: 'voter_address_*' - needs contextual updates
+     - Field: 'cancer_patient', 'dialysis_patient' - keep for special needs tracking
+
+   ### 3. apps/users/forms.py
+   - UserRegistrationForm
+     - Help text: "Custom registration form for #BM Parliament"
+     - Field: 'user_type' value: 'member' → needs 'student' or role-specific
+
+   ## Medium Priority Forms
+
+   ### 4. apps/services/forms.py
+   - Program application forms
+   - Needs update for educational programs (scholarships, training)
+
+   ### 5. apps/documents/forms.py
+   - Document upload forms
+   - Needs context for certificates, transcripts
+
+   ### 6. apps/notifications/forms.py
+   - Notification forms
+   - Needs update for school communication context
+
+   ## Low Priority Forms
+
+   ### 7. apps/communications/forms.py
+   - Communication forms - minimal changes needed
+
+   ### 8. apps/dashboards/forms.py
+   - Dashboard filter forms - context updates only
+
+   ## Terminology Mapping
+
+   | Old Term | New Term |
+   |----------|----------|
+   | Chapter | Madrasah |
+   | Coordinator | Madrasah Admin / Muder |
+   | Member | Student |
+   | Membership | Enrollment |
+   | Volunteer | Student Volunteer / Community Service |
+   | Tier (provincial/municipal) | Madrasah Types (ibtidaiyyah/thanawiyyah) |
+   | Voter Address | Home Address |
+   | Voter ID | Student ID |
+   | #BM Parliament | Tarbiyyah Management System |
+   | Committee | Section / Department |
+
+   EOF
+   ```
+
+4. Audit ChapterForm (now MadrasahForm):
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py shell << 'EOF'
+   from apps.chapters.forms import ChapterForm
+   form = ChapterForm()
+   print("ChapterForm Fields:")
+   for field_name, field in form.fields.items():
+       print(f"  {field_name}:")
+       print(f"    Label: {field.label}")
+       if hasattr(field.widget, 'attrs'):
+           print(f"    Placeholder: {field.widget.attrs.get('placeholder', 'N/A')}")
+       print(f"    Help Text: {field.help_text or 'N/A'}")
+   EOF
+   ```
+
+5. Audit BMParliamentMemberRegistrationForm:
+   ```bash
+   python manage.py shell << 'EOF'
+   from apps.constituents.forms import BMParliamentMemberRegistrationForm
+   form = BMParliamentMemberRegistrationForm()
+   print("\nBMParliamentMemberRegistrationForm Fields:")
+   for field_name, field in form.fields.items():
+       print(f"  {field_name}:")
+       print(f"    Label: {field.label}")
+       if hasattr(field.widget, 'attrs'):
+           print(f"    Placeholder: {field.widget.attrs.get('placeholder', 'N/A')}")
+   EOF
+   ```
+
+6. Document validation rules that need updating:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-11-forms/audit/VALIDATION_REQUIREMENTS.md << 'EOF'
+   # Form Validation Requirements for Education Context
+
+   ## Student Registration Form Validations
+   - Student number format: MAD-XXX-YYYY-####
+   - Age range: 4-25 years (for basic education)
+   - Grade level validation based on age
+   - Contact number: Philippine mobile format (+63)
+   - Email: Required for parents/guardians
+
+   ## Madrasah Registration Form Validations
+   - School code format: MAD-[PROVINCE]-### (e.g., MAD-LDS-001)
+   - Accreditation number validation (if provided)
+   - Capacity validation: current_enrollment <= total_capacity
+   - Muder selection: Must be user with role='muder'
+   - At least one madrasah_type must be selected
+   - Founded date cannot be in the future
+
+   ## Enrollment Form Validations
+   - Student cannot be enrolled in multiple madaris simultaneously (same academic year)
+   - Teacher can teach at multiple madaris
+   - Academic year must be active for student enrollment
+   - Grade level must match madrasah's offered levels
+
+   ## Custom Validators Needed
+   - Philippine phone number validator
+   - School code uniqueness validator
+   - Student number uniqueness validator
+   - Age-appropriate grade level validator
+   - Arabic name validation (optional field)
+
+   EOF
+   ```
+
+7. Create priority implementation list:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-11-forms/audit/IMPLEMENTATION_PRIORITY.md << 'EOF'
+   # Forms Update Implementation Priority
+
+   ## Critical (Must update first - affects core functionality)
+   1. ChapterForm → MadrasahForm (apps/chapters/forms.py)
+   2. MembershipForm → EnrollmentForm (apps/chapters/forms.py)
+   3. BMParliamentMemberRegistrationForm → StudentRegistrationForm (apps/constituents/forms.py)
+
+   ## High (Update soon - affects user-facing features)
+   4. UserRegistrationForm (apps/users/forms.py)
+   5. Program application forms (apps/services/forms.py)
+
+   ## Medium (Update for consistency)
+   6. Document forms (apps/documents/forms.py)
+   7. Notification forms (apps/notifications/forms.py)
+
+   ## Low (Update for completeness)
+   8. Dashboard filter forms (apps/dashboards/forms.py)
+   9. Search forms (apps/search/forms.py)
+   10. Communication forms (apps/communications/forms.py)
+
+   ## Estimated Time per Category
+   - Critical: 4-6 hours
+   - High: 2-3 hours
+   - Medium: 1-2 hours
+   - Low: 1 hour
+
+   **Total Estimated Time: 8-12 hours**
+
+   EOF
+   ```
+
+8. Verify audit files created:
+   ```bash
+   ls -lh /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-11-forms/audit/
+   ```
+
+## Acceptance Criteria:
+- All forms.py files in src/apps/ identified and cataloged
+- Forms requiring terminology updates documented
+- Current field labels, placeholders, and help text recorded
+- Mapping created for old terminology to new education terminology
+- Priority list created (critical forms first)
+- Forms grouped by model (Madrasah, Student, Enrollment, etc.)
+
+## Files Modified:
+- `docs/docs-new/tasks-refactor/phase-11-forms/audit/forms_files.txt (new)`
+- `docs/docs-new/tasks-refactor/phase-11-forms/audit/FORMS_AUDIT.md (new)`
+- `docs/docs-new/tasks-refactor/phase-11-forms/audit/VALIDATION_REQUIREMENTS.md (new)`
+- `docs/docs-new/tasks-refactor/phase-11-forms/audit/IMPLEMENTATION_PRIORITY.md (new)`
+
+## Important Notes:
+- This is a documentation/planning task - no code changes yet
+- Focus on forms related to Madrasah, Student, and Enrollment models
+- Parliamentary-related forms (apps/parliamentary/forms.py) can be ignored (soft-removed)
+- Referral forms (apps/referrals/forms.py) can be ignored (soft-removed)
+- Document both visible changes (labels, placeholders) and validation logic
+- This audit will guide tasks 112-115
+- Estimate: 2-3 hours
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Test form validation with valid data
+10. Test form validation with invalid data
+11. Verify error messages display correctly
+12. Test form submission and data persistence
+13. Test CSRF protection

@@ -1,0 +1,484 @@
+# Task ID: 070
+# Title: Create Student Forms
+# Status: pending
+# Dependencies: 068
+# Priority: medium
+# Description: Create comprehensive forms for student management including profile forms, search forms, and student update forms. These forms will be used in both ad
+
+# Details:
+Create comprehensive forms for student management including profile forms, search forms, and student update forms. These forms will be used in both admin and public-facing views.
+
+## Implementation Steps:
+1. Create comprehensive student forms in src/apps/constituents/forms.py:
+   ```python
+   from django import forms
+   from django.core.exceptions import ValidationError
+   from django.contrib.auth import get_user_model
+   from .models import Student
+   from apps.chapters.models import Madrasah
+   from datetime import datetime, date
+
+   User = get_user_model()
+
+   class StudentProfileForm(forms.ModelForm):
+       """Complete student profile form"""
+
+       class Meta:
+           model = Student
+           fields = [
+               # Personal Information
+               'first_name',
+               'last_name',
+               'birth_date',
+               'gender',
+               'address',
+
+               # Student Information
+               'student_number',
+               'enrollment_status',
+               'current_grade_level',
+
+               # Madrasah Education
+               'madrasah_name',
+               'madrasah_level',
+               'year_enrolled',
+               'year_graduated',
+
+               # Family Information
+               'father_name',
+               'mother_name',
+               'guardian_name',
+               'guardian_contact',
+           ]
+
+           widgets = {
+               'first_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'First name',
+               }),
+               'last_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'Last name',
+               }),
+               'birth_date': forms.DateInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'type': 'date',
+               }),
+               'gender': forms.Select(attrs={
+                   'class': 'form-select rounded-md border-gray-300',
+               }),
+               'address': forms.Textarea(attrs={
+                   'class': 'form-textarea rounded-md border-gray-300',
+                   'rows': 3,
+                   'placeholder': 'Complete address',
+               }),
+               'student_number': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'readonly': 'readonly',
+               }),
+               'enrollment_status': forms.Select(attrs={
+                   'class': 'form-select rounded-md border-gray-300',
+               }),
+               'current_grade_level': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'e.g., Grade 3, Elementary',
+               }),
+               'madrasah_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'Madrasah name',
+               }),
+               'madrasah_level': forms.Select(attrs={
+                   'class': 'form-select rounded-md border-gray-300',
+               }),
+               'year_enrolled': forms.NumberInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'Year enrolled',
+                   'min': '2000',
+                   'max': str(datetime.now().year),
+               }),
+               'year_graduated': forms.NumberInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'Year graduated (if applicable)',
+                   'min': '2000',
+                   'max': str(datetime.now().year + 10),
+               }),
+               'father_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': "Father's full name",
+               }),
+               'mother_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': "Mother's full name",
+               }),
+               'guardian_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': "Guardian's name (if different from parents)",
+               }),
+               'guardian_contact': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'Contact number',
+               }),
+           }
+
+       def clean_year_graduated(self):
+           year_graduated = self.cleaned_data.get('year_graduated')
+           year_enrolled = self.cleaned_data.get('year_enrolled')
+
+           if year_graduated and year_enrolled:
+               if year_graduated < year_enrolled:
+                   raise ValidationError(
+                       "Graduation year cannot be earlier than enrollment year"
+                   )
+
+           return year_graduated
+
+   class StudentSearchForm(forms.Form):
+       """Form for searching students"""
+
+       search_query = forms.CharField(
+           required=False,
+           widget=forms.TextInput(attrs={
+               'class': 'form-input rounded-md border-gray-300',
+               'placeholder': 'Search by name, student number, or madrasah...',
+               'autofocus': 'autofocus',
+           })
+       )
+
+       enrollment_status = forms.ChoiceField(
+           required=False,
+           choices=[('', 'All Statuses')] + list(Student.EnrollmentStatus.choices),
+           widget=forms.Select(attrs={
+               'class': 'form-select rounded-md border-gray-300',
+           })
+       )
+
+       grade_level = forms.CharField(
+           required=False,
+           widget=forms.TextInput(attrs={
+               'class': 'form-input rounded-md border-gray-300',
+               'placeholder': 'Grade level',
+           })
+       )
+
+       madrasah = forms.ModelChoiceField(
+           queryset=Madrasah.objects.all(),
+           required=False,
+           widget=forms.Select(attrs={
+               'class': 'form-select rounded-md border-gray-300',
+           })
+       )
+
+       year_enrolled = forms.IntegerField(
+           required=False,
+           widget=forms.NumberInput(attrs={
+               'class': 'form-input rounded-md border-gray-300',
+               'placeholder': 'Year enrolled',
+               'min': '2000',
+               'max': str(datetime.now().year),
+           })
+       )
+
+   class QuickEnrollmentForm(forms.ModelForm):
+       """Simplified form for quick student enrollment"""
+
+       madrasah = forms.ModelChoiceField(
+           queryset=Madrasah.objects.filter(status='active'),
+           required=True,
+           widget=forms.Select(attrs={
+               'class': 'form-select rounded-md border-gray-300',
+           })
+       )
+
+       class Meta:
+           model = Student
+           fields = [
+               'first_name',
+               'last_name',
+               'birth_date',
+               'gender',
+               'madrasah',
+               'current_grade_level',
+               'father_name',
+               'mother_name',
+               'guardian_contact',
+           ]
+
+           widgets = {
+               'first_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'First name',
+                   'required': 'required',
+               }),
+               'last_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'Last name',
+                   'required': 'required',
+               }),
+               'birth_date': forms.DateInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'type': 'date',
+                   'required': 'required',
+               }),
+               'gender': forms.Select(attrs={
+                   'class': 'form-select rounded-md border-gray-300',
+               }),
+               'current_grade_level': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'e.g., Grade 1',
+               }),
+               'father_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': "Father's name",
+               }),
+               'mother_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': "Mother's name",
+               }),
+               'guardian_contact': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'placeholder': 'Contact number',
+                   'required': 'required',
+               }),
+           }
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           # Set enrollment status to enrolled by default
+           self.initial['enrollment_status'] = Student.EnrollmentStatus.ENROLLED
+           self.initial['year_enrolled'] = datetime.now().year
+
+       def clean(self):
+           cleaned_data = super().clean()
+
+           # Require at least one parent name
+           father_name = cleaned_data.get('father_name')
+           mother_name = cleaned_data.get('mother_name')
+
+           if not father_name and not mother_name:
+               raise ValidationError(
+                   "At least one parent name (father or mother) is required"
+               )
+
+           return cleaned_data
+
+       def save(self, commit=True):
+           student = super().save(commit=False)
+
+           # Set enrollment status to enrolled
+           student.enrollment_status = Student.EnrollmentStatus.ENROLLED
+           student.year_enrolled = datetime.now().year
+
+           # Auto-generate student number
+           if not student.student_number:
+               current_year = datetime.now().year
+               last_student = Student.objects.order_by('-id').first()
+               next_id = (last_student.id + 1) if last_student else 1
+               student.student_number = f"STU-{current_year}-{next_id:05d}"
+
+           # Set madrasah name from selected madrasah
+           if 'madrasah' in self.cleaned_data:
+               madrasah = self.cleaned_data['madrasah']
+               if madrasah:
+                   student.madrasah_name = madrasah.name
+                   student.madrasah_level = 'elementary'  # Default
+
+           if commit:
+               student.save()
+
+           return student
+
+   class StudentUpdateForm(forms.ModelForm):
+       """Form for updating existing student information"""
+
+       class Meta:
+           model = Student
+           fields = [
+               'first_name',
+               'last_name',
+               'birth_date',
+               'gender',
+               'address',
+               'current_grade_level',
+               'father_name',
+               'mother_name',
+               'guardian_name',
+               'guardian_contact',
+           ]
+
+           widgets = {
+               'first_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+               }),
+               'last_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+               }),
+               'birth_date': forms.DateInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+                   'type': 'date',
+               }),
+               'gender': forms.Select(attrs={
+                   'class': 'form-select rounded-md border-gray-300',
+               }),
+               'address': forms.Textarea(attrs={
+                   'class': 'form-textarea rounded-md border-gray-300',
+                   'rows': 3,
+               }),
+               'current_grade_level': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+               }),
+               'father_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+               }),
+               'mother_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+               }),
+               'guardian_name': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+               }),
+               'guardian_contact': forms.TextInput(attrs={
+                   'class': 'form-input rounded-md border-gray-300',
+               }),
+           }
+
+   class BulkEnrollmentForm(forms.Form):
+       """Form for bulk enrolling students via CSV upload"""
+
+       csv_file = forms.FileField(
+           help_text="Upload a CSV file with student information",
+           widget=forms.FileInput(attrs={
+               'class': 'form-input',
+               'accept': '.csv',
+           })
+       )
+
+       madrasah = forms.ModelChoiceField(
+           queryset=Madrasah.objects.filter(status='active'),
+           help_text="Select the madrasah for all students in this upload",
+           widget=forms.Select(attrs={
+               'class': 'form-select rounded-md border-gray-300',
+           })
+       )
+
+       def clean_csv_file(self):
+           csv_file = self.cleaned_data.get('csv_file')
+
+           if csv_file:
+               # Check file size (max 2MB)
+               if csv_file.size > 2 * 1024 * 1024:
+                   raise ValidationError("File size must not exceed 2MB")
+
+               # Check file extension
+               if not csv_file.name.endswith('.csv'):
+                   raise ValidationError("File must be a CSV file")
+
+           return csv_file
+   ```
+2. Create form tests:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/src/apps/constituents/tests/test_forms.py << 'EOF'
+   from django.test import TestCase
+   from apps.constituents.forms import (
+       StudentProfileForm,
+       StudentSearchForm,
+       QuickEnrollmentForm,
+       StudentUpdateForm
+   )
+   from apps.constituents.models import Student
+   from apps.chapters.models import Madrasah
+   from datetime import date
+
+   class StudentFormTests(TestCase):
+       def setUp(self):
+           """Set up test data"""
+           self.madrasah = Madrasah.objects.create(
+               name="Test Madrasah",
+               status="active"
+           )
+
+       def test_quick_enrollment_form_valid(self):
+           """Test quick enrollment form with valid data"""
+           form_data = {
+               'first_name': 'Test',
+               'last_name': 'Student',
+               'birth_date': '2010-01-01',
+               'gender': 'M',
+               'madrasah': self.madrasah.id,
+               'current_grade_level': 'Grade 1',
+               'father_name': 'Test Father',
+               'guardian_contact': '09123456789',
+           }
+           form = QuickEnrollmentForm(data=form_data)
+           self.assertTrue(form.is_valid())
+
+       def test_quick_enrollment_form_missing_parent(self):
+           """Test quick enrollment form without parent names"""
+           form_data = {
+               'first_name': 'Test',
+               'last_name': 'Student',
+               'birth_date': '2010-01-01',
+               'gender': 'M',
+               'madrasah': self.madrasah.id,
+               'guardian_contact': '09123456789',
+           }
+           form = QuickEnrollmentForm(data=form_data)
+           self.assertFalse(form.is_valid())
+
+       def test_student_search_form(self):
+           """Test student search form"""
+           form_data = {
+               'search_query': 'test',
+               'enrollment_status': 'enrolled',
+           }
+           form = StudentSearchForm(data=form_data)
+           self.assertTrue(form.is_valid())
+   EOF
+   ```
+3. Run form tests:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py test apps.constituents.tests.test_forms
+   ```
+
+## Acceptance Criteria:
+- Student profile form created
+- Student search form created
+- Student update form created
+- Quick enrollment form created
+- Form validation implemented
+- Form widgets customized
+- Helper text added
+- Forms tested
+
+## Files Modified:
+- `src/apps/constituents/forms.py (updated with new forms)`
+- `src/apps/constituents/tests/test_forms.py (new)`
+
+## Important Notes:
+- Forms use Tailwind CSS classes for styling
+- Comprehensive validation implemented
+- Helper text added for user guidance
+- Multiple form types for different use cases
+- CSV bulk upload form for batch enrollment
+- Estimate: 1 hour
+
+## Testing:
+- [ ] Test form validation
+- [ ] Test required fields
+- [ ] Test custom clean methods
+- [ ] Test form widgets render correctly
+- [ ] Run automated tests
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection
+6. Login to Django admin as superuser
+7. Verify models appear in admin interface
+8. Test create, read, update, delete operations
+9. Verify list display, filters, and search work
+10. Access view URL and verify HTTP 200 response
+11. Test with different user permissions
+12. Verify context data passed to template
+13. Test any query parameters or filters

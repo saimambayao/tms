@@ -1,0 +1,66 @@
+# Task ID: 015b
+# Title: Enhance Django REST API for Frontend Integration
+# Status: pending
+# Dependencies: 001, 015
+# Priority: medium
+# Description: Extend existing Django REST Framework API endpoints to support Next.js frontend. Keep changes minimal - only add what's needed.
+
+# Details:
+Extend existing Django REST Framework API endpoints to support Next.js frontend. Keep changes minimal - only add what's needed.
+
+## Implementation Steps:
+1. Install additional DRF packages:
+   ```bash
+   pip install djangorestframework-simplejwt django-cors-headers
+   pip freeze > requirements.txt
+   ```
+2. Update settings.py:
+   ```python
+   INSTALLED_APPS += ['corsheaders']
+   MIDDLEWARE.insert(0, 'corsheaders.middleware.CorsMiddleware')
+   CORS_ALLOWED_ORIGINS = ['http://localhost:3000']  # Next.js dev server
+   ```
+3. Configure JWT authentication in settings.py:
+   ```python
+   REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': [
+           'rest_framework_simplejwt.authentication.JWTAuthentication',
+       ],
+   }
+   ```
+4. Add JWT token endpoints to urls.py:
+   ```python
+   from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+   urlpatterns += [
+       path('api/token/', TokenObtainPairView.as_view()),
+       path('api/token/refresh/', TokenRefreshView.as_view()),
+   ]
+   ```
+5. Test API endpoints with curl or Postman
+6. Document API endpoints
+
+## Acceptance Criteria:
+- CORS configured for Next.js development
+- JWT authentication added
+- Basic API endpoints verified working
+- API versioning maintained (/api/v1/)
+- Documentation updated
+
+## Files Modified:
+- `src/config/settings/base.py`
+- `src/config/urls.py`
+- `requirements.txt`
+
+## Important Notes:
+- Minimal changes - extend existing DRF setup
+- Keep all existing Django templates functional
+- API and templates coexist
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Test all API endpoints with curl or Postman
+2. Verify authentication and authorization
+3. Test error responses (400, 401, 403, 404, 500)
+4. Verify JSON response format matches spec
+5. Test pagination if applicable

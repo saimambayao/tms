@@ -1,0 +1,610 @@
+{% extends 'base/base.html' %}
+{% load static %}
+{% load unified_db_extras %}
+
+{% block title %}Import Preview - {{ database.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .import-container {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+
+    .import-header {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+        padding: 3rem 2rem;
+        margin-bottom: 2rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(16, 185, 129, 0.15);
+        text-align: center;
+    }
+
+    .import-header h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin: 0 0 1rem 0;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .import-header p {
+        font-size: 1.125rem;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .import-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+        margin-bottom: 2rem;
+    }
+
+    .card-header {
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        padding: 1.5rem 2rem;
+        border-bottom: 3px solid #059669;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-header h2 {
+        color: #1f2937;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    .card-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+    .card-content {
+        padding: 2rem;
+    }
+
+    .file-info {
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .file-info h3 {
+        color: #065f46;
+        font-size: 1.125rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+    }
+
+    .file-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #059669;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6b7280;
+    }
+
+    .mapping-section {
+        margin-bottom: 2rem;
+    }
+
+    .mapping-title {
+        color: #1f2937;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+    }
+
+    .field-mapping {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .field-mapping h4 {
+        color: #374151;
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+    }
+
+    .mapping-grid {
+        display: grid;
+        grid-template-columns: 1fr 200px;
+        gap: 1rem;
+        align-items: center;
+    }
+
+    .excel-column {
+        padding: 0.75rem;
+        background: #e0f2fe;
+        border: 1px solid #b3e5fc;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .field-select {
+        padding: 0.75rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: white;
+        font-size: 0.875rem;
+    }
+
+    .confidence-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        margin-top: 0.5rem;
+    }
+
+    .high-confidence {
+        background: #d1fae5;
+        color: #065f46;
+    }
+
+    .medium-confidence {
+        background: #fef3c7;
+        color: #92400e;
+    }
+
+    .low-confidence {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .preview-section {
+        margin-bottom: 2rem;
+    }
+
+    .preview-title {
+        color: #1f2937;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0 0 1rem 0;
+    }
+
+    .table-container {
+        overflow-x: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+    }
+
+    .preview-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .preview-table th {
+        background: #f9fafb;
+        padding: 0.75rem;
+        text-align: left;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #374151;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .preview-table td {
+        padding: 0.75rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+        border-bottom: 1px solid #f3f4f6;
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .form-actions {
+        padding: 2rem;
+        background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        display: flex;
+        justify-content: flex-end;
+        gap: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+        padding: 0.75rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 48px;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #059669 0%, #047857 100%);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-secondary {
+        background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        color: white;
+    }
+
+    .btn-secondary:hover {
+        background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
+        transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+        .import-header h1 {
+            font-size: 2rem;
+        }
+
+        .mapping-grid {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="import-container">
+    <div class="container mx-auto px-4 max-w-7xl">
+        <!-- Header Section -->
+        <div class="import-header">
+            <h1>
+                <svg class="w-10 h-10 inline mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                </svg>
+                {{ title }}
+            </h1>
+            <p>Review and map your Excel data before importing to <strong>{{ database.name }}</strong></p>
+        </div>
+
+        {% if not columns %}
+        <!-- File Upload Section (shown when no file uploaded yet) -->
+        <div class="import-card">
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                </div>
+                <h2>Upload Excel/CSV File</h2>
+            </div>
+            <div class="card-content">
+                <div class="file-info">
+                    <h3>Import Data from File</h3>
+                    <p class="text-gray-600 mb-4">Upload an Excel (.xlsx, .xls) or CSV file to import multiple records into <strong>{{ database.name }}</strong>.</p>
+
+                    <form method="post" enctype="multipart/form-data" class="space-y-4">
+                        {% csrf_token %}
+
+                        <div class="upload-area">
+                            <label for="excel_file" class="block">
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-green-400 transition-colors cursor-pointer">
+                                    <svg class="w-12 h-12 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium text-gray-700 mb-2">Click to select file or drag and drop</p>
+                                    <p class="text-sm text-gray-500">Supported formats: CSV files (recommended) and Excel files*</p>
+                                    <input type="file" id="excel_file" name="excel_file" accept=".xlsx,.xls,.csv" class="hidden" onchange="updateFileName(this)">
+                                </div>
+                            </label>
+                            <div id="file-name" class="mt-2 text-sm text-gray-600 text-center hidden">
+                                Selected: <span id="selected-file-name" class="font-medium"></span>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h4 class="font-medium text-blue-900 mb-2">File Format Guidelines:</h4>
+                            <ul class="text-sm text-blue-800 space-y-1">
+                                <li>• <strong>CSV format is recommended</strong> for best compatibility</li>
+                                <li>• First row should contain column headers</li>
+                                <li>• Supported columns: first_name, last_name, email, phone</li>
+                                <li>• Maximum file size: 10MB</li>
+                                <li>• Maximum rows: 10,000</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                            <h4 class="font-medium text-amber-900 mb-2">Excel Files:</h4>
+                            <p class="text-sm text-amber-800">
+                                * Excel files (.xlsx, .xls) require additional packages to be installed.
+                                If you encounter an error, please use CSV format instead or contact your administrator
+                                to install the required packages (pandas/openpyxl/xlrd).
+                            </p>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                                </svg>
+                                Upload & Preview
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Import Card (shown after file upload) -->
+        <div class="import-card">
+            <!-- File Information -->
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <h2>File Information</h2>
+            </div>
+            <div class="card-content">
+                <div class="file-info">
+                    <h3>Import Summary</h3>
+                    <div class="file-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">{{ total_rows }}</div>
+                            <div class="stat-label">Total Rows</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ columns|length }}</div>
+                            <div class="stat-label">Columns</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value">{{ preview_data|length }}</div>
+                            <div class="stat-label">Preview Rows</div>
+                        </div>
+                        {% if available_sheets %}
+                        <div class="stat-item">
+                            <div class="stat-value">{{ available_sheets|length }}</div>
+                            <div class="stat-label">Sheets Available</div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if available_sheets %}
+                <!-- Sheet Selection -->
+                <div class="mt-6">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-3">Select Sheet to Import</h4>
+                    <p class="text-gray-600 mb-4">This Excel file contains multiple sheets. Please select which sheet you want to import data from.</p>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {% for sheet in available_sheets %}
+                        <div class="sheet-option">
+                            <input type="radio" id="sheet_{{ forloop.counter }}" name="selected_sheet" value="{{ sheet }}"
+                                   {% if sheet == selected_sheet %}checked{% endif %} class="hidden">
+                            <label for="sheet_{{ forloop.counter }}" class="sheet-label block p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-400 transition-colors {% if sheet == selected_sheet %}border-green-500 bg-green-50{% endif %}">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <div>
+                                        <div class="font-medium text-gray-900">{{ sheet }}</div>
+                                        {% if sheet == selected_sheet %}
+                                        <div class="text-sm text-green-600 font-medium">Currently Selected</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p class="text-sm text-blue-800">
+                            <strong>Note:</strong> Only the selected sheet will be imported. If you need to import data from multiple sheets, please upload them separately or contact support for assistance.
+                        </p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Field Mapping -->
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                    </svg>
+                </div>
+                <h2>Field Mapping</h2>
+            </div>
+            <div class="card-content">
+                <div class="mapping-section">
+                    <p class="text-gray-600 mb-4">Map your Excel columns to database fields. The system has suggested mappings based on column names.</p>
+
+                    <form id="importForm" method="post" action="{% url 'unified_db:database_import_process' database.slug %}">
+                        {% csrf_token %}
+
+                        <!-- Hidden field for file path -->
+                        <input type="hidden" name="file_path" value="{{ file_path|default:'temp_file_path' }}">
+
+                        <!-- Field mappings -->
+                        <div class="space-y-4">
+                            {% for column, suggestion in field_suggestions.items %}
+                            <div class="field-mapping">
+                                <h4 class="text-sm font-medium text-gray-700 mb-2">{{ column }}</h4>
+                                <div class="mapping-grid">
+                                    <div class="excel-column">
+                                        <strong>Excel Column:</strong> {{ column }}
+                                        {% if suggestion.confidence > 80 %}
+                                            <div class="confidence-badge high-confidence">High Match ({{ suggestion.confidence }}%)</div>
+                                        {% elif suggestion.confidence > 50 %}
+                                            <div class="confidence-badge medium-confidence">Medium Match ({{ suggestion.confidence }}%)</div>
+                                        {% else %}
+                                            <div class="confidence-badge low-confidence">Low Match ({{ suggestion.confidence }}%)</div>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <select name="field_mappings" class="field-select" onchange="updateFieldMapping('{{ column }}', this.value)">
+                                            <option value="">Skip this column</option>
+                                            <optgroup label="Standard Fields">
+                                                <option value='{"type": "standard", "field": "first_name"}' {% if suggestion.suggested_field == 'first_name' %}selected{% endif %}>First Name</option>
+                                                <option value='{"type": "standard", "field": "last_name"}' {% if suggestion.suggested_field == 'last_name' %}selected{% endif %}>Last Name</option>
+                                                <option value='{"type": "standard", "field": "middle_name"}' {% if suggestion.suggested_field == 'middle_name' %}selected{% endif %}>Middle Name</option>
+                                                <option value='{"type": "standard", "field": "full_name"}' {% if suggestion.suggested_field == 'full_name' %}selected{% endif %}>Full Name (Auto-split)</option>
+                                                <option value='{"type": "standard", "field": "email"}' {% if suggestion.suggested_field == 'email' %}selected{% endif %}>Email</option>
+                                                <option value='{"type": "standard", "field": "phone"}' {% if suggestion.suggested_field == 'phone' %}selected{% endif %}>Phone</option>
+                                            </optgroup>
+                                            <optgroup label="Existing Database Fields">
+                                                {% for field in existing_fields %}
+                                                <option value='{"type": "existing_field", "field": "{{ field.name }}"}' {% if suggestion.suggested_field == 'existing' and suggestion.field_name == field.name %}selected{% endif %}>{{ field.label }}</option>
+                                                {% endfor %}
+                                            </optgroup>
+                                            <option value='{"type": "new_field", "field": "{{ column }}"}' {% if suggestion.suggested_field == 'custom' %}selected{% endif %}>Create as new field</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Hidden field to store final mappings -->
+                        <input type="hidden" name="field_mappings_json" id="fieldMappingsJson" value="{}">
+                    </form>
+                </div>
+            </div>
+
+            <!-- Data Preview -->
+            <div class="card-header">
+                <div class="card-icon">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+                <h2>Data Preview (First 10 Rows)</h2>
+            </div>
+            <div class="card-content">
+                <div class="preview-section">
+                    <div class="table-container">
+                        <table class="preview-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    {% for column in columns %}
+                                    <th>{{ column }}</th>
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in preview_data %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    {% for column in columns %}
+                                    <td title="{{ row|get_item:column }}">
+                                        {{ row|get_item:column|truncatechars:50 }}
+                                    </td>
+                                    {% endfor %}
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <a href="{% url 'unified_db:database_import' database.slug %}" class="btn btn-secondary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Back
+                </a>
+                <button type="button" onclick="processImport()" class="btn btn-primary">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Import Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Store field mappings
+    let fieldMappings = {};
+
+    function updateFieldMapping(column, value) {
+        if (value) {
+            fieldMappings[column] = JSON.parse(value);
+        } else {
+            delete fieldMappings[column];
+        }
+        document.getElementById('fieldMappingsJson').value = JSON.stringify(fieldMappings);
+    }
+
+    function processImport() {
+        // Update hidden field with current mappings
+        document.getElementById('fieldMappingsJson').value = JSON.stringify(fieldMappings);
+
+        // Debug logging
+        console.log('Field mappings:', fieldMappings);
+        console.log('JSON string:', JSON.stringify(fieldMappings));
+
+        // Submit the form
+        document.getElementById('importForm').submit();
+    }
+
+    function updateFileName(input) {
+        const fileNameDisplay = document.getElementById('file-name');
+        const selectedFileName = document.getElementById('selected-file-name');
+
+        if (input.files.length > 0) {
+            selectedFileName.textContent = input.files[0].name;
+            fileNameDisplay.classList.remove('hidden');
+        } else {
+            fileNameDisplay.classList.add('hidden');
+        }
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,59 @@
+# Task ID: 029
+# Title: Rename ChapterMembership to MadrasahEnrollment
+# Status: pending
+# Dependencies: 027, 028
+# Priority: high
+# Description: Rename ChapterMembership model to MadrasahEnrollment using RenameModel migration.
+
+# Details:
+Rename ChapterMembership model to MadrasahEnrollment using RenameModel migration.
+
+## Implementation Steps:
+1. Update model in chapters/models.py:
+   ```python
+   class MadrasahEnrollment(models.Model):
+       madrasah = ForeignKey(Madrasah, on_delete=CASCADE, related_name='enrollments')
+       user = ForeignKey(User, on_delete=CASCADE, related_name='madrasah_enrollments')
+       ...
+       class Meta:
+           db_table = 'chapters_madrasahenrollment'
+           verbose_name = 'Madrasah Enrollment'
+           verbose_name_plural = 'Madrasah Enrollments'
+   ```
+2. Create migration:
+   ```bash
+   python manage.py makemigrations chapters --name rename_membership_to_enrollment
+   ```
+3. Test migration on staging
+4. Verify data:
+   ```python
+   from apps.chapters.models import MadrasahEnrollment
+   print(MadrasahEnrollment.objects.count())
+   ```
+5. Update imports across codebase
+
+## Acceptance Criteria:
+- Migration created for RenameModel
+- Table renamed: chapters_chaptermembership → chapters_madrasahenrollment
+- All enrollment data preserved
+- Foreign keys updated
+- Model accessible as MadrasahEnrollment
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_rename_membership_to_enrollment.py`
+
+## Important Notes:
+- Follow same pattern as Chapter→Madrasah rename
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Run migrations and verify schema changes
+7. Create test instances to verify new fields
+8. Test admin interface with new fields
+9. Verify backward compatibility with existing data

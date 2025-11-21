@@ -1,0 +1,64 @@
+# Task ID: 032
+# Title: Add Madrasah Leadership Fields
+# Status: pending
+# Dependencies: 031
+# Priority: medium
+# Description: Add leadership fields to Madrasah model: muder, assistant_muder, registrar.
+
+# Details:
+Add leadership fields to Madrasah model: muder, assistant_muder, registrar.
+
+## Implementation Steps:
+1. Add leadership fields:
+   ```python
+   class Madrasah(models.Model):
+       ...
+       muder = ForeignKey(
+           User,
+           on_delete=SET_NULL,
+           null=True,
+           blank=True,
+           related_name='madrasah_as_muder',
+           limit_choices_to={'role': 'muder'},
+           help_text="Madrasah Director/Principal (مدير)"
+       )
+       assistant_muder = ForeignKey(
+           User,
+           on_delete=SET_NULL,
+           null=True,
+           blank=True,
+           related_name='madrasah_as_assistant'
+       )
+       registrar = ForeignKey(
+           User,
+           on_delete=SET_NULL,
+           null=True,
+           blank=True,
+           related_name='madrasah_as_registrar'
+       )
+   ```
+2. Create migration
+3. Test assigning leaders in admin
+
+## Acceptance Criteria:
+- muder field added (ForeignKey to User with role='muder')
+- assistant_muder field added (optional)
+- registrar field added (optional)
+- Fields use limit_choices_to for role filtering
+- Migration created
+- Can assign leaders in admin
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_add_leadership_fields.py`
+
+## Important Notes:
+- Use SET_NULL to preserve madrasah if user deleted
+- limit_choices_to filters dropdown in admin
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

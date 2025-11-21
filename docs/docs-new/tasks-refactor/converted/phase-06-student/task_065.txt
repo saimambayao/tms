@@ -1,0 +1,238 @@
+# Task ID: 065
+# Title: Run Student Migration
+# Status: pending
+# Dependencies: 064
+# Priority: high
+# Description: Execute the complete student model migration including schema changes and data migration. This task runs all migrations created in previous tasks and 
+
+# Details:
+Execute the complete student model migration including schema changes and data migration. This task runs all migrations created in previous tasks and verifies successful completion.
+
+**CRITICAL:** This is the actual execution of the migration. All planning and testing must be complete before running this task.
+
+## Implementation Steps:
+1. Pre-migration verification:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+
+   # Verify backup exists
+   ls -lh /Users/saidamenmambayao/apps/madaris-ms/backups/ | head -5
+
+   # Record current state
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+   from django.db import connection
+
+   print(f"Pre-migration student count: {Student.objects.count()}")
+
+   with connection.cursor() as cursor:
+       cursor.execute("SELECT COUNT(*) FROM constituents_student")
+       print(f"Database table count: {cursor.fetchone()[0]}")
+   EOF
+   ```
+2. List pending migrations:
+   ```bash
+   python manage.py showmigrations constituents
+   ```
+3. Test rollback capability before migrating:
+   ```bash
+   # Verify rollback script exists
+   test -f /Users/saidamenmambayao/apps/madaris-ms/scripts/rollback_student_migration.sh && echo "Rollback script ready" || echo "ERROR: Rollback script missing"
+   ```
+4. Run migrations:
+   ```bash
+   # Run all constituents migrations
+   python manage.py migrate constituents
+
+   # Check migration status
+   python manage.py showmigrations constituents
+   ```
+5. Verify schema changes:
+   ```bash
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+
+   # Check model fields
+   field_names = [f.name for f in Student._meta.get_fields()]
+   print("Student model fields:")
+   for field in sorted(field_names):
+       print(f"  - {field}")
+
+   # Verify new fields exist
+   required_fields = ['student_number', 'enrollment_status', 'current_grade_level']
+   for field in required_fields:
+       if field in field_names:
+           print(f"✓ {field} exists")
+       else:
+           print(f"✗ ERROR: {field} missing")
+   EOF
+   ```
+6. Verify data migration:
+   ```bash
+   python /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_data.py
+   ```
+7. Check row count integrity:
+   ```bash
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+
+   total = Student.objects.count()
+   print(f"Post-migration student count: {total}")
+
+   # Check enrollment status distribution
+   for status, label in Student.EnrollmentStatus.choices:
+       count = Student.objects.filter(enrollment_status=status).count()
+       print(f"{label}: {count}")
+
+   # Check student numbers generated
+   with_numbers = Student.objects.exclude(student_number__isnull=True).exclude(student_number='').count()
+   print(f"\nStudents with student_number: {with_numbers}/{total}")
+
+   if with_numbers == total:
+       print("✓ All students have student numbers")
+   else:
+       print(f"✗ WARNING: {total - with_numbers} students missing student numbers")
+   EOF
+   ```
+8. Verify foreign key relationships:
+   ```bash
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+   from django.db import connection
+
+   # Check foreign key constraints
+   with connection.cursor() as cursor:
+       cursor.execute("""
+           SELECT
+               tc.constraint_name,
+               tc.table_name,
+               kcu.column_name,
+               ccu.table_name AS foreign_table_name,
+               ccu.column_name AS foreign_column_name
+           FROM information_schema.table_constraints AS tc
+           JOIN information_schema.key_column_usage AS kcu
+               ON tc.constraint_name = kcu.constraint_name
+           JOIN information_schema.constraint_column_usage AS ccu
+               ON ccu.constraint_name = tc.constraint_name
+           WHERE tc.constraint_type = 'FOREIGN KEY'
+               AND tc.table_name = 'constituents_student';
+       """)
+
+       print("Foreign key relationships:")
+       for row in cursor.fetchall():
+           print(f"  - {row[2]} → {row[3]}.{row[4]}")
+   EOF
+   ```
+9. Test admin interface:
+   ```bash
+   # Start dev server temporarily
+   python manage.py runserver 8000 &
+   SERVER_PID=$!
+
+   # Wait a moment
+   sleep 3
+
+   # Test admin URL (should return 200 or redirect)
+   curl -I http://localhost:8000/admin/constituents/student/
+
+   # Stop server
+   kill $SERVER_PID
+   ```
+10. Document migration completion:
+    ```bash
+    cat >> /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/MIGRATION_LOG.txt << EOF
+
+    ==================================================
+    MIGRATION EXECUTION COMPLETE
+    ==================================================
+    Date: $(date)
+    Status: SUCCESS
+
+    Pre-migration count: $(grep "Pre-migration" /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/MIGRATION_LOG.txt | tail -1)
+    Post-migration count: $(python manage.py shell -c "from apps.constituents.models import Student; print(Student.objects.count())")
+
+    Migrations applied:
+    $(python manage.py showmigrations constituents | grep '\[X\]')
+
+    Next steps:
+    - Update foreign key references (task_066)
+    - Verify data integrity (task_067)
+    EOF
+    ```
+11. Create rollback checkpoint:
+    ```bash
+    # Dump post-migration state
+    python manage.py dumpdata constituents.Student > /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/student_data_post_migration.json
+
+    echo "Rollback checkpoint created: student_data_post_migration.json"
+    ```
+
+## Acceptance Criteria:
+- All migrations executed successfully
+- Database schema updated
+- Data migration completed
+- Row counts verified (no data loss)
+- Foreign keys functional
+- Admin interface works
+- Migration logged
+- Backup verified before migration
+- Rollback tested
+
+## Files Modified:
+- `src/apps/constituents/migrations/ (all migration files executed)`
+- `backups/phase6_student/MIGRATION_LOG.txt`
+- `backups/phase6_student/student_data_post_migration.json`
+
+## Important Notes:
+- This task executes all migrations from tasks 062-064
+- Must verify backup before proceeding
+- Test rollback script before migrating
+- Document all results thoroughly
+- Keep server stopped during migration
+- Estimate: 30-45 minutes
+
+## Success Criteria:
+- ✓ All migrations show [X] in showmigrations
+- ✓ Row count matches pre-migration count
+- ✓ All students have student_number
+- ✓ Foreign keys functional
+- ✓ Admin interface loads without errors
+
+## Rollback Procedure:
+If migration fails:
+```bash
+# Stop all processes
+python manage.py migrate constituents <previous_migration_number>
+
+# Restore from backup
+python manage.py loaddata /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/student_data_pre_migration.json
+
+# Verify restoration
+python manage.py shell -c "from apps.constituents.models import BMParliamentMember; print(f'Restored: {BMParliamentMember.objects.count()} records')"
+```
+
+## Risk Mitigation:
+- ⚠️ MUST have verified backup
+- ⚠️ MUST test rollback script first
+- ⚠️ Run during low-traffic period
+- ⚠️ Monitor closely during execution
+- ⚠️ Keep backup for at least 7 days
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Run migrations and verify schema changes
+7. Create test instances to verify new fields
+8. Test admin interface with new fields
+9. Verify backward compatibility with existing data
+10. Review planning documentation
+11. Verify all risks identified
+12. Confirm rollback procedures documented
+13. Ensure dependencies are mapped
+14. Run test suite with `python manage.py test`
+15. Verify test coverage meets requirements
+16. Check for any failing tests
+17. Verify test assertions are correct

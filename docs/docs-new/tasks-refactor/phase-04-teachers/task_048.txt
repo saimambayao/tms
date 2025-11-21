@@ -1,0 +1,148 @@
+# Task ID: 048
+# Title: Create TeacherProfile Forms
+# Status: pending
+# Dependencies: 047
+# Priority: medium
+# Description: Create forms for creating and updating teacher profiles with proper validation and widgets.
+
+# Details:
+Create forms for creating and updating teacher profiles with proper validation and widgets.
+
+## Implementation Steps:
+1. Create forms.py in teachers app:
+   ```python
+   # apps/teachers/forms.py
+   from django import forms
+   from .models import TeacherProfile
+   from apps.users.models import User
+
+   class TeacherProfileForm(forms.ModelForm):
+       # Specialization choices
+       SPECIALIZATION_CHOICES = [
+           ('quran', 'Quran Studies (Uloom Al-Quran)'),
+           ('hadith', 'Hadith Studies (Ilm al-Hadith)'),
+           ('fiqh', 'Islamic Jurisprudence (Fiqh)'),
+           ('arabic', 'Arabic Language'),
+           ('tafsir', 'Quranic Exegesis (Tafsir)'),
+           ('aqeedah', 'Islamic Creed (Aqeedah)'),
+           ('tajweed', 'Quran Recitation (Tajweed)'),
+           ('sirah', 'Prophetic Biography (Sirah)'),
+           ('general', 'General Islamic Studies'),
+       ]
+
+       specializations_choices = forms.MultipleChoiceField(
+           choices=SPECIALIZATION_CHOICES,
+           widget=forms.CheckboxSelectMultiple,
+           required=True,
+           help_text="Select all areas of expertise"
+       )
+
+       class Meta:
+           model = TeacherProfile
+           fields = [
+               'user', 'employee_id', 'specializations_choices',
+               'certifications', 'hire_date', 'bio', 'education_background'
+           ]
+           widgets = {
+               'hire_date': forms.DateInput(attrs={'type': 'date'}),
+               'bio': forms.Textarea(attrs={'rows': 4}),
+               'education_background': forms.Textarea(attrs={'rows': 3}),
+           }
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           # Filter users to only show those with asatidz role
+           self.fields['user'].queryset = User.objects.filter(role='asatidz')
+
+           # If editing existing profile, populate specializations
+           if self.instance.pk:
+               self.fields['specializations_choices'].initial = \
+                   self.instance.specializations
+
+       def save(self, commit=True):
+           instance = super().save(commit=False)
+           # Convert choices to list for JSONField
+           instance.specializations = \
+               self.cleaned_data['specializations_choices']
+           if commit:
+               instance.save()
+           return instance
+
+   class QuickTeacherCreationForm(forms.Form):
+       """Quick form to create both user and teacher profile"""
+       # User fields
+       username = forms.CharField(max_length=150)
+       first_name = forms.CharField(max_length=150)
+       last_name = forms.CharField(max_length=150)
+       email = forms.EmailField()
+       password = forms.CharField(widget=forms.PasswordInput)
+
+       # Teacher fields
+       employee_id = forms.CharField(max_length=50)
+       specializations = forms.MultipleChoiceField(
+           choices=TeacherProfileForm.SPECIALIZATION_CHOICES,
+           widget=forms.CheckboxSelectMultiple
+       )
+       hire_date = forms.DateField(widget=forms.DateInput(attrs={'type': 'date'}))
+
+       def save(self):
+           # Create user
+           user = User.objects.create_user(
+               username=self.cleaned_data['username'],
+               email=self.cleaned_data['email'],
+               password=self.cleaned_data['password'],
+               first_name=self.cleaned_data['first_name'],
+               last_name=self.cleaned_data['last_name'],
+               role='asatidz'
+           )
+
+           # Create teacher profile
+           profile = TeacherProfile.objects.create(
+               user=user,
+               employee_id=self.cleaned_data['employee_id'],
+               specializations=self.cleaned_data['specializations'],
+               hire_date=self.cleaned_data['hire_date']
+           )
+           return profile
+   ```
+2. Test form in Django shell:
+   ```python
+   from apps.teachers.forms import QuickTeacherCreationForm
+
+   form_data = {
+       'username': 'ustadz_omar',
+       'first_name': 'Omar',
+       'last_name': 'Ibrahim',
+       'email': 'omar@example.com',
+       'password': 'test123',
+       'employee_id': 'TCH-002',
+       'specializations': ['quran', 'arabic'],
+       'hire_date': '2024-01-15'
+   }
+   form = QuickTeacherCreationForm(data=form_data)
+   if form.is_valid():
+       profile = form.save()
+   ```
+
+## Acceptance Criteria:
+- TeacherProfileForm created
+- Specializations field uses MultipleChoiceField
+- Certifications field properly handled
+- Date widget for hire_date
+- Form validation works
+- Test form rendering and submission
+
+## Files Modified:
+- `src/apps/teachers/forms.py (new file)`
+
+## Important Notes:
+- QuickForm creates both User and Profile in one step
+- Specializations stored as list in JSONField
+- Estimate: 50 minutes
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

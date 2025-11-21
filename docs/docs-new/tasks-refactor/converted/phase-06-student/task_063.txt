@@ -1,0 +1,198 @@
+# Task ID: 063
+# Title: Add Student-Specific Fields
+# Status: pending
+# Dependencies: 062
+# Priority: medium
+# Description: Add student-specific fields to the Student model: student_number, enrollment_status, and madrasah education tracking fields. Most fields already exist
+
+# Details:
+Add student-specific fields to the Student model: student_number, enrollment_status, and madrasah education tracking fields. Most fields already exist from BMParliamentMember, so we only add minimal new fields.
+
+## Implementation Steps:
+1. Add student-specific fields to Student model in src/apps/constituents/models.py:
+   ```python
+   class Student(models.Model):
+       """Student profile for madaris enrollments"""
+
+       # Existing fields from BMParliamentMember
+       # (user, first_name, last_name, birth_date, gender, etc.)
+
+       # NEW: Student-specific fields
+       student_number = models.CharField(
+           max_length=20,
+           unique=True,
+           blank=True,
+           null=True,
+           help_text="Unique student identification number"
+       )
+
+       class EnrollmentStatus(models.TextChoices):
+           ENROLLED = 'enrolled', 'Currently Enrolled'
+           GRADUATE = 'graduate', 'Graduate'
+           DROPOUT = 'dropout', 'Dropped Out'
+           TRANSFERRED = 'transferred', 'Transferred'
+           INACTIVE = 'inactive', 'Inactive'
+           APPLICANT = 'applicant', 'Applicant'
+
+       enrollment_status = models.CharField(
+           max_length=20,
+           choices=EnrollmentStatus.choices,
+           default=EnrollmentStatus.APPLICANT,
+           help_text="Current enrollment status"
+       )
+
+       current_grade_level = models.CharField(
+           max_length=50,
+           blank=True,
+           help_text="Current grade/year level (e.g., Grade 1, Elementary, etc.)"
+       )
+
+       # Note: Madaris education fields already exist from BMParliamentMember:
+       # - madrasah_name
+       # - madrasah_level (elementary/secondary/high)
+       # - year_enrolled
+       # - year_graduated
+       # These fields are KEPT as-is
+
+       # Note: Family/guardian fields already exist:
+       # - father_name, mother_name
+       # - guardian_name, guardian_contact
+       # - household_head, household_income
+       # These fields are KEPT as-is
+
+       class Meta:
+           db_table = 'constituents_student'
+           verbose_name = 'Student'
+           verbose_name_plural = 'Students'
+           ordering = ['-created_at']
+           indexes = [
+               models.Index(fields=['student_number']),
+               models.Index(fields=['enrollment_status']),
+           ]
+   ```
+2. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations constituents --name add_student_specific_fields
+   ```
+3. Review migration - should add 3 new fields
+4. Apply migration:
+   ```bash
+   python manage.py migrate constituents
+   ```
+5. Generate student numbers for existing records:
+   ```python
+   # Run in Django shell
+   from apps.constituents.models import Student
+   from datetime import datetime
+
+   # Generate student numbers for existing students
+   for student in Student.objects.filter(student_number__isnull=True):
+       # Format: STU-YYYY-XXXXX
+       student.student_number = f"STU-{datetime.now().year}-{student.id:05d}"
+       student.save()
+
+   print(f"Generated student numbers for {Student.objects.filter(student_number__isnull=False).count()} students")
+   ```
+6. Update admin to display new fields:
+   ```python
+   # In src/apps/constituents/admin.py
+   @admin.register(Student)
+   class StudentAdmin(admin.ModelAdmin):
+       list_display = [
+           'student_number',
+           'get_full_name',
+           'enrollment_status',
+           'current_grade_level',
+           'madrasah_name',
+           'created_at'
+       ]
+       list_filter = [
+           'enrollment_status',
+           'current_grade_level',
+           'madrasah_level',
+           'gender',
+       ]
+       search_fields = [
+           'student_number',
+           'first_name',
+           'last_name',
+           'madrasah_name'
+       ]
+       readonly_fields = ['student_number', 'created_at', 'updated_at']
+
+       fieldsets = (
+           ('Student Information', {
+               'fields': (
+                   'student_number',
+                   'enrollment_status',
+                   'current_grade_level',
+               )
+           }),
+           ('Personal Information', {
+               'fields': (
+                   'user',
+                   'first_name',
+                   'last_name',
+                   'birth_date',
+                   'gender',
+                   'address',
+               )
+           }),
+           ('Madrasah Education', {
+               'fields': (
+                   'madrasah_name',
+                   'madrasah_level',
+                   'year_enrolled',
+                   'year_graduated',
+               )
+           }),
+           ('Family Information', {
+               'fields': (
+                   'father_name',
+                   'mother_name',
+                   'guardian_name',
+                   'guardian_contact',
+               )
+           }),
+       )
+   ```
+7. Test in admin interface - verify new fields display
+8. Verify existing data unaffected:
+   ```bash
+   python manage.py shell -c "from apps.constituents.models import Student; print(f'Students with data: {Student.objects.exclude(first_name=\"\").count()}')"
+   ```
+
+## Acceptance Criteria:
+- student_number field added (unique identifier)
+- enrollment_status field added with choices
+- current_grade_level field added
+- Migration created and tested
+- Fields display in admin
+- Default values set appropriately
+- Existing data unaffected
+
+## Files Modified:
+- `src/apps/constituents/models.py`
+- `src/apps/constituents/admin.py`
+- `src/apps/constituents/migrations/000X_add_student_specific_fields.py`
+
+## Important Notes:
+- Most fields already exist from BMParliamentMember
+- Only adding 3 new fields: student_number, enrollment_status, current_grade_level
+- Madaris education fields already present (madrasah_name, madrasah_level, etc.)
+- Family fields already present (father_name, mother_name, guardian info)
+- Student number format: STU-YYYY-XXXXX
+- Estimate: 45 minutes
+
+## Testing:
+- [ ] Verify new fields in admin
+- [ ] Test student_number uniqueness
+- [ ] Test enrollment_status choices
+- [ ] Verify existing data intact
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

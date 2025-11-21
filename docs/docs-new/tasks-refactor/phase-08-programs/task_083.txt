@@ -1,0 +1,147 @@
+# Task ID: 083
+# Title: Audit Existing Programs Models
+# Status: pending
+# Dependencies: 082
+# Priority: high
+# Description: Conduct comprehensive audit of existing MinistryProgram model and related models in apps/services/ to understand current structure, fields, relationsh
+
+# Details:
+Conduct comprehensive audit of existing MinistryProgram model and related models in apps/services/ to understand current structure, fields, relationships, and usage patterns before adapting for educational programs.
+
+## Implementation Steps:
+1. Examine MinistryProgram model:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   cat apps/services/models.py | grep -A 200 "class MinistryProgram"
+   ```
+2. Review ServiceApplication model:
+   ```bash
+   cat apps/services/models.py | grep -A 100 "class ServiceApplication"
+   ```
+3. Check current record counts:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram, ServiceApplication
+   print(f'MinistryProgram records: {MinistryProgram.objects.count()}')
+   print(f'ServiceApplication records: {ServiceApplication.objects.count()}')
+   print(f'Program sources: {MinistryProgram.objects.values(\"program_source\").distinct()}')
+   print(f'PPA types: {MinistryProgram.objects.values(\"ppa_type\").distinct()}')
+   "
+   ```
+4. List all templates using programs:
+   ```bash
+   find apps/services/templates -name "*.html" -type f
+   find apps/core/templates -name "*program*.html" -type f
+   ```
+5. Review admin configuration:
+   ```bash
+   cat apps/services/admin.py | grep -A 50 "MinistryProgramAdmin"
+   ```
+6. Check view patterns:
+   ```bash
+   cat apps/services/views.py | grep -A 20 "def.*program"
+   ```
+7. Review migration history:
+   ```bash
+   ls -la apps/services/migrations/ | grep -E "program|ministryprogram"
+   ```
+8. Document foreign key relationships:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram
+   print('Foreign Keys TO MinistryProgram:')
+   for rel in MinistryProgram._meta.related_objects:
+       print(f'  {rel.related_model.__name__}.{rel.field.name}')
+   "
+   ```
+9. Create audit report:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-08-programs/AUDIT_REPORT.md << 'EOF'
+   # Phase 8 - Programs Adaptation Audit Report
+
+   Date: $(date)
+
+   ## Current Structure
+
+   ### MinistryProgram Model
+   - Location: apps/services/models.py
+   - Purpose: Ministry Programs, Projects & Activities (PPAs)
+   - Record count: [TO BE FILLED]
+
+   ### Key Fields
+   [Document important fields and their usage]
+
+   ### Related Models
+   - ServiceApplication
+   - MinistryProgramHistory
+   [List all related models]
+
+   ### Templates
+   [List all program-related templates]
+
+   ### Admin Interface
+   [Document admin configuration]
+
+   ### Views and URLs
+   [Document view patterns]
+
+   ## Adaptation Strategy
+
+   ### Fields to Keep
+   [List fields that work for education]
+
+   ### Fields to Add
+   [List new education-specific fields needed]
+
+   ### Fields to Modify
+   [List fields needing choice updates]
+
+   ### Reusable Components
+   [List components that can be reused as-is]
+
+   ## Next Steps
+   [Recommendations for task_084.txt onwards]
+   EOF
+   ```
+10. Verify audit report created:
+    ```bash
+    ls -lh /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-08-programs/AUDIT_REPORT.md
+    ```
+
+## Acceptance Criteria:
+- MinistryProgram model structure documented
+- ServiceApplication model structure documented
+- Current field usage analyzed
+- Foreign key relationships mapped
+- Template usage identified
+- Admin interface reviewed
+- View patterns documented
+- Record counts documented
+- Migration history reviewed
+- Audit report created
+
+## Files Modified:
+- `docs/docs-new/tasks-refactor/phase-08-programs/AUDIT_REPORT.md (new)`
+- `apps/services/models.py (read only)`
+- `apps/services/admin.py (read only)`
+- `apps/services/views.py (read only)`
+- `apps/services/templates/ (read only)`
+
+## Important Notes:
+- This is an audit only - no code changes in this task
+- Focus on understanding current structure before making changes
+- Document which components can be reused vs. need adaptation
+- Identify any data migration requirements
+- Note any breaking changes that might affect existing data
+- Consider backward compatibility requirements
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin

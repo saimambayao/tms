@@ -1,0 +1,334 @@
+# Task ID: 053
+# Title: Create CurriculumFramework Model
+# Status: pending
+# Dependencies: 052
+# Priority: medium
+# Description: Create the CurriculumFramework model to define educational programs and curriculum structures for different madrasah levels. This model links subjects
+
+# Details:
+Create the CurriculumFramework model to define educational programs and curriculum structures for different madrasah levels. This model links subjects together into cohesive programs and tracks which subjects are taught at each grade level.
+
+## Implementation Steps:
+1. Add CurriculumFramework model to apps/curriculum/models.py:
+   ```python
+   class CurriculumFramework(models.Model):
+       """
+       Defines a curriculum framework/program for a specific education level.
+       Can be adopted by multiple madaris.
+       """
+
+       class EducationLevel(models.TextChoices):
+           """Education levels matching madrasah types"""
+           IBTIDAIYYAH = 'ibtidaiyyah', _('Ibtidaiyyah (Elementary)')
+           IDADIYYAH = 'idadiyyah', _("I'dadiyyah (Preparatory/Intermediate)")
+           THANAWIYYAH = 'thanawiyyah', _('Thanawiyyah (Secondary)')
+           KULLIYAH = 'kulliyah', _('Kulliyah (Tertiary/Higher Education)')
+           TAHFIDZ = 'tahfidz', _('Tahfidz (Quran Memorization)')
+           INTEGRATED = 'integrated', _('Integrated (Multi-level)')
+
+       # Basic Information
+       name = models.CharField(
+           max_length=255,
+           help_text=_('Framework name (e.g., MBHTE Islamic Education Framework)')
+       )
+       name_arabic = models.CharField(
+           max_length=255,
+           blank=True,
+           help_text=_('Arabic name of the framework')
+       )
+       code = models.CharField(
+           max_length=50,
+           unique=True,
+           help_text=_('Framework code (e.g., MBHTE-IED-2024)')
+       )
+       description = models.TextField(
+           help_text=_('Detailed description of the curriculum framework')
+       )
+
+       # Education Level
+       education_level = models.CharField(
+           max_length=20,
+           choices=EducationLevel.choices,
+           help_text=_('Target education level for this framework')
+       )
+
+       # Grade Levels Covered
+       grade_levels = models.JSONField(
+           default=list,
+           help_text=_('List of grade levels covered (e.g., ["Grade 1", "Grade 2"])')
+       )
+
+       # Subjects
+       subjects = models.ManyToManyField(
+           Subject,
+           through='CurriculumSubject',
+           related_name='frameworks',
+           help_text=_('Subjects included in this framework')
+       )
+
+       # MBHTE Compliance
+       is_mbhte_approved = models.BooleanField(
+           default=False,
+           help_text=_('Is this framework approved by MBHTE?')
+       )
+       mbhte_approval_date = models.DateField(
+           null=True,
+           blank=True,
+           help_text=_('Date of MBHTE approval')
+       )
+       mbhte_approval_number = models.CharField(
+           max_length=100,
+           blank=True,
+           help_text=_('MBHTE approval reference number')
+       )
+
+       # Implementation Details
+       total_credit_hours = models.DecimalField(
+           max_digits=6,
+           decimal_places=2,
+           default=0.0,
+           help_text=_('Total credit hours required for completion')
+       )
+       academic_year_structure = models.JSONField(
+           default=dict,
+           help_text=_('Structure of the academic year (semesters, quarters, etc.)')
+       )
+
+       # Status
+       is_active = models.BooleanField(
+           default=True,
+           help_text=_('Is this framework currently in use?')
+       )
+       effective_date = models.DateField(
+           null=True,
+           blank=True,
+           help_text=_('Date when this framework becomes effective')
+       )
+       end_date = models.DateField(
+           null=True,
+           blank=True,
+           help_text=_('Date when this framework is no longer used')
+       )
+
+       # Metadata
+       created_by = models.ForeignKey(
+           'users.User',
+           on_delete=models.SET_NULL,
+           null=True,
+           related_name='curriculum_frameworks_created',
+           help_text=_('User who created this framework')
+       )
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'curriculum_framework'
+           verbose_name = _('Curriculum Framework')
+           verbose_name_plural = _('Curriculum Frameworks')
+           ordering = ['education_level', 'name']
+           indexes = [
+               models.Index(fields=['education_level']),
+               models.Index(fields=['is_active']),
+               models.Index(fields=['is_mbhte_approved']),
+           ]
+
+       def __str__(self):
+           return f"{self.name} ({self.get_education_level_display()})"
+
+       def get_total_subjects(self):
+           """Return total number of subjects in framework."""
+           return self.subjects.count()
+
+       def get_core_subjects(self):
+           """Return queryset of core subjects only."""
+           return self.subjects.filter(is_core=True)
+
+       def get_elective_subjects(self):
+           """Return queryset of elective subjects only."""
+           return self.subjects.filter(is_core=False)
+
+
+   class CurriculumSubject(models.Model):
+       """
+       Through model for CurriculumFramework and Subject relationship.
+       Tracks additional details about how a subject fits into a framework.
+       """
+
+       framework = models.ForeignKey(
+           CurriculumFramework,
+           on_delete=models.CASCADE,
+           related_name='curriculum_subjects'
+       )
+       subject = models.ForeignKey(
+           Subject,
+           on_delete=models.CASCADE,
+           related_name='curriculum_assignments'
+       )
+
+       # Grade Level Assignment
+       grade_level = models.CharField(
+           max_length=50,
+           help_text=_('Grade level where this subject is taught (e.g., "Grade 1")')
+       )
+       semester = models.CharField(
+           max_length=50,
+           blank=True,
+           help_text=_('Semester or term (e.g., "First Semester", "Quarter 1")')
+       )
+
+       # Requirements
+       is_required = models.BooleanField(
+           default=True,
+           help_text=_('Is this subject required or elective?')
+       )
+       minimum_grade = models.CharField(
+           max_length=5,
+           blank=True,
+           help_text=_('Minimum passing grade (e.g., "75", "C")')
+       )
+
+       # Ordering
+       order = models.PositiveIntegerField(
+           default=0,
+           help_text=_('Display order within the grade level')
+       )
+
+       class Meta:
+           db_table = 'curriculum_framework_subject'
+           verbose_name = _('Curriculum Subject')
+           verbose_name_plural = _('Curriculum Subjects')
+           ordering = ['grade_level', 'order', 'subject__code']
+           unique_together = [['framework', 'subject', 'grade_level', 'semester']]
+
+       def __str__(self):
+           return f"{self.subject.code} in {self.framework.name} - {self.grade_level}"
+   ```
+
+2. Create migration:
+   ```bash
+   python manage.py makemigrations curriculum
+   ```
+
+3. Update admin.py to register new models:
+   ```python
+   from .models import Subject, CurriculumFramework, CurriculumSubject
+
+   class CurriculumSubjectInline(admin.TabularInline):
+       model = CurriculumSubject
+       extra = 1
+       fields = ['subject', 'grade_level', 'semester', 'is_required', 'order']
+       autocomplete_fields = ['subject']
+
+   @admin.register(CurriculumFramework)
+   class CurriculumFrameworkAdmin(admin.ModelAdmin):
+       list_display = [
+           'code', 'name', 'education_level',
+           'is_mbhte_approved', 'is_active', 'created_at'
+       ]
+       list_filter = ['education_level', 'is_mbhte_approved', 'is_active']
+       search_fields = ['name', 'name_arabic', 'code', 'description']
+       inlines = [CurriculumSubjectInline]
+       fieldsets = (
+           ('Basic Information', {
+               'fields': ('name', 'name_arabic', 'code', 'description')
+           }),
+           ('Education Details', {
+               'fields': ('education_level', 'grade_levels', 'academic_year_structure')
+           }),
+           ('MBHTE Compliance', {
+               'fields': (
+                   'is_mbhte_approved',
+                   'mbhte_approval_date',
+                   'mbhte_approval_number'
+               )
+           }),
+           ('Implementation', {
+               'fields': (
+                   'total_credit_hours',
+                   'effective_date',
+                   'end_date',
+                   'is_active'
+               )
+           }),
+       )
+       readonly_fields = ['created_by', 'created_at', 'updated_at']
+
+       def save_model(self, request, obj, form, change):
+           if not change:
+               obj.created_by = request.user
+           super().save_model(request, obj, form, change)
+
+   @admin.register(CurriculumSubject)
+   class CurriculumSubjectAdmin(admin.ModelAdmin):
+       list_display = [
+           'subject', 'framework', 'grade_level',
+           'semester', 'is_required', 'order'
+       ]
+       list_filter = ['framework', 'grade_level', 'is_required']
+       search_fields = ['subject__name', 'framework__name', 'grade_level']
+       autocomplete_fields = ['subject', 'framework']
+   ```
+
+4. Run migration:
+   ```bash
+   python manage.py migrate curriculum
+   ```
+
+5. Test in Django shell:
+   ```python
+   from apps.curriculum.models import CurriculumFramework, Subject, CurriculumSubject
+
+   # Create a framework
+   framework = CurriculumFramework.objects.create(
+       name='MBHTE Islamic Education Framework - Ibtidaiyyah',
+       code='MBHTE-IED-IBT-2024',
+       description='Islamic education curriculum for elementary level',
+       education_level='ibtidaiyyah',
+       grade_levels=['Grade 1', 'Grade 2', 'Grade 3'],
+       is_mbhte_approved=True,
+       is_active=True
+   )
+
+   # Link subjects to framework
+   subject = Subject.objects.first()
+   CurriculumSubject.objects.create(
+       framework=framework,
+       subject=subject,
+       grade_level='Grade 1',
+       is_required=True,
+       order=1
+   )
+
+   print(framework)
+   print(f"Total subjects: {framework.get_total_subjects()}")
+   ```
+
+6. Verify in Django admin
+
+## Acceptance Criteria:
+- CurriculumFramework model created with all required fields
+- Model supports multiple education levels (Ibtidaiyyah, Thanawiyyah, etc.)
+- Many-to-Many relationship with Subject model established
+- Grade level tracking implemented
+- MBHTE compliance fields added
+- Meta class and indexes configured
+- Model migrations created and applied
+- Model registered in Django admin
+
+## Files Modified:
+- `apps/curriculum/models.py (add CurriculumFramework and CurriculumSubject models)`
+- `apps/curriculum/admin.py (register new models)`
+- `apps/curriculum/migrations/0002_curriculum_framework.py (new migration)`
+
+## Important Notes:
+- Framework supports MBHTE approval tracking
+- JSONField used for flexible grade level and academic year structures
+- Through model (CurriculumSubject) allows tracking subject-framework relationships
+- Can be linked to Madrasah model via ForeignKey (done in Phase 3)
+- Estimate: 2 hours
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

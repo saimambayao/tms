@@ -1,0 +1,227 @@
+{% extends 'base/base.html' %} {% load static %} {% block title %}About
+BM Parliament{% endblock %}
+
+{% block hero %}
+<!-- About Hero Section with Bangsamoro Gradient -->
+<section class="relative overflow-hidden py-16 md:py-24" style="background: linear-gradient(135deg, #1e40af 0%, #059669 100%); position: relative;">
+    <!-- Minimal background elements -->
+    <div class="absolute inset-0 opacity-10">
+        <div class="absolute top-1/2 left-1/2 w-32 h-32 bg-gray-900 rounded-full blur-2xl animate-pulse"></div>
+    </div>
+
+    <!-- Bangsamoro gradient overlay for text area (top left) - lighter opacity to show gradient -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at top left, rgba(30, 64, 175, 0.3) 0%, rgba(30, 64, 175, 0.2) 20%, rgba(5, 150, 105, 0.1) 40%, transparent 60%);"></div>
+
+    <!-- Bangsamoro gradient overlay for bottom right - lighter opacity -->
+    <div class="absolute inset-0" style="background: radial-gradient(ellipse at bottom right, rgba(5, 150, 105, 0.4) 0%, rgba(5, 150, 105, 0.3) 20%, rgba(5, 150, 105, 0.2) 40%, rgba(5, 150, 105, 0.1) 60%, transparent 80%);"></div>
+
+    <div class="container mx-auto px-4 relative z-10">
+        <div class="max-w-4xl mx-auto text-center">
+            <h1 class="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-white drop-shadow-lg">About MP Amiroddin Gayak</h1>
+            <p class="text-white/90 drop-shadow-md mb-8" style="font-family: 'Great Vibes', cursive; font-size: clamp(1.75rem, 4.5vw + 0.5rem, 3.5rem);">Mula sa Bangsamoro, Para sa Bangsamoro</p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="{% url 'register' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1rem; background: white; color: #047857; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);" onmouseover="this.style.backgroundColor='#f9fafb'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='white'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px #10b981';">Register for Assistance</a>
+                <a href="{% url 'programs' %}" style="display: inline-flex; align-items: center; justify-content: center; font-weight: 500; border-radius: 0.375rem; transition: all 0.3s ease; outline: none; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); padding: 0.75rem 1.5rem; font-size: 1rem; border: 2px solid white; color: white; background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px);" onmouseover="this.style.backgroundColor='rgba(255, 255, 255, 0.25)'; this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)';" onmouseout="this.style.backgroundColor='rgba(255, 255, 255, 0.1)'; this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)';" onfocus="this.style.boxShadow='0 0 0 2px rgba(255, 255, 255, 0.5)';">Explore our Programs</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-8 px-4">
+  <div class="max-w-4xl mx-auto">
+
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-emerald-200">
+      <h2 class="text-3xl font-bold mb-6 text-emerald-800">
+        About MP Amiroddin Gayak
+      </h2>
+      <div class="md:flex">
+        <div class="md:w-1/3 mb-4 md:mb-0 md:pr-6">
+          <!-- MP's Photo -->
+          <img
+            src="{% static 'images/Gayak-Amiroddin.png' %}"
+            alt="MP Amiroddin Gayak"
+            class="rounded-lg mx-auto w-full h-64 object-cover shadow-lg border-4 border-emerald-200"
+          />
+        </div>
+        <div class="md:w-2/3">
+          <p class="mb-6 text-gray-700 text-justify text-lg leading-relaxed">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+          </p>
+          <p class="mb-6 text-gray-700 text-justify text-lg leading-relaxed">
+            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.
+          </p>
+          <p class="mb-6 text-gray-700 text-justify text-lg leading-relaxed">
+            Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-emerald-200">
+      <h2 class="text-3xl font-bold mb-6 text-emerald-800">Our Mission</h2>
+      <p class="mb-6 text-gray-700 text-justify text-lg leading-relaxed">
+        Serbisyong Bangsamoro is MP Amiroddin Gayak's flagship
+        constituent service initiative dedicated to bringing essential
+        government services directly to the people. Our mission is to serve the Bangsamoro people with utmost integrity and excellence and help them access balanced, quality Islamic and English education.
+      </p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-emerald-200">
+      <h2 class="text-3xl font-bold mb-6 text-emerald-800">
+        Am I registered?
+      </h2>
+      <p class="mb-6 text-gray-700 text-justify text-lg leading-relaxed">
+        Check your registration status by searching your name in our database.
+        You'll see your registration date and current status.
+      </p>
+      <a href="{% url 'check_membership' %}"
+         style="display: inline-flex; align-items: center; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; font-size: 1.125rem; font-weight: 500; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';">
+        <i class="fas fa-user-check mr-2"></i>
+        Check my Registration
+      </a>
+    </div>
+
+    {% comment %}
+    <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+      <h2 class="text-2xl font-semibold mb-4 text-primary-700">Our Impact</h2>
+      <div class="grid md:grid-cols-3 gap-6 text-center">
+        <div class="p-4">
+          <span class="text-4xl font-bold text-primary-600 block mb-2"
+            >{{ impact_stats.registered_members }}</span
+          >
+          <span class="text-gray-700">Constituents Served</span>
+        </div>
+        <div class="p-4">
+          <span class="text-4xl font-bold text-primary-600 block mb-2">{{ impact_stats.active_chapters }}</span>
+          <span class="text-gray-700">Community Chapters</span>
+        </div>
+        <div class="p-4">
+          <span class="text-4xl font-bold text-primary-600 block mb-2">{{ impact_stats.community_events }}</span>
+          <span class="text-gray-700">Community Events</span>
+        </div>
+      </div>
+    </div>
+    {% endcomment %}
+
+    <div class="bg-white rounded-xl shadow-lg p-8 mb-8 border border-emerald-200">
+      <h2 class="text-3xl font-bold mb-6 text-emerald-800">
+        Frequently Asked Questions
+      </h2>
+      <p class="mb-6 text-gray-700 text-justify text-lg leading-relaxed">
+        Have more questions about Bangsamoro Parliament, MP Gayak's initiatives, or how to access government services? Visit our dedicated FAQs page for comprehensive answers.
+      </p>
+      <a href="{% url 'faqs' %}"
+         style="display: inline-flex; align-items: center; padding: 0.75rem 1.5rem; background: linear-gradient(135deg, #1e40af 0%, #059669 100%); color: white; font-size: 1.125rem; font-weight: 500; border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1); transition: all 0.15s ease;" onmouseover="this.style.background='linear-gradient(135deg, #1e3a8a 0%, #047857 100%)';" onmouseout="this.style.background='linear-gradient(135deg, #1e40af 0%, #059669 100%)';">
+        <i class="fas fa-question-circle mr-2"></i>
+        View All FAQs
+      </a>
+    </div>
+
+    {% if message %}
+    <div
+      class="mb-6 p-4 rounded-md {% if message_type == 'success' %}bg-success-50 text-success-700 border border-success-200{% else %}bg-error-50 text-error-700 border border-error-200{% endif %}"
+    >
+      {{ message }}
+    </div>
+    {% endif %}
+
+    <div class="grid md:grid-cols-2 gap-8">
+      {% include 'components/forms/unified_contact_form.html' with title="Contact MP Gayak's Office" subtitle="Have questions about MP Gayak's work or initiatives? Send us a message and we'll get back to you promptly." form=contact_form message=message message_type=message_type %}
+
+      <div class="bg-white rounded-xl shadow-lg p-8 border border-emerald-200">
+        <h2 class="text-3xl font-bold mb-6 text-emerald-800">
+          Visit Our Offices
+        </h2>
+
+        <div class="mb-4">
+          <h3 class="font-semibold text-lg mb-2">Main Office</h3>
+          <p class="text-gray-700 mb-3">Bangsamoro Government Center, Cotabato City</p>
+
+          <p class="text-gray-700 mb-1">
+            <span class="font-medium">Phone:</span> 09xx-xxx-xxxx
+          </p>
+          <p class="text-gray-700 mb-1">
+            <span class="font-medium">Email:</span>
+            bmparliament@gmail.com
+          </p>
+          <p class="text-gray-700">
+            <span class="font-medium">Hours:</span> Mon-Fri: 8:00 AM - 5:00 PM
+          </p>
+        </div>
+
+        <!-- Google Map -->
+        <div class="mt-6">
+          <h3 class="font-semibold text-lg mb-3">Location Map</h3>
+          <div class="rounded-lg overflow-hidden shadow-lg bg-gray-100">
+            <iframe
+              id="google-map-iframe"
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3967.534699999999!2d124.2500!3d7.2167!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x32596b8b8b8b8b8b%3A0x8b8b8b8b8b8b8b8b!2sBangsamoro%20Government%20Center%2C%20Cotabato%20City!5e0!3m2!1sen!2sph!4v1700000000000!5m2!1sen!2sph"
+              width="100%"
+              height="300"
+              style="border:0; min-height: 300px;"
+              allowfullscreen=""
+              loading="lazy"
+              referrerpolicy="no-referrer-when-downgrade"
+              title="BM Parliament Office Location Map - Bangsamoro Government Center, Cotabato City"
+              class="w-full"
+            ></iframe>
+            <div id="map-error-message" style="display: none; padding: 2rem; text-align: center; color: #6b7280; background: white; min-height: 300px; flex-direction: column; align-items: center; justify-content: center;">
+              <i class="fas fa-map-marker-alt text-4xl mb-2 text-gray-400"></i>
+              <p class="text-sm mb-2">Map could not be loaded.</p>
+              <p class="text-xs text-gray-500">Please use the link below to view on Google Maps.</p>
+            </div>
+            <script>
+              document.addEventListener('DOMContentLoaded', function() {
+                const iframe = document.getElementById('google-map-iframe');
+                const errorMessage = document.getElementById('map-error-message');
+                
+                // Check if elements exist
+                if (!iframe || !errorMessage) {
+                  return;
+                }
+                
+                let mapLoaded = false;
+                
+                // Listen for iframe load success
+                iframe.addEventListener('load', function() {
+                  mapLoaded = true;
+                  // Hide error message if it was shown
+                  errorMessage.style.display = 'none';
+                });
+                
+                // Set a timeout to show error message if map doesn't load within reasonable time
+                // Note: This is a fallback - iframe error events don't always fire due to browser security
+                setTimeout(function() {
+                  if (!mapLoaded) {
+                    // Check if iframe is visible and has dimensions
+                    const rect = iframe.getBoundingClientRect();
+                    if (rect.height === 0 || rect.width === 0) {
+                      // Iframe has no dimensions, likely failed to load
+                      iframe.style.display = 'none';
+                      errorMessage.style.display = 'flex';
+                    }
+                  }
+                }, 5000);
+              });
+            </script>
+          </div>
+          <div class="mt-3">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Bangsamoro+Government+Center+Cotabato+City"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="display: inline-flex; align-items: center; color: #059669; font-weight: 500; transition: all 0.3s ease;" onmouseover="this.style.color='#047857';" onmouseout="this.style.color='#059669';"
+            >
+              <i class="fas fa-map-marker-alt mr-2"></i>
+              View on Google Maps
+              <i class="fas fa-external-link-alt ml-2 text-sm"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

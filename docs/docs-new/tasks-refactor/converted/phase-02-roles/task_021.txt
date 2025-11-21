@@ -1,0 +1,153 @@
+# Task ID: 021
+# Title: Update View Decorators for New Roles
+# Status: pending
+# Dependencies: 018, 020
+# Priority: high
+# Description: Update view decorators and mixins to support new role-based access control. Ensure views check for new roles (TARBIYYAH_ADMIN, MADRASAH_ADMIN, MUDER, 
+
+# Details:
+Update view decorators and mixins to support new role-based access control. Ensure views check for new roles (TARBIYYAH_ADMIN, MADRASAH_ADMIN, MUDER, ASATIDZ, etc.).
+
+## Implementation Steps:
+1. Create/update role decorators file:
+   ```python
+   # apps/users/decorators.py
+   from functools import wraps
+   from django.core.exceptions import PermissionDenied
+   from django.shortcuts import redirect
+
+   def role_required(*allowed_roles):
+       """
+       Decorator to restrict view access to specific roles.
+       Usage: @role_required('tarbiyyah_admin', 'madrasah_admin')
+       """
+       def decorator(view_func):
+           @wraps(view_func)
+           def wrapped(request, *args, **kwargs):
+               if not request.user.is_authenticated:
+                   return redirect('login')
+
+               if request.user.role not in allowed_roles:
+                   raise PermissionDenied(
+                       f"Access restricted. Required roles: {', '.join(allowed_roles)}"
+                   )
+
+               return view_func(request, *args, **kwargs)
+           return wrapped
+       return decorator
+
+   def admin_or_higher(view_func):
+       """Shortcut for admin-level roles"""
+       return role_required(
+           'superuser',
+           'tarbiyyah_admin',
+           'madrasah_admin'
+       )(view_func)
+
+   def madrasah_staff_only(view_func):
+       """Shortcut for madrasah staff roles"""
+       return role_required(
+           'madrasah_admin',
+           'muder',
+           'asatidz'
+       )(view_func)
+   ```
+2. Create class-based view mixin:
+   ```python
+   # apps/users/mixins.py
+   from django.contrib.auth.mixins import AccessMixin
+   from django.core.exceptions import PermissionDenied
+
+   class RoleRequiredMixin(AccessMixin):
+       """Mixin for class-based views to require specific roles"""
+       allowed_roles = []
+
+       def dispatch(self, request, *args, **kwargs):
+           if not request.user.is_authenticated:
+               return self.handle_no_permission()
+
+           if request.user.role not in self.allowed_roles:
+               raise PermissionDenied(
+                   f"Access restricted to: {', '.join(self.allowed_roles)}"
+               )
+
+           return super().dispatch(request, *args, **kwargs)
+
+   class TarbiyyahAdminRequiredMixin(RoleRequiredMixin):
+       allowed_roles = ['superuser', 'tarbiyyah_admin']
+
+   class MadrasahStaffMixin(RoleRequiredMixin):
+       allowed_roles = ['superuser', 'tarbiyyah_admin', 'madrasah_admin', 'muder', 'asatidz']
+   ```
+3. Update example view with new decorators:
+   ```python
+   # Example usage in views.py
+   from apps.users.decorators import role_required, admin_or_higher
+
+   @role_required('tarbiyyah_admin', 'madrasah_admin')
+   def manage_madrasah_view(request):
+       # Only tarbiyyah_admin and madrasah_admin can access
+       pass
+
+   @admin_or_higher
+   def system_settings_view(request):
+       # Admin-level access only
+       pass
+   ```
+4. Test decorators in Django shell:
+   ```python
+   from django.test import RequestFactory
+   from apps.users.models import User
+   from apps.users.decorators import role_required
+
+   # Create test function
+   @role_required('asatidz')
+   def test_view(request):
+       return "Success"
+
+   # Test with teacher user
+   teacher = User.objects.get(role='asatidz')
+   factory = RequestFactory()
+   request = factory.get('/')
+   request.user = teacher
+   # Should work
+
+   # Test with student
+   student = User.objects.get(role='student')
+   request.user = student
+   # Should raise PermissionDenied
+   ```
+
+## Acceptance Criteria:
+- Role-based decorators created or updated
+- @role_required decorator supports new roles
+- RoleRequiredMixin for class-based views updated
+- Views properly restrict access by role
+- Unauthorized access returns 403 Forbidden
+- Test access control for each role type
+
+## Files Modified:
+- `src/apps/users/decorators.py (create or update)`
+- `src/apps/users/mixins.py (create or update)`
+- `src/apps/users/tests/test_decorators.py (create tests)`
+
+## Important Notes:
+- Decorators work for function-based views
+- Mixins work for class-based views
+- Create shortcut decorators for common role combinations
+- Add comprehensive tests for access control
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Login to Django admin as superuser
+6. Verify models appear in admin interface
+7. Test create, read, update, delete operations
+8. Verify list display, filters, and search work
+9. Access view URL and verify HTTP 200 response
+10. Test with different user permissions
+11. Verify context data passed to template
+12. Test any query parameters or filters

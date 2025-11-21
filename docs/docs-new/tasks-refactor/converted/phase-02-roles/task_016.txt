@@ -1,0 +1,93 @@
+# Task ID: 016
+# Title: Add New Role Choices to User Model
+# Status: pending
+# Dependencies: 001, 015
+# Priority: high
+# Description: Add new role choices to the User model for Tarbiyyah system: TARBIYYAH_ADMIN, MADRASAH_ADMIN, MUDER, ASATIDZ, STUDENT, PARENT. Keep existing role infr
+
+# Details:
+Add new role choices to the User model for Tarbiyyah system: TARBIYYAH_ADMIN, MADRASAH_ADMIN, MUDER, ASATIDZ, STUDENT, PARENT. Keep existing role infrastructure intact.
+
+## Implementation Steps:
+1. Open User model:
+   ```bash
+   code /Users/saidamenmambayao/apps/madaris-ms/src/apps/users/models.py
+   ```
+2. Locate User.Role choices and add new roles:
+   ```python
+   class Role(models.TextChoices):
+       # Keep existing roles
+       SUPERUSER = 'superuser', 'Superuser'
+       ADMIN = 'admin', 'Administrator'
+       STAFF = 'staff', 'Staff'
+       COORDINATOR = 'coordinator', 'Coordinator'  # Will rename in next task
+
+       # New Tarbiyyah roles
+       TARBIYYAH_ADMIN = 'tarbiyyah_admin', 'Tarbiyyah Admin (System Administrator)'
+       MADRASAH_ADMIN = 'madrasah_admin', 'Madrasah Admin (School Administrator)'
+       MUDER = 'muder', 'Muder (مدير - School Director/Principal)'
+       ASATIDZ = 'asatidz', 'Asatidz (أساتذة - Teachers/Ustadz-Ustadza)'
+       STUDENT = 'student', 'Student'
+       PARENT = 'parent', 'Parent/Guardian'
+   ```
+3. Update role field help text:
+   ```python
+   role = models.CharField(
+       max_length=20,
+       choices=Role.choices,
+       default=Role.STUDENT,
+       help_text="User role determines access level and permissions. "
+                 "Hierarchy: superuser > tarbiyyah_admin > madrasah_admin > muder > asatidz/student/parent"
+   )
+   ```
+4. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations users
+   ```
+5. Review migration file - should only add choices, not change existing data
+6. Test on staging database:
+   ```bash
+   python manage.py migrate users --database=staging
+   ```
+7. Test in Django shell:
+   ```python
+   from apps.users.models import User
+   print([choice[0] for choice in User.Role.choices])
+   # Should include all new roles
+   ```
+8. Test in Django admin - create test user with new role
+
+## Acceptance Criteria:
+- User model located in apps/users/models.py
+- New role choices added to User.Role enum
+- Role choices include Arabic translations in help text
+- Migration file created successfully
+- Migration tested on staging database
+- No existing user roles affected
+- Django admin shows new role choices in dropdown
+
+## Files Modified:
+- `src/apps/users/models.py`
+- `src/apps/users/migrations/000X_add_tarbiyyah_roles.py`
+
+## Important Notes:
+- Don't delete COORDINATOR role yet (rename in next task)
+- New roles are additive - safe migration
+- Role hierarchy is documented in docstring
+- Default role is STUDENT for new registrations
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify new roles appear in Django admin dropdown
+6. Create test users with new roles
+7. Verify permissions work correctly
+8. Test role-based access control
+9. Login to Django admin as superuser
+10. Verify models appear in admin interface
+11. Test create, read, update, delete operations
+12. Verify list display, filters, and search work

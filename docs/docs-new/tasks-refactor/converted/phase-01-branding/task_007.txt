@@ -1,0 +1,65 @@
+# Task ID: 007
+# Title: Update Site Branding Text - Context Processor
+# Status: pending
+# Dependencies: 001, 003, 006
+# Priority: medium
+# Description: Create Django context processor to inject Tarbiyyah-specific branding variables into all templates.
+
+# Details:
+Create Django context processor to inject Tarbiyyah-specific branding variables into all templates.
+
+## Implementation Steps:
+1. Create context processor file:
+   ```bash
+   touch src/config/context_processors.py
+   ```
+2. Add branding context processor:
+   ```python
+   def tarbiyyah_branding(request):
+       return {
+           'SITE_NAME': 'Tarbiyyah Management System',
+           'SITE_NAME_SHORT': 'TMS',
+           'MADRASAH_LABEL': 'Madrasah',
+           'STUDENT_LABEL': 'Student',
+           'TEACHER_LABEL': 'Asatidz',
+           'ORGANIZATION': 'BARMM - Ministry of Basic, Higher, and Technical Education',
+       }
+   ```
+3. Add to settings.py TEMPLATES context_processors:
+   ```python
+   'context_processors': [
+       ...
+       'config.context_processors.tarbiyyah_branding',
+   ]
+   ```
+4. Test in Django shell:
+   ```python
+   from django.template import Context, Template
+   template = Template("{{ SITE_NAME }}")
+   # Verify output: "Tarbiyyah Management System"
+   ```
+5. Create test template to verify all variables work
+
+## Acceptance Criteria:
+- Context processor file created
+- MADRASAH_LABEL variable defined
+- STUDENT_LABEL variable defined
+- SITE_NAME updated to "Tarbiyyah Management System"
+- Context processor added to settings.py
+- Variables accessible in all templates
+- Test template rendering with new variables
+
+## Files Modified:
+- `src/config/context_processors.py (new file)`
+- `src/config/settings/base.py (update)`
+
+## Important Notes:
+- Context processor makes variables available globally
+- No template changes needed yet (done in later tasks)
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable

@@ -1,0 +1,169 @@
+# Task ID: 084
+# Title: Rename/Refactor Programs for Education Context
+# Status: pending
+# Dependencies: 083
+# Priority: high
+# Description: Rename MinistryProgram model fields and choices to support educational context while maintaining backward compatibility. Add new program categories fo
+
+# Details:
+Rename MinistryProgram model fields and choices to support educational context while maintaining backward compatibility. Add new program categories for scholarships, teacher training, curriculum development, and extracurricular activities.
+
+## Implementation Steps:
+1. Backup services app before changes:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/backups/phase8_programs
+   cp -r /Users/saidamenmambayao/apps/madaris-ms/src/apps/services \
+         /Users/saidamenmambayao/apps/madaris-ms/backups/phase8_programs/services_backup_$(date +%Y%m%d)
+   ```
+2. Update MinistryProgram model in apps/services/models.py:
+   ```python
+   # Add to MINISTRIES choices (keep existing choices):
+   ('mbasiced', 'Ministry of Basic, Higher and Technical Education'),
+   ('barmm_education', 'BARMM Ministry of Basic Education'),
+   ('madrasah_board', 'Madrasah Education Board'),
+
+   # Update PROGRAM_SOURCES:
+   PROGRAM_SOURCES = (
+       ('bmparliament', '#BM Parliament Program'),
+       ('tdif', 'TDIF Project'),
+       ('ministry', 'Ministry Program'),
+       ('education', 'Educational Program'),  # NEW
+       ('madrasah', 'Madrasah Program'),     # NEW
+   )
+
+   # Add new field for educational program categories:
+   PROGRAM_CATEGORIES = (
+       ('academic', 'Academic Program'),
+       ('scholarship', 'Scholarship Program'),
+       ('teacher_training', 'Teacher Training'),
+       ('curriculum', 'Curriculum Development'),
+       ('extracurricular', 'Extracurricular Activities'),
+       ('accreditation', 'Accreditation Program'),
+       ('community', 'Community Engagement'),
+       ('infrastructure', 'Infrastructure Development'),
+       ('general', 'General Program'),  # Default for non-educational
+   )
+
+   program_category = models.CharField(
+       max_length=20,
+       choices=PROGRAM_CATEGORIES,
+       default='general',
+       help_text="Category of program (educational or general)"
+   )
+   ```
+3. Update model docstring:
+   ```python
+   """
+   Programs, Projects & Activities (PPAs) with full administrative control.
+   Supports both ministry programs and educational programs (scholarships,
+   teacher training, curriculum development, extracurricular activities).
+   Previously focused on MinistryProgram, now adapted for Tarbiyyah Management.
+   """
+   ```
+4. Update field help text for education context:
+   ```python
+   # Update relevant help_text fields:
+   target_beneficiaries = models.TextField(
+       help_text="Description of target beneficiaries (students, teachers, madaris, etc.)"
+   )
+   geographic_coverage = models.TextField(
+       help_text="Geographic areas covered (provinces, municipalities, specific madaris)"
+   )
+   implementing_units = models.TextField(
+       help_text="Responsible implementing units/offices/madaris"
+   )
+   ```
+5. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py makemigrations services -n "add_education_program_categories"
+   ```
+6. Review migration file:
+   ```bash
+   cat apps/services/migrations/*_add_education_program_categories.py
+   ```
+7. Run migration:
+   ```bash
+   python manage.py migrate services
+   ```
+8. Verify in Django shell:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram
+   print('Available program categories:')
+   for code, name in MinistryProgram.PROGRAM_CATEGORIES:
+       print(f'  {code}: {name}')
+   print(f'\\nProgram category field exists: {hasattr(MinistryProgram, \"program_category\")}')
+   "
+   ```
+9. Test creating educational program:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram
+   from apps.users.models import User
+   from datetime import date, timedelta
+
+   admin = User.objects.filter(is_superuser=True).first()
+   program = MinistryProgram.objects.create(
+       code='TEST_EDU_001',
+       title='Test Educational Program',
+       slug='test-educational-program',
+       ministry='mbasiced',
+       program_source='education',
+       program_category='scholarship',
+       ppa_type='program',
+       description='Test scholarship program',
+       objectives='Provide financial aid to students',
+       expected_outcomes='Increased enrollment',
+       key_performance_indicators='Number of scholarships awarded',
+       target_beneficiaries='Students from low-income families',
+       geographic_coverage='BARMM region',
+       implementation_strategy='Direct financial assistance',
+       implementing_units='Madrasah Education Board',
+       start_date=date.today(),
+       end_date=date.today() + timedelta(days=365),
+       funding_source='regional',
+       created_by=admin
+   )
+   print(f'Created test program: {program.title}')
+   print(f'Category: {program.get_program_category_display()}')
+   program.delete()
+   print('Test program deleted.')
+   "
+   ```
+10. Verify admin interface still works:
+    ```bash
+    python manage.py check
+    ```
+
+## Acceptance Criteria:
+- MINISTRIES choices updated for education context
+- PROGRAM_SOURCES choices expanded
+- New program_category field added
+- Field help text updated for education
+- Model docstring updated
+- Migration created successfully
+- No existing data broken
+- Admin still displays correctly
+- Database schema verified
+
+## Files Modified:
+- `src/apps/services/models.py (MinistryProgram model)`
+- `src/apps/services/migrations/*_add_education_program_categories.py (new)`
+- `backups/phase8_programs/services_backup_*/  (backup directory)`
+
+## Important Notes:
+- Keep all existing MINISTRIES choices for backward compatibility
+- Add new choices, don't remove old ones
+- program_category defaults to 'general' so existing records unaffected
+- This allows mixed use: both ministry and educational programs
+- Migration should be reversible
+- Existing data remains intact
+- Admin will automatically show new choices
+- Estimate: 40 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

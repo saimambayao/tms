@@ -1,0 +1,342 @@
+# Task ID: 082
+# Title: Verify Phase 7 Complete
+# Status: pending
+# Dependencies: 073, 074, 075, 076, 077, 078, 079, 080, 081
+# Priority: high
+# Description: Verify that Phase 7 (Academic Records System) is complete with all models, views, templates, and functionality working correctly. Perform integration 
+
+# Details:
+Verify that Phase 7 (Academic Records System) is complete with all models, views, templates, and functionality working correctly. Perform integration testing and documentation review.
+
+## Implementation Steps:
+1. Verify database migrations:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+
+   # Check migration status
+   python manage.py showmigrations academics
+
+   # Should show all migrations applied:
+   # [X] 0001_initial
+   # [X] 0002_class
+   # [X] 0003_grade
+   # [X] 0004_attendance
+   # [X] 0005_academic_event
+   ```
+
+2. Verify models in Django shell:
+   ```python
+   python manage.py shell
+
+   # Test imports
+   from apps.academics.models import (
+       AcademicYear, Class, ClassEnrollment,
+       Grade, GradeReport, Attendance, AttendanceSummary,
+       AcademicEvent
+   )
+
+   # Check model counts
+   print(f"Academic Years: {AcademicYear.objects.count()}")
+   print(f"Classes: {Class.objects.count()}")
+   print(f"Grades: {Grade.objects.count()}")
+   print(f"Attendance Records: {Attendance.objects.count()}")
+   print(f"Events: {AcademicEvent.objects.count()}")
+
+   # Test model methods
+   ay = AcademicYear.objects.first()
+   if ay:
+       print(f"Current academic year: {ay}")
+       print(f"Is current: {ay.is_current}")
+       print(f"Duration: {ay.duration_days} days")
+
+   # Test grade calculations
+   grade = Grade.objects.first()
+   if grade:
+       print(f"Grade: {grade.percentage}% ({grade.letter_grade})")
+       print(f"Arabic: {grade.arabic_grade_name}")
+       print(f"Passing: {grade.is_passing}")
+
+   # Test attendance
+   att = Attendance.objects.first()
+   if att:
+       print(f"Attendance: {att.status}")
+       print(f"Present: {att.is_present}")
+       print(f"Arabic status: {att.arabic_status}")
+   ```
+
+3. Test admin interfaces:
+   ```bash
+   # Start development server
+   python manage.py runserver
+
+   # Then visit in browser:
+   # http://localhost:8000/admin/academics/academicyear/
+   # http://localhost:8000/admin/academics/class/
+   # http://localhost:8000/admin/academics/grade/
+   # http://localhost:8000/admin/academics/attendance/
+   # http://localhost:8000/admin/academics/academicevent/
+
+   # Verify:
+   # - List views display correctly
+   # - Search functionality works
+   # - Filters work
+   # - Can create/edit records
+   # - Validation works
+   ```
+
+4. Test gradebook views:
+   ```bash
+   # Create test teacher user if needed
+   python manage.py shell
+   from apps.users.models import User
+   teacher = User.objects.create_user(
+       username='test_teacher',
+       password='testpass123',
+       role='asatidz',
+       email='teacher@test.com'
+   )
+
+   # Visit gradebook URLs:
+   # http://localhost:8000/academics/gradebook/
+   # http://localhost:8000/academics/gradebook/class/1/
+   # http://localhost:8000/academics/gradebook/class/1/grade-entry/
+   # http://localhost:8000/academics/gradebook/class/1/attendance-entry/
+   ```
+
+5. Test report card generation:
+   ```bash
+   # Visit report card URLs:
+   # http://localhost:8000/academics/report-card/1/1/term/1/
+   # Should generate PDF
+
+   # Test progress report:
+   # http://localhost:8000/academics/progress-report/1/class/1/
+   # Should generate PDF
+
+   # Verify PDF contains:
+   # - Student information
+   # - Grades table
+   # - Attendance percentage
+   # - Islamic grading scale
+   # - Teacher signatures section
+   ```
+
+6. Test academic calendar:
+   ```bash
+   # Visit calendar URLs:
+   # http://localhost:8000/academics/calendar/
+   # http://localhost:8000/academics/events/upcoming/
+   # http://localhost:8000/academics/events/1/
+
+   # Verify:
+   # - Calendar grid displays
+   # - Events shown on correct dates
+   # - Color coding works
+   # - Event details accessible
+   # - Month navigation works
+   ```
+
+7. Run all tests:
+   ```bash
+   # Run test suite
+   python manage.py test apps.academics --verbosity=2
+
+   # All tests should pass
+   # Expected output:
+   # ----------------------------------------------------------------------
+   # Ran XX tests in X.XXXs
+   # OK
+
+   # Check test coverage
+   coverage run --source='apps.academics' manage.py test apps.academics
+   coverage report
+
+   # Coverage should be > 80%
+   ```
+
+8. Verify URL patterns:
+   ```bash
+   python manage.py show_urls | grep academics
+
+   # Should show:
+   # /academics/gradebook/
+   # /academics/gradebook/class/<int:class_id>/
+   # /academics/gradebook/class/<int:class_id>/grade-entry/
+   # /academics/gradebook/class/<int:class_id>/attendance-entry/
+   # /academics/report-card/<int:student_id>/<int:academic_year_id>/term/<int:term>/
+   # /academics/calendar/
+   # /academics/events/upcoming/
+   # etc.
+   ```
+
+9. Check for integration issues:
+   ```python
+   python manage.py shell
+
+   # Test relationships between apps
+   from apps.academics.models import Class, ClassEnrollment
+   from apps.users.models import User
+   from apps.madrasahs.models import Madrasah
+   from apps.curriculum.models import Subject
+
+   # Verify foreign key relationships work
+   class_obj = Class.objects.select_related(
+       'madrasah', 'teacher', 'subject', 'academic_year'
+   ).first()
+
+   if class_obj:
+       print(f"Class: {class_obj}")
+       print(f"Madrasah: {class_obj.madrasah}")
+       print(f"Teacher: {class_obj.teacher}")
+       print(f"Subject: {class_obj.subject}")
+       print(f"Year: {class_obj.academic_year}")
+
+   # Test reverse relationships
+   student = User.objects.filter(role='student').first()
+   if student:
+       grades = student.grades.all()
+       attendance = student.attendance_records.all()
+       print(f"Student has {grades.count()} grades")
+       print(f"Student has {attendance.count()} attendance records")
+   ```
+
+10. Create verification checklist:
+    ```markdown
+    # Phase 7 Verification Checklist
+
+    ## Models
+    - [x] AcademicYear model created and working
+    - [x] Class model created and working
+    - [x] ClassEnrollment model created and working
+    - [x] Grade model created and working
+    - [x] GradeReport model created and working
+    - [x] Attendance model created and working
+    - [x] AttendanceSummary model created and working
+    - [x] AcademicEvent model created and working
+
+    ## Migrations
+    - [x] All migrations created
+    - [x] All migrations applied successfully
+    - [x] No migration conflicts
+
+    ## Admin
+    - [x] All models registered in admin
+    - [x] List displays configured
+    - [x] Search fields working
+    - [x] Filters working
+    - [x] Fieldsets organized
+
+    ## Views
+    - [x] Gradebook class list view
+    - [x] Gradebook roster view
+    - [x] Grade entry view
+    - [x] Attendance entry view
+    - [x] Student performance detail view
+    - [x] Report card generation view
+    - [x] Progress report view
+    - [x] Academic calendar view
+    - [x] Event detail view
+
+    ## Templates
+    - [x] Gradebook templates created
+    - [x] Report card PDF template created
+    - [x] Progress report template created
+    - [x] Calendar template created
+    - [x] Event templates created
+    - [x] All templates rendering correctly
+
+    ## Functionality
+    - [x] Grade calculations working
+    - [x] Letter grade conversions correct
+    - [x] Attendance tracking working
+    - [x] Attendance percentage calculations
+    - [x] Report card PDF generation
+    - [x] Calendar display and navigation
+    - [x] Event creation and display
+    - [x] CSV export functionality
+
+    ## Tests
+    - [x] Model tests written and passing
+    - [x] View tests written and passing
+    - [x] Test coverage > 80%
+    - [x] No test failures
+
+    ## Integration
+    - [x] Works with users app
+    - [x] Works with madrasahs app
+    - [x] Works with curriculum app
+    - [x] Works with teachers app
+    - [x] Works with students app
+
+    ## Documentation
+    - [x] All task files complete
+    - [x] README.md updated
+    - [x] Code comments added
+    - [x] Docstrings added
+
+    ## Performance
+    - [x] Queries optimized (select_related, prefetch_related)
+    - [x] No N+1 query issues
+    - [x] Large datasets handled efficiently
+
+    ## Security
+    - [x] Permission checks in place
+    - [x] Only teachers can access their gradebooks
+    - [x] Student data protected
+    - [x] CSRF protection enabled
+
+    ## Phase 7 Status: COMPLETE ✓
+    ```
+
+11. Update README:
+    ```bash
+    # Update phase-07-academic/README.md status
+    # Change from "Tasks Not Yet Created" to "Complete"
+    ```
+
+## Acceptance Criteria:
+- All academic models migrated successfully
+- All views and templates rendering correctly
+- Gradebook functionality working
+- Report cards generating properly
+- Academic calendar displaying events
+- All tests passing
+- Admin interfaces configured
+- Documentation complete
+- No critical bugs
+
+## Files Modified:
+- `src/apps/academics/ (all files)`
+- `docs/docs-new/tasks-refactor/phase-07-academic/README.md`
+
+## Important Notes:
+- Comprehensive integration testing
+- All functionality must work end-to-end
+- No critical bugs or errors
+- Performance tested with realistic data
+- Security verified
+- Phase 7 marks completion of core academic functionality
+- Estimate: 90 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Run migrations and verify schema changes
+6. Create test instances to verify new fields
+7. Test admin interface with new fields
+8. Verify backward compatibility with existing data
+9. Test form validation with valid data
+10. Test form validation with invalid data
+11. Verify error messages display correctly
+12. Test form submission and data persistence
+13. Test CSRF protection
+14. Access view URL and verify HTTP 200 response
+15. Test with different user permissions
+16. Verify context data passed to template
+17. Test any query parameters or filters
+18. Run test suite with `python manage.py test`
+19. Verify test coverage meets requirements
+20. Check for any failing tests
+21. Verify test assertions are correct

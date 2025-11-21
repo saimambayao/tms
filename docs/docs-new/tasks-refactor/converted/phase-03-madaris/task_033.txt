@@ -1,0 +1,63 @@
+# Task ID: 033
+# Title: Add Madrasah Accreditation Fields
+# Status: pending
+# Dependencies: 032
+# Priority: medium
+# Description: Add accreditation-related fields to Madrasah model: accreditation_status, accreditation_date, accreditation_number.
+
+# Details:
+Add accreditation-related fields to Madrasah model: accreditation_status, accreditation_date, accreditation_number.
+
+**IMPORTANT NOTE:** Accreditation is conducted by **MBHTE (Ministry of Basic, Higher, and Technical Education)**, not by the Tarbiyyah Committee. The Tarbiyyah Committee acts as the organizer, coordinator, and assistance provider for all madaris, and coordinates the accreditation process with MBHTE while maintaining accreditation status records in the system.
+
+## Implementation Steps:
+1. Add accreditation fields:
+   ```python
+   class Madrasah(models.Model):
+       ...
+       # Accreditation & Recognition
+       # NOTE: Accreditation is conducted by MBHTE (Ministry of Basic, Higher, and Technical Education)
+       # The Tarbiyyah Committee coordinates the accreditation process and maintains status records
+       class AccreditationStatus(models.TextChoices):
+           PENDING = 'pending', 'Pending Accreditation'
+           RECOGNIZED = 'recognized', 'Recognized by MBHTE'
+           ACCREDITED = 'accredited', 'Fully Accredited'
+           DEPED_RECOGNIZED = 'deped', 'DepEd Recognized'
+           NOT_ACCREDITED = 'not_accredited', 'Not Yet Accredited'
+           REJECTED = 'rejected', 'Accreditation Rejected'
+
+       accreditation_status = CharField(
+           max_length=20,
+           choices=AccreditationStatus.choices,
+           default='pending'
+       )
+       accreditation_date = DateField(null=True, blank=True)  # Date accredited by MBHTE
+       accreditation_number = CharField(max_length=100, blank=True)  # Accreditation cert number from MBHTE
+   ```
+2. Create migration
+3. Test in admin - filter by accreditation status
+
+## Acceptance Criteria:
+- accreditation_status field added with choices
+- accreditation_date field added (DateField)
+- accreditation_number field added (CharField)
+- Migration created
+- Status choices include all levels
+- Fields display in admin
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_add_accreditation_fields.py`
+
+## Important Notes:
+- Important for reporting and compliance
+- Accreditation is conducted by MBHTE, not by the Tarbiyyah Committee
+- The Tarbiyyah Committee coordinates with MBHTE and maintains accreditation records
+- "Recognized by MBHTE" changed from "Recognized by MBASICED" to reflect correct authority
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

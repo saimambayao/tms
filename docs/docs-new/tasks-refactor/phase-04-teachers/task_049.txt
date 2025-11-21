@@ -1,0 +1,134 @@
+# Task ID: 049
+# Title: Create Teacher Views and URLs
+# Status: pending
+# Dependencies: 048
+# Priority: high
+# Description: Create views for teacher CRUD operations and URL patterns for accessing teacher management features.
+
+# Details:
+Create views for teacher CRUD operations and URL patterns for accessing teacher management features.
+
+## Implementation Steps:
+1. Create views.py:
+   ```python
+   # apps/teachers/views.py
+   from django.views.generic import ListView, DetailView, CreateView, UpdateView
+   from django.contrib.auth.decorators import login_required
+   from django.shortcuts import render, redirect, get_object_or_404
+   from django.contrib import messages
+   from apps.users.mixins import RoleRequiredMixin
+   from apps.users.decorators import role_required
+   from .models import TeacherProfile
+   from .forms import TeacherProfileForm, QuickTeacherCreationForm
+
+   class TeacherListView(RoleRequiredMixin, ListView):
+       model = TeacherProfile
+       template_name = 'teachers/list.html'
+       context_object_name = 'teachers'
+       allowed_roles = ['superuser', 'tarbiyyah_admin', 'madrasah_admin', 'muder']
+       paginate_by = 20
+
+       def get_queryset(self):
+           qs = super().get_queryset().select_related('user')
+           search = self.request.GET.get('search')
+           if search:
+               qs = qs.filter(
+                   user__first_name__icontains=search
+               ) | qs.filter(
+                   user__last_name__icontains=search
+               )
+           return qs.order_by('user__last_name')
+
+   class TeacherDetailView(RoleRequiredMixin, DetailView):
+       model = TeacherProfile
+       template_name = 'teachers/detail.html'
+       context_object_name = 'teacher'
+       allowed_roles = ['superuser', 'tarbiyyah_admin', 'madrasah_admin', 'muder', 'asatidz']
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           # Get madrasah assignments
+           context['assignments'] = self.object.user.madrasah_enrollments.filter(
+               enrollment_type='asatidz'
+           )
+           return context
+
+   @role_required('tarbiyyah_admin', 'madrasah_admin')
+   def create_teacher(request):
+       if request.method == 'POST':
+           form = QuickTeacherCreationForm(request.POST)
+           if form.is_valid():
+               profile = form.save()
+               messages.success(
+                   request,
+                   f'Teacher profile created for {profile.full_name}'
+               )
+               return redirect('teachers:detail', pk=profile.pk)
+       else:
+           form = QuickTeacherCreationForm()
+       return render(request, 'teachers/create.html', {'form': form})
+
+   @role_required('tarbiyyah_admin', 'madrasah_admin', 'muder')
+   def update_teacher(request, pk):
+       teacher = get_object_or_404(TeacherProfile, pk=pk)
+       if request.method == 'POST':
+           form = TeacherProfileForm(request.POST, instance=teacher)
+           if form.is_valid():
+               form.save()
+               messages.success(request, 'Teacher profile updated successfully!')
+               return redirect('teachers:detail', pk=pk)
+       else:
+           form = TeacherProfileForm(instance=teacher)
+       return render(request, 'teachers/update.html', {
+           'form': form, 'teacher': teacher
+       })
+   ```
+2. Create urls.py:
+   ```python
+   # apps/teachers/urls.py
+   from django.urls import path
+   from . import views
+
+   app_name = 'teachers'
+
+   urlpatterns = [
+       path('', views.TeacherListView.as_view(), name='list'),
+       path('<int:pk>/', views.TeacherDetailView.as_view(), name='detail'),
+       path('create/', views.create_teacher, name='create'),
+       path('<int:pk>/update/', views.update_teacher, name='update'),
+   ]
+   ```
+3. Add to main urls.py:
+   ```python
+   # config/urls.py
+   urlpatterns = [
+       ...
+       path('teachers/', include('apps.teachers.urls')),
+       ...
+   ]
+   ```
+4. Test views in browser
+
+## Acceptance Criteria:
+- TeacherListView created
+- TeacherDetailView created
+- Create and update views implemented
+- Role-based access control applied
+- URLs configured
+- Views tested
+
+## Files Modified:
+- `src/apps/teachers/views.py`
+- `src/apps/teachers/urls.py`
+- `src/config/urls.py`
+
+## Important Notes:
+- Role-based access enforced
+- Select_related optimizes queries
+- Estimate: 50 minutes
+
+# Test Strategy:
+1. Access view URL and verify HTTP 200 response
+2. Test with different user permissions
+3. Verify context data passed to template
+4. Test any query parameters or filters

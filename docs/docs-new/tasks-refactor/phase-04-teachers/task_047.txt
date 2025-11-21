@@ -1,0 +1,130 @@
+# Task ID: 047
+# Title: Create TeacherProfile Model
+# Status: pending
+# Dependencies: 046
+# Priority: medium
+# Description: Create TeacherProfile model with OneToOne relationship to User model. Include fields for employee_id, specializations, certifications, hire_date.
+
+# Details:
+Create TeacherProfile model with OneToOne relationship to User model. Include fields for employee_id, specializations, certifications, hire_date.
+
+## Implementation Steps:
+1. Create TeacherProfile model:
+   ```python
+   # apps/teachers/models.py
+   from django.db import models
+   from django.conf import settings
+
+   class TeacherProfile(models.Model):
+       """Profile for teachers (Asatidz/Ustadz-Ustadza)"""
+
+       user = models.OneToOneField(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.CASCADE,
+           related_name='teacher_profile',
+           limit_choices_to={'role': 'asatidz'}
+       )
+
+       employee_id = models.CharField(
+           max_length=50,
+           unique=True,
+           help_text="Unique employee/teacher ID"
+       )
+
+       # Specializations (Quran, Fiqh, Arabic, Hadith, etc.)
+       specializations = models.JSONField(
+           default=list,
+           help_text="Areas of expertise (e.g., ['Quran Studies', 'Arabic Language', 'Fiqh'])"
+       )
+
+       # Certifications (Ijazah, Teaching certificates, etc.)
+       certifications = models.JSONField(
+           default=list,
+           help_text="Teaching certifications and ijazahs"
+       )
+
+       hire_date = models.DateField(
+           help_text="Date of hiring/appointment"
+       )
+
+       # Additional info
+       bio = models.TextField(blank=True, help_text="Teacher biography")
+       education_background = models.TextField(blank=True)
+
+       # Metadata
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+       is_active = models.BooleanField(default=True)
+
+       class Meta:
+           db_table = 'teachers_profile'
+           verbose_name = 'Teacher Profile (Ustadz/Ustadza)'
+           verbose_name_plural = 'Teacher Profiles (Asatidz)'
+           ordering = ['user__last_name', 'user__first_name']
+
+       def __str__(self):
+           return f"{self.user.get_full_name()} - {self.employee_id}"
+
+       @property
+       def full_name(self):
+           return self.user.get_full_name()
+
+       @property
+       def primary_specialization(self):
+           return self.specializations[0] if self.specializations else 'General'
+   ```
+2. Create migration:
+   ```bash
+   python manage.py makemigrations teachers
+   ```
+3. Apply migration:
+   ```bash
+   python manage.py migrate teachers
+   ```
+4. Test model in shell:
+   ```python
+   from apps.teachers.models import TeacherProfile
+   from apps.users.models import User
+
+   # Create test teacher user
+   teacher_user = User.objects.create_user(
+       username='ustadz_test',
+       role='asatidz',
+       first_name='Ali',
+       last_name='Ahmad'
+   )
+
+   # Create teacher profile
+   profile = TeacherProfile.objects.create(
+       user=teacher_user,
+       employee_id='TCH-001',
+       specializations=['Quran Studies', 'Arabic'],
+       hire_date='2024-01-01'
+   )
+   ```
+
+## Acceptance Criteria:
+- TeacherProfile model created
+- OneToOne field links to User
+- employee_id field is unique
+- specializations stored in JSONField
+- certifications stored in JSONField
+- hire_date field added
+- Migration created successfully
+- Model accessible in admin
+
+## Files Modified:
+- `src/apps/teachers/models.py`
+- `src/apps/teachers/migrations/0001_initial.py`
+
+## Important Notes:
+- OneToOne ensures one profile per user
+- JSONField allows flexible specializations
+- Will add madrasah assignment via MadrasahEnrollment
+- Estimate: 40 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

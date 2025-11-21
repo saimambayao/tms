@@ -1,0 +1,148 @@
+# Task ID: 061
+# Title: Plan Student Model Migration Strategy
+# Status: pending
+# Dependencies: 001, 060
+# Priority: high
+# Description: Create comprehensive migration strategy for renaming BMParliamentMember to Student model. This is a HIGH RISK operation requiring detailed planning, b
+
+# Details:
+Create comprehensive migration strategy for renaming BMParliamentMember to Student model. This is a HIGH RISK operation requiring detailed planning, backup verification, and rollback procedures.
+
+**RISK LEVEL: HIGH** - This task involves renaming a core model with existing production data.
+
+## Implementation Steps:
+1. Audit current BMParliamentMember data:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py shell
+   from apps.constituents.models import BMParliamentMember
+   print(f"Total BMParliamentMember records: {BMParliamentMember.objects.count()}")
+   print(f"Active records: {BMParliamentMember.objects.filter(status='active').count()}")
+   ```
+2. Map all foreign key relationships:
+   ```bash
+   python manage.py inspectdb constituents_bmparlimentmember > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-06-student/bmparlimentmember_schema.txt
+   ```
+3. Create migration strategy document:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-06-student/MIGRATION_STRATEGY.md << 'EOF'
+   # Student Model Migration Strategy
+
+   ## Overview
+   Rename BMParliamentMember → Student
+
+   ## Risk Assessment: HIGH
+   - Core model with production data
+   - Multiple foreign key relationships
+   - Used across multiple apps
+
+   ## Pre-Migration Checklist
+   - [ ] Full database backup verified
+   - [ ] Row count documented
+   - [ ] Foreign key relationships mapped
+   - [ ] Staging environment ready
+   - [ ] Rollback script prepared
+
+   ## Migration Steps
+   1. Backup constituents app
+   2. Create RenameModel migration
+   3. Test on staging
+   4. Verify data integrity
+   5. Run on production
+   6. Verify again
+
+   ## Rollback Procedure
+   1. Restore from backup
+   2. Revert migration
+   3. Verify original state
+
+   ## Testing Plan
+   - Test foreign key relationships
+   - Test admin interface
+   - Test forms and views
+   - Test API endpoints
+   EOF
+   ```
+4. Document all models with ForeignKey to BMParliamentMember:
+   ```bash
+   grep -r "ForeignKey.*BMParliamentMember" /Users/saidamenmambayao/apps/madaris-ms/src/apps/ > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-06-student/foreign_key_references.txt
+   ```
+5. Verify database backup exists and is recent:
+   ```bash
+   ls -lh /Users/saidamenmambayao/apps/madaris-ms/backups/ | grep -E "\.sql|\.dump"
+   ```
+6. Create rollback script:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/scripts/rollback_student_migration.sh << 'EOF'
+   #!/bin/bash
+   # Rollback script for Student model migration
+
+   echo "Rolling back Student migration..."
+   cd /Users/saidamenmambayao/apps/madaris-ms
+
+   # Revert migration
+   python manage.py migrate constituents <previous_migration_number>
+
+   # Verify rollback
+   python manage.py shell -c "from apps.constituents.models import BMParliamentMember; print(f'BMParliamentMember count: {BMParliamentMember.objects.count()}')"
+
+   echo "Rollback complete. Verify data integrity."
+   EOF
+   chmod +x /Users/saidamenmambayao/apps/madaris-ms/scripts/rollback_student_migration.sh
+   ```
+7. Prepare staging environment:
+   ```bash
+   # Copy production data to staging
+   python manage.py dumpdata > /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_staging_data.json
+   ```
+
+## Acceptance Criteria:
+- Migration strategy document created
+- Data audit completed (row counts, relationships)
+- Backup verification completed
+- Rollback procedure documented
+- Testing plan created
+- Risk mitigation steps identified
+- Foreign key relationships mapped
+- Staging environment prepared
+
+## Files Modified:
+- `docs/docs-new/tasks-refactor/phase-06-student/MIGRATION_STRATEGY.md`
+- `docs/docs-new/tasks-refactor/phase-06-student/bmparlimentmember_schema.txt`
+- `docs/docs-new/tasks-refactor/phase-06-student/foreign_key_references.txt`
+- `scripts/rollback_student_migration.sh`
+- `backups/phase6_staging_data.json`
+
+## Important Notes:
+- This is a PLANNING task - no code changes yet
+- All actual migrations happen in subsequent tasks
+- Backup verification is CRITICAL before proceeding
+- Document current state thoroughly
+- Review migration strategy with team before proceeding
+- Estimate: 1-2 hours
+
+## Risk Mitigation:
+- ⚠️ Test on staging first
+- ⚠️ Verify backup can be restored
+- ⚠️ Document all foreign key relationships
+- ⚠️ Prepare rollback script before migration
+- ⚠️ Schedule migration during low-traffic period
+
+# Test Strategy:
+1. Verify backup file exists and has reasonable size
+2. Restore on test database to verify integrity
+3. Confirm all tables present in restored database
+4. Compare row counts with original database
+5. Verify migration file syntax with `python manage.py sqlmigrate`
+6. Test forward migration on staging database
+7. Test reverse migration to ensure rollback works
+8. Verify no data loss during migration
+9. Run full test suite to catch regressions
+10. Run migrations and verify schema changes
+11. Create test instances to verify new fields
+12. Test admin interface with new fields
+13. Verify backward compatibility with existing data
+14. Review planning documentation
+15. Verify all risks identified
+16. Confirm rollback procedures documented
+17. Ensure dependencies are mapped

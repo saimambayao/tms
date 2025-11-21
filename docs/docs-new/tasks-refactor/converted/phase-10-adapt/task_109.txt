@@ -1,0 +1,637 @@
+# Task ID: 109
+# Title: Update System Settings for TMS
+# Status: pending
+# Dependencies: 015, 103
+# Priority: high
+# Description: Update system settings and configuration options to reflect Tarbiyyah Management System context. Add education-specific settings for academic years, g
+
+# Details:
+Update system settings and configuration options to reflect Tarbiyyah Management System context. Add education-specific settings for academic years, grading systems, attendance policies, and madrasah configurations.
+
+## Implementation Steps:
+1. Create settings model in `apps/core/models.py`:
+   ```python
+   from django.db import models
+   from django.core.validators import MinValueValidator, MaxValueValidator
+   from django.contrib.postgres.fields import JSONField
+
+   class SystemSettings(models.Model):
+       """System-wide settings for Tarbiyyah Management System"""
+
+       # Singleton pattern - only one instance
+       class Meta:
+           verbose_name = "System Settings"
+           verbose_name_plural = "System Settings"
+
+       # Academic Year Settings
+       current_academic_year = models.CharField(
+           max_length=20,
+           default='2024-2025',
+           help_text="Current academic year (e.g., 2024-2025)"
+       )
+
+       academic_year_start_month = models.IntegerField(
+           default=9,  # September
+           validators=[MinValueValidator(1), MaxValueValidator(12)],
+           help_text="Month when academic year starts (1-12)"
+       )
+
+       academic_year_end_month = models.IntegerField(
+           default=6,  # June
+           validators=[MinValueValidator(1), MaxValueValidator(12)],
+           help_text="Month when academic year ends (1-12)"
+       )
+
+       # Grading System Settings
+       grading_scale = models.CharField(
+           max_length=20,
+           choices=[
+               ('percentage', 'Percentage (0-100)'),
+               ('letter', 'Letter Grade (A-F)'),
+               ('gpa', 'GPA (0-4.0)'),
+               ('custom', 'Custom Scale')
+           ],
+           default='percentage'
+       )
+
+       passing_grade = models.FloatField(
+           default=60.0,
+           validators=[MinValueValidator(0), MaxValueValidator(100)],
+           help_text="Minimum passing grade"
+       )
+
+       grade_scale_json = models.JSONField(
+           default=dict,
+           blank=True,
+           help_text="Custom grade scale configuration"
+       )
+
+       # Attendance Settings
+       attendance_required_percentage = models.FloatField(
+           default=75.0,
+           validators=[MinValueValidator(0), MaxValueValidator(100)],
+           help_text="Minimum attendance percentage required"
+       )
+
+       attendance_tracking_enabled = models.BooleanField(
+           default=True,
+           help_text="Enable attendance tracking"
+       )
+
+       late_arrival_threshold_minutes = models.IntegerField(
+           default=15,
+           help_text="Minutes after which student is marked late"
+       )
+
+       # Madrasah Settings
+       madrasah_types = models.JSONField(
+           default=list,
+           help_text="Available madrasah types"
+       )
+
+       default_class_size = models.IntegerField(
+           default=30,
+           help_text="Default maximum class size"
+       )
+
+       # Terminology Settings
+       system_name = models.CharField(
+           max_length=100,
+           default='Tarbiyyah Management System'
+       )
+
+       student_label = models.CharField(
+           max_length=50,
+           default='Student',
+           help_text="Label for students in UI"
+       )
+
+       teacher_label = models.CharField(
+           max_length=50,
+           default='Teacher (Ustadz/Ustadza)',
+           help_text="Label for teachers in UI"
+       )
+
+       madrasah_label = models.CharField(
+           max_length=50,
+           default='Madrasah',
+           help_text="Label for schools in UI"
+       )
+
+       # Email Settings
+       email_from_name = models.CharField(
+           max_length=100,
+           default='Tarbiyyah Management System'
+       )
+
+       email_signature = models.TextField(
+           default='Best regards,\nTarbiyyah Management System',
+           help_text="Default email signature"
+       )
+
+       # Notification Settings
+       enable_email_notifications = models.BooleanField(
+           default=True
+       )
+
+       enable_sms_notifications = models.BooleanField(
+           default=False
+       )
+
+       # Regional Settings
+       default_timezone = models.CharField(
+           max_length=50,
+           default='Asia/Manila'
+       )
+
+       default_language = models.CharField(
+           max_length=10,
+           choices=[
+               ('en', 'English'),
+               ('ar', 'Arabic'),
+               ('tl', 'Filipino')
+           ],
+           default='en'
+       )
+
+       # Feature Flags
+       features_enabled = models.JSONField(
+           default=dict,
+           help_text="Feature flags for system functionality"
+       )
+
+       # Timestamps
+       updated_at = models.DateTimeField(auto_now=True)
+       updated_by = models.ForeignKey(
+           'users.User',
+           on_delete=models.SET_NULL,
+           null=True,
+           blank=True
+       )
+
+       def __str__(self):
+           return f"System Settings (Updated: {self.updated_at})"
+
+       @classmethod
+       def get_settings(cls):
+           """Get or create singleton settings instance"""
+           settings, created = cls.objects.get_or_create(pk=1)
+           return settings
+
+       def save(self, *args, **kwargs):
+           """Ensure only one instance exists"""
+           self.pk = 1
+           super().save(*args, **kwargs)
+
+       def delete(self, *args, **kwargs):
+           """Prevent deletion of settings"""
+           pass
+   ```
+
+2. Create migration for settings:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py makemigrations core
+   python manage.py migrate core
+   ```
+
+3. Create settings form in `apps/core/forms.py`:
+   ```python
+   from django import forms
+   from .models import SystemSettings
+
+   class SystemSettingsForm(forms.ModelForm):
+       """Form for editing system settings"""
+
+       class Meta:
+           model = SystemSettings
+           exclude = ['updated_by', 'updated_at']
+           widgets = {
+               'email_signature': forms.Textarea(attrs={'rows': 4}),
+               'grade_scale_json': forms.Textarea(attrs={
+                   'rows': 10,
+                   'placeholder': 'JSON configuration for grade scale'
+               }),
+               'madrasah_types': forms.Textarea(attrs={
+                   'rows': 8,
+                   'placeholder': '["Ibtidaiyah", "Thanawiyah", "Aliyah"]'
+               }),
+               'features_enabled': forms.Textarea(attrs={
+                   'rows': 8,
+                   'placeholder': '{"feature_name": true}'
+               })
+           }
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+
+           # Add help text and customize fields
+           self.fields['current_academic_year'].widget.attrs['placeholder'] = '2024-2025'
+           self.fields['passing_grade'].widget.attrs['step'] = '0.1'
+           self.fields['attendance_required_percentage'].widget.attrs['step'] = '0.1'
+
+       def clean_grade_scale_json(self):
+           """Validate JSON field"""
+           import json
+           data = self.cleaned_data['grade_scale_json']
+           if isinstance(data, str):
+               try:
+                   return json.loads(data)
+               except json.JSONDecodeError:
+                   raise forms.ValidationError("Invalid JSON format")
+           return data
+
+       def clean_madrasah_types(self):
+           """Validate madrasah types JSON"""
+           import json
+           data = self.cleaned_data['madrasah_types']
+           if isinstance(data, str):
+               try:
+                   types = json.loads(data)
+                   if not isinstance(types, list):
+                       raise forms.ValidationError("Madrasah types must be a list")
+                   return types
+               except json.JSONDecodeError:
+                   raise forms.ValidationError("Invalid JSON format")
+           return data
+   ```
+
+4. Create settings admin interface in `apps/core/admin.py`:
+   ```python
+   from django.contrib import admin
+   from .models import SystemSettings
+
+   @admin.register(SystemSettings)
+   class SystemSettingsAdmin(admin.ModelAdmin):
+       """Admin interface for system settings"""
+
+       fieldsets = (
+           ('Academic Year Settings', {
+               'fields': (
+                   'current_academic_year',
+                   'academic_year_start_month',
+                   'academic_year_end_month'
+               )
+           }),
+           ('Grading System', {
+               'fields': (
+                   'grading_scale',
+                   'passing_grade',
+                   'grade_scale_json'
+               )
+           }),
+           ('Attendance Settings', {
+               'fields': (
+                   'attendance_tracking_enabled',
+                   'attendance_required_percentage',
+                   'late_arrival_threshold_minutes'
+               )
+           }),
+           ('Madrasah Settings', {
+               'fields': (
+                   'madrasah_types',
+                   'default_class_size'
+               )
+           }),
+           ('Terminology', {
+               'fields': (
+                   'system_name',
+                   'student_label',
+                   'teacher_label',
+                   'madrasah_label'
+               )
+           }),
+           ('Email Settings', {
+               'fields': (
+                   'email_from_name',
+                   'email_signature'
+               )
+           }),
+           ('Notifications', {
+               'fields': (
+                   'enable_email_notifications',
+                   'enable_sms_notifications'
+               )
+           }),
+           ('Regional Settings', {
+               'fields': (
+                   'default_timezone',
+                   'default_language'
+               )
+           }),
+           ('Feature Flags', {
+               'fields': ('features_enabled',),
+               'classes': ('collapse',)
+           })
+       )
+
+       readonly_fields = ('updated_at', 'updated_by')
+
+       def has_add_permission(self, request):
+           # Only allow one settings instance
+           return not SystemSettings.objects.exists()
+
+       def has_delete_permission(self, request, obj=None):
+           # Prevent deletion
+           return False
+
+       def save_model(self, request, obj, form, change):
+           obj.updated_by = request.user
+           super().save_model(request, obj, form, change)
+   ```
+
+5. Create settings view for non-admin users:
+   ```python
+   # apps/core/views/settings_views.py
+   from django.views.generic import UpdateView
+   from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+   from django.urls import reverse_lazy
+   from django.contrib import messages
+   from apps.core.models import SystemSettings
+   from apps.core.forms import SystemSettingsForm
+
+   class SystemSettingsView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+       """View for updating system settings"""
+
+       model = SystemSettings
+       form_class = SystemSettingsForm
+       template_name = 'core/system_settings.html'
+       success_url = reverse_lazy('core:settings')
+
+       def test_func(self):
+           # Only tarbiyyah admins can access
+           return self.request.user.has_role('tarbiyyah_admin')
+
+       def get_object(self, queryset=None):
+           return SystemSettings.get_settings()
+
+       def form_valid(self, form):
+           form.instance.updated_by = self.request.user
+           messages.success(self.request, 'System settings updated successfully')
+           return super().form_valid(form)
+
+       def form_invalid(self, form):
+           messages.error(self.request, 'Please correct the errors below')
+           return super().form_invalid(form)
+   ```
+
+6. Create settings template:
+   ```html
+   <!-- templates/core/system_settings.html -->
+   {% extends "base.html" %}
+   {% load crispy_forms_tags %}
+
+   {% block title %}System Settings{% endblock %}
+
+   {% block content %}
+   <div class="settings-container">
+       <h1>System Settings</h1>
+
+       <form method="post">
+           {% csrf_token %}
+
+           <div class="settings-section">
+               <h2>Academic Year Settings</h2>
+               {{ form.current_academic_year|as_crispy_field }}
+               {{ form.academic_year_start_month|as_crispy_field }}
+               {{ form.academic_year_end_month|as_crispy_field }}
+           </div>
+
+           <div class="settings-section">
+               <h2>Grading System</h2>
+               {{ form.grading_scale|as_crispy_field }}
+               {{ form.passing_grade|as_crispy_field }}
+               {{ form.grade_scale_json|as_crispy_field }}
+
+               <div class="help-text">
+                   <p>Example grade scale JSON:</p>
+                   <pre>{
+     "A": {"min": 90, "max": 100},
+     "B": {"min": 80, "max": 89},
+     "C": {"min": 70, "max": 79},
+     "D": {"min": 60, "max": 69},
+     "F": {"min": 0, "max": 59}
+   }</pre>
+               </div>
+           </div>
+
+           <div class="settings-section">
+               <h2>Attendance Settings</h2>
+               {{ form.attendance_tracking_enabled|as_crispy_field }}
+               {{ form.attendance_required_percentage|as_crispy_field }}
+               {{ form.late_arrival_threshold_minutes|as_crispy_field }}
+           </div>
+
+           <div class="settings-section">
+               <h2>Madrasah Settings</h2>
+               {{ form.madrasah_types|as_crispy_field }}
+               {{ form.default_class_size|as_crispy_field }}
+
+               <div class="help-text">
+                   <p>Example madrasah types:</p>
+                   <pre>["Ibtidaiyah", "Thanawiyah", "Aliyah", "Ma'had"]</pre>
+               </div>
+           </div>
+
+           <div class="settings-section">
+               <h2>Terminology</h2>
+               {{ form.system_name|as_crispy_field }}
+               {{ form.student_label|as_crispy_field }}
+               {{ form.teacher_label|as_crispy_field }}
+               {{ form.madrasah_label|as_crispy_field }}
+           </div>
+
+           <div class="settings-section">
+               <h2>Email Settings</h2>
+               {{ form.email_from_name|as_crispy_field }}
+               {{ form.email_signature|as_crispy_field }}
+           </div>
+
+           <div class="settings-section">
+               <h2>Notifications</h2>
+               {{ form.enable_email_notifications|as_crispy_field }}
+               {{ form.enable_sms_notifications|as_crispy_field }}
+           </div>
+
+           <div class="settings-section">
+               <h2>Regional Settings</h2>
+               {{ form.default_timezone|as_crispy_field }}
+               {{ form.default_language|as_crispy_field }}
+           </div>
+
+           <div class="settings-section collapsible">
+               <h2>Feature Flags (Advanced)</h2>
+               {{ form.features_enabled|as_crispy_field }}
+           </div>
+
+           <div class="form-actions">
+               <button type="submit" class="btn btn-primary">Save Settings</button>
+               <a href="{% url 'dashboards:main' %}" class="btn btn-secondary">Cancel</a>
+           </div>
+       </form>
+   </div>
+   {% endblock %}
+   ```
+
+7. Create context processor for settings:
+   ```python
+   # apps/core/context_processors.py
+   from .models import SystemSettings
+
+   def system_settings(request):
+       """Add system settings to template context"""
+       settings = SystemSettings.get_settings()
+
+       return {
+           'SYSTEM_NAME': settings.system_name,
+           'STUDENT_LABEL': settings.student_label,
+           'TEACHER_LABEL': settings.teacher_label,
+           'MADRASAH_LABEL': settings.madrasah_label,
+           'CURRENT_ACADEMIC_YEAR': settings.current_academic_year,
+           'system_settings': settings
+       }
+   ```
+
+8. Add context processor to settings:
+   ```python
+   # config/settings/base.py
+   TEMPLATES = [
+       {
+           'BACKEND': 'django.template.backends.django.DjangoTemplates',
+           'DIRS': [os.path.join(BASE_DIR, 'templates')],
+           'APP_DIRS': True,
+           'OPTIONS': {
+               'context_processors': [
+                   # ... existing processors ...
+                   'apps.core.context_processors.system_settings',
+               ],
+           },
+       },
+   ]
+   ```
+
+9. Create settings utility functions:
+   ```python
+   # apps/core/utils/settings_helper.py
+   from apps.core.models import SystemSettings
+
+   def get_current_academic_year():
+       """Get current academic year"""
+       settings = SystemSettings.get_settings()
+       return settings.current_academic_year
+
+   def get_passing_grade():
+       """Get minimum passing grade"""
+       settings = SystemSettings.get_settings()
+       return settings.passing_grade
+
+   def get_madrasah_types():
+       """Get available madrasah types"""
+       settings = SystemSettings.get_settings()
+       return settings.madrasah_types or [
+           'Ibtidaiyah',
+           'Thanawiyah',
+           'Aliyah',
+           'Ma\'had'
+       ]
+
+   def is_feature_enabled(feature_name):
+       """Check if feature is enabled"""
+       settings = SystemSettings.get_settings()
+       return settings.features_enabled.get(feature_name, False)
+   ```
+
+10. Update URLs:
+    ```python
+    # apps/core/urls.py
+    from .views.settings_views import SystemSettingsView
+
+    urlpatterns = [
+        # ... existing patterns ...
+        path('settings/', SystemSettingsView.as_view(), name='settings'),
+    ]
+    ```
+
+11. Create initial settings data:
+    ```python
+    # Create data migration
+    python manage.py makemigrations core --empty --name populate_default_settings
+
+    # In the migration file:
+    def populate_default_settings(apps, schema_editor):
+        SystemSettings = apps.get_model('core', 'SystemSettings')
+        settings = SystemSettings.objects.create(
+            pk=1,
+            current_academic_year='2024-2025',
+            madrasah_types=[
+                'Ibtidaiyah (Elementary)',
+                'Thanawiyah (Intermediate)',
+                'Aliyah (Secondary)',
+                'Ma\'had (Institute)'
+            ],
+            features_enabled={
+                'attendance_tracking': True,
+                'grade_tracking': True,
+                'analytics': True,
+                'bulk_operations': True
+            }
+        )
+
+    def reverse_func(apps, schema_editor):
+        SystemSettings = apps.get_model('core', 'SystemSettings')
+        SystemSettings.objects.filter(pk=1).delete()
+
+    operations = [
+        migrations.RunPython(populate_default_settings, reverse_func)
+    ]
+    ```
+
+12. Add settings link to navigation:
+    ```html
+    <!-- In base.html or sidebar -->
+    {% if user.has_role('tarbiyyah_admin') %}
+    <a href="{% url 'core:settings' %}">System Settings</a>
+    {% endif %}
+    ```
+
+## Acceptance Criteria:
+- Academic year settings added
+- Grading system configuration added
+- Attendance policy settings added
+- Madrasah type configurations added
+- Email template settings updated
+- System-wide terminology settings added
+- Default values for education context set
+- Settings UI accessible by admins
+- Settings validated properly
+- Settings changes logged
+
+## Files Modified:
+- `src/apps/core/models.py (add SystemSettings model)`
+- `src/apps/core/forms.py (add SystemSettingsForm)`
+- `src/apps/core/admin.py (add SystemSettingsAdmin)`
+- `src/apps/core/views/settings_views.py (new)`
+- `src/apps/core/templates/core/system_settings.html (new)`
+- `src/apps/core/context_processors.py (add system_settings)`
+- `src/apps/core/utils/settings_helper.py (new)`
+- `src/apps/core/urls.py (add settings URL)`
+- `src/config/settings/base.py (add context processor)`
+- `src/apps/core/migrations/XXXX_systemsettings.py (new)`
+- `src/apps/core/migrations/XXXX_populate_default_settings.py (new)`
+
+## Important Notes:
+- Settings should be singleton (only one instance)
+- Validate JSON fields properly
+- Log all settings changes
+- Provide clear help text for each setting
+- Add sensible defaults for all settings
+- Consider caching settings for performance
+- Restrict access to tarbiyyah_admin role only
+- Backup settings before changes
+- Estimate: 3-4 hours
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

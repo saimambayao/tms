@@ -1,0 +1,274 @@
+# Task ID: 121
+# Title: Verify Phase 12 Templates Complete
+# Status: pending
+# Dependencies: 117, 118, 119, 120
+# Priority: high
+# Description: Comprehensive verification that Phase 12 template cleanup is complete. All templates use TMS terminology, are mobile-responsive, accessible, and follo
+
+# Details:
+Comprehensive verification that Phase 12 template cleanup is complete. All templates use TMS terminology, are mobile-responsive, accessible, and follow consistent patterns.
+
+## Implementation Steps:
+1. Final terminology scan:
+   ```bash
+   # Search for any remaining parliamentary terms
+   grep -ri "parliament" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html"
+   grep -ri "constituent" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" | grep -v "<!-- constituency"
+   grep -ri "chapter" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" | grep -v "madrasah"
+
+   # Should return 0 results
+   ```
+2. Verify context processor:
+   ```python
+   # Django shell
+   from django.test import RequestFactory
+   from apps.core.context_processors import system_context
+
+   factory = RequestFactory()
+   request = factory.get('/')
+   context = system_context(request)
+
+   print(context['SYSTEM_NAME'])  # Should be 'Tarbiyyah Management System'
+   print(context['MADRASAH_LABEL'])  # Should be 'Madrasah'
+   print(context['STUDENT_LABEL'])  # Should be 'Student'
+   ```
+3. Test breadcrumbs on all major pages:
+   ```bash
+   # Navigate to each page type and verify breadcrumbs
+   # - Home
+   # - Madaris list
+   # - Madrasah detail
+   # - Student list
+   # - Student profile
+   # - Teacher list
+   # - Curriculum
+   # - Academic records
+   # - Programs
+   # - Parent portal
+   # - Dashboard
+   ```
+4. Run mobile responsiveness checklist:
+   ```bash
+   # Test on viewports: 320px, 375px, 414px, 768px, 1024px
+   # Verify checklist from task_119.txt completed
+   ```
+5. Run accessibility audit:
+   ```bash
+   # Chrome DevTools > Lighthouse > Accessibility
+   # Run on 10+ major pages
+   # Verify all scores 90+
+   # Document any scores below 90 with explanation
+   ```
+6. Verify template consistency:
+   ```bash
+   # Check that all templates extend base.html
+   grep -r "{% extends" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" | grep -v "base.html"
+
+   # Check for consistent block usage
+   grep -r "{% block content %}" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html"
+   ```
+7. Test all template includes work:
+   ```bash
+   # Find all includes
+   grep -r "{% include" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html"
+
+   # Verify included files exist
+   ```
+8. Check for template syntax errors:
+   ```bash
+   python manage.py check
+   # Should return "System check identified no issues (0 silenced)."
+   ```
+9. Visual regression testing:
+   - Take screenshots of 20+ key pages
+   - Compare with previous version (if available)
+   - Verify no unintended visual changes
+   - Document intentional changes
+10. Cross-browser testing:
+    - **Chrome** (latest)
+    - **Firefox** (latest)
+    - **Safari** (latest) - macOS/iOS
+    - **Edge** (latest)
+    - Verify templates render correctly in all browsers
+11. Test dynamic content rendering:
+    ```python
+    # Test templates with different data scenarios
+    # - Empty lists
+    # - Single item
+    # - Many items (pagination)
+    # - Very long text
+    # - Arabic text
+    # - Special characters
+    ```
+12. Verify form templates:
+    - All forms render correctly
+    - Error states display properly
+    - Success messages appear
+    - Help text visible and accessible
+13. Test email templates:
+    ```bash
+    # Find email templates
+    find /Users/saidamenmambayao/apps/madaris-ms/src -name "*email*.html"
+
+    # Send test emails
+    # Verify formatting correct in email clients
+    ```
+14. Check template performance:
+    ```bash
+    # Use Django Debug Toolbar
+    # Check for:
+    # - Excessive queries (N+1 problem)
+    # - Large template inheritance chains
+    # - Expensive template tags
+    ```
+15. Review phase 12 audit reports:
+    ```bash
+    ls -la /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/phase-12-audit/
+
+    # Should contain:
+    # - TEMPLATE_AUDIT_REPORT.md
+    # - MOBILE_RESPONSIVENESS_REPORT.md
+    # - ACCESSIBILITY_REPORT.md
+    ```
+16. Create final verification report:
+    ```markdown
+    # Phase 12 Templates Verification Report
+
+    Date: [Current Date]
+
+    ## Summary
+    - Total templates reviewed: XXX
+    - Parliamentary terms removed: XXX
+    - Templates updated: XXX
+    - Accessibility score (average): XX/100
+    - Mobile responsiveness: ✅ PASS / ❌ FAIL
+
+    ## Terminology Updates
+    - [x] "BM Parliament" → "Tarbiyyah Management System"
+    - [x] "Chapter" → "Madrasah"
+    - [x] "Member" → "Student"
+    - [x] "Coordinator" → "Madrasah Administrator"
+
+    ## Breadcrumbs
+    - [x] All pages have breadcrumbs
+    - [x] Consistent navigation paths
+    - [x] SEO structured data added
+
+    ## Mobile Responsiveness
+    - [x] Navigation works on mobile
+    - [x] Tables responsive
+    - [x] Forms usable on mobile
+    - [x] Touch targets adequate
+
+    ## Accessibility
+    - [x] WCAG 2.1 Level AA compliance
+    - [x] Keyboard navigation works
+    - [x] Screen reader compatible
+    - [x] Color contrast sufficient
+
+    ## Issues Found
+    1. [Issue description and resolution]
+    2. [Issue description and resolution]
+
+    ## Recommendations
+    1. [Future improvement]
+    2. [Future improvement]
+
+    ## Sign-off
+    Phase 12 templates cleanup complete: ✅ YES / ❌ NO
+
+    Verified by: [Name]
+    Date: [Date]
+    ```
+17. Run comprehensive test suite:
+    ```bash
+    # Run all template tests
+    python manage.py test apps.*/tests/test_templates.py -v 2
+    ```
+18. Document template patterns for future reference:
+    ```markdown
+    # TMS Template Patterns Guide
+
+    ## Base Template Structure
+    - All templates extend base.html
+    - Use {% block content %} for main content
+    - Include breadcrumbs at top of content
+
+    ## Common Patterns
+    - List pages: Use card grid layout
+    - Detail pages: Header with action buttons, tabbed content
+    - Forms: Crispy forms with Tailwind styling
+    - Tables: Responsive wrapper or card view on mobile
+
+    ## Terminology
+    - Use {{ MADRASAH_LABEL }} instead of hardcoded "Madrasah"
+    - Use {{ STUDENT_LABEL }} instead of hardcoded "Student"
+    - Use {{ SYSTEM_NAME }} for system name
+
+    ## Accessibility
+    - All forms have labels
+    - Images have alt text
+    - ARIA landmarks on all pages
+    - Skip navigation link in base.html
+    ```
+19. Update main documentation:
+    ```bash
+    # Update README with Phase 12 completion status
+    # Update REFACTORING_PLAN.md to mark Phase 12 complete
+    ```
+20. Create handoff document:
+    ```markdown
+    # Phase 12 Handoff Document
+
+    ## What Was Completed
+    - Template terminology audit and cleanup
+    - Breadcrumb system update
+    - Mobile responsiveness verification and fixes
+    - Accessibility improvements (WCAG 2.1 Level AA)
+    - Template consistency verification
+
+    ## Key Files Modified
+    - [List of major files changed]
+
+    ## Known Issues
+    - [Any outstanding issues]
+
+    ## Next Steps
+    - Proceed to Phase 13: Database Final Cleanup
+    - Consider performance optimization
+    - Plan user training for new terminology
+    ```
+
+## Acceptance Criteria:
+- No parliamentary terminology remains in templates
+- All templates use TMS educational terminology
+- Breadcrumbs consistent across all pages
+- Mobile responsiveness verified on all major pages
+- Accessibility audit passed (90+ score)
+- All templates follow atomic design patterns
+- Context processor working for system labels
+- Documentation updated with template patterns
+- Visual regression testing passed
+- Cross-browser testing completed
+
+## Files Modified:
+- `docs/docs-new/phase-12-audit/PHASE_12_VERIFICATION_REPORT.md (created)`
+- `docs/docs-new/phase-12-audit/TEMPLATE_PATTERNS_GUIDE.md (created)`
+- `docs/docs-new/phase-12-audit/PHASE_12_HANDOFF.md (created)`
+- `docs/docs-new/tasks-refactor/phase-12-templates/README.md (update status)`
+
+## Important Notes:
+- Critical checkpoint before Phase 13
+- All templates must be verified working
+- No visual regressions allowed
+- Document any deviations from plan
+- Get stakeholder approval before proceeding
+- This phase ensures user-facing quality
+- Take time to do thorough testing
+- Estimate: 120 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable

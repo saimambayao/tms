@@ -1,0 +1,298 @@
+# Task ID: 085
+# Title: Add Education-Specific Program Fields
+# Status: pending
+# Dependencies: 084
+# Priority: medium
+# Description: Add education-specific fields to MinistryProgram model to support madrasah programs, grade levels, academic terms, enrollment requirements, and accred
+
+# Details:
+Add education-specific fields to MinistryProgram model to support madrasah programs, grade levels, academic terms, enrollment requirements, and accreditation tracking.
+
+## Implementation Steps:
+1. Add import for Madrasah model in apps/services/models.py:
+   ```python
+   # At top of file
+   from apps.chapters.models import Chapter as Madrasah  # Or use direct import after Chapter renamed
+   ```
+2. Add education-specific fields to MinistryProgram model:
+   ```python
+   # Add after existing fields, before class Meta or methods:
+
+   # Education-Specific Fields
+   madrasah = models.ForeignKey(
+       'chapters.Chapter',  # Or 'madaris.Madrasah' if renamed
+       on_delete=models.SET_NULL,
+       null=True,
+       blank=True,
+       related_name='programs',
+       help_text="Specific madrasah this program is for (leave blank for system-wide programs)"
+   )
+
+   GRADE_LEVEL_CHOICES = (
+       ('all', 'All Levels'),
+       ('ibtidaiyyah', 'Ibtidaiyyah (Elementary)'),
+       ('idadiyyah', "I'dadiyyah (Intermediate)"),
+       ('thanawiyyah', 'Thanawiyyah (Secondary)'),
+       ('mixed', 'Mixed Levels'),
+   )
+   grade_levels = models.CharField(
+       max_length=20,
+       choices=GRADE_LEVEL_CHOICES,
+       default='all',
+       help_text="Grade levels this program serves"
+   )
+
+   ACADEMIC_TERM_CHOICES = (
+       ('year_round', 'Year Round'),
+       ('semester_1', 'First Semester'),
+       ('semester_2', 'Second Semester'),
+       ('summer', 'Summer'),
+       ('quarter_1', 'First Quarter'),
+       ('quarter_2', 'Second Quarter'),
+       ('quarter_3', 'Third Quarter'),
+       ('quarter_4', 'Fourth Quarter'),
+   )
+   academic_term = models.CharField(
+       max_length=20,
+       choices=ACADEMIC_TERM_CHOICES,
+       default='year_round',
+       blank=True,
+       help_text="Academic term/period for this program"
+   )
+
+   enrollment_capacity = models.PositiveIntegerField(
+       null=True,
+       blank=True,
+       help_text="Maximum number of participants/students (leave blank for unlimited)"
+   )
+
+   current_enrollment = models.PositiveIntegerField(
+       default=0,
+       help_text="Current number of enrolled participants"
+   )
+
+   enrollment_requirements = models.TextField(
+       blank=True,
+       help_text="Requirements for enrollment (grades, prerequisites, documentation needed)"
+   )
+
+   ACCREDITATION_STATUS_CHOICES = (
+       ('not_applicable', 'Not Applicable'),
+       ('pending', 'Pending Accreditation'),
+       ('provisional', 'Provisionally Accredited'),
+       ('accredited', 'Fully Accredited'),
+       ('deaccredited', 'Deaccredited'),
+   )
+   accreditation_status = models.CharField(
+       max_length=20,
+       choices=ACCREDITATION_STATUS_CHOICES,
+       default='not_applicable',
+       help_text="Accreditation status for academic programs"
+   )
+
+   accreditation_date = models.DateField(
+       null=True,
+       blank=True,
+       help_text="Date of accreditation (if applicable)"
+   )
+
+   accreditation_body = models.CharField(
+       max_length=200,
+       blank=True,
+       help_text="Accrediting organization/body"
+   )
+
+   program_coordinator = models.ForeignKey(
+       settings.AUTH_USER_MODEL,
+       on_delete=models.SET_NULL,
+       null=True,
+       blank=True,
+       related_name='coordinated_programs',
+       help_text="Teacher/staff member coordinating this program"
+   )
+
+   application_deadline = models.DateField(
+       null=True,
+       blank=True,
+       help_text="Deadline for program applications"
+   )
+
+   program_schedule = models.TextField(
+       blank=True,
+       help_text="Program schedule (days, times, frequency)"
+   )
+   ```
+3. Add method to check enrollment availability:
+   ```python
+   # Add to MinistryProgram class methods:
+
+   def has_capacity(self):
+       """Check if program has available enrollment capacity"""
+       if self.enrollment_capacity is None:
+           return True
+       return self.current_enrollment < self.enrollment_capacity
+
+   def remaining_capacity(self):
+       """Get remaining enrollment capacity"""
+       if self.enrollment_capacity is None:
+           return None
+       return max(0, self.enrollment_capacity - self.current_enrollment)
+
+   def is_accepting_applications(self):
+       """Check if program is currently accepting applications"""
+       if self.application_deadline is None:
+           return self.status == 'active'
+       from django.utils import timezone
+       return (
+           self.status == 'active'
+           and self.application_deadline >= timezone.now().date()
+           and self.has_capacity()
+       )
+   ```
+4. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py makemigrations services -n "add_education_specific_fields"
+   ```
+5. Review migration:
+   ```bash
+   cat apps/services/migrations/*_add_education_specific_fields.py
+   ```
+6. Run migration:
+   ```bash
+   python manage.py migrate services
+   ```
+7. Verify fields in shell:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram
+   fields = ['madrasah', 'grade_levels', 'academic_term', 'enrollment_capacity',
+             'current_enrollment', 'enrollment_requirements', 'accreditation_status',
+             'program_coordinator', 'application_deadline', 'program_schedule']
+   print('Education-specific fields verification:')
+   for field_name in fields:
+       has_field = hasattr(MinistryProgram, field_name)
+       print(f'  {field_name}: {\"✓\" if has_field else \"✗\"}')
+   "
+   ```
+8. Test capacity methods:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram
+   from apps.users.models import User
+   from datetime import date, timedelta
+
+   admin = User.objects.filter(is_superuser=True).first()
+   program = MinistryProgram.objects.create(
+       code='TEST_SCHOLARSHIP_001',
+       title='Test Scholarship Program',
+       slug='test-scholarship-program',
+       ministry='mbasiced',
+       program_source='education',
+       program_category='scholarship',
+       ppa_type='program',
+       description='Test scholarship',
+       objectives='Test',
+       expected_outcomes='Test',
+       key_performance_indicators='Test',
+       target_beneficiaries='Students',
+       geographic_coverage='BARMM',
+       implementation_strategy='Test',
+       implementing_units='Test',
+       start_date=date.today(),
+       end_date=date.today() + timedelta(days=365),
+       funding_source='regional',
+       created_by=admin,
+       grade_levels='all',
+       enrollment_capacity=50,
+       current_enrollment=20,
+       application_deadline=date.today() + timedelta(days=30)
+   )
+   print(f'Program: {program.title}')
+   print(f'Has capacity: {program.has_capacity()}')
+   print(f'Remaining capacity: {program.remaining_capacity()}')
+   print(f'Accepting applications: {program.is_accepting_applications()}')
+   program.delete()
+   "
+   ```
+9. Update admin fieldsets (will be done in task_089, but verify fields exist):
+   ```bash
+   python manage.py check
+   ```
+10. Create test educational program with all fields:
+    ```bash
+    python manage.py shell -c "
+    from apps.services.models import MinistryProgram
+    from apps.users.models import User
+    from datetime import date, timedelta
+
+    admin = User.objects.filter(is_superuser=True).first()
+    program = MinistryProgram.objects.create(
+        code='TEST_FULL_EDU_001',
+        title='Complete Educational Program Test',
+        slug='complete-edu-program-test',
+        ministry='mbasiced',
+        program_source='education',
+        program_category='teacher_training',
+        ppa_type='program',
+        description='Comprehensive teacher training program',
+        objectives='Improve teaching quality',
+        expected_outcomes='Better trained teachers',
+        key_performance_indicators='Number of teachers trained',
+        target_beneficiaries='Madrasah teachers',
+        geographic_coverage='Maguindanao province',
+        implementation_strategy='Workshop series',
+        implementing_units='BARMM Education Ministry',
+        start_date=date.today(),
+        end_date=date.today() + timedelta(days=180),
+        funding_source='regional',
+        created_by=admin,
+        grade_levels='all',
+        academic_term='year_round',
+        enrollment_capacity=30,
+        enrollment_requirements='Must be current teacher with 2+ years experience',
+        accreditation_status='accredited',
+        accreditation_body='BARMM Teacher Education Council',
+        application_deadline=date.today() + timedelta(days=15),
+        program_schedule='Saturdays 9am-5pm, 12 weeks'
+    )
+    print(f'✓ Created: {program.title}')
+    print(f'  Category: {program.get_program_category_display()}')
+    print(f'  Grade Levels: {program.get_grade_levels_display()}')
+    print(f'  Capacity: {program.enrollment_capacity}')
+    program.delete()
+    print('✓ Test program cleaned up')
+    "
+    ```
+
+## Acceptance Criteria:
+- madrasah field added (optional FK)
+- grade_levels field added
+- academic_term field added
+- enrollment_capacity field added
+- enrollment_requirements field added
+- accreditation_status field added
+- program_coordinator field added
+- Migration created and applied
+- Fields appear in admin
+- Test data creation successful
+
+## Files Modified:
+- `src/apps/services/models.py (MinistryProgram model)`
+- `src/apps/services/migrations/*_add_education_specific_fields.py (new)`
+
+## Important Notes:
+- All new fields are optional (null=True, blank=True) except defaults
+- Existing programs will work without filling these fields
+- madrasah field allows both school-specific and system-wide programs
+- enrollment_capacity=None means unlimited capacity
+- Methods added for capacity checking and application status
+- accreditation fields support program quality tracking
+- program_coordinator can be linked to teacher profiles
+- Estimate: 50 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

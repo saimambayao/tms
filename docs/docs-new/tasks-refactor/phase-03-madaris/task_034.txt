@@ -1,0 +1,55 @@
+# Task ID: 034
+# Title: Add Madrasah Facilities Fields
+# Status: pending
+# Dependencies: 033
+# Priority: medium
+# Description: Add facility-related fields to Madrasah model: facility_level, has_library, has_computer_lab, has_masjid, has_dormitory.
+
+# Details:
+Add facility-related fields to Madrasah model: facility_level, has_library, has_computer_lab, has_masjid, has_dormitory.
+
+## Implementation Steps:
+1. Add facilities fields:
+   ```python
+   class Madrasah(models.Model):
+       ...
+       class FacilityLevel(models.TextChoices):
+           POOR = 'poor', 'Poor (Inadequate facilities)'
+           BASIC = 'basic', 'Basic (Limited facilities)'
+           STANDARD = 'standard', 'Standard'
+           GOOD = 'good', 'Good'
+           EXCELLENT = 'excellent', 'Excellent'
+
+       facility_level = CharField(
+           max_length=20,
+           choices=FacilityLevel.choices,
+           default='basic'
+       )
+       has_library = BooleanField(default=False)
+       has_computer_lab = BooleanField(default=False)
+       has_masjid = BooleanField(default=True, help_text="Prayer hall/Mosque")
+       has_dormitory = BooleanField(default=False)
+   ```
+2. Create migration
+3. Add to admin list_filter
+
+## Acceptance Criteria:
+- facility_level field with choices (Poor, Basic, Standard, Good, Excellent)
+- Boolean fields for facilities added
+- Migration created
+- Fields logical for Islamic school context
+- Test facilities tracking in admin
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_add_facilities_fields.py`
+
+## Important Notes:
+- has_masjid defaults to True (most madaris have prayer areas)
+- Estimate: 25 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

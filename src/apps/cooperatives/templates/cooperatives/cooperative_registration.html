@@ -1,0 +1,129 @@
+{% extends "base/base.html" %}
+{% load crispy_forms_tags %}
+{% load widget_tweaks %}
+
+{% block title %}{% if form.instance.pk %}Edit Cooperative{% else %}Register Cooperative{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h1 class="text-2xl font-bold text-gray-900">{% if form.instance.pk %}Edit Cooperative{% else %}Register a New Cooperative{% endif %}</h1>
+            <p class="mt-1 text-sm text-gray-600">Please fill out the form below to register a new cooperative.</p>
+        </div>
+        <div class="p-6">
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        {% for error in form.non_field_errors %}
+                            <p>{{ error }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.name|as_crispy_field }}
+                        <div class="field-error-message">{{ form.name.errors }}</div>
+                    </div>
+                    <div>
+                        {{ form.cooperative_type|as_crispy_field }}
+                        <div class="field-error-message">{{ form.cooperative_type.errors }}</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.status|as_crispy_field }}
+                        <div class="field-error-message">{{ form.status.errors }}</div>
+                    </div>
+                    <div>
+                        {{ form.registration_number|as_crispy_field }}
+                        <div class="field-error-message">{{ form.registration_number.errors }}</div>
+                    </div>
+                </div>
+                
+                <div>
+                    {{ form.description|as_crispy_field }}
+                    <div class="field-error-message">{{ form.description.errors }}</div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.address|as_crispy_field }}
+                        <div class="field-error-message">{{ form.address.errors }}</div>
+                    </div>
+                    <div>
+                        {{ form.barangay|as_crispy_field }}
+                        <div class="field-error-message">{{ form.barangay.errors }}</div>
+                    </div>
+                    <div>
+                        {{ form.municipality|as_crispy_field }}
+                        <div class="field-error-message">{{ form.municipality.errors }}</div>
+                    </div>
+                    <div>
+                        {{ form.province|as_crispy_field }}
+                        <div class="field-error-message">{{ form.province.errors }}</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.contact_number|as_crispy_field }}
+                        <div class="field-error-message">{{ form.contact_number.errors }}</div>
+                    </div>
+                    <div>
+                        {{ form.email|as_crispy_field }}
+                        <div class="field-error-message">{{ form.email.errors }}</div>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.date_established|as_crispy_field }}
+                        <div class="field-error-message">{{ form.date_established.errors }}</div>
+                    </div>
+                    <div>
+                        {{ form.date_registered|as_crispy_field }}
+                        <div class="field-error-message">{{ form.date_registered.errors }}</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form.total_members|as_crispy_field }}
+                        <div class="field-error-message">{{ form.total_members.errors }}</div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-1 gap-6">
+                    <div class="form-group">
+                        <label for="{{ form.registration_certificate.id_for_label }}" class="block text-sm font-medium text-gray-700">Registration Certificate</label>
+                        {% render_field form.registration_certificate class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.articles_of_cooperation.id_for_label }}" class="block text-sm font-medium text-gray-700">Articles of Cooperation</label>
+                        {% render_field form.articles_of_cooperation class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" %}
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ form.bylaws.id_for_label }}" class="block text-sm font-medium text-gray-700">Bylaws</label>
+                        {% render_field form.bylaws class="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none" %}
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-gray-200 flex items-center justify-end gap-4">
+                    <a href="{% url 'cooperatives:cooperative-dashboard' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg font-medium transition-colors duration-200">
+                        Cancel
+                    </a>
+                    <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-6 py-2 rounded-lg font-medium transition-colors duration-200 flex items-center gap-2">
+                        <i class="fas fa-save"></i>
+                        {% if form.instance.pk %}Update Cooperative{% else %}Register Cooperative{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

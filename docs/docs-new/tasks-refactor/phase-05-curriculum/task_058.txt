@@ -1,0 +1,475 @@
+# Task ID: 058
+# Title: Create Curriculum Templates
+# Status: pending
+# Dependencies: 056, 057
+# Priority: medium
+# Description: Create Django templates for curriculum management including list views, detail views, forms, and specialized templates for lesson plan management. Tem
+
+# Details:
+Create Django templates for curriculum management including list views, detail views, forms, and specialized templates for lesson plan management. Templates should be responsive, user-friendly, and follow the existing design system.
+
+## Implementation Steps:
+1. Create base curriculum template at apps/curriculum/templates/curriculum/base.html:
+   ```html
+   {% extends "base.html" %}
+   {% load static %}
+
+   {% block extra_css %}
+   <style>
+       .curriculum-nav {
+           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+       }
+       .badge {
+           padding: 0.25rem 0.75rem;
+           border-radius: 0.25rem;
+           font-size: 0.875rem;
+           font-weight: 600;
+       }
+   </style>
+   {% endblock %}
+
+   {% block content %}
+   <div class="min-h-screen bg-gray-50">
+       <!-- Curriculum Navigation -->
+       <nav class="curriculum-nav shadow-lg">
+           <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+               <div class="flex justify-between h-16">
+                   <div class="flex space-x-8">
+                       <a href="{% url 'curriculum:subject-list' %}"
+                          class="inline-flex items-center px-3 py-2 text-white hover:text-gray-200">
+                           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                           </svg>
+                           Subjects
+                       </a>
+                       <a href="{% url 'curriculum:framework-list' %}"
+                          class="inline-flex items-center px-3 py-2 text-white hover:text-gray-200">
+                           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                           </svg>
+                           Frameworks
+                       </a>
+                       <a href="{% url 'curriculum:my-lesson-plans' %}"
+                          class="inline-flex items-center px-3 py-2 text-white hover:text-gray-200">
+                           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                           </svg>
+                           My Lesson Plans
+                       </a>
+                       <a href="{% url 'curriculum:public-lesson-plans' %}"
+                          class="inline-flex items-center px-3 py-2 text-white hover:text-gray-200">
+                           <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                     d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+                           </svg>
+                           Public Library
+                       </a>
+                   </div>
+               </div>
+           </div>
+       </nav>
+
+       <!-- Main Content -->
+       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+           {% if messages %}
+           <div class="mb-4">
+               {% for message in messages %}
+               <div class="bg-{{ message.tags }}-100 border border-{{ message.tags }}-400 text-{{ message.tags }}-700 px-4 py-3 rounded mb-2">
+                   {{ message }}
+               </div>
+               {% endfor %}
+           </div>
+           {% endif %}
+
+           {% block curriculum_content %}{% endblock %}
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+2. Create subject list template at apps/curriculum/templates/curriculum/subject_list.html:
+   ```html
+   {% extends "curriculum/base.html" %}
+   {% load static %}
+
+   {% block curriculum_content %}
+   <div class="bg-white rounded-lg shadow">
+       <!-- Header -->
+       <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+           <h2 class="text-2xl font-bold text-gray-800">Subjects</h2>
+           {% if perms.curriculum.add_subject %}
+           <a href="{% url 'curriculum:subject-create' %}"
+              class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+               + Add Subject
+           </a>
+           {% endif %}
+       </div>
+
+       <!-- Search and Filters -->
+       <div class="px-6 py-4 bg-gray-50 border-b">
+           <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+               <input type="text" name="search" value="{{ search }}"
+                      placeholder="Search subjects..."
+                      class="form-input rounded-lg border-gray-300">
+               <select name="category" class="form-select rounded-lg border-gray-300">
+                   <option value="">All Categories</option>
+                   {% for value, label in categories %}
+                   <option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>
+                       {{ label }}
+                   </option>
+                   {% endfor %}
+               </select>
+               <button type="submit" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+                   Search
+               </button>
+           </form>
+       </div>
+
+       <!-- Subject List -->
+       <div class="divide-y divide-gray-200">
+           {% for subject in subjects %}
+           <div class="px-6 py-4 hover:bg-gray-50">
+               <div class="flex justify-between items-start">
+                   <div class="flex-1">
+                       <a href="{% url 'curriculum:subject-detail' subject.pk %}"
+                          class="text-lg font-semibold text-purple-600 hover:text-purple-800">
+                           {{ subject.code }} - {{ subject.name }}
+                       </a>
+                       {% if subject.name_arabic %}
+                       <p class="text-sm text-gray-600 mt-1" dir="rtl">{{ subject.name_arabic }}</p>
+                       {% endif %}
+                       <div class="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                           <span class="badge bg-purple-100 text-purple-800">
+                               {{ subject.get_category_display }}
+                           </span>
+                           <span>{{ subject.credit_hours }} credits</span>
+                           {% if subject.is_core %}
+                           <span class="text-red-600 font-semibold">Core</span>
+                           {% else %}
+                           <span class="text-gray-500">Elective</span>
+                           {% endif %}
+                       </div>
+                   </div>
+                   <div class="flex space-x-2">
+                       {% if perms.curriculum.change_subject %}
+                       <a href="{% url 'curriculum:subject-update' subject.pk %}"
+                          class="text-blue-600 hover:text-blue-800">Edit</a>
+                       {% endif %}
+                       {% if perms.curriculum.delete_subject %}
+                       <a href="{% url 'curriculum:subject-delete' subject.pk %}"
+                          class="text-red-600 hover:text-red-800">Delete</a>
+                       {% endif %}
+                   </div>
+               </div>
+           </div>
+           {% empty %}
+           <div class="px-6 py-12 text-center text-gray-500">
+               No subjects found.
+           </div>
+           {% endfor %}
+       </div>
+
+       <!-- Pagination -->
+       {% if is_paginated %}
+       <div class="px-6 py-4 border-t">
+           {% include "components/pagination.html" %}
+       </div>
+       {% endif %}
+   </div>
+   {% endblock %}
+   ```
+
+3. Create lesson plan detail template at apps/curriculum/templates/curriculum/lesson_plan_detail.html:
+   ```html
+   {% extends "curriculum/base.html" %}
+   {% load static %}
+
+   {% block curriculum_content %}
+   <div class="max-w-4xl mx-auto">
+       <!-- Header -->
+       <div class="bg-white rounded-lg shadow mb-6">
+           <div class="px-6 py-4 border-b border-gray-200">
+               <div class="flex justify-between items-start">
+                   <div>
+                       <h1 class="text-3xl font-bold text-gray-800">{{ lesson_plan.title }}</h1>
+                       <div class="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                           <span>{{ lesson_plan.subject.code }}</span>
+                           <span>{{ lesson_plan.get_grade_level_display }}</span>
+                           <span>{{ lesson_plan.get_duration_display }}</span>
+                           <span class="badge {% if lesson_plan.status == 'approved' %}bg-green-100 text-green-800{% elif lesson_plan.status == 'submitted' %}bg-blue-100 text-blue-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                               {{ lesson_plan.get_status_display }}
+                           </span>
+                       </div>
+                   </div>
+                   {% if lesson_plan.is_editable_by request.user %}
+                   <div class="flex space-x-2">
+                       <a href="{% url 'curriculum:lesson-plan-update' lesson_plan.pk %}"
+                          class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+                           Edit
+                       </a>
+                       {% if lesson_plan.status == 'draft' %}
+                       <form method="post" action="{% url 'curriculum:lesson-plan-submit' lesson_plan.pk %}" class="inline">
+                           {% csrf_token %}
+                           <button type="submit" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
+                               Submit for Review
+                           </button>
+                       </form>
+                       {% endif %}
+                   </div>
+                   {% endif %}
+               </div>
+           </div>
+
+           <!-- Meta Information -->
+           <div class="px-6 py-4 bg-gray-50 border-b grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+               <div>
+                   <span class="text-gray-600">Teacher:</span>
+                   <p class="font-semibold">{{ lesson_plan.teacher.get_full_name }}</p>
+               </div>
+               <div>
+                   <span class="text-gray-600">Madrasah:</span>
+                   <p class="font-semibold">{{ lesson_plan.madrasah.name }}</p>
+               </div>
+               <div>
+                   <span class="text-gray-600">Academic Year:</span>
+                   <p class="font-semibold">{{ lesson_plan.academic_year }}</p>
+               </div>
+               <div>
+                   <span class="text-gray-600">Visibility:</span>
+                   <p class="font-semibold">
+                       {% if lesson_plan.is_public %}🌐 Public{% else %}🔒 Private{% endif %}
+                   </p>
+               </div>
+           </div>
+
+           <!-- Content Sections -->
+           <div class="px-6 py-6 space-y-6">
+               <!-- Description -->
+               <section>
+                   <h3 class="text-lg font-semibold text-gray-800 mb-2">Description</h3>
+                   <p class="text-gray-700">{{ lesson_plan.description }}</p>
+               </section>
+
+               <!-- Learning Objectives -->
+               <section>
+                   <h3 class="text-lg font-semibold text-gray-800 mb-2">Learning Objectives</h3>
+                   <ul class="list-disc list-inside space-y-1 text-gray-700">
+                       {% for objective in lesson_plan.learning_objectives %}
+                       <li>{{ objective }}</li>
+                       {% endfor %}
+                   </ul>
+               </section>
+
+               <!-- Lesson Content -->
+               <section>
+                   <h3 class="text-lg font-semibold text-gray-800 mb-2">Lesson Content</h3>
+                   <div class="prose max-w-none">
+                       {{ lesson_plan.content|linebreaks }}
+                   </div>
+               </section>
+
+               <!-- Teaching Methods -->
+               {% if lesson_plan.teaching_methods %}
+               <section>
+                   <h3 class="text-lg font-semibold text-gray-800 mb-2">Teaching Methods</h3>
+                   <p class="text-gray-700">{{ lesson_plan.teaching_methods|linebreaks }}</p>
+               </section>
+               {% endif %}
+
+               <!-- Assessment Methods -->
+               {% if lesson_plan.assessment_methods %}
+               <section>
+                   <h3 class="text-lg font-semibold text-gray-800 mb-2">Assessment Methods</h3>
+                   <p class="text-gray-700">{{ lesson_plan.assessment_methods|linebreaks }}</p>
+               </section>
+               {% endif %}
+
+               <!-- Materials Needed -->
+               {% if lesson_plan.materials_needed %}
+               <section>
+                   <h3 class="text-lg font-semibold text-gray-800 mb-2">Materials Needed</h3>
+                   <ul class="list-disc list-inside space-y-1 text-gray-700">
+                       {% for material in lesson_plan.materials_needed %}
+                       <li>{{ material }}</li>
+                       {% endfor %}
+                   </ul>
+               </section>
+               {% endif %}
+
+               <!-- Islamic References -->
+               {% if lesson_plan.quranic_references or lesson_plan.hadith_references %}
+               <section class="bg-green-50 p-4 rounded-lg">
+                   <h3 class="text-lg font-semibold text-green-800 mb-3">Islamic Education References</h3>
+                   {% if lesson_plan.quranic_references %}
+                   <div class="mb-3">
+                       <h4 class="font-semibold text-green-700 mb-1">Quranic References:</h4>
+                       <p class="text-gray-700" dir="rtl">{{ lesson_plan.quranic_references|linebreaks }}</p>
+                   </div>
+                   {% endif %}
+                   {% if lesson_plan.hadith_references %}
+                   <div>
+                       <h4 class="font-semibold text-green-700 mb-1">Hadith References:</h4>
+                       <p class="text-gray-700" dir="rtl">{{ lesson_plan.hadith_references|linebreaks }}</p>
+                   </div>
+                   {% endif %}
+               </section>
+               {% endif %}
+
+               <!-- Attachment -->
+               {% if lesson_plan.attachment %}
+               <section>
+                   <h3 class="text-lg font-semibold text-gray-800 mb-2">Attachments</h3>
+                   <a href="{{ lesson_plan.attachment.url }}" target="_blank"
+                      class="inline-flex items-center text-blue-600 hover:text-blue-800">
+                       <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                 d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                       </svg>
+                       Download Attachment
+                   </a>
+               </section>
+               {% endif %}
+           </div>
+       </div>
+
+       <!-- Approval Section (for admins) -->
+       {% if perms.curriculum.approve_lesson_plan and lesson_plan.status == 'submitted' %}
+       <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+           <h3 class="text-lg font-semibold text-yellow-800 mb-4">Approve Lesson Plan</h3>
+           <form method="post" action="{% url 'curriculum:lesson-plan-approve' lesson_plan.pk %}">
+               {% csrf_token %}
+               <textarea name="review_notes" rows="3"
+                         class="w-full rounded-lg border-gray-300 mb-4"
+                         placeholder="Review notes (optional)"></textarea>
+               <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                   Approve Lesson Plan
+               </button>
+           </form>
+       </div>
+       {% endif %}
+   </div>
+   {% endblock %}
+   ```
+
+4. Create form template at apps/curriculum/templates/curriculum/lesson_plan_form.html:
+   ```html
+   {% extends "curriculum/base.html" %}
+   {% load crispy_forms_tags %}
+
+   {% block curriculum_content %}
+   <div class="max-w-4xl mx-auto">
+       <div class="bg-white rounded-lg shadow">
+           <div class="px-6 py-4 border-b border-gray-200">
+               <h2 class="text-2xl font-bold text-gray-800">
+                   {% if object %}Edit Lesson Plan{% else %}Create Lesson Plan{% endif %}
+               </h2>
+           </div>
+           <div class="px-6 py-6">
+               {% crispy form %}
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+5. Create delete confirmation template at apps/curriculum/templates/curriculum/lesson_plan_confirm_delete.html:
+   ```html
+   {% extends "curriculum/base.html" %}
+
+   {% block curriculum_content %}
+   <div class="max-w-2xl mx-auto">
+       <div class="bg-white rounded-lg shadow">
+           <div class="px-6 py-4 border-b border-gray-200">
+               <h2 class="text-2xl font-bold text-red-600">Confirm Deletion</h2>
+           </div>
+           <div class="px-6 py-6">
+               <p class="text-gray-700 mb-6">
+                   Are you sure you want to delete the lesson plan
+                   <strong>"{{ object.title }}"</strong>?
+                   This action cannot be undone.
+               </p>
+               <form method="post">
+                   {% csrf_token %}
+                   <div class="flex space-x-4">
+                       <button type="submit"
+                               class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
+                           Yes, Delete
+                       </button>
+                       <a href="{% url 'curriculum:lesson-plan-detail' object.pk %}"
+                          class="bg-gray-300 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-400">
+                           Cancel
+                       </a>
+                   </div>
+               </form>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+6. Create similar templates for subjects and frameworks (follow same pattern)
+
+7. Test templates:
+   ```bash
+   python manage.py runserver
+   # Navigate and test each template
+   ```
+
+## Acceptance Criteria:
+- Base curriculum template created with navigation
+- Subject templates (list, detail, form) created
+- CurriculumFramework templates created
+- LessonPlan templates created with full workflow
+- Templates are responsive and mobile-friendly
+- Templates use existing design system (Tailwind CSS)
+- Search and filter interfaces implemented
+- Confirmation dialogs for delete operations
+- Templates tested across different screen sizes
+
+## Files Modified:
+- `apps/curriculum/templates/curriculum/base.html (new file)`
+- `apps/curriculum/templates/curriculum/subject_list.html (new file)`
+- `apps/curriculum/templates/curriculum/subject_detail.html (new file)`
+- `apps/curriculum/templates/curriculum/subject_form.html (new file)`
+- `apps/curriculum/templates/curriculum/subject_confirm_delete.html (new file)`
+- `apps/curriculum/templates/curriculum/framework_list.html (new file)`
+- `apps/curriculum/templates/curriculum/framework_detail.html (new file)`
+- `apps/curriculum/templates/curriculum/framework_form.html (new file)`
+- `apps/curriculum/templates/curriculum/framework_confirm_delete.html (new file)`
+- `apps/curriculum/templates/curriculum/lesson_plan_list.html (new file)`
+- `apps/curriculum/templates/curriculum/my_lesson_plans.html (new file)`
+- `apps/curriculum/templates/curriculum/public_lesson_plans.html (new file)`
+- `apps/curriculum/templates/curriculum/lesson_plan_detail.html (new file)`
+- `apps/curriculum/templates/curriculum/lesson_plan_form.html (new file)`
+- `apps/curriculum/templates/curriculum/lesson_plan_confirm_delete.html (new file)`
+
+## Important Notes:
+- Templates use Tailwind CSS for styling
+- Responsive design works on mobile and desktop
+- Navigation bar provides easy access to all sections
+- Color-coded badges improve visual clarity
+- Islamic references displayed with RTL support
+- Crispy forms integration for consistent form styling
+- Estimate: 3 hours
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Access view URL and verify HTTP 200 response
+11. Test with different user permissions
+12. Verify context data passed to template
+13. Test any query parameters or filters
+14. Review planning documentation
+15. Verify all risks identified
+16. Confirm rollback procedures documented
+17. Ensure dependencies are mapped

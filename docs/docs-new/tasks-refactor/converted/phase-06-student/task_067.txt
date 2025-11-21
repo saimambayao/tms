@@ -1,0 +1,410 @@
+# Task ID: 067
+# Title: Verify Data Integrity
+# Status: pending
+# Dependencies: 066
+# Priority: high
+# Description: Comprehensive verification of data integrity after Student model migration. This includes checking row counts, foreign key relationships, data quality
+
+# Details:
+Comprehensive verification of data integrity after Student model migration. This includes checking row counts, foreign key relationships, data quality, and application functionality.
+
+## Implementation Steps:
+1. Create comprehensive data integrity verification script:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_integrity.py << 'EOF'
+   #!/usr/bin/env python
+   """Comprehensive Student data integrity verification"""
+
+   import os
+   import sys
+   import django
+   from datetime import datetime
+
+   # Setup Django
+   sys.path.insert(0, '/Users/saidamenmambayao/apps/madaris-ms/src')
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   from django.db import connection
+   from django.db.models import Count, Q
+   from apps.constituents.models import Student
+
+   print("=" * 70)
+   print("STUDENT DATA INTEGRITY VERIFICATION")
+   print(f"Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+   print("=" * 70)
+
+   # 1. Row Count Verification
+   print("\n1. ROW COUNT VERIFICATION")
+   print("-" * 70)
+   student_count = Student.objects.count()
+   print(f"Total Student records: {student_count}")
+
+   # Check against expected count from backup
+   try:
+       with open('/Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/row_count_before.txt') as f:
+           expected_count = int(f.read().strip().split(':')[-1].strip())
+           if student_count == expected_count:
+               print(f"✓ Row count matches pre-migration: {expected_count}")
+           else:
+               print(f"⚠️  WARNING: Row count mismatch!")
+               print(f"   Expected: {expected_count}, Found: {student_count}")
+   except FileNotFoundError:
+       print("⚠️  Pre-migration count file not found")
+
+   # 2. Primary Key Integrity
+   print("\n2. PRIMARY KEY INTEGRITY")
+   print("-" * 70)
+   with connection.cursor() as cursor:
+       cursor.execute("SELECT COUNT(*) FROM constituents_student WHERE id IS NULL")
+       null_pks = cursor.fetchone()[0]
+       if null_pks == 0:
+           print("✓ No NULL primary keys")
+       else:
+           print(f"✗ ERROR: {null_pks} records with NULL primary key")
+
+   # 3. Student Number Verification
+   print("\n3. STUDENT NUMBER VERIFICATION")
+   print("-" * 70)
+   total = Student.objects.count()
+   with_student_number = Student.objects.exclude(
+       Q(student_number__isnull=True) | Q(student_number='')
+   ).count()
+
+   print(f"Students with student_number: {with_student_number}/{total}")
+
+   if with_student_number == total:
+       print("✓ All students have student numbers")
+   else:
+       missing = total - with_student_number
+       print(f"⚠️  WARNING: {missing} students missing student numbers")
+
+   # Check uniqueness
+   duplicates = Student.objects.values('student_number').annotate(
+       count=Count('id')
+   ).filter(count__gt=1)
+
+   if duplicates.count() == 0:
+       print("✓ All student numbers are unique")
+   else:
+       print(f"✗ ERROR: {duplicates.count()} duplicate student numbers found:")
+       for dup in duplicates[:5]:
+           print(f"   - {dup['student_number']}: {dup['count']} occurrences")
+
+   # 4. Enrollment Status Verification
+   print("\n4. ENROLLMENT STATUS VERIFICATION")
+   print("-" * 70)
+   for status, label in Student.EnrollmentStatus.choices:
+       count = Student.objects.filter(enrollment_status=status).count()
+       percentage = (count / total * 100) if total > 0 else 0
+       print(f"{label:20} : {count:5} ({percentage:5.1f}%)")
+
+   # Check for invalid statuses
+   invalid_statuses = Student.objects.exclude(
+       enrollment_status__in=[choice[0] for choice in Student.EnrollmentStatus.choices]
+   ).count()
+
+   if invalid_statuses == 0:
+       print("✓ All enrollment statuses are valid")
+   else:
+       print(f"✗ ERROR: {invalid_statuses} invalid enrollment statuses")
+
+   # 5. Foreign Key Relationships
+   print("\n5. FOREIGN KEY RELATIONSHIPS")
+   print("-" * 70)
+
+   # Check User FK
+   students_with_user = Student.objects.exclude(user__isnull=True).count()
+   print(f"Students with User account: {students_with_user}/{total}")
+
+   # Check for orphaned students (no user)
+   orphaned = Student.objects.filter(user__isnull=True).count()
+   if orphaned == 0:
+       print("✓ No orphaned students (all have user accounts)")
+   elif orphaned < total * 0.1:  # Less than 10%
+       print(f"⚠️  Note: {orphaned} students without user accounts (acceptable)")
+   else:
+       print(f"⚠️  WARNING: {orphaned} students without user accounts")
+
+   # 6. Data Quality Checks
+   print("\n6. DATA QUALITY CHECKS")
+   print("-" * 70)
+
+   # Personal information completeness
+   with_first_name = Student.objects.exclude(Q(first_name__isnull=True) | Q(first_name='')).count()
+   with_last_name = Student.objects.exclude(Q(last_name__isnull=True) | Q(last_name='')).count()
+   with_birth_date = Student.objects.exclude(birth_date__isnull=True).count()
+   with_gender = Student.objects.exclude(Q(gender__isnull=True) | Q(gender='')).count()
+
+   print(f"Personal Information Completeness:")
+   print(f"  First name  : {with_first_name}/{total} ({with_first_name/total*100:.1f}%)")
+   print(f"  Last name   : {with_last_name}/{total} ({with_last_name/total*100:.1f}%)")
+   print(f"  Birth date  : {with_birth_date}/{total} ({with_birth_date/total*100:.1f}%)")
+   print(f"  Gender      : {with_gender}/{total} ({with_gender/total*100:.1f}%)")
+
+   # Madrasah education data
+   with_madrasah_name = Student.objects.exclude(Q(madrasah_name__isnull=True) | Q(madrasah_name='')).count()
+   with_madrasah_level = Student.objects.exclude(Q(madrasah_level__isnull=True) | Q(madrasah_level='')).count()
+   with_grade_level = Student.objects.exclude(Q(current_grade_level__isnull=True) | Q(current_grade_level='')).count()
+
+   print(f"\nMadrasah Education Data:")
+   print(f"  Madrasah name  : {with_madrasah_name}/{total} ({with_madrasah_name/total*100:.1f}%)")
+   print(f"  Madrasah level : {with_madrasah_level}/{total} ({with_madrasah_level/total*100:.1f}%)")
+   print(f"  Grade level    : {with_grade_level}/{total} ({with_grade_level/total*100:.1f}%)")
+
+   # Family information
+   with_father = Student.objects.exclude(Q(father_name__isnull=True) | Q(father_name='')).count()
+   with_mother = Student.objects.exclude(Q(mother_name__isnull=True) | Q(mother_name='')).count()
+   with_guardian = Student.objects.exclude(Q(guardian_name__isnull=True) | Q(guardian_name='')).count()
+
+   print(f"\nFamily Information:")
+   print(f"  Father name  : {with_father}/{total} ({with_father/total*100:.1f}%)")
+   print(f"  Mother name  : {with_mother}/{total} ({with_mother/total*100:.1f}%)")
+   print(f"  Guardian name: {with_guardian}/{total} ({with_guardian/total*100:.1f}%)")
+
+   # 7. Database Constraints
+   print("\n7. DATABASE CONSTRAINTS")
+   print("-" * 70)
+
+   with connection.cursor() as cursor:
+       # Check table exists
+       cursor.execute("""
+           SELECT COUNT(*)
+           FROM information_schema.tables
+           WHERE table_name = 'constituents_student'
+       """)
+       table_exists = cursor.fetchone()[0]
+       print(f"✓ constituents_student table exists" if table_exists else "✗ ERROR: Table not found")
+
+       # Check indexes
+       cursor.execute("""
+           SELECT indexname
+           FROM pg_indexes
+           WHERE tablename = 'constituents_student'
+       """)
+       indexes = cursor.fetchall()
+       print(f"Database indexes: {len(indexes)}")
+       for idx in indexes:
+           print(f"  - {idx[0]}")
+
+   # 8. Summary
+   print("\n" + "=" * 70)
+   print("VERIFICATION SUMMARY")
+   print("=" * 70)
+
+   issues = []
+   if student_count == 0:
+       issues.append("No student records found")
+   if with_student_number < total:
+       issues.append(f"{total - with_student_number} students missing student numbers")
+   if duplicates.count() > 0:
+       issues.append(f"{duplicates.count()} duplicate student numbers")
+   if invalid_statuses > 0:
+       issues.append(f"{invalid_statuses} invalid enrollment statuses")
+
+   if len(issues) == 0:
+       print("✓ ALL VERIFICATION CHECKS PASSED")
+       print("\nData integrity verified successfully.")
+       sys.exit(0)
+   else:
+       print("⚠️  ISSUES FOUND:")
+       for issue in issues:
+           print(f"  - {issue}")
+       print("\nPlease review and address issues before proceeding.")
+       sys.exit(1)
+   EOF
+   chmod +x /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_integrity.py
+   ```
+2. Run comprehensive integrity verification:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_integrity.py | tee /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/integrity_report.txt
+   ```
+3. Verify foreign key constraints in database:
+   ```bash
+   python manage.py dbshell << 'EOF'
+   -- Check foreign key constraints
+   SELECT
+       tc.constraint_name,
+       tc.table_name,
+       kcu.column_name,
+       ccu.table_name AS foreign_table_name,
+       ccu.column_name AS foreign_column_name
+   FROM information_schema.table_constraints AS tc
+   JOIN information_schema.key_column_usage AS kcu
+       ON tc.constraint_name = kcu.constraint_name
+   JOIN information_schema.constraint_column_usage AS ccu
+       ON ccu.constraint_name = tc.constraint_name
+   WHERE tc.constraint_type = 'FOREIGN KEY'
+       AND tc.table_name = 'constituents_student';
+   EOF
+   ```
+4. Test admin interface functionality:
+   ```bash
+   # Test admin queries
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+   from django.contrib.admin.sites import site
+
+   # Test list view
+   students = Student.objects.all()[:10]
+   print(f"✓ Admin list query works: {students.count()} students retrieved")
+
+   # Test filtering
+   enrolled = Student.objects.filter(enrollment_status='enrolled')
+   print(f"✓ Admin filtering works: {enrolled.count()} enrolled students")
+
+   # Test search
+   search_result = Student.objects.filter(first_name__icontains='a')[:5]
+   print(f"✓ Admin search works: {search_result.count()} results")
+   EOF
+   ```
+5. Test model methods and properties:
+   ```bash
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+
+   # Get sample student
+   student = Student.objects.first()
+   if student:
+       print(f"Testing student: {student.id}")
+
+       # Test __str__ method
+       print(f"✓ __str__: {str(student)}")
+
+       # Test get_full_name if it exists
+       if hasattr(student, 'get_full_name'):
+           print(f"✓ get_full_name: {student.get_full_name()}")
+
+       # Test properties
+       print(f"✓ student_number: {student.student_number}")
+       print(f"✓ enrollment_status: {student.enrollment_status}")
+       print(f"✓ current_grade_level: {student.current_grade_level}")
+   else:
+       print("⚠️  No students found for testing")
+   EOF
+   ```
+6. Verify related model queries:
+   ```bash
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+   from django.apps import apps
+
+   # Find models with ForeignKey to Student
+   related_models = []
+   for model in apps.get_models():
+       for field in model._meta.get_fields():
+           if hasattr(field, 'related_model') and field.related_model == Student:
+               related_models.append((model.__name__, field.name))
+
+   print("Models with ForeignKey to Student:")
+   for model_name, field_name in related_models:
+       print(f"  - {model_name}.{field_name}")
+
+   # Test reverse relationships
+   student = Student.objects.first()
+   if student:
+       print(f"\nTesting reverse relationships for student {student.id}:")
+       for model_name, field_name in related_models[:3]:  # Test first 3
+           try:
+               related_name = field_name + '_set'
+               if hasattr(student, related_name):
+                   count = getattr(student, related_name).count()
+                   print(f"  ✓ {related_name}: {count} records")
+           except Exception as e:
+               print(f"  ⚠️  {related_name}: {str(e)}")
+   EOF
+   ```
+7. Generate final integrity report:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/INTEGRITY_SUMMARY.md << 'EOF'
+   # Student Model Migration - Data Integrity Report
+
+   ## Migration Date
+   $(date)
+
+   ## Verification Status
+   See: integrity_report.txt for detailed verification results
+
+   ## Checks Performed
+   - [x] Row count verification
+   - [x] Primary key integrity
+   - [x] Student number uniqueness
+   - [x] Enrollment status validity
+   - [x] Foreign key relationships
+   - [x] Data quality checks
+   - [x] Database constraints
+   - [x] Admin interface functionality
+   - [x] Model methods
+   - [x] Related model queries
+
+   ## Results
+   $(cat /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/integrity_report.txt | grep "VERIFICATION SUMMARY" -A 10)
+
+   ## Next Steps
+   - Proceed to task_068 (Create Student Enrollment Workflows)
+   - Keep backup for 7 days
+   - Monitor production for issues
+
+   ## Rollback Available
+   - Backup location: backups/phase6_student/
+   - Rollback script: scripts/rollback_student_migration.sh
+   EOF
+   ```
+
+## Acceptance Criteria:
+- Row count matches pre-migration count
+- All foreign key relationships functional
+- No orphaned records
+- Data quality checks pass
+- Student numbers unique
+- Enrollment statuses valid
+- Family data preserved
+- Madrasah education data intact
+- Admin interface functional
+- Integrity report generated
+
+## Files Modified:
+- `scripts/verify_student_integrity.py`
+- `backups/phase6_student/integrity_report.txt`
+- `backups/phase6_student/INTEGRITY_SUMMARY.md`
+
+## Important Notes:
+- Comprehensive verification of all data aspects
+- Tests both database and Django ORM functionality
+- Generates detailed report for documentation
+- Must pass all checks before proceeding to next tasks
+- Estimate: 30-45 minutes
+
+## Success Criteria:
+All verification checks must pass:
+- ✓ Row count matches pre-migration
+- ✓ No NULL primary keys
+- ✓ All student numbers unique
+- ✓ All enrollment statuses valid
+- ✓ No orphaned records
+- ✓ Foreign keys functional
+- ✓ Admin queries work
+- ✓ Model methods functional
+
+## If Verification Fails:
+1. Review integrity_report.txt for specific issues
+2. Fix data issues using Django shell
+3. Re-run verification
+4. If unfixable, consider rollback
+5. Document any issues found
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Run migrations and verify schema changes
+7. Create test instances to verify new fields
+8. Test admin interface with new fields
+9. Verify backward compatibility with existing data
+10. Verify app appears in INSTALLED_APPS
+11. Run migrations successfully
+12. Import app models without errors
+13. Verify app shows in Django admin

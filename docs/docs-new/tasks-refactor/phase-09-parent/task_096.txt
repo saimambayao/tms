@@ -1,0 +1,261 @@
+# Task ID: 096
+# Title: Create Parent Dashboard Template
+# Status: pending
+# Dependencies: 095
+# Priority: medium
+# Description: Create parent dashboard showing overview of linked students, recent activities, upcoming events, and quick action buttons. Dashboard should be mobile-
+
+# Details:
+Create parent dashboard showing overview of linked students, recent activities, upcoming events, and quick action buttons. Dashboard should be mobile-friendly and provide easy navigation to student information.
+
+## Implementation Steps:
+1. Create parent dashboard view:
+   ```python
+   # apps/parents/views.py
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.views.generic import TemplateView
+   from django.shortcuts import redirect
+   from django.contrib import messages
+   from apps.parents.models import ParentStudent
+   from apps.users.models import User
+
+   class ParentDashboardView(LoginRequiredMixin, TemplateView):
+       """Parent portal dashboard"""
+       template_name = 'parents/dashboard.html'
+
+       def dispatch(self, request, *args, **kwargs):
+           # Ensure user is a parent
+           if request.user.role != User.Role.PARENT:
+               messages.error(request, 'Access denied. Parent account required.')
+               return redirect('home')
+           return super().dispatch(request, *args, **kwargs)
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+
+           # Get all students linked to this parent
+           parent_relationships = ParentStudent.objects.filter(
+               parent=self.request.user,
+               status=ParentStudent.Status.ACTIVE
+           ).select_related('student')
+
+           context['parent_relationships'] = parent_relationships
+           context['students'] = [rel.student for rel in parent_relationships]
+           context['student_count'] = parent_relationships.count()
+
+           # Get primary student (if any)
+           primary_rel = parent_relationships.filter(is_primary_contact=True).first()
+           context['primary_student'] = primary_rel.student if primary_rel else None
+
+           # TODO: Add recent activities, upcoming events when those models exist
+           # context['recent_activities'] = []
+           # context['upcoming_events'] = []
+
+           return context
+   ```
+
+2. Update URLs:
+   ```python
+   # apps/parents/urls.py
+   from django.urls import path
+   from apps.parents import views
+
+   app_name = 'parents'
+
+   urlpatterns = [
+       path('', views.ParentDashboardView.as_view(), name='dashboard'),
+       path('register/', views.ParentRegistrationView.as_view(), name='register'),
+       path('link-student/', views.LinkStudentView.as_view(), name='link-student'),
+       ...
+   ]
+   ```
+
+3. Create dashboard template:
+   ```html
+   <!-- templates/parents/dashboard.html -->
+   {% extends "base.html" %}
+   {% load static %}
+
+   {% block title %}Parent Dashboard - {{ block.super }}{% endblock %}
+
+   {% block content %}
+   <div class="container mx-auto px-4 py-8">
+       <!-- Header -->
+       <div class="mb-8">
+           <h1 class="text-3xl font-bold text-gray-800 mb-2">
+               Welcome, {{ user.get_full_name }}
+           </h1>
+           <p class="text-gray-600">Parent Portal Dashboard</p>
+       </div>
+
+       <!-- Students Overview -->
+       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+           <!-- Stats Card: Total Students -->
+           <div class="bg-white rounded-lg shadow-md p-6">
+               <div class="flex items-center">
+                   <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                       <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                 d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                       </svg>
+                   </div>
+                   <div class="ml-4">
+                       <p class="text-gray-600 text-sm">My Children</p>
+                       <p class="text-2xl font-bold text-gray-800">{{ student_count }}</p>
+                   </div>
+               </div>
+           </div>
+
+           <!-- Add more stat cards as needed -->
+       </div>
+
+       <!-- My Students Section -->
+       <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+           <h2 class="text-xl font-bold text-gray-800 mb-4">My Students</h2>
+
+           {% if students %}
+               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                   {% for student in students %}
+                   <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                       <div class="flex items-center mb-3">
+                           {% if student.profile_photo %}
+                           <img src="{{ student.profile_photo.url }}"
+                                alt="{{ student.get_full_name }}"
+                                class="w-16 h-16 rounded-full object-cover">
+                           {% else %}
+                           <div class="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center">
+                               <span class="text-2xl text-gray-500">
+                                   {{ student.first_name|first }}{{ student.last_name|first }}
+                               </span>
+                           </div>
+                           {% endif %}
+                           <div class="ml-3">
+                               <h3 class="font-semibold text-gray-800">
+                                   {{ student.get_full_name }}
+                               </h3>
+                               <p class="text-sm text-gray-600">
+                                   {% with rel=parent_relationships|dictsort:"student_id"|first %}
+                                       {{ rel.get_relationship_type_display }}
+                                   {% endwith %}
+                               </p>
+                           </div>
+                       </div>
+
+                       <!-- Quick Actions -->
+                       <div class="flex flex-wrap gap-2 mt-3">
+                           <a href="{% url 'parents:student-detail' student.id %}"
+                              class="btn-sm btn-primary flex-1 text-center">
+                               View Details
+                           </a>
+                           <a href="{% url 'parents:student-grades' student.id %}"
+                              class="btn-sm btn-secondary flex-1 text-center">
+                               Grades
+                           </a>
+                       </div>
+                   </div>
+                   {% endfor %}
+               </div>
+           {% else %}
+               <!-- Empty State -->
+               <div class="text-center py-8">
+                   <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                             d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                   </svg>
+                   <h3 class="mt-2 text-lg font-medium text-gray-900">No students linked</h3>
+                   <p class="mt-1 text-gray-500">Get started by linking your child's student account.</p>
+                   <div class="mt-6">
+                       <a href="{% url 'parents:link-student' %}"
+                          class="btn btn-primary">
+                           Link Student Account
+                       </a>
+                   </div>
+               </div>
+           {% endif %}
+       </div>
+
+       <!-- Recent Activity Section (Placeholder) -->
+       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+           <!-- Recent Activities -->
+           <div class="bg-white rounded-lg shadow-md p-6">
+               <h2 class="text-xl font-bold text-gray-800 mb-4">Recent Activity</h2>
+               <div class="text-center py-4 text-gray-500">
+                   <p>Activity tracking coming soon...</p>
+               </div>
+           </div>
+
+           <!-- Upcoming Events -->
+           <div class="bg-white rounded-lg shadow-md p-6">
+               <h2 class="text-xl font-bold text-gray-800 mb-4">Upcoming Events</h2>
+               <div class="text-center py-4 text-gray-500">
+                   <p>Event calendar coming soon...</p>
+               </div>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+4. Add dashboard navigation link to base template:
+   ```html
+   <!-- In base.html navigation, add for parent users -->
+   {% if user.is_authenticated and user.role == 'parent' %}
+   <li>
+       <a href="{% url 'parents:dashboard' %}"
+          class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+           Parent Dashboard
+       </a>
+   </li>
+   {% endif %}
+   ```
+
+5. Test dashboard:
+   - Login as parent user
+   - Verify students display correctly
+   - Test with no linked students (empty state)
+   - Test with multiple linked students
+   - Verify mobile responsiveness
+   - Test quick action links
+
+## Acceptance Criteria:
+- Parent dashboard view created
+- Dashboard template created with Tailwind CSS
+- Shows list of linked students with photos
+- Displays recent student activities/attendance
+- Shows upcoming school events
+- Quick action buttons (view grades, attendance, messages)
+- Mobile-responsive design
+- Permission checks implemented (parents see only their students)
+- Empty state handling (no linked students)
+- Dashboard tested with sample data
+
+## Files Modified:
+- `src/apps/parents/views.py`
+- `src/apps/parents/urls.py`
+- `src/apps/parents/templates/parents/dashboard.html (new file)`
+- `src/templates/base.html (navigation update)`
+
+## Important Notes:
+- Dashboard uses Tailwind CSS consistent with existing design
+- Mobile-first responsive design
+- Permission checks ensure parents only see their students
+- Placeholder sections for future features (activities, events)
+- Empty state encourages parent to link students
+- Quick action buttons for common parent tasks
+- Profile photos fall back to initials if not available
+- Estimate: 75 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Access view URL and verify HTTP 200 response
+11. Test with different user permissions
+12. Verify context data passed to template
+13. Test any query parameters or filters

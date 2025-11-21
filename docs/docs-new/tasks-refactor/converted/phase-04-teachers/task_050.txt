@@ -1,0 +1,100 @@
+# Task ID: 050
+# Title: Register Teacher Models in Admin
+# Status: pending
+# Dependencies: 047, 049
+# Priority: medium
+# Description: Register TeacherProfile model in Django admin with proper configuration, list display, filters, and search.
+
+# Details:
+Register TeacherProfile model in Django admin with proper configuration, list display, filters, and search.
+
+## Implementation Steps:
+1. Update teachers/admin.py:
+   ```python
+   # apps/teachers/admin.py
+   from django.contrib import admin
+   from .models import TeacherProfile
+
+   @admin.register(TeacherProfile)
+   class TeacherProfileAdmin(admin.ModelAdmin):
+       list_display = [
+           'employee_id',
+           'get_full_name',
+           'primary_specialization',
+           'hire_date',
+           'is_active'
+       ]
+
+       list_filter = [
+           'is_active',
+           'hire_date',
+       ]
+
+       search_fields = [
+           'employee_id',
+           'user__first_name',
+           'user__last_name',
+           'user__email'
+       ]
+
+       readonly_fields = ['created_at', 'updated_at']
+
+       fieldsets = (
+           ('User Account', {
+               'fields': ('user',)
+           }),
+           ('Teacher Information', {
+               'fields': ('employee_id', 'hire_date', 'is_active')
+           }),
+           ('Expertise', {
+               'fields': ('specializations', 'certifications')
+           }),
+           ('Background', {
+               'fields': ('bio', 'education_background')
+           }),
+           ('Metadata', {
+               'fields': ('created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+
+       def get_full_name(self, obj):
+           return obj.full_name
+       get_full_name.short_description = 'Full Name'
+       get_full_name.admin_order_field = 'user__last_name'
+
+       def get_queryset(self, request):
+           return super().get_queryset(request).select_related('user')
+   ```
+2. Test admin interface:
+   - Access /admin/teachers/teacherprofile/
+   - Create new teacher profile
+   - Search for teachers
+   - Filter by criteria
+3. Verify readonly fields work
+
+## Acceptance Criteria:
+- TeacherProfile registered in admin
+- List display shows key fields
+- Search by name and employee_id
+- Filter by specialization and hire_date
+- Inline shows user info
+- Admin interface user-friendly
+
+## Files Modified:
+- `src/apps/teachers/admin.py`
+
+## Important Notes:
+- Select_related optimizes admin queries
+- Fieldsets organize form logically
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Login to Django admin as superuser
+6. Verify models appear in admin interface
+7. Test create, read, update, delete operations
+8. Verify list display, filters, and search work

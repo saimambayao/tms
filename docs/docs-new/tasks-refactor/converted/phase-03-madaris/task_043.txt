@@ -1,0 +1,114 @@
+# Task ID: 043
+# Title: Update Madrasah Admin Interface
+# Status: pending
+# Dependencies: 037
+# Priority: medium
+# Description: Update Django admin interface for Madrasah, MadrasahEnrollment, and MadrasahActivity models with proper list displays, filters, and search.
+
+# Details:
+Update Django admin interface for Madrasah, MadrasahEnrollment, and MadrasahActivity models with proper list displays, filters, and search.
+
+## Implementation Steps:
+1. Update chapters/admin.py:
+   ```python
+   from django.contrib import admin
+   from .models import Madrasah, MadrasahEnrollment, MadrasahActivity
+
+   class MadrasahEnrollmentInline(admin.TabularInline):
+       model = MadrasahEnrollment
+       extra = 0
+       fields = ['user', 'enrollment_type', 'grade_level', 'status']
+
+   class MadrasahActivityInline(admin.TabularInline):
+       model = MadrasahActivity
+       extra = 0
+       fields = ['title', 'activity_type', 'date']
+
+   @admin.register(Madrasah)
+   class MadrasahAdmin(admin.ModelAdmin):
+       list_display = [
+           'name', 'school_code', 'province', 'municipality',
+           'accreditation_status', 'operational_status', 'muder'
+       ]
+       list_filter = [
+           'accreditation_status', 'operational_status',
+           'province', 'facility_level'
+       ]
+       search_fields = ['name', 'school_code', 'municipality']
+
+       fieldsets = (
+           ('Basic Information', {
+               'fields': ('name', 'name_arabic', 'school_code', 'madrasah_types')
+           }),
+           ('Location', {
+               'fields': ('region', 'province', 'municipality', 'barangay', 'address')
+           }),
+           ('Leadership', {
+               'fields': ('muder', 'assistant_muder', 'registrar')
+           }),
+           ('Contact Information', {
+               'fields': ('email', 'phone', 'mobile', 'website', 'facebook_page')
+           }),
+           ('Accreditation (by MBHTE)', {
+               'fields': ('accreditation_status', 'accreditation_date', 'accreditation_number'),
+               'description': 'Accreditation is conducted by MBHTE. Tarbiyyah Committee coordinates the process.'
+           }),
+           ('Capacity', {
+               'fields': ('total_capacity', 'current_enrollment')
+           }),
+           ('Facilities', {
+               'fields': ('facility_level', 'has_library', 'has_computer_lab', 'has_masjid', 'has_dormitory')
+           }),
+           ('Curriculum', {
+               'fields': ('offers_arabic_language', 'offers_quran_studies', 'offers_hadith_studies',
+                         'offers_islamic_studies', 'offers_general_education')
+           }),
+           ('Status & History', {
+               'fields': ('operational_status', 'founded_date', 'founder_name', 'parent_madrasah')
+           }),
+       )
+
+       inlines = [MadrasahEnrollmentInline, MadrasahActivityInline]
+
+   @admin.register(MadrasahEnrollment)
+   class MadrasahEnrollmentAdmin(admin.ModelAdmin):
+       list_display = ['user', 'madrasah', 'enrollment_type', 'grade_level', 'status']
+       list_filter = ['enrollment_type', 'status', 'madrasah']
+       search_fields = ['user__username', 'user__first_name', 'user__last_name']
+
+   @admin.register(MadrasahActivity)
+   class MadrasahActivityAdmin(admin.ModelAdmin):
+       list_display = ['title', 'madrasah', 'activity_type', 'date', 'organizer']
+       list_filter = ['activity_type', 'date', 'madrasah']
+       search_fields = ['title', 'description']
+   ```
+2. Test admin interface
+
+## Acceptance Criteria:
+- MadrasahAdmin class updated with all fields
+- List display shows key fields
+- List filters added for status, accreditation, etc.
+- Search fields configured
+- Inline for enrollments and activities
+- Fieldsets organized logically
+- Admin interface user-friendly
+
+## Files Modified:
+- `src/apps/chapters/admin.py`
+
+## Important Notes:
+- Organized fieldsets improve UX
+- Inlines show related data
+- Accreditation fieldset clarifies that accreditation is conducted by MBHTE (Ministry of Basic, Higher, and Technical Education)
+- Tarbiyyah Committee coordinates the accreditation process
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Login to Django admin as superuser
+6. Verify models appear in admin interface
+7. Test create, read, update, delete operations
+8. Verify list display, filters, and search work

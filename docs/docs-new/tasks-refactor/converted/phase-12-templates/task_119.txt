@@ -1,0 +1,202 @@
+# Task ID: 119
+# Title: Verify Mobile Responsiveness
+# Status: pending
+# Dependencies: 118
+# Priority: medium
+# Description: Comprehensive mobile responsiveness testing across all templates. Verify all pages work correctly on mobile devices (320px to 768px viewports) and tab
+
+# Details:
+Comprehensive mobile responsiveness testing across all templates. Verify all pages work correctly on mobile devices (320px to 768px viewports) and tablets (768px to 1024px).
+
+## Implementation Steps:
+1. Set up responsive testing environment:
+   ```bash
+   # Use browser DevTools
+   # Chrome: F12 > Toggle Device Toolbar (Ctrl+Shift+M)
+   # Test viewports: 320px, 375px, 414px, 768px, 1024px
+   ```
+2. Test navigation components:
+   - **Desktop navbar**: Should collapse to hamburger menu on mobile
+   - **Sidebar navigation**: Should slide out on mobile (drawer)
+   - **Breadcrumbs**: Should truncate or scroll on mobile
+   - **Footer**: Should stack vertically on mobile
+3. Review and fix navigation template:
+   ```html
+   <!-- Ensure mobile menu toggle exists -->
+   <nav class="navbar">
+     <button class="navbar-toggler lg:hidden"
+             type="button"
+             data-toggle="collapse"
+             data-target="#navbarMenu"
+             aria-label="Toggle navigation">
+       <span class="navbar-toggler-icon"></span>
+     </button>
+     <div class="collapse navbar-collapse" id="navbarMenu">
+       <!-- Menu items -->
+     </div>
+   </nav>
+   ```
+4. Test table responsiveness:
+   ```bash
+   # Find all tables
+   grep -r "<table" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html"
+   ```
+   - Add responsive wrapper:
+   ```html
+   <div class="table-responsive">
+     <table class="table">
+       <!-- Table content -->
+     </table>
+   </div>
+   ```
+   - Or use card layout on mobile:
+   ```html
+   <div class="hidden md:block">
+     <!-- Desktop table -->
+   </div>
+   <div class="block md:hidden">
+     <!-- Mobile card view -->
+   </div>
+   ```
+5. Test forms on mobile:
+   - Input fields should be full width on mobile
+   - Labels should be above inputs (not side-by-side)
+   - Select dropdowns should be native on mobile
+   - Date pickers should use native mobile datepickers
+   ```html
+   <div class="form-group">
+     <label for="field" class="block mb-2">Label</label>
+     <input type="text"
+            id="field"
+            class="w-full px-3 py-2 border rounded">
+   </div>
+   ```
+6. Check touch target sizes:
+   ```css
+   /* Ensure minimum touch target size */
+   .btn, .link, .checkbox, .radio {
+     min-height: 44px;
+     min-width: 44px;
+   }
+   ```
+7. Test specific page types:
+   - **List pages** (Madaris list, Students list):
+     - Cards should stack on mobile
+     - Filters should collapse or appear in modal
+   - **Detail pages** (Madrasah detail, Student profile):
+     - Information sections should stack vertically
+     - Action buttons should be easily tappable
+   - **Form pages** (Create/Edit forms):
+     - Fields should be full width
+     - Submit buttons prominent and easy to tap
+   - **Dashboard pages**:
+     - Stat cards should stack on mobile
+     - Charts should be scrollable horizontally if needed
+8. Test modals and overlays:
+   ```html
+   <!-- Modal should be full-screen on mobile -->
+   <div class="modal fixed inset-0 z-50">
+     <div class="modal-content w-full h-full md:w-auto md:h-auto md:max-w-lg md:mx-auto md:mt-20">
+       <!-- Modal content -->
+     </div>
+   </div>
+   ```
+9. Check image responsiveness:
+   ```html
+   <img src="..." alt="..." class="max-w-full h-auto">
+   ```
+10. Test with real devices (if available):
+    - iPhone SE (320px)
+    - iPhone 12 Pro (390px)
+    - iPad (768px)
+    - Android phones (various sizes)
+11. Test landscape orientation on mobile
+12. Check for horizontal overflow:
+    ```css
+    /* Add to base styles if needed */
+    html, body {
+      overflow-x: hidden;
+    }
+    ```
+13. Test PWA on mobile:
+    - Add to home screen
+    - Verify app opens correctly
+    - Check icon display
+14. Create responsive testing checklist:
+    ```markdown
+    # Mobile Responsiveness Checklist
+
+    ## Navigation
+    - [ ] Navbar collapses on mobile
+    - [ ] Hamburger menu works
+    - [ ] Breadcrumbs readable
+    - [ ] Footer stacks properly
+
+    ## Pages
+    - [ ] Home page
+    - [ ] Madaris list
+    - [ ] Madrasah detail
+    - [ ] Student list
+    - [ ] Student profile
+    - [ ] Teacher list
+    - [ ] Curriculum pages
+    - [ ] Academic records
+    - [ ] Programs list
+    - [ ] Parent portal
+    - [ ] Dashboard
+    - [ ] Settings
+
+    ## Components
+    - [ ] Tables scroll/stack
+    - [ ] Forms usable
+    - [ ] Buttons tappable
+    - [ ] Modals work
+    - [ ] Images scale
+    - [ ] Cards stack
+    ```
+15. Document any issues found and fixes applied
+
+## Acceptance Criteria:
+- All pages tested on mobile (320px, 375px, 414px)
+- All pages tested on tablet (768px, 1024px)
+- Navigation menus collapse properly on mobile
+- Tables responsive (scroll or stack)
+- Forms usable on mobile devices
+- Buttons and links have adequate touch targets (44x44px min)
+- Text readable without horizontal scrolling
+- Images scale appropriately
+- Modals work on small screens
+- No horizontal overflow on any page
+
+## Files Modified:
+- `src/templates/base.html`
+- `src/templates/components/navbar.html`
+- `src/templates/components/sidebar.html`
+- `src/static/css/responsive.css (create if needed)`
+- `src/apps/*/templates/*.html (review all templates)`
+- `docs/docs-new/phase-12-audit/MOBILE_RESPONSIVENESS_REPORT.md (created)`
+
+## Important Notes:
+- Mobile traffic may be significant in BARMM region
+- Test on actual devices when possible
+- Use Chrome DevTools Device Mode for initial testing
+- Consider using BrowserStack for comprehensive testing
+- Focus on usability, not just visual appearance
+- Ensure accessibility on mobile (font sizes, contrast)
+- Test both portrait and landscape orientations
+- Verify touch gestures work (swipe, pinch, tap)
+- Estimate: 120 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Access view URL and verify HTTP 200 response
+6. Test with different user permissions
+7. Verify context data passed to template
+8. Test any query parameters or filters
+9. Run test suite with `python manage.py test`
+10. Verify test coverage meets requirements
+11. Check for any failing tests
+12. Verify test assertions are correct

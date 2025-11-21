@@ -1,0 +1,495 @@
+#!/usr/bin/env python3
+"""
+Comprehensive Load Testing Suite for #FahanieCares Platform
+
+This script performs various load tests to ensure production readiness:
+- Concurrent user simulation
+- Database stress testing
+- API endpoint load testing
+- Memory and CPU monitoring
+- Performance regression detection
+
+Usage:
+    python manage.py test tests.test_load_testing
+    python tests/test_load_testing.py --standalone
+"""
+
+import asyncio
+import aiohttp
+import time
+import threading
+import json
+import sys
+import logging
+from datetime import datetime, timedelta
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from urllib.parse import urljoin
+
+# Django imports (when run as Django test)
+try:
+    from django.test import TestCase, LiveServerTestCase
+    from django.test.utils import override_settings
+    from django.contrib.auth import get_user_model
+    from django.urls import reverse
+    from django.db import connections, transaction
+    from django.core.cache import cache
+    from django.conf import settings
+    DJANGO_AVAILABLE = True
+except ImportError:
+    DJANGO_AVAILABLE = False
+    TestCase = object
+    LiveServerTestCase = object
+
+# System monitoring
+try:
+    import psutil
+    PSUTIL_AVAILABLE = True
+except ImportError:
+    PSUTIL_AVAILABLE = False
+
+# Performance tracking
+class PerformanceTracker:
+    """Track performance metrics during load testing"""
+    
+    def __init__(self):
+        self.metrics = {
+            'response_times': [],
+            'error_count': 0,
+            'success_count': 0,
+            'start_time': None,
+            'end_time': None,
+            'memory_usage': [],
+            'cpu_usage': [],
+            'db_connections': []
+        }
+        self.monitoring = False
+        
+    def start_monitoring(self):
+        """Start system resource monitoring"""
+        self.metrics['start_time'] = time.time()
+        self.monitoring = True
+        
+        if PSUTIL_AVAILABLE:
+            self.monitor_thread = threading.Thread(target=self._monitor_resources)
+            self.monitor_thread.daemon = True
+            self.monitor_thread.start()
+    
+    def stop_monitoring(self):
+        """Stop monitoring and finalize metrics"""
+        self.monitoring = False
+        self.metrics['end_time'] = time.time()
+        
+    def _monitor_resources(self):
+        """Monitor system resources in background thread"""
+        while self.monitoring:
+            if PSUTIL_AVAILABLE:
+                self.metrics['memory_usage'].append(psutil.virtual_memory().percent)
+                self.metrics['cpu_usage'].append(psutil.cpu_percent())
+            
+            # Monitor database connections if Django is available
+            if DJANGO_AVAILABLE:
+                try:
+                    from django.db import connection
+                    queries_count = len(connection.queries)
+                    self.metrics['db_connections'].append(queries_count)
+                except:
+                    pass
+                    
+            time.sleep(1)
+    
+    def record_response(self, response_time, success=True):
+        """Record a response time and status"""
+        self.metrics['response_times'].append(response_time)
+        if success:
+            self.metrics['success_count'] += 1
+        else:
+            self.metrics['error_count'] += 1
+    
+    def get_summary(self):
+        """Get performance summary"""
+        response_times = self.metrics['response_times']
+        duration = self.metrics['end_time'] - self.metrics['start_time']
+        
+        if not response_times:
+            return {'error': 'No response data collected'}
+            
+        response_times.sort()
+        total_requests = len(response_times)
+        
+        summary = {
+            'duration': duration,
+            'total_requests': total_requests,
+            'requests_per_second': total_requests / duration if duration > 0 else 0,
+            'success_rate': (self.metrics['success_count'] / total_requests) * 100,
+            'error_count': self.metrics['error_count'],
+            'response_times': {
+                'min': min(response_times),
+                'max': max(response_times),
+                'avg': sum(response_times) / len(response_times),
+                'p50': response_times[int(len(response_times) * 0.5)],
+                'p90': response_times[int(len(response_times) * 0.9)],
+                'p95': response_times[int(len(response_times) * 0.95)],
+                'p99': response_times[int(len(response_times) * 0.99)],
+            }
+        }
+        
+        if PSUTIL_AVAILABLE and self.metrics['memory_usage']:
+            summary['system_resources'] = {
+                'max_memory_usage': max(self.metrics['memory_usage']),
+                'avg_memory_usage': sum(self.metrics['memory_usage']) / len(self.metrics['memory_usage']),
+                'max_cpu_usage': max(self.metrics['cpu_usage']),
+                'avg_cpu_usage': sum(self.metrics['cpu_usage']) / len(self.metrics['cpu_usage']),
+            }
+            
+        return summary
+
+class LoadTestClient:
+    """HTTP client for load testing"""
+    
+    def __init__(self, base_url):
+        self.base_url = base_url
+        self.session = None
+        
+    async def __aenter__(self):
+        connector = aiohttp.TCPConnector(limit=100, ttl_dns_cache=300)
+        timeout = aiohttp.ClientTimeout(total=30)
+        self.session = aiohttp.ClientSession(connector=connector, timeout=timeout)
+        return self
+        
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        if self.session:
+            await self.session.close()
+    
+    async def make_request(self, method, path, **kwargs):
+        """Make HTTP request and measure response time"""
+        url = urljoin(self.base_url, path)
+        start_time = time.time()
+        
+        try:
+            async with self.session.request(method, url, **kwargs) as response:
+                await response.text()
+                response_time = time.time() - start_time
+                return {
+                    'status': response.status,
+                    'response_time': response_time,
+                    'success': 200 <= response.status < 400,
+                    'url': url
+                }
+        except Exception as e:
+            response_time = time.time() - start_time
+            return {
+                'status': 0,
+                'response_time': response_time,
+                'success': False,
+                'error': str(e),
+                'url': url
+            }
+
+class LoadTestScenarios:
+    """Define various load testing scenarios"""
+    
+    @staticmethod
+    async def homepage_load_test(client, tracker, concurrent_users=50, duration=60):
+        """Test homepage under concurrent load"""
+        print(f"Running homepage load test: {concurrent_users} users for {duration}s")
+        
+        async def user_session():
+            """Simulate a user session"""
+            pages = ['/', '/about/', '/chapters/', '/ministries-ppas/']
+            
+            for page in pages:
+                result = await client.make_request('GET', page)
+                tracker.record_response(result['response_time'], result['success'])
+                await asyncio.sleep(0.5)  # Think time between requests
+        
+        # Start concurrent user sessions
+        tasks = []
+        start_time = time.time()
+        
+        while time.time() - start_time < duration:
+            if len(tasks) < concurrent_users:
+                task = asyncio.create_task(user_session())
+                tasks.append(task)
+            
+            # Clean up completed tasks
+            tasks = [task for task in tasks if not task.done()]
+            await asyncio.sleep(0.1)
+        
+        # Wait for remaining tasks
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+    
+    @staticmethod
+    async def api_stress_test(client, tracker, requests_per_second=100, duration=30):
+        """Stress test API endpoints"""
+        print(f"Running API stress test: {requests_per_second} req/s for {duration}s")
+        
+        api_endpoints = [
+            '/health/',
+            '/api/municipalities/?province=Maguindanao del Sur',
+            '/metrics/',
+        ]
+        
+        async def make_api_request():
+            endpoint = api_endpoints[int(time.time()) % len(api_endpoints)]
+            result = await client.make_request('GET', endpoint)
+            tracker.record_response(result['response_time'], result['success'])
+        
+        # Calculate request interval
+        interval = 1.0 / requests_per_second
+        
+        start_time = time.time()
+        tasks = []
+        
+        while time.time() - start_time < duration:
+            task = asyncio.create_task(make_api_request())
+            tasks.append(task)
+            
+            # Limit concurrent requests
+            if len(tasks) >= 50:
+                await asyncio.sleep(interval)
+                tasks = [task for task in tasks if not task.done()]
+        
+        # Wait for remaining tasks
+        if tasks:
+            await asyncio.gather(*tasks, return_exceptions=True)
+    
+    @staticmethod
+    async def registration_load_test(client, tracker, concurrent_registrations=10):
+        """Test user registration under load"""
+        print(f"Running registration load test: {concurrent_registrations} concurrent registrations")
+        
+        async def register_user(user_id):
+            # Get registration page
+            result = await client.make_request('GET', '/member-registration/')
+            tracker.record_response(result['response_time'], result['success'])
+            
+            # Submit registration (would need CSRF token in real scenario)
+            registration_data = {
+                'first_name': f'LoadTest{user_id}',
+                'last_name': 'User',
+                'email': f'loadtest{user_id}@example.com',
+                'phone_number': '+639171234567',
+                'password1': 'SecureTestPassword123!',
+                'password2': 'SecureTestPassword123!',
+                'current_province': 'Maguindanao del Sur',
+                'current_municipality': 'Cotabato City',
+            }
+            
+            result = await client.make_request('POST', '/member-registration/', 
+                                             data=registration_data)
+            tracker.record_response(result['response_time'], result['success'])
+        
+        # Run concurrent registrations
+        tasks = [register_user(i) for i in range(concurrent_registrations)]
+        await asyncio.gather(*tasks, return_exceptions=True)
+
+if DJANGO_AVAILABLE:
+    class LoadTestCase(LiveServerTestCase):
+        """Django test case for load testing"""
+        
+        @classmethod
+        def setUpClass(cls):
+            super().setUpClass()
+            cls.base_url = cls.live_server_url
+            
+        def setUp(self):
+            self.tracker = PerformanceTracker()
+            
+        def test_homepage_load_performance(self):
+            """Test homepage performance under load"""
+            async def run_test():
+                async with LoadTestClient(self.base_url) as client:
+                    self.tracker.start_monitoring()
+                    await LoadTestScenarios.homepage_load_test(
+                        client, self.tracker, concurrent_users=25, duration=30
+                    )
+                    self.tracker.stop_monitoring()
+            
+            asyncio.run(run_test())
+            
+            summary = self.tracker.get_summary()
+            
+            # Assertions
+            self.assertGreater(summary['success_rate'], 95, "Success rate should be > 95%")
+            self.assertLess(summary['response_times']['p95'], 3.0, "95th percentile should be < 3s")
+            self.assertGreater(summary['requests_per_second'], 5, "Should handle > 5 req/s")
+            
+            print(f"Homepage Load Test Results:")
+            print(f"- Success Rate: {summary['success_rate']:.1f}%")
+            print(f"- P95 Response Time: {summary['response_times']['p95']:.2f}s")
+            print(f"- Requests/Second: {summary['requests_per_second']:.1f}")
+        
+        def test_api_stress_performance(self):
+            """Test API endpoints under stress"""
+            async def run_test():
+                async with LoadTestClient(self.base_url) as client:
+                    self.tracker.start_monitoring()
+                    await LoadTestScenarios.api_stress_test(
+                        client, self.tracker, requests_per_second=50, duration=20
+                    )
+                    self.tracker.stop_monitoring()
+            
+            asyncio.run(run_test())
+            
+            summary = self.tracker.get_summary()
+            
+            # Assertions
+            self.assertGreater(summary['success_rate'], 98, "API success rate should be > 98%")
+            self.assertLess(summary['response_times']['avg'], 1.0, "Average response time should be < 1s")
+            
+            print(f"API Stress Test Results:")
+            print(f"- Success Rate: {summary['success_rate']:.1f}%")
+            print(f"- Average Response Time: {summary['response_times']['avg']:.2f}s")
+            print(f"- Total Requests: {summary['total_requests']}")
+        
+        def test_database_concurrent_access(self):
+            """Test database performance under concurrent access"""
+            User = get_user_model()
+            
+            def database_operations():
+                """Perform database operations"""
+                start_time = time.time()
+                
+                # Create user
+                user = User.objects.create_user(
+                    username=f'loadtest_{int(time.time())}_{threading.current_thread().ident}',
+                    email=f'load_{int(time.time())}@example.com',
+                    password='testpass123'
+                )
+                
+                # Query users
+                User.objects.filter(email__icontains='load').count()
+                
+                # Update user
+                user.first_name = 'LoadTest'
+                user.save()
+                
+                # Clean up
+                user.delete()
+                
+                return time.time() - start_time
+            
+            # Run concurrent database operations
+            with ThreadPoolExecutor(max_workers=20) as executor:
+                futures = [executor.submit(database_operations) for _ in range(100)]
+                
+                response_times = []
+                errors = 0
+                
+                for future in as_completed(futures):
+                    try:
+                        response_time = future.result()
+                        response_times.append(response_time)
+                    except Exception as e:
+                        errors += 1
+                        print(f"Database operation error: {e}")
+            
+            # Assertions
+            self.assertEqual(errors, 0, "No database errors should occur")
+            self.assertLess(max(response_times), 5.0, "Max DB operation time should be < 5s")
+            self.assertLess(sum(response_times) / len(response_times), 1.0, "Avg DB time should be < 1s")
+            
+            print(f"Database Concurrent Access Results:")
+            print(f"- Operations Completed: {len(response_times)}")
+            print(f"- Errors: {errors}")
+            print(f"- Average Time: {sum(response_times) / len(response_times):.2f}s")
+        
+        def test_memory_leak_detection(self):
+            """Test for memory leaks during extended operation"""
+            if not PSUTIL_AVAILABLE:
+                self.skipTest("psutil not available for memory monitoring")
+            
+            import gc
+            
+            # Get baseline memory
+            gc.collect()
+            baseline_memory = psutil.Process().memory_info().rss / 1024 / 1024  # MB
+            
+            # Perform many operations
+            for i in range(1000):
+                # Simulate application operations
+                cache.set(f'test_key_{i}', f'test_value_{i}', 1)
+                cache.get(f'test_key_{i}')
+                
+                if i % 100 == 0:
+                    gc.collect()
+                    current_memory = psutil.Process().memory_info().rss / 1024 / 1024
+                    memory_increase = current_memory - baseline_memory
+                    
+                    # Memory shouldn't increase by more than 100MB
+                    self.assertLess(memory_increase, 100, 
+                                  f"Memory leak detected: {memory_increase:.1f}MB increase")
+            
+            # Final memory check
+            gc.collect()
+            final_memory = psutil.Process().memory_info().rss / 1024 / 1024
+            total_increase = final_memory - baseline_memory
+            
+            print(f"Memory Leak Test Results:")
+            print(f"- Baseline Memory: {baseline_memory:.1f}MB")
+            print(f"- Final Memory: {final_memory:.1f}MB")
+            print(f"- Total Increase: {total_increase:.1f}MB")
+            
+            self.assertLess(total_increase, 50, "Total memory increase should be < 50MB")
+
+# Standalone execution
+async def run_standalone_load_test():
+    """Run load tests without Django"""
+    base_url = sys.argv[1] if len(sys.argv) > 1 else "http://localhost:8000"
+    
+    print(f"Running standalone load tests against: {base_url}")
+    print("=" * 50)
+    
+    tracker = PerformanceTracker()
+    
+    async with LoadTestClient(base_url) as client:
+        # Test 1: Homepage Load Test
+        print("\n1. Homepage Load Test")
+        print("-" * 20)
+        tracker = PerformanceTracker()
+        tracker.start_monitoring()
+        
+        await LoadTestScenarios.homepage_load_test(
+            client, tracker, concurrent_users=30, duration=60
+        )
+        
+        tracker.stop_monitoring()
+        summary = tracker.get_summary()
+        
+        print(f"Results:")
+        print(f"- Duration: {summary['duration']:.1f}s")
+        print(f"- Total Requests: {summary['total_requests']}")
+        print(f"- Success Rate: {summary['success_rate']:.1f}%")
+        print(f"- Requests/Second: {summary['requests_per_second']:.1f}")
+        print(f"- Average Response Time: {summary['response_times']['avg']:.2f}s")
+        print(f"- 95th Percentile: {summary['response_times']['p95']:.2f}s")
+        
+        # Test 2: API Stress Test
+        print("\n2. API Stress Test")
+        print("-" * 18)
+        tracker = PerformanceTracker()
+        tracker.start_monitoring()
+        
+        await LoadTestScenarios.api_stress_test(
+            client, tracker, requests_per_second=100, duration=30
+        )
+        
+        tracker.stop_monitoring()
+        summary = tracker.get_summary()
+        
+        print(f"Results:")
+        print(f"- Total Requests: {summary['total_requests']}")
+        print(f"- Success Rate: {summary['success_rate']:.1f}%")
+        print(f"- Average Response Time: {summary['response_times']['avg']:.2f}s")
+        
+        if 'system_resources' in summary:
+            resources = summary['system_resources']
+            print(f"- Max CPU Usage: {resources['max_cpu_usage']:.1f}%")
+            print(f"- Max Memory Usage: {resources['max_memory_usage']:.1f}%")
+
+if __name__ == "__main__":
+    if "--standalone" in sys.argv:
+        asyncio.run(run_standalone_load_test())
+    else:
+        print("Use --standalone flag to run without Django, or run via Django test suite")

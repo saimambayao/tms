@@ -1,0 +1,770 @@
+# Task ID: 106
+# Title: Build Analytics Dashboards
+# Status: pending
+# Dependencies: 045, 103, 104
+# Priority: medium
+# Description: Build comprehensive analytics dashboards for education data visualization. Create interactive charts and graphs for enrollment trends, attendance patt
+
+# Details:
+Build comprehensive analytics dashboards for education data visualization. Create interactive charts and graphs for enrollment trends, attendance patterns, academic performance, and teacher effectiveness metrics.
+
+## Implementation Steps:
+1. Install required charting libraries:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   pip install django-chartjs plotly pandas
+   pip freeze > requirements.txt
+   ```
+
+2. Create analytics app or module:
+   ```bash
+   cd src/apps
+   mkdir -p analytics/services analytics/templates/analytics
+   touch analytics/__init__.py analytics/views.py analytics/urls.py
+   touch analytics/services/__init__.py analytics/services/data_aggregator.py
+   ```
+
+3. Create data aggregation service in `apps/analytics/services/data_aggregator.py`:
+   ```python
+   from django.db.models import Count, Avg, Sum, Q, F
+   from django.db.models.functions import TruncMonth, TruncWeek
+   from django.utils import timezone
+   from datetime import timedelta
+   import pandas as pd
+   from apps.students.models import Student
+   from apps.teachers.models import TeacherProfile
+   from apps.madaris.models import Madrasah, MadrasahEnrollment
+   from apps.academic.models import Attendance, Grade, Class
+
+   class EnrollmentAnalytics:
+       """Enrollment trend analytics"""
+
+       def __init__(self, start_date=None, end_date=None, madrasah_id=None):
+           self.start_date = start_date or timezone.now() - timedelta(days=365)
+           self.end_date = end_date or timezone.now()
+           self.madrasah_id = madrasah_id
+
+       def get_enrollment_trends(self):
+           """Get enrollment trends over time"""
+           queryset = MadrasahEnrollment.objects.filter(
+               enrollment_date__range=[self.start_date, self.end_date]
+           )
+
+           if self.madrasah_id:
+               queryset = queryset.filter(madrasah_id=self.madrasah_id)
+
+           # Monthly enrollment counts
+           monthly_data = queryset.annotate(
+               month=TruncMonth('enrollment_date')
+           ).values('month').annotate(
+               count=Count('id')
+           ).order_by('month')
+
+           return {
+               'labels': [item['month'].strftime('%b %Y') for item in monthly_data],
+               'data': [item['count'] for item in monthly_data],
+               'total_enrollments': queryset.count()
+           }
+
+       def get_enrollment_by_grade(self):
+           """Get enrollment distribution by grade level"""
+           queryset = Student.objects.filter(status='active')
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   enrollments__madrasah_id=self.madrasah_id
+               )
+
+           by_grade = queryset.values('grade_level').annotate(
+               count=Count('id')
+           ).order_by('grade_level')
+
+           return {
+               'labels': [item['grade_level'] for item in by_grade],
+               'data': [item['count'] for item in by_grade]
+           }
+
+       def get_enrollment_by_madrasah(self):
+           """Get enrollment by madrasah"""
+           madaris = Madrasah.objects.annotate(
+               student_count=Count('enrollments', filter=Q(
+                   enrollments__student__status='active'
+               ))
+           ).values('name', 'student_count', 'capacity').order_by('-student_count')
+
+           return {
+               'madaris': list(madaris),
+               'labels': [m['name'] for m in madaris],
+               'student_counts': [m['student_count'] for m in madaris],
+               'capacities': [m['capacity'] for m in madaris]
+           }
+
+       def get_enrollment_growth_rate(self):
+           """Calculate enrollment growth rate"""
+           current_month = timezone.now().date().replace(day=1)
+           last_month = (current_month - timedelta(days=1)).replace(day=1)
+
+           current_count = Student.objects.filter(
+               status='active',
+               created_at__gte=current_month
+           ).count()
+
+           last_month_count = Student.objects.filter(
+               status='active',
+               created_at__gte=last_month,
+               created_at__lt=current_month
+           ).count()
+
+           growth_rate = 0
+           if last_month_count > 0:
+               growth_rate = ((current_count - last_month_count) / last_month_count) * 100
+
+           return {
+               'current_month': current_count,
+               'last_month': last_month_count,
+               'growth_rate': round(growth_rate, 2)
+           }
+
+   class AttendanceAnalytics:
+       """Attendance pattern analytics"""
+
+       def __init__(self, start_date=None, end_date=None, madrasah_id=None):
+           self.start_date = start_date or timezone.now() - timedelta(days=30)
+           self.end_date = end_date or timezone.now()
+           self.madrasah_id = madrasah_id
+
+       def get_daily_attendance_trend(self):
+           """Get daily attendance trends"""
+           queryset = Attendance.objects.filter(
+               date__range=[self.start_date, self.end_date]
+           )
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=self.madrasah_id
+               )
+
+           daily_stats = queryset.values('date').annotate(
+               total=Count('id'),
+               present=Count('id', filter=Q(status='present')),
+               absent=Count('id', filter=Q(status='absent')),
+               late=Count('id', filter=Q(status='late'))
+           ).order_by('date')
+
+           return {
+               'labels': [item['date'].strftime('%Y-%m-%d') for item in daily_stats],
+               'present': [item['present'] for item in daily_stats],
+               'absent': [item['absent'] for item in daily_stats],
+               'late': [item['late'] for item in daily_stats],
+               'attendance_rates': [
+                   (item['present'] / item['total'] * 100) if item['total'] > 0 else 0
+                   for item in daily_stats
+               ]
+           }
+
+       def get_attendance_by_day_of_week(self):
+           """Get attendance patterns by day of week"""
+           from django.db.models.functions import ExtractWeekDay
+
+           queryset = Attendance.objects.filter(
+               date__range=[self.start_date, self.end_date]
+           )
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=self.madrasah_id
+               )
+
+           by_weekday = queryset.annotate(
+               weekday=ExtractWeekDay('date')
+           ).values('weekday').annotate(
+               total=Count('id'),
+               present=Count('id', filter=Q(status='present'))
+           ).order_by('weekday')
+
+           weekday_names = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+
+           return {
+               'labels': [weekday_names[item['weekday'] - 1] for item in by_weekday],
+               'attendance_rates': [
+                   (item['present'] / item['total'] * 100) if item['total'] > 0 else 0
+                   for item in by_weekday
+               ]
+           }
+
+       def get_chronic_absenteeism(self, threshold=10):
+           """Identify students with chronic absenteeism"""
+           students = Student.objects.filter(status='active')
+
+           student_stats = []
+           for student in students:
+               absences = Attendance.objects.filter(
+                   student=student,
+                   date__range=[self.start_date, self.end_date],
+                   status='absent'
+               ).count()
+
+               total = Attendance.objects.filter(
+                   student=student,
+                   date__range=[self.start_date, self.end_date]
+               ).count()
+
+               if total > 0:
+                   absence_rate = (absences / total) * 100
+                   if absence_rate >= threshold:
+                       student_stats.append({
+                           'student': student,
+                           'absences': absences,
+                           'total_days': total,
+                           'absence_rate': round(absence_rate, 2)
+                       })
+
+           return sorted(student_stats, key=lambda x: x['absence_rate'], reverse=True)
+
+   class AcademicPerformanceAnalytics:
+       """Academic performance analytics"""
+
+       def __init__(self, academic_year=None, madrasah_id=None):
+           self.academic_year = academic_year
+           self.madrasah_id = madrasah_id
+
+       def get_grade_distribution(self):
+           """Get grade distribution across all subjects"""
+           queryset = Grade.objects.filter(academic_year=self.academic_year)
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=self.madrasah_id
+               )
+
+           # Define grade ranges
+           grade_ranges = [
+               ('90-100', 90, 100),
+               ('80-89', 80, 89),
+               ('70-79', 70, 79),
+               ('60-69', 60, 69),
+               ('Below 60', 0, 59)
+           ]
+
+           distribution = []
+           for label, min_score, max_score in grade_ranges:
+               count = queryset.filter(
+                   score__gte=min_score,
+                   score__lte=max_score
+               ).count()
+               distribution.append({'label': label, 'count': count})
+
+           return {
+               'labels': [item['label'] for item in distribution],
+               'data': [item['count'] for item in distribution]
+           }
+
+       def get_subject_performance(self):
+           """Get average performance by subject"""
+           queryset = Grade.objects.filter(academic_year=self.academic_year)
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=self.madrasah_id
+               )
+
+           by_subject = queryset.values(
+               'subject__name'
+           ).annotate(
+               avg_score=Avg('score'),
+               count=Count('id')
+           ).order_by('-avg_score')
+
+           return {
+               'labels': [item['subject__name'] for item in by_subject],
+               'average_scores': [round(item['avg_score'], 2) for item in by_subject],
+               'student_counts': [item['count'] for item in by_subject]
+           }
+
+       def get_performance_trends(self):
+           """Get performance trends over time"""
+           queryset = Grade.objects.filter(academic_year=self.academic_year)
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=self.madrasah_id
+               )
+
+           monthly = queryset.annotate(
+               month=TruncMonth('created_at')
+           ).values('month').annotate(
+               avg_score=Avg('score')
+           ).order_by('month')
+
+           return {
+               'labels': [item['month'].strftime('%b %Y') for item in monthly],
+               'average_scores': [round(item['avg_score'], 2) for item in monthly]
+           }
+
+       def get_top_performers(self, limit=10):
+           """Get top performing students"""
+           queryset = Grade.objects.filter(academic_year=self.academic_year)
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=self.madrasah_id
+               )
+
+           top_students = queryset.values(
+               'student__user__first_name',
+               'student__user__last_name',
+               'student__student_id'
+           ).annotate(
+               avg_score=Avg('score')
+           ).order_by('-avg_score')[:limit]
+
+           return list(top_students)
+
+   class TeacherEffectivenessAnalytics:
+       """Teacher effectiveness analytics"""
+
+       def __init__(self, academic_year=None):
+           self.academic_year = academic_year
+
+       def get_teacher_class_performance(self):
+           """Get average student performance by teacher"""
+           teachers = TeacherProfile.objects.filter(status='active')
+
+           teacher_stats = []
+           for teacher in teachers:
+               grades = Grade.objects.filter(
+                   assessment__class__teacher=teacher,
+                   academic_year=self.academic_year
+               )
+
+               avg_score = grades.aggregate(avg=Avg('score'))['avg'] or 0
+               student_count = grades.values('student').distinct().count()
+
+               teacher_stats.append({
+                   'teacher': teacher.user.get_full_name(),
+                   'avg_score': round(avg_score, 2),
+                   'student_count': student_count,
+                   'classes': teacher.classes.filter(
+                       academic_year=self.academic_year
+                   ).count()
+               })
+
+           return sorted(teacher_stats, key=lambda x: x['avg_score'], reverse=True)
+
+       def get_class_size_distribution(self):
+           """Get distribution of class sizes"""
+           classes = Class.objects.filter(
+               academic_year=self.academic_year,
+               is_active=True
+           ).annotate(
+               student_count=Count('students')
+           )
+
+           size_ranges = [
+               ('1-10', 1, 10),
+               ('11-20', 11, 20),
+               ('21-30', 21, 30),
+               ('31-40', 31, 40),
+               ('40+', 41, 1000)
+           ]
+
+           distribution = []
+           for label, min_size, max_size in size_ranges:
+               count = classes.filter(
+                   student_count__gte=min_size,
+                   student_count__lte=max_size
+               ).count()
+               distribution.append({'label': label, 'count': count})
+
+           return {
+               'labels': [item['label'] for item in distribution],
+               'data': [item['count'] for item in distribution]
+           }
+   ```
+
+4. Create analytics views in `apps/analytics/views.py`:
+   ```python
+   from django.views.generic import TemplateView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.http import JsonResponse
+   from django.views import View
+   import json
+   from .services.data_aggregator import (
+       EnrollmentAnalytics, AttendanceAnalytics,
+       AcademicPerformanceAnalytics, TeacherEffectivenessAnalytics
+   )
+
+   class EnrollmentAnalyticsDashboard(LoginRequiredMixin, TemplateView):
+       template_name = 'analytics/enrollment_dashboard.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+
+           madrasah_id = self.request.GET.get('madrasah')
+           analytics = EnrollmentAnalytics(madrasah_id=madrasah_id)
+
+           context['enrollment_trends'] = analytics.get_enrollment_trends()
+           context['by_grade'] = analytics.get_enrollment_by_grade()
+           context['by_madrasah'] = analytics.get_enrollment_by_madrasah()
+           context['growth_rate'] = analytics.get_enrollment_growth_rate()
+
+           return context
+
+   class AttendanceAnalyticsDashboard(LoginRequiredMixin, TemplateView):
+       template_name = 'analytics/attendance_dashboard.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+
+           madrasah_id = self.request.GET.get('madrasah')
+           analytics = AttendanceAnalytics(madrasah_id=madrasah_id)
+
+           context['daily_trends'] = analytics.get_daily_attendance_trend()
+           context['by_weekday'] = analytics.get_attendance_by_day_of_week()
+           context['chronic_absenteeism'] = analytics.get_chronic_absenteeism()
+
+           return context
+
+   class AcademicAnalyticsDashboard(LoginRequiredMixin, TemplateView):
+       template_name = 'analytics/academic_dashboard.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+
+           academic_year = self.request.GET.get('year')
+           madrasah_id = self.request.GET.get('madrasah')
+           analytics = AcademicPerformanceAnalytics(academic_year, madrasah_id)
+
+           context['grade_distribution'] = analytics.get_grade_distribution()
+           context['subject_performance'] = analytics.get_subject_performance()
+           context['performance_trends'] = analytics.get_performance_trends()
+           context['top_performers'] = analytics.get_top_performers()
+
+           return context
+
+   class TeacherAnalyticsDashboard(LoginRequiredMixin, TemplateView):
+       template_name = 'analytics/teacher_dashboard.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+
+           academic_year = self.request.GET.get('year')
+           analytics = TeacherEffectivenessAnalytics(academic_year)
+
+           context['teacher_performance'] = analytics.get_teacher_class_performance()
+           context['class_sizes'] = analytics.get_class_size_distribution()
+
+           return context
+
+   class AnalyticsDataAPI(LoginRequiredMixin, View):
+       """API endpoint for fetching analytics data via AJAX"""
+
+       def get(self, request, analytics_type):
+           data = {}
+
+           if analytics_type == 'enrollment':
+               analytics = EnrollmentAnalytics()
+               data = analytics.get_enrollment_trends()
+           elif analytics_type == 'attendance':
+               analytics = AttendanceAnalytics()
+               data = analytics.get_daily_attendance_trend()
+           # ... etc
+
+           return JsonResponse(data)
+   ```
+
+5. Create analytics templates with Chart.js:
+   ```html
+   <!-- apps/analytics/templates/analytics/enrollment_dashboard.html -->
+   {% extends "base.html" %}
+   {% load static %}
+
+   {% block title %}Enrollment Analytics{% endblock %}
+
+   {% block extra_css %}
+   <link rel="stylesheet" href="{% static 'css/analytics.css' %}">
+   {% endblock %}
+
+   {% block content %}
+   <div class="analytics-container">
+       <h1>Enrollment Analytics</h1>
+
+       <div class="filters">
+           <select id="madrasah-filter">
+               <option value="">All Madaris</option>
+               <!-- Madrasah options -->
+           </select>
+           <input type="date" id="start-date">
+           <input type="date" id="end-date">
+           <button onclick="updateCharts()">Update</button>
+       </div>
+
+       <div class="analytics-grid">
+           <!-- Growth Rate Card -->
+           <div class="metric-card">
+               <h3>Monthly Growth Rate</h3>
+               <div class="metric-value {% if growth_rate.growth_rate > 0 %}positive{% else %}negative{% endif %}">
+                   {{ growth_rate.growth_rate }}%
+               </div>
+               <p>{{ growth_rate.current_month }} new students this month</p>
+           </div>
+
+           <!-- Enrollment Trends Chart -->
+           <div class="chart-card">
+               <h3>Enrollment Trends</h3>
+               <canvas id="enrollmentTrendChart"></canvas>
+           </div>
+
+           <!-- By Grade Chart -->
+           <div class="chart-card">
+               <h3>Enrollment by Grade Level</h3>
+               <canvas id="byGradeChart"></canvas>
+           </div>
+
+           <!-- By Madrasah Chart -->
+           <div class="chart-card full-width">
+               <h3>Enrollment by Madrasah</h3>
+               <canvas id="byMadrasahChart"></canvas>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+
+   {% block extra_js %}
+   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+   <script>
+   // Enrollment Trends Line Chart
+   const enrollmentTrendCtx = document.getElementById('enrollmentTrendChart').getContext('2d');
+   const enrollmentTrendChart = new Chart(enrollmentTrendCtx, {
+       type: 'line',
+       data: {
+           labels: {{ enrollment_trends.labels|safe }},
+           datasets: [{
+               label: 'New Enrollments',
+               data: {{ enrollment_trends.data|safe }},
+               borderColor: 'rgb(75, 192, 192)',
+               backgroundColor: 'rgba(75, 192, 192, 0.2)',
+               tension: 0.1
+           }]
+       },
+       options: {
+           responsive: true,
+           plugins: {
+               legend: {
+                   position: 'top',
+               },
+               title: {
+                   display: false
+               }
+           }
+       }
+   });
+
+   // By Grade Bar Chart
+   const byGradeCtx = document.getElementById('byGradeChart').getContext('2d');
+   const byGradeChart = new Chart(byGradeCtx, {
+       type: 'bar',
+       data: {
+           labels: {{ by_grade.labels|safe }},
+           datasets: [{
+               label: 'Students',
+               data: {{ by_grade.data|safe }},
+               backgroundColor: 'rgba(54, 162, 235, 0.8)'
+           }]
+       },
+       options: {
+           responsive: true,
+           plugins: {
+               legend: {
+                   display: false
+               }
+           }
+       }
+   });
+
+   // By Madrasah Horizontal Bar Chart
+   const byMadrasahCtx = document.getElementById('byMadrasahChart').getContext('2d');
+   const byMadrasahChart = new Chart(byMadrasahCtx, {
+       type: 'bar',
+       data: {
+           labels: {{ by_madrasah.labels|safe }},
+           datasets: [{
+               label: 'Current Students',
+               data: {{ by_madrasah.student_counts|safe }},
+               backgroundColor: 'rgba(75, 192, 192, 0.8)'
+           }, {
+               label: 'Capacity',
+               data: {{ by_madrasah.capacities|safe }},
+               backgroundColor: 'rgba(201, 203, 207, 0.8)'
+           }]
+       },
+       options: {
+           indexAxis: 'y',
+           responsive: true
+       }
+   });
+
+   function updateCharts() {
+       // Fetch new data and update charts
+       const madrasah = document.getElementById('madrasah-filter').value;
+       const startDate = document.getElementById('start-date').value;
+       const endDate = document.getElementById('end-date').value;
+
+       fetch(`/analytics/api/enrollment/?madrasah=${madrasah}&start=${startDate}&end=${endDate}`)
+           .then(response => response.json())
+           .then(data => {
+               // Update chart data
+               enrollmentTrendChart.data.labels = data.labels;
+               enrollmentTrendChart.data.datasets[0].data = data.data;
+               enrollmentTrendChart.update();
+           });
+   }
+   </script>
+   {% endblock %}
+   ```
+
+6. Update analytics URLs:
+   ```python
+   # apps/analytics/urls.py
+   from django.urls import path
+   from .views import (
+       EnrollmentAnalyticsDashboard, AttendanceAnalyticsDashboard,
+       AcademicAnalyticsDashboard, TeacherAnalyticsDashboard,
+       AnalyticsDataAPI
+   )
+
+   app_name = 'analytics'
+
+   urlpatterns = [
+       path('enrollment/', EnrollmentAnalyticsDashboard.as_view(), name='enrollment'),
+       path('attendance/', AttendanceAnalyticsDashboard.as_view(), name='attendance'),
+       path('academic/', AcademicAnalyticsDashboard.as_view(), name='academic'),
+       path('teachers/', TeacherAnalyticsDashboard.as_view(), name='teachers'),
+       path('api/<str:analytics_type>/', AnalyticsDataAPI.as_view(), name='api'),
+   ]
+   ```
+
+7. Add to main URLs:
+   ```python
+   # config/urls.py
+   urlpatterns = [
+       # ... existing patterns ...
+       path('analytics/', include('apps.analytics.urls')),
+   ]
+   ```
+
+8. Create analytics CSS:
+   ```css
+   /* static/css/analytics.css */
+   .analytics-container {
+       padding: 20px;
+       max-width: 1400px;
+       margin: 0 auto;
+   }
+
+   .analytics-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+       gap: 20px;
+       margin-top: 20px;
+   }
+
+   .chart-card {
+       background: white;
+       padding: 20px;
+       border-radius: 8px;
+       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   }
+
+   .chart-card.full-width {
+       grid-column: 1 / -1;
+   }
+
+   .metric-card {
+       background: white;
+       padding: 20px;
+       border-radius: 8px;
+       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   }
+
+   .metric-value {
+       font-size: 48px;
+       font-weight: bold;
+       margin: 10px 0;
+   }
+
+   .metric-value.positive {
+       color: #22c55e;
+   }
+
+   .metric-value.negative {
+       color: #ef4444;
+   }
+
+   .filters {
+       display: flex;
+       gap: 10px;
+       margin: 20px 0;
+   }
+   ```
+
+9. Add caching for analytics:
+   ```python
+   from django.core.cache import cache
+   from django.views.decorators.cache import cache_page
+
+   class EnrollmentAnalyticsDashboard(LoginRequiredMixin, TemplateView):
+       @cache_page(60 * 15)  # Cache for 15 minutes
+       def dispatch(self, *args, **kwargs):
+           return super().dispatch(*args, **kwargs)
+   ```
+
+10. Test analytics:
+    ```bash
+    python manage.py test apps.analytics
+    ```
+
+## Acceptance Criteria:
+- Enrollment analytics dashboard created
+- Attendance analytics dashboard created
+- Academic performance analytics created
+- Teacher effectiveness analytics created
+- Madrasah comparison analytics created
+- Interactive charts implemented
+- Date range filtering works
+- Export charts functionality added
+- Analytics accessible by role
+- Performance optimized (caching implemented)
+
+## Files Modified:
+- `src/apps/analytics/__init__.py (new)`
+- `src/apps/analytics/views.py (new)`
+- `src/apps/analytics/urls.py (new)`
+- `src/apps/analytics/services/__init__.py (new)`
+- `src/apps/analytics/services/data_aggregator.py (new)`
+- `src/apps/analytics/templates/analytics/enrollment_dashboard.html (new)`
+- `src/apps/analytics/templates/analytics/attendance_dashboard.html (new)`
+- `src/apps/analytics/templates/analytics/academic_dashboard.html (new)`
+- `src/apps/analytics/templates/analytics/teacher_dashboard.html (new)`
+- `src/static/css/analytics.css (new)`
+- `src/static/js/analytics.js (new)`
+- `src/apps/analytics/tests/test_analytics.py (new)`
+- `src/config/urls.py (add analytics URLs)`
+- `requirements.txt (add charting libraries)`
+
+## Important Notes:
+- Use Chart.js or Plotly for interactive visualizations
+- Implement caching to improve performance
+- Add export functionality (PDF, PNG)
+- Ensure analytics respect user permissions
+- Consider using Celery for background data aggregation
+- Add filters for date ranges, madaris, grades
+- Make charts responsive for mobile devices
+- Estimate: 5-6 hours
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

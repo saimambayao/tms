@@ -1,0 +1,431 @@
+# Task ID: 068
+# Title: Create Student Enrollment Workflows
+# Status: pending
+# Dependencies: 032, 067
+# Priority: medium
+# Description: Create student enrollment workflows and forms for managing student registration, enrollment, and status changes. This includes enrollment forms, statu
+
+# Details:
+Create student enrollment workflows and forms for managing student registration, enrollment, and status changes. This includes enrollment forms, status transition workflows, and enrollment management views.
+
+## Implementation Steps:
+1. Create student enrollment form in src/apps/constituents/forms.py:
+   ```python
+   from django import forms
+   from django.core.exceptions import ValidationError
+   from .models import Student
+   from apps.chapters.models import Madrasah
+   from datetime import datetime
+
+   class StudentEnrollmentForm(forms.ModelForm):
+       """Form for enrolling a new student"""
+
+       madrasah = forms.ModelChoiceField(
+           queryset=Madrasah.objects.filter(status='active'),
+           required=True,
+           help_text="Select the madrasah for enrollment"
+       )
+
+       class Meta:
+           model = Student
+           fields = [
+               # Personal Information
+               'first_name',
+               'last_name',
+               'birth_date',
+               'gender',
+               'address',
+
+               # Enrollment Information
+               'madrasah',
+               'current_grade_level',
+               'enrollment_status',
+
+               # Family Information
+               'father_name',
+               'mother_name',
+               'guardian_name',
+               'guardian_contact',
+
+               # Madrasah Education
+               'madrasah_name',
+               'madrasah_level',
+               'year_enrolled',
+           ]
+           widgets = {
+               'first_name': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': 'Enter first name'
+               }),
+               'last_name': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': 'Enter last name'
+               }),
+               'birth_date': forms.DateInput(attrs={
+                   'class': 'form-input',
+                   'type': 'date'
+               }),
+               'gender': forms.Select(attrs={'class': 'form-select'}),
+               'address': forms.Textarea(attrs={
+                   'class': 'form-textarea',
+                   'rows': 3
+               }),
+               'madrasah': forms.Select(attrs={'class': 'form-select'}),
+               'current_grade_level': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': 'e.g., Grade 1, Elementary'
+               }),
+               'enrollment_status': forms.Select(attrs={'class': 'form-select'}),
+               'father_name': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': "Father's full name"
+               }),
+               'mother_name': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': "Mother's full name"
+               }),
+               'guardian_name': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': "Guardian's name (if different)"
+               }),
+               'guardian_contact': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': 'Contact number'
+               }),
+           }
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           # Set default enrollment status to applicant for new students
+           if not self.instance.pk:
+               self.initial['enrollment_status'] = Student.EnrollmentStatus.APPLICANT
+               self.initial['year_enrolled'] = datetime.now().year
+
+       def clean_birth_date(self):
+           birth_date = self.cleaned_data.get('birth_date')
+           if birth_date:
+               age = (datetime.now().date() - birth_date).days / 365.25
+               if age < 3:
+                   raise ValidationError("Student must be at least 3 years old")
+               if age > 25:
+                   raise ValidationError("Student age seems unusual for initial enrollment")
+           return birth_date
+
+       def clean(self):
+           cleaned_data = super().clean()
+
+           # Require at least one parent/guardian name
+           father_name = cleaned_data.get('father_name')
+           mother_name = cleaned_data.get('mother_name')
+           guardian_name = cleaned_data.get('guardian_name')
+
+           if not any([father_name, mother_name, guardian_name]):
+               raise ValidationError(
+                   "At least one parent or guardian name is required"
+               )
+
+           return cleaned_data
+
+       def save(self, commit=True):
+           student = super().save(commit=False)
+
+           # Auto-generate student number if not set
+           if not student.student_number:
+               current_year = datetime.now().year
+               # Get last student ID to generate sequential number
+               last_student = Student.objects.order_by('-id').first()
+               next_id = (last_student.id + 1) if last_student else 1
+               student.student_number = f"STU-{current_year}-{next_id:05d}"
+
+           # Set madrasah_name from selected madrasah
+           if hasattr(self, 'cleaned_data') and 'madrasah' in self.cleaned_data:
+               madrasah = self.cleaned_data['madrasah']
+               if madrasah:
+                   student.madrasah_name = madrasah.name
+
+           if commit:
+               student.save()
+
+           return student
+
+   class StudentStatusChangeForm(forms.Form):
+       """Form for changing student enrollment status"""
+
+       new_status = forms.ChoiceField(
+           choices=Student.EnrollmentStatus.choices,
+           widget=forms.Select(attrs={'class': 'form-select'}),
+           help_text="Select new enrollment status"
+       )
+
+       reason = forms.CharField(
+           widget=forms.Textarea(attrs={
+               'class': 'form-textarea',
+               'rows': 4,
+               'placeholder': 'Reason for status change'
+           }),
+           required=True,
+           help_text="Explain the reason for this status change"
+       )
+
+       effective_date = forms.DateField(
+           widget=forms.DateInput(attrs={
+               'class': 'form-input',
+               'type': 'date'
+           }),
+           initial=datetime.now().date(),
+           help_text="Date when status change takes effect"
+       )
+
+       def __init__(self, student, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           self.student = student
+           # Exclude current status from choices
+           self.fields['new_status'].choices = [
+               (k, v) for k, v in Student.EnrollmentStatus.choices
+               if k != student.enrollment_status
+           ]
+
+       def clean(self):
+           cleaned_data = super().clean()
+           new_status = cleaned_data.get('new_status')
+
+           # Validate status transitions
+           valid_transitions = {
+               'applicant': ['enrolled', 'inactive'],
+               'enrolled': ['graduate', 'dropout', 'transferred', 'inactive'],
+               'graduate': [],  # Graduates can't change status
+               'dropout': ['enrolled', 'inactive'],
+               'transferred': ['inactive'],
+               'inactive': ['enrolled', 'applicant'],
+           }
+
+           current_status = self.student.enrollment_status
+           if new_status not in valid_transitions.get(current_status, []):
+               raise ValidationError(
+                   f"Cannot change status from {current_status} to {new_status}"
+               )
+
+           return cleaned_data
+   ```
+2. Add enrollment workflow methods to Student model:
+   ```python
+   # Add to Student model in src/apps/constituents/models.py
+
+   def enroll(self, madrasah, grade_level, enrollment_date=None):
+       """Enroll student in a madrasah"""
+       from datetime import datetime
+
+       self.madrasah_name = madrasah.name
+       self.current_grade_level = grade_level
+       self.enrollment_status = self.EnrollmentStatus.ENROLLED
+       self.year_enrolled = enrollment_date.year if enrollment_date else datetime.now().year
+       self.save()
+
+   def graduate(self, graduation_date=None):
+       """Mark student as graduated"""
+       from datetime import datetime
+
+       self.enrollment_status = self.EnrollmentStatus.GRADUATE
+       self.year_graduated = graduation_date.year if graduation_date else datetime.now().year
+       self.save()
+
+   def transfer(self, new_madrasah):
+       """Transfer student to another madrasah"""
+       self.madrasah_name = new_madrasah.name
+       self.enrollment_status = self.EnrollmentStatus.TRANSFERRED
+       self.save()
+
+   def withdraw(self):
+       """Withdraw student (dropout)"""
+       self.enrollment_status = self.EnrollmentStatus.DROPOUT
+       self.save()
+
+   def is_currently_enrolled(self):
+       """Check if student is currently enrolled"""
+       return self.enrollment_status == self.EnrollmentStatus.ENROLLED
+
+   def can_enroll(self):
+       """Check if student can be enrolled"""
+       return self.enrollment_status in [
+           self.EnrollmentStatus.APPLICANT,
+           self.EnrollmentStatus.INACTIVE
+       ]
+   ```
+3. Create enrollment views in src/apps/constituents/views.py:
+   ```python
+   from django.contrib.auth.decorators import login_required
+   from django.contrib import messages
+   from django.shortcuts import render, redirect, get_object_or_404
+   from .models import Student
+   from .forms import StudentEnrollmentForm, StudentStatusChangeForm
+
+   @login_required
+   def enroll_student(request):
+       """View for enrolling a new student"""
+       if request.method == 'POST':
+           form = StudentEnrollmentForm(request.POST)
+           if form.is_valid():
+               student = form.save()
+               messages.success(
+                   request,
+                   f"Student {student.get_full_name()} enrolled successfully. "
+                   f"Student Number: {student.student_number}"
+               )
+               return redirect('student_detail', pk=student.pk)
+       else:
+           form = StudentEnrollmentForm()
+
+       return render(request, 'constituents/enroll_student.html', {
+           'form': form,
+           'title': 'Enroll New Student'
+       })
+
+   @login_required
+   def change_student_status(request, pk):
+       """View for changing student enrollment status"""
+       student = get_object_or_404(Student, pk=pk)
+
+       if request.method == 'POST':
+           form = StudentStatusChangeForm(student, request.POST)
+           if form.is_valid():
+               new_status = form.cleaned_data['new_status']
+               reason = form.cleaned_data['reason']
+
+               # Update status
+               student.enrollment_status = new_status
+               student.save()
+
+               # Log status change (optional - could use Django's logging)
+               messages.success(
+                   request,
+                   f"Student status changed to {student.get_enrollment_status_display()}"
+               )
+
+               return redirect('student_detail', pk=student.pk)
+       else:
+           form = StudentStatusChangeForm(student)
+
+       return render(request, 'constituents/change_student_status.html', {
+           'form': form,
+           'student': student,
+           'title': f'Change Status - {student.get_full_name()}'
+       })
+
+   @login_required
+   def student_list(request):
+       """List all students with filtering"""
+       students = Student.objects.all()
+
+       # Filter by enrollment status
+       status_filter = request.GET.get('status')
+       if status_filter:
+           students = students.filter(enrollment_status=status_filter)
+
+       # Filter by grade level
+       grade_filter = request.GET.get('grade')
+       if grade_filter:
+           students = students.filter(current_grade_level=grade_filter)
+
+       # Search
+       search_query = request.GET.get('search')
+       if search_query:
+           students = students.filter(
+               Q(first_name__icontains=search_query) |
+               Q(last_name__icontains=search_query) |
+               Q(student_number__icontains=search_query)
+           )
+
+       return render(request, 'constituents/student_list.html', {
+           'students': students,
+           'status_choices': Student.EnrollmentStatus.choices,
+           'title': 'Students'
+       })
+   ```
+4. Configure URLs in src/apps/constituents/urls.py:
+   ```python
+   from django.urls import path
+   from . import views
+
+   urlpatterns = [
+       path('students/', views.student_list, name='student_list'),
+       path('students/enroll/', views.enroll_student, name='enroll_student'),
+       path('students/<int:pk>/change-status/', views.change_student_status, name='change_student_status'),
+       # Add more student-related URLs as needed
+   ]
+   ```
+5. Test enrollment workflow:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py shell << 'EOF'
+   from apps.constituents.models import Student
+   from apps.chapters.models import Madrasah
+
+   # Test enrollment
+   student = Student.objects.create(
+       first_name="Test",
+       last_name="Student",
+       birth_date="2010-01-01",
+       gender="M",
+       father_name="Test Father",
+       enrollment_status=Student.EnrollmentStatus.APPLICANT
+   )
+
+   print(f"Created student: {student.student_number}")
+
+   # Test enroll method
+   madrasah = Madrasah.objects.first()
+   if madrasah:
+       student.enroll(madrasah, "Grade 1")
+       print(f"✓ Enrolled in {madrasah.name}")
+       print(f"✓ Status: {student.get_enrollment_status_display()}")
+
+   # Test status checks
+   print(f"✓ Currently enrolled: {student.is_currently_enrolled()}")
+
+   # Clean up
+   student.delete()
+   print("✓ Test student deleted")
+   EOF
+   ```
+
+## Acceptance Criteria:
+- Student enrollment form created
+- Enrollment status workflow defined
+- Status transition methods implemented
+- Enrollment views created
+- Enrollment URLs configured
+- Validation rules implemented
+- Enrollment confirmation emails (optional)
+- Enrollment tested end-to-end
+
+## Files Modified:
+- `src/apps/constituents/forms.py`
+- `src/apps/constituents/models.py (add workflow methods)`
+- `src/apps/constituents/views.py`
+- `src/apps/constituents/urls.py`
+
+## Important Notes:
+- Enrollment workflow includes status transitions
+- Validates status changes (e.g., can't change from graduate)
+- Auto-generates student numbers
+- Requires parent/guardian information
+- Template files will be created in task_071
+- Estimate: 1.5 hours
+
+## Testing:
+- [ ] Test enrollment form validation
+- [ ] Test status transition rules
+- [ ] Test student number generation
+- [ ] Test enrollment methods
+- [ ] Test URL routing
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection
+6. Access view URL and verify HTTP 200 response
+7. Test with different user permissions
+8. Verify context data passed to template
+9. Test any query parameters or filters

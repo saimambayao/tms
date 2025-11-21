@@ -1,0 +1,464 @@
+# Task ID: 069
+# Title: Update Student Admin Interface
+# Status: pending
+# Dependencies: 068
+# Priority: medium
+# Description: Enhance Django admin interface for Student model with improved list display, filters, search, actions, and inline editing. Make it easy for administra
+
+# Details:
+Enhance Django admin interface for Student model with improved list display, filters, search, actions, and inline editing. Make it easy for administrators to manage students, view enrollment status, and perform bulk operations.
+
+## Implementation Steps:
+1. Update Student admin in src/apps/constituents/admin.py:
+   ```python
+   from django.contrib import admin
+   from django.utils.html import format_html
+   from django.db.models import Q, Count
+   from .models import Student
+
+   @admin.register(Student)
+   class StudentAdmin(admin.ModelAdmin):
+       """Enhanced admin interface for Student model"""
+
+       # List Display
+       list_display = [
+           'student_number',
+           'full_name_display',
+           'enrollment_status_badge',
+           'current_grade_level',
+           'madrasah_name',
+           'guardian_info',
+           'created_at',
+       ]
+
+       # List Filters
+       list_filter = [
+           'enrollment_status',
+           'current_grade_level',
+           'madrasah_level',
+           'gender',
+           ('created_at', admin.DateFieldListFilter),
+           ('year_enrolled', admin.AllValuesFieldListFilter),
+       ]
+
+       # Search Fields
+       search_fields = [
+           'student_number',
+           'first_name',
+           'last_name',
+           'father_name',
+           'mother_name',
+           'guardian_name',
+           'madrasah_name',
+       ]
+
+       # Read-only Fields
+       readonly_fields = [
+           'student_number',
+           'created_at',
+           'updated_at',
+           'age_display',
+       ]
+
+       # Ordering
+       ordering = ['-created_at']
+
+       # Items per page
+       list_per_page = 50
+
+       # Fieldsets for organized form
+       fieldsets = (
+           ('Student Identification', {
+               'fields': (
+                   'student_number',
+                   'enrollment_status',
+                   'current_grade_level',
+               )
+           }),
+           ('Personal Information', {
+               'fields': (
+                   ('first_name', 'last_name'),
+                   'birth_date',
+                   'age_display',
+                   'gender',
+                   'address',
+               )
+           }),
+           ('Madrasah Education', {
+               'fields': (
+                   'madrasah_name',
+                   'madrasah_level',
+                   ('year_enrolled', 'year_graduated'),
+               )
+           }),
+           ('Family Information', {
+               'fields': (
+                   ('father_name', 'mother_name'),
+                   ('guardian_name', 'guardian_contact'),
+               )
+           }),
+           ('Additional Information', {
+               'classes': ('collapse',),
+               'fields': (
+                   'user',
+                   'created_at',
+                   'updated_at',
+               )
+           }),
+       )
+
+       # Custom display methods
+       @admin.display(description='Full Name', ordering='last_name')
+       def full_name_display(self, obj):
+           """Display full name with link"""
+           if hasattr(obj, 'get_full_name'):
+               return obj.get_full_name()
+           return f"{obj.first_name} {obj.last_name}"
+
+       @admin.display(description='Status')
+       def enrollment_status_badge(self, obj):
+           """Display enrollment status with colored badge"""
+           status_colors = {
+               'enrolled': '#10b981',      # green
+               'graduate': '#3b82f6',      # blue
+               'dropout': '#ef4444',       # red
+               'transferred': '#f59e0b',   # orange
+               'inactive': '#6b7280',      # gray
+               'applicant': '#8b5cf6',     # purple
+           }
+           color = status_colors.get(obj.enrollment_status, '#6b7280')
+           return format_html(
+               '<span style="background-color: {}; color: white; padding: 3px 10px; '
+               'border-radius: 3px; font-size: 11px; font-weight: bold;">{}</span>',
+               color,
+               obj.get_enrollment_status_display()
+           )
+
+       @admin.display(description='Guardian')
+       def guardian_info(self, obj):
+           """Display guardian/parent information"""
+           if obj.guardian_name:
+               return f"{obj.guardian_name}"
+           elif obj.father_name:
+               return f"{obj.father_name} (Father)"
+           elif obj.mother_name:
+               return f"{obj.mother_name} (Mother)"
+           return "-"
+
+       @admin.display(description='Age')
+       def age_display(self, obj):
+           """Calculate and display student age"""
+           if obj.birth_date:
+               from datetime import date
+               today = date.today()
+               age = today.year - obj.birth_date.year
+               if today.month < obj.birth_date.month or (
+                   today.month == obj.birth_date.month and today.day < obj.birth_date.day
+               ):
+                   age -= 1
+               return f"{age} years"
+           return "-"
+
+       # Custom Actions
+       actions = [
+           'mark_as_enrolled',
+           'mark_as_graduate',
+           'mark_as_inactive',
+           'export_student_list',
+       ]
+
+       @admin.action(description='Mark selected as Enrolled')
+       def mark_as_enrolled(self, request, queryset):
+           """Bulk action to mark students as enrolled"""
+           updated = queryset.update(enrollment_status=Student.EnrollmentStatus.ENROLLED)
+           self.message_user(
+               request,
+               f'{updated} student(s) marked as enrolled.'
+           )
+
+       @admin.action(description='Mark selected as Graduate')
+       def mark_as_graduate(self, request, queryset):
+           """Bulk action to mark students as graduates"""
+           from datetime import datetime
+           updated = queryset.update(
+               enrollment_status=Student.EnrollmentStatus.GRADUATE,
+               year_graduated=datetime.now().year
+           )
+           self.message_user(
+               request,
+               f'{updated} student(s) marked as graduate.'
+           )
+
+       @admin.action(description='Mark selected as Inactive')
+       def mark_as_inactive(self, request, queryset):
+           """Bulk action to mark students as inactive"""
+           updated = queryset.update(enrollment_status=Student.EnrollmentStatus.INACTIVE)
+           self.message_user(
+               request,
+               f'{updated} student(s) marked as inactive.'
+           )
+
+       @admin.action(description='Export student list to CSV')
+       def export_student_list(self, request, queryset):
+           """Export selected students to CSV"""
+           import csv
+           from django.http import HttpResponse
+           from datetime import datetime
+
+           response = HttpResponse(content_type='text/csv')
+           response['Content-Disposition'] = f'attachment; filename="students_{datetime.now().strftime("%Y%m%d")}.csv"'
+
+           writer = csv.writer(response)
+           writer.writerow([
+               'Student Number',
+               'First Name',
+               'Last Name',
+               'Birth Date',
+               'Gender',
+               'Enrollment Status',
+               'Current Grade',
+               'Madrasah',
+               'Father Name',
+               'Mother Name',
+               'Guardian Name',
+               'Guardian Contact',
+           ])
+
+           for student in queryset:
+               writer.writerow([
+                   student.student_number,
+                   student.first_name,
+                   student.last_name,
+                   student.birth_date,
+                   student.gender,
+                   student.get_enrollment_status_display(),
+                   student.current_grade_level,
+                   student.madrasah_name,
+                   student.father_name,
+                   student.mother_name,
+                   student.guardian_name,
+                   student.guardian_contact,
+               ])
+
+           self.message_user(
+               request,
+               f'{queryset.count()} student(s) exported to CSV.'
+           )
+
+           return response
+
+       # Override get_queryset for optimization
+       def get_queryset(self, request):
+           """Optimize queryset with select_related"""
+           qs = super().get_queryset(request)
+           return qs.select_related('user')
+
+       # Custom filter for enrollment status
+       def get_list_filter(self, request):
+           """Add custom filters"""
+           filters = list(self.list_filter)
+           filters.insert(0, EnrollmentStatusFilter)
+           return filters
+
+   class EnrollmentStatusFilter(admin.SimpleListFilter):
+       """Custom filter for enrollment status with counts"""
+       title = 'enrollment status'
+       parameter_name = 'enrollment_status'
+
+       def lookups(self, request, model_admin):
+           """Return filter options with counts"""
+           from django.db.models import Count
+
+           # Get counts for each status
+           counts = {}
+           for status, label in Student.EnrollmentStatus.choices:
+               count = Student.objects.filter(enrollment_status=status).count()
+               counts[status] = count
+
+           return [
+               (status, f"{label} ({counts[status]})")
+               for status, label in Student.EnrollmentStatus.choices
+           ]
+
+       def queryset(self, request, queryset):
+           """Filter queryset based on selected status"""
+           if self.value():
+               return queryset.filter(enrollment_status=self.value())
+           return queryset
+   ```
+2. Add custom admin views (optional):
+   ```python
+   # Add to StudentAdmin class
+
+   def get_urls(self):
+       """Add custom admin URLs"""
+       from django.urls import path
+       urls = super().get_urls()
+       custom_urls = [
+           path(
+               '<int:student_id>/change-status/',
+               self.admin_site.admin_view(self.change_status_view),
+               name='constituents_student_change_status',
+           ),
+       ]
+       return custom_urls + urls
+
+   def change_status_view(self, request, student_id):
+       """Custom view for changing student status"""
+       from django.shortcuts import render, redirect, get_object_or_404
+       from .forms import StudentStatusChangeForm
+
+       student = get_object_or_404(Student, pk=student_id)
+
+       if request.method == 'POST':
+           form = StudentStatusChangeForm(student, request.POST)
+           if form.is_valid():
+               new_status = form.cleaned_data['new_status']
+               student.enrollment_status = new_status
+               student.save()
+
+               self.message_user(
+                   request,
+                   f'Status changed to {student.get_enrollment_status_display()}'
+               )
+               return redirect('admin:constituents_student_change', student_id)
+       else:
+           form = StudentStatusChangeForm(student)
+
+       context = {
+           'title': f'Change Status - {student.get_full_name()}',
+           'student': student,
+           'form': form,
+           'opts': self.model._meta,
+       }
+
+       return render(request, 'admin/constituents/student_change_status.html', context)
+   ```
+3. Test admin interface:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py shell << 'EOF'
+   from django.contrib.admin.sites import site
+   from apps.constituents.models import Student
+   from apps.constituents.admin import StudentAdmin
+
+   # Verify admin is registered
+   if Student in site._registry:
+       admin_class = site._registry[Student]
+       print(f"✓ Student admin registered: {admin_class.__name__}")
+
+       # Test list_display
+       print(f"✓ List display fields: {len(admin_class.list_display)}")
+
+       # Test filters
+       print(f"✓ List filters: {len(admin_class.list_filter)}")
+
+       # Test search fields
+       print(f"✓ Search fields: {len(admin_class.search_fields)}")
+
+       # Test actions
+       print(f"✓ Custom actions: {len(admin_class.actions)}")
+   else:
+       print("✗ Student admin not registered")
+   EOF
+   ```
+4. Create admin test script:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/scripts/test_student_admin.py << 'EOF'
+   #!/usr/bin/env python
+   """Test Student admin interface functionality"""
+
+   import os
+   import sys
+   import django
+
+   sys.path.insert(0, '/Users/saidamenmambayao/apps/madaris-ms/src')
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   from django.contrib.admin.sites import site
+   from apps.constituents.models import Student
+
+   print("Testing Student Admin Interface")
+   print("=" * 60)
+
+   admin_class = site._registry[Student]
+
+   # Test queryset optimization
+   print("\n1. Testing queryset optimization...")
+   from django.test import RequestFactory
+   factory = RequestFactory()
+   request = factory.get('/admin/constituents/student/')
+   qs = admin_class.get_queryset(request)
+   print(f"✓ Queryset retrieved")
+
+   # Test display methods
+   print("\n2. Testing display methods...")
+   student = Student.objects.first()
+   if student:
+       print(f"✓ full_name_display: {admin_class.full_name_display(admin_class, student)}")
+       print(f"✓ enrollment_status_badge: HTML generated")
+       print(f"✓ guardian_info: {admin_class.guardian_info(admin_class, student)}")
+       print(f"✓ age_display: {admin_class.age_display(admin_class, student)}")
+
+   print("\n✓ All admin tests passed")
+   EOF
+   chmod +x /Users/saidamenmambayao/apps/madaris-ms/scripts/test_student_admin.py
+   ```
+5. Run admin tests:
+   ```bash
+   python /Users/saidamenmambayao/apps/madaris-ms/scripts/test_student_admin.py
+   ```
+
+## Acceptance Criteria:
+- Admin list display optimized
+- Custom filters implemented
+- Search fields configured
+- Custom admin actions added
+- Inline editing for related models
+- Fieldsets organized logically
+- Read-only fields set
+- Custom methods for display
+- Export functionality added
+
+## Files Modified:
+- `src/apps/constituents/admin.py`
+- `scripts/test_student_admin.py`
+
+## Important Notes:
+- Enhanced list display with custom methods
+- Colored status badges for visual clarity
+- Bulk actions for common operations
+- CSV export functionality
+- Custom filters with counts
+- Optimized queries with select_related
+- Organized fieldsets for better UX
+- Estimate: 1 hour
+
+## Testing:
+- [ ] Test list display renders correctly
+- [ ] Test filters work properly
+- [ ] Test search functionality
+- [ ] Test bulk actions
+- [ ] Test CSV export
+- [ ] Test custom display methods
+- [ ] Verify queryset optimization
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Login to Django admin as superuser
+11. Verify models appear in admin interface
+12. Test create, read, update, delete operations
+13. Verify list display, filters, and search work
+14. Access view URL and verify HTTP 200 response
+15. Test with different user permissions
+16. Verify context data passed to template
+17. Test any query parameters or filters

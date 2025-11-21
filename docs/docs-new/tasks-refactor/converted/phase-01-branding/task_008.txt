@@ -1,0 +1,61 @@
+# Task ID: 008
+# Title: Update PWA Manifest for Tarbiyyah Branding
+# Status: pending
+# Dependencies: 007
+# Priority: medium
+# Description: Update Progressive Web App (PWA) manifest.json file to reflect Tarbiyyah Management System branding, replacing BM Parliament references.
+
+# Details:
+Update Progressive Web App (PWA) manifest.json file to reflect Tarbiyyah Management System branding, replacing BM Parliament references.
+
+## Implementation Steps:
+1. Locate manifest.json file:
+   ```bash
+   find /Users/saidamenmambayao/apps/madaris-ms -name "manifest.json"
+   ```
+2. Backup original manifest:
+   ```bash
+   cp manifest.json manifest.json.backup
+   ```
+3. Update manifest.json:
+   ```json
+   {
+     "name": "Tarbiyyah Management System",
+     "short_name": "TMS",
+     "description": "Islamic Education Management System for BARMM Madaris",
+     "start_url": "/",
+     "display": "standalone",
+     "background_color": "#ffffff",
+     "theme_color": "#047857",
+     "icons": [
+       ...existing icons...
+     ]
+   }
+   ```
+4. Clear browser cache and test PWA installation
+5. Verify manifest loads correctly: `/manifest.json`
+
+## Acceptance Criteria:
+- manifest.json file located and backed up
+- name field updated to "Tarbiyyah Management System"
+- short_name updated to "TMS"
+- description updated to reflect Islamic education focus
+- theme_color and background_color updated if needed
+- App installs correctly on mobile devices with new name
+- Test PWA installation on iOS and Android
+
+## Files Modified:
+- `src/static/manifest.json (or templates/manifest.json)`
+- `manifest.json.backup (new backup file)`
+
+## Important Notes:
+- Manifest affects how app appears when installed on home screen
+- Keep existing icon paths unless logos are also updated
+- Test on both iOS Safari and Chrome Android
+- Estimate: 20 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin

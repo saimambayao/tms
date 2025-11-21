@@ -1,0 +1,314 @@
+# Task ID: 120
+# Title: Add Accessibility Features
+# Status: pending
+# Dependencies: 119
+# Priority: medium
+# Description: Comprehensive accessibility audit and improvements to ensure TMS is usable by people with disabilities. Implement WCAG 2.1 Level AA compliance for all
+
+# Details:
+Comprehensive accessibility audit and improvements to ensure TMS is usable by people with disabilities. Implement WCAG 2.1 Level AA compliance for all templates.
+
+## Implementation Steps:
+1. Install accessibility testing tools:
+   ```bash
+   # Browser extensions
+   # - axe DevTools (Chrome/Firefox)
+   # - WAVE (Web Accessibility Evaluation Tool)
+   # - Lighthouse (Chrome DevTools)
+   ```
+2. Run automated accessibility scan:
+   ```bash
+   # Using Lighthouse in Chrome DevTools
+   # Navigate to page > F12 > Lighthouse > Accessibility audit
+   # Generate report for each major page
+   ```
+3. Add skip navigation link:
+   ```html
+   <!-- src/templates/base.html -->
+   <a href="#main-content" class="skip-link sr-only focus:not-sr-only">
+     Skip to main content
+   </a>
+
+   <main id="main-content" tabindex="-1">
+     {% block content %}{% endblock %}
+   </main>
+   ```
+   ```css
+   .skip-link {
+     position: absolute;
+     top: -40px;
+     left: 0;
+     background: #000;
+     color: #fff;
+     padding: 8px;
+     z-index: 100;
+   }
+   .skip-link:focus {
+     top: 0;
+   }
+   ```
+4. Add ARIA landmarks to base template:
+   ```html
+   <header role="banner">
+     <nav role="navigation" aria-label="Main navigation">
+       <!-- Navigation content -->
+     </nav>
+   </header>
+
+   <main role="main" id="main-content">
+     {% block content %}{% endblock %}
+   </main>
+
+   <aside role="complementary" aria-label="Sidebar">
+     <!-- Sidebar content -->
+   </aside>
+
+   <footer role="contentinfo">
+     <!-- Footer content -->
+   </footer>
+   ```
+5. Audit and fix form accessibility:
+   ```html
+   <!-- Ensure all inputs have labels -->
+   <div class="form-group">
+     <label for="student-name" class="form-label">
+       Student Name <span class="required" aria-label="required">*</span>
+     </label>
+     <input type="text"
+            id="student-name"
+            name="student_name"
+            class="form-control"
+            aria-required="true"
+            aria-describedby="name-help">
+     <small id="name-help" class="form-text">
+       Enter student's full name in Arabic or English
+     </small>
+   </div>
+
+   <!-- Error messages -->
+   <div class="form-group">
+     <label for="email">Email</label>
+     <input type="email"
+            id="email"
+            name="email"
+            class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+            aria-invalid="{% if form.email.errors %}true{% else %}false{% endif %}"
+            aria-describedby="email-error">
+     {% if form.email.errors %}
+       <div id="email-error" class="invalid-feedback" role="alert">
+         {{ form.email.errors.0 }}
+       </div>
+     {% endif %}
+   </div>
+   ```
+6. Add alt text to all images:
+   ```bash
+   # Find images without alt text
+   grep -r "<img" /Users/saidamenmambayao/apps/madaris-ms/src/apps/*/templates --include="*.html" | grep -v "alt="
+   ```
+   ```html
+   <!-- Add descriptive alt text -->
+   <img src="{% static 'images/logo.png' %}"
+        alt="Tarbiyyah Management System Logo">
+
+   <!-- Decorative images -->
+   <img src="{% static 'images/decorative-pattern.png' %}"
+        alt=""
+        role="presentation">
+   ```
+7. Check color contrast:
+   ```bash
+   # Use browser DevTools or WebAIM Contrast Checker
+   # Minimum ratios:
+   # - Normal text: 4.5:1
+   # - Large text (18pt+): 3:1
+   # - UI components: 3:1
+   ```
+   - Update colors if needed in CSS/Tailwind config
+8. Ensure keyboard navigation:
+   ```html
+   <!-- All interactive elements should be keyboard accessible -->
+   <button type="button"
+           class="btn btn-primary"
+           aria-label="Register new madrasah">
+     Register Madrasah
+   </button>
+
+   <!-- Custom interactive elements need tabindex and keyboard handlers -->
+   <div class="custom-dropdown"
+        role="button"
+        tabindex="0"
+        aria-haspopup="true"
+        aria-expanded="false">
+     Select Province
+   </div>
+   ```
+9. Add visible focus indicators:
+   ```css
+   /* Ensure focus is visible */
+   a:focus, button:focus, input:focus, select:focus, textarea:focus {
+     outline: 2px solid #4F46E5;
+     outline-offset: 2px;
+   }
+
+   /* Don't remove focus outline */
+   *:focus {
+     outline: none; /* ❌ BAD - Never do this */
+   }
+   ```
+10. Fix heading hierarchy:
+    ```html
+    <!-- Ensure logical heading order -->
+    <h1>Madrasah Management</h1>
+      <h2>Active Madaris</h2>
+        <h3>Lanao del Sur</h3>
+          <h4>Madrasah Al-Furqan</h4>
+      <h2>Registration</h2>
+
+    <!-- ❌ Bad - skips h2 -->
+    <h1>Page Title</h1>
+      <h3>Section</h3> <!-- Should be h2 -->
+    ```
+11. Add table accessibility:
+    ```html
+    <table class="table" role="table">
+      <caption class="sr-only">List of registered madaris in BARMM</caption>
+      <thead>
+        <tr>
+          <th scope="col">Madrasah Name</th>
+          <th scope="col">Province</th>
+          <th scope="col">Municipality</th>
+          <th scope="col">Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Madrasah Al-Furqan</td>
+          <td>Lanao del Sur</td>
+          <td>Marawi City</td>
+          <td>Active</td>
+        </tr>
+      </tbody>
+    </table>
+    ```
+12. Add ARIA labels to interactive elements:
+    ```html
+    <!-- Search -->
+    <form role="search" aria-label="Search madaris">
+      <input type="search"
+             aria-label="Search by madrasah name"
+             placeholder="Search...">
+    </form>
+
+    <!-- Pagination -->
+    <nav aria-label="Pagination navigation">
+      <ul class="pagination">
+        <li><a href="?page=1" aria-label="First page">First</a></li>
+        <li><a href="?page=2" aria-label="Page 2">2</a></li>
+        <li><a href="?page=3" aria-label="Page 3" aria-current="page">3</a></li>
+      </ul>
+    </nav>
+    ```
+13. Add screen reader only utility class:
+    ```css
+    /* For screen readers only - not visible but accessible */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border-width: 0;
+    }
+
+    .sr-only.focus\:not-sr-only:focus {
+      position: static;
+      width: auto;
+      height: auto;
+      padding: inherit;
+      margin: inherit;
+      overflow: visible;
+      clip: auto;
+      white-space: normal;
+    }
+    ```
+14. Test with screen reader:
+    - **Windows**: NVDA (free) or JAWS
+    - **macOS**: VoiceOver (built-in, Cmd+F5)
+    - **Linux**: Orca
+    - Navigate through key pages
+    - Verify all content is announced
+    - Check form submission flow
+15. Create accessibility checklist:
+    ```markdown
+    # WCAG 2.1 Level AA Checklist
+
+    ## Perceivable
+    - [ ] All images have alt text
+    - [ ] Color is not the only visual means of conveying information
+    - [ ] Text has sufficient contrast (4.5:1)
+
+    ## Operable
+    - [ ] All functionality available from keyboard
+    - [ ] No keyboard traps
+    - [ ] Skip navigation link provided
+    - [ ] Heading structure logical
+
+    ## Understandable
+    - [ ] Page language specified (lang="en")
+    - [ ] Form labels and instructions clear
+    - [ ] Error messages helpful and specific
+
+    ## Robust
+    - [ ] Valid HTML
+    - [ ] ARIA used correctly
+    - [ ] Compatible with assistive technologies
+    ```
+16. Generate accessibility report:
+    - Run Lighthouse audit on 10+ key pages
+    - Document score for each page
+    - List issues found and fixes applied
+    - Target: 90+ accessibility score on all pages
+
+## Acceptance Criteria:
+- All images have descriptive alt text
+- Form fields have proper labels and ARIA attributes
+- Color contrast meets WCAG AA standards (4.5:1 for normal text)
+- Keyboard navigation works throughout site
+- Focus indicators visible on all interactive elements
+- ARIA landmarks added to templates
+- Skip navigation link implemented
+- Error messages accessible to screen readers
+- Tables have proper headers and captions
+- Heading hierarchy logical (h1 > h2 > h3)
+- No accessibility errors in automated testing
+
+## Files Modified:
+- `src/templates/base.html`
+- `src/templates/components/*.html`
+- `src/static/css/accessibility.css (create)`
+- `src/apps/*/templates/*.html (all templates)`
+- `docs/docs-new/phase-12-audit/ACCESSIBILITY_REPORT.md (created)`
+
+## Important Notes:
+- Accessibility benefits everyone, not just users with disabilities
+- Many improvements also help SEO
+- Test with actual assistive technologies when possible
+- WCAG 2.1 Level AA is the legal standard in many jurisdictions
+- Arabic text direction (RTL) adds accessibility considerations
+- Use semantic HTML elements (nav, main, aside) when possible
+- Consider users with:
+  - Visual impairments (screen readers, low vision)
+  - Motor disabilities (keyboard-only navigation)
+  - Cognitive disabilities (clear language, consistent navigation)
+  - Hearing impairments (captions for videos)
+- Estimate: 150 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable

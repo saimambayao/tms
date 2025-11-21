@@ -1,0 +1,77 @@
+# Task ID: 015
+# Title: Verify Phase 1 Branding Complete
+# Status: pending
+# Dependencies: 008, 009, 010, 012, 013, 014
+# Priority: high
+# Description: Comprehensive verification that all Phase 1 branding updates are complete and functional. No database changes should exist yet - only UI/template upda
+
+# Details:
+Comprehensive verification that all Phase 1 branding updates are complete and functional. No database changes should exist yet - only UI/template updates.
+
+## Implementation Steps:
+1. Start development server:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py runserver
+   ```
+2. Test home page (http://localhost:8000):
+   - Verify logo displays
+   - Check page title in browser tab
+   - Confirm welcome message shows TMS
+3. Test navigation menu:
+   - Click "Madaris" link (should work)
+   - Click "Students" link (should work)
+   - Verify dropdown menus use new terminology
+4. Check PWA manifest:
+   ```bash
+   curl http://localhost:8000/manifest.json | jq .
+   ```
+5. Search for remaining "BM Parliament" references:
+   ```bash
+   grep -r "BM Parliament" /Users/saidamenmambayao/apps/madaris-ms/src/templates/ --include="*.html" | wc -l
+   # Should be 0 or minimal (only in comments)
+   ```
+6. Verify context processor works in Django shell:
+   ```python
+   python manage.py shell
+   from django.test import RequestFactory
+   from config.context_processors import tarbiyyah_branding
+   request = RequestFactory().get('/')
+   context = tarbiyyah_branding(request)
+   print(context)
+   # Should show all branding variables
+   ```
+7. Check no migrations were created:
+   ```bash
+   git status
+   # Should NOT show new migration files
+   ```
+8. Test mobile view (responsive design)
+9. Test on different browsers (Chrome, Firefox, Safari)
+
+## Acceptance Criteria:
+- PWA manifest shows "Tarbiyyah Management System"
+- Logos and favicons display correctly
+- Base template uses context processor variables
+- Navigation shows Madaris/Students terminology
+- Home page displays Tarbiyyah welcome message
+- Page titles in browser tabs show new branding
+- No "BM Parliament" text visible on public pages
+- Context processor accessible in all templates
+- No database migrations created in Phase 1
+- Site runs without errors
+
+## Files Modified:
+- `None - verification task only`
+
+## Important Notes:
+- This is a checkpoint before moving to Phase 2 (database changes)
+- Document any issues found in notes
+- All issues must be resolved before proceeding to task_016
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable

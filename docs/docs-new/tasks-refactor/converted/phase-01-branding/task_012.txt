@@ -1,0 +1,71 @@
+# Task ID: 012
+# Title: Update Core Announcement Categories
+# Status: pending
+# Dependencies: 007
+# Priority: high
+# Description: Update announcement categories in apps/core/models.py to reflect Tarbiyyah/education context instead of parliamentary context.
+
+# Details:
+Update announcement categories in apps/core/models.py to reflect Tarbiyyah/education context instead of parliamentary context.
+
+## Implementation Steps:
+1. Open core models file:
+   ```bash
+   code /Users/saidamenmambayao/apps/madaris-ms/src/apps/core/models.py
+   ```
+2. Update Announcement.Category choices:
+   ```python
+   class Category(models.TextChoices):
+       GENERAL = 'general', 'General Announcement'
+       ACADEMIC = 'academic', 'Academic Notice'
+       ENROLLMENT = 'enrollment', 'Enrollment/Registration'
+       EXAM = 'exam', 'Examination Notice'
+       EVENT = 'event', 'School Event'
+       HOLIDAY = 'holiday', 'Holiday/Break Notice'
+       EMERGENCY = 'emergency', 'Emergency Alert'
+       MAINTENANCE = 'maintenance', 'System Maintenance'
+       TRAINING = 'training', 'Teacher Training'
+       ACCREDITATION = 'accreditation', 'Accreditation Notice'  # Accreditation by MBHTE
+   ```
+3. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations core
+   ```
+4. Review migration file (should be data-safe, only adding choices)
+5. Apply migration to staging database first:
+   ```bash
+   python manage.py migrate core --database=staging
+   ```
+6. Test in Django admin - create announcement with new category
+7. Verify existing announcements still display correctly
+
+## Acceptance Criteria:
+- Announcement model located in core app
+- Category choices updated with education-relevant options
+- Migration file created for category changes
+- Existing announcements remain functional
+- New categories available in admin interface
+- Test creating announcement with new categories
+
+## Files Modified:
+- `src/apps/core/models.py`
+- `src/apps/core/migrations/000X_update_announcement_categories.py`
+
+## Important Notes:
+- Keep 'general' category for backward compatibility
+- Old category values remain valid (no data migration needed)
+- New categories are additive only
+- ACCREDITATION category is for announcements about accreditation by MBHTE (Ministry of Basic, Higher, and Technical Education)
+- Tarbiyyah Committee coordinates accreditation process and makes announcements
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin

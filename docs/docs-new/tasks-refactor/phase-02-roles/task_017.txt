@@ -1,0 +1,98 @@
+# Task ID: 017
+# Title: Create Migration to Rename COORDINATOR to MADRASAH_ADMIN
+# Status: pending
+# Dependencies: 016
+# Priority: high
+# Description: Create data migration to update existing users with role='coordinator' to role='madrasah_admin'. This preserves user data while transitioning to new t
+
+# Details:
+Create data migration to update existing users with role='coordinator' to role='madrasah_admin'. This preserves user data while transitioning to new terminology.
+
+## Implementation Steps:
+1. Create empty migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations users --empty --name rename_coordinator_to_madrasah_admin
+   ```
+2. Edit migration file with data migration:
+   ```python
+   from django.db import migrations
+
+   def rename_coordinator_role(apps, schema_editor):
+       User = apps.get_model('users', 'User')
+       coordinator_count = User.objects.filter(role='coordinator').count()
+       print(f"Updating {coordinator_count} coordinator users to madrasah_admin")
+
+       updated = User.objects.filter(role='coordinator').update(role='madrasah_admin')
+       print(f"Successfully updated {updated} users")
+
+   def reverse_rename(apps, schema_editor):
+       User = apps.get_model('users', 'User')
+       User.objects.filter(role='madrasah_admin').update(role='coordinator')
+
+   class Migration(migrations.Migration):
+       dependencies = [
+           ('users', '000X_add_tarbiyyah_roles'),  # Previous migration
+       ]
+
+       operations = [
+           migrations.RunPython(
+               rename_coordinator_role,
+               reverse_code=reverse_rename
+           ),
+       ]
+   ```
+3. Test migration on staging database:
+   ```bash
+   python manage.py migrate users --database=staging
+   ```
+4. Verify in Django shell:
+   ```python
+   from apps.users.models import User
+   # Should return 0
+   print(User.objects.filter(role='coordinator').count())
+   # Should show previous coordinator count
+   print(User.objects.filter(role='madrasah_admin').count())
+   ```
+5. Test reverse migration:
+   ```bash
+   python manage.py migrate users <previous_migration_number> --database=staging
+   ```
+6. Re-apply migration:
+   ```bash
+   python manage.py migrate users --database=staging
+   ```
+
+## Acceptance Criteria:
+- Data migration file created
+- Migration updates all coordinator users to madrasah_admin
+- Reverse migration restores coordinator role
+- Count of affected users logged
+- Migration tested on staging database
+- No user data lost
+- User permissions remain unchanged
+
+## Files Modified:
+- `src/apps/users/migrations/000X_rename_coordinator_to_madrasah_admin.py`
+
+## Important Notes:
+- Data migration is reversible (important for rollback)
+- Log count of affected users for verification
+- Test both forward and reverse migration
+- Keep coordinator choice in Role enum temporarily for safety
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Verify new roles appear in Django admin dropdown
+7. Create test users with new roles
+8. Verify permissions work correctly
+9. Test role-based access control
+10. Login to Django admin as superuser
+11. Verify models appear in admin interface
+12. Test create, read, update, delete operations
+13. Verify list display, filters, and search work

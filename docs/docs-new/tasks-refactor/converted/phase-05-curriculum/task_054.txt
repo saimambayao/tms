@@ -1,0 +1,380 @@
+# Task ID: 054
+# Title: Create LessonPlan Model
+# Status: pending
+# Dependencies: 050, 052
+# Priority: medium
+# Description: Create the LessonPlan model to allow teachers (Asatidz) to create, store, and manage their lesson plans. This model provides a resource library for te
+
+# Details:
+Create the LessonPlan model to allow teachers (Asatidz) to create, store, and manage their lesson plans. This model provides a resource library for teachers to document their teaching plans and share best practices.
+
+## Implementation Steps:
+1. Add LessonPlan model to apps/curriculum/models.py:
+   ```python
+   from django.core.validators import FileExtensionValidator
+
+   class LessonPlan(models.Model):
+       """
+       Lesson plan created by teachers for specific subjects.
+       Serves as a teaching resource and documentation.
+       """
+
+       class Status(models.TextChoices):
+           DRAFT = 'draft', _('Draft')
+           SUBMITTED = 'submitted', _('Submitted for Review')
+           APPROVED = 'approved', _('Approved')
+           NEEDS_REVISION = 'needs_revision', _('Needs Revision')
+           ARCHIVED = 'archived', _('Archived')
+
+       class GradeLevel(models.TextChoices):
+           """Grade level options"""
+           GRADE_1 = 'grade_1', _('Grade 1')
+           GRADE_2 = 'grade_2', _('Grade 2')
+           GRADE_3 = 'grade_3', _('Grade 3')
+           GRADE_4 = 'grade_4', _('Grade 4')
+           GRADE_5 = 'grade_5', _('Grade 5')
+           GRADE_6 = 'grade_6', _('Grade 6')
+           GRADE_7 = 'grade_7', _('Grade 7')
+           GRADE_8 = 'grade_8', _('Grade 8')
+           GRADE_9 = 'grade_9', _('Grade 9')
+           GRADE_10 = 'grade_10', _('Grade 10')
+           GRADE_11 = 'grade_11', _('Grade 11')
+           GRADE_12 = 'grade_12', _('Grade 12')
+
+       # Basic Information
+       title = models.CharField(
+           max_length=255,
+           help_text=_('Lesson plan title')
+       )
+       subject = models.ForeignKey(
+           Subject,
+           on_delete=models.CASCADE,
+           related_name='lesson_plans',
+           help_text=_('Subject this lesson plan is for')
+       )
+       teacher = models.ForeignKey(
+           'users.User',
+           on_delete=models.CASCADE,
+           related_name='lesson_plans',
+           limit_choices_to={'role': 'asatidz'},
+           help_text=_('Teacher who created this lesson plan')
+       )
+       grade_level = models.CharField(
+           max_length=20,
+           choices=GradeLevel.choices,
+           help_text=_('Target grade level')
+       )
+
+       # Content
+       description = models.TextField(
+           help_text=_('Brief description of the lesson')
+       )
+       learning_objectives = models.JSONField(
+           default=list,
+           help_text=_('List of learning objectives/outcomes')
+       )
+       content = models.TextField(
+           help_text=_('Detailed lesson plan content')
+       )
+       teaching_methods = models.TextField(
+           blank=True,
+           help_text=_('Teaching methods and strategies to be used')
+       )
+       assessment_methods = models.TextField(
+           blank=True,
+           help_text=_('How student learning will be assessed')
+       )
+       materials_needed = models.JSONField(
+           default=list,
+           help_text=_('List of materials and resources needed')
+       )
+
+       # Duration
+       duration_minutes = models.PositiveIntegerField(
+           default=60,
+           help_text=_('Expected duration in minutes')
+       )
+
+       # Attachments
+       attachment = models.FileField(
+           upload_to='curriculum/lesson_plans/%Y/%m/',
+           blank=True,
+           null=True,
+           validators=[
+               FileExtensionValidator(
+                   allowed_extensions=['pdf', 'doc', 'docx', 'ppt', 'pptx', 'jpg', 'png']
+               )
+           ],
+           help_text=_('Additional materials (PDF, Word, PowerPoint, images)')
+       )
+
+       # Islamic Education Specifics
+       quranic_references = models.TextField(
+           blank=True,
+           help_text=_('Relevant Quranic verses and references')
+       )
+       hadith_references = models.TextField(
+           blank=True,
+           help_text=_('Relevant Hadith references')
+       )
+
+       # Review and Approval
+       status = models.CharField(
+           max_length=20,
+           choices=Status.choices,
+           default=Status.DRAFT,
+           help_text=_('Current status of the lesson plan')
+       )
+       reviewed_by = models.ForeignKey(
+           'users.User',
+           on_delete=models.SET_NULL,
+           null=True,
+           blank=True,
+           related_name='lesson_plans_reviewed',
+           help_text=_('Administrator who reviewed this plan')
+       )
+       review_notes = models.TextField(
+           blank=True,
+           help_text=_('Reviewer comments and feedback')
+       )
+       approved_at = models.DateTimeField(
+           null=True,
+           blank=True,
+           help_text=_('Date and time of approval')
+       )
+
+       # Usage Tracking
+       madrasah = models.ForeignKey(
+           'madaris.Madrasah',
+           on_delete=models.CASCADE,
+           related_name='lesson_plans',
+           help_text=_('Madrasah where this lesson plan is used')
+       )
+       academic_year = models.CharField(
+           max_length=20,
+           help_text=_('Academic year (e.g., "2024-2025")')
+       )
+       semester = models.CharField(
+           max_length=50,
+           blank=True,
+           help_text=_('Semester or term')
+       )
+
+       # Sharing
+       is_public = models.BooleanField(
+           default=False,
+           help_text=_('Allow other teachers to view this lesson plan?')
+       )
+       is_template = models.BooleanField(
+           default=False,
+           help_text=_('Mark as a reusable template?')
+       )
+
+       # Metadata
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'curriculum_lesson_plan'
+           verbose_name = _('Lesson Plan')
+           verbose_name_plural = _('Lesson Plans')
+           ordering = ['-created_at']
+           indexes = [
+               models.Index(fields=['teacher', 'subject']),
+               models.Index(fields=['grade_level']),
+               models.Index(fields=['status']),
+               models.Index(fields=['madrasah', 'academic_year']),
+           ]
+           permissions = [
+               ('approve_lesson_plan', 'Can approve lesson plans'),
+               ('view_all_lesson_plans', 'Can view all lesson plans'),
+           ]
+
+       def __str__(self):
+           return f"{self.title} - {self.subject.code} ({self.grade_level})"
+
+       def get_duration_display(self):
+           """Return human-readable duration."""
+           hours = self.duration_minutes // 60
+           minutes = self.duration_minutes % 60
+           if hours > 0:
+               return f"{hours}h {minutes}min"
+           return f"{minutes} minutes"
+
+       def is_editable_by(self, user):
+           """Check if user can edit this lesson plan."""
+           if user == self.teacher:
+               return True
+           if user.role in ['tarbiyyah_admin', 'madrasah_admin', 'muder']:
+               return True
+           return False
+
+       def submit_for_review(self):
+           """Change status to submitted."""
+           self.status = self.Status.SUBMITTED
+           self.save()
+
+       def approve(self, reviewer, notes=''):
+           """Approve the lesson plan."""
+           from django.utils import timezone
+           self.status = self.Status.APPROVED
+           self.reviewed_by = reviewer
+           self.review_notes = notes
+           self.approved_at = timezone.now()
+           self.save()
+   ```
+
+2. Create migration:
+   ```bash
+   python manage.py makemigrations curriculum
+   ```
+
+3. Update admin.py to register LessonPlan:
+   ```python
+   from .models import Subject, CurriculumFramework, CurriculumSubject, LessonPlan
+
+   @admin.register(LessonPlan)
+   class LessonPlanAdmin(admin.ModelAdmin):
+       list_display = [
+           'title', 'subject', 'teacher', 'grade_level',
+           'madrasah', 'status', 'is_public', 'created_at'
+       ]
+       list_filter = [
+           'status', 'grade_level', 'is_public',
+           'is_template', 'madrasah', 'academic_year'
+       ]
+       search_fields = [
+           'title', 'description', 'content',
+           'teacher__first_name', 'teacher__last_name'
+       ]
+       autocomplete_fields = ['subject', 'teacher', 'madrasah', 'reviewed_by']
+       readonly_fields = ['created_at', 'updated_at', 'approved_at']
+
+       fieldsets = (
+           ('Basic Information', {
+               'fields': (
+                   'title', 'subject', 'teacher', 'grade_level',
+                   'madrasah', 'academic_year', 'semester'
+               )
+           }),
+           ('Content', {
+               'fields': (
+                   'description', 'learning_objectives', 'content',
+                   'teaching_methods', 'assessment_methods',
+                   'materials_needed', 'duration_minutes'
+               )
+           }),
+           ('Islamic Education References', {
+               'fields': ('quranic_references', 'hadith_references'),
+               'classes': ('collapse',)
+           }),
+           ('Attachments', {
+               'fields': ('attachment',)
+           }),
+           ('Review and Approval', {
+               'fields': (
+                   'status', 'reviewed_by', 'review_notes', 'approved_at'
+               )
+           }),
+           ('Sharing Options', {
+               'fields': ('is_public', 'is_template')
+           }),
+           ('Metadata', {
+               'fields': ('created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+
+       actions = ['approve_lesson_plans', 'archive_lesson_plans']
+
+       def approve_lesson_plans(self, request, queryset):
+           """Bulk approve lesson plans."""
+           from django.utils import timezone
+           count = queryset.update(
+               status='approved',
+               reviewed_by=request.user,
+               approved_at=timezone.now()
+           )
+           self.message_user(request, f'{count} lesson plan(s) approved.')
+       approve_lesson_plans.short_description = 'Approve selected lesson plans'
+
+       def archive_lesson_plans(self, request, queryset):
+           """Bulk archive lesson plans."""
+           count = queryset.update(status='archived')
+           self.message_user(request, f'{count} lesson plan(s) archived.')
+       archive_lesson_plans.short_description = 'Archive selected lesson plans'
+   ```
+
+4. Run migration:
+   ```bash
+   python manage.py migrate curriculum
+   ```
+
+5. Test in Django shell:
+   ```python
+   from apps.curriculum.models import LessonPlan, Subject
+   from apps.users.models import User
+   from apps.madaris.models import Madrasah
+
+   # Get teacher and subject
+   teacher = User.objects.filter(role='asatidz').first()
+   subject = Subject.objects.first()
+   madrasah = Madrasah.objects.first()
+
+   # Create lesson plan
+   lesson_plan = LessonPlan.objects.create(
+       title='Introduction to Tajweed Rules',
+       subject=subject,
+       teacher=teacher,
+       grade_level='grade_1',
+       description='Basic introduction to Tajweed for beginners',
+       learning_objectives=[
+           'Understand basic Tajweed concepts',
+           'Learn correct pronunciation of Arabic letters'
+       ],
+       content='Detailed lesson content here...',
+       duration_minutes=60,
+       madrasah=madrasah,
+       academic_year='2024-2025',
+       status='draft'
+   )
+
+   print(lesson_plan)
+   print(f"Duration: {lesson_plan.get_duration_display()}")
+   ```
+
+6. Verify in Django admin
+
+## Acceptance Criteria:
+- LessonPlan model created with all required fields
+- Model links to User (teacher) and Subject
+- Support for learning objectives and activities
+- File attachment support for lesson materials
+- Status workflow implemented (draft, approved, archived)
+- Meta class and permissions configured
+- Model migrations created and applied
+- Model registered in Django admin
+
+## Files Modified:
+- `apps/curriculum/models.py (add LessonPlan model)`
+- `apps/curriculum/admin.py (register LessonPlan with actions)`
+- `apps/curriculum/migrations/0003_lesson_plan.py (new migration)`
+
+## Important Notes:
+- Lesson plans support Islamic education references (Quran, Hadith)
+- File attachments allow teachers to upload supplementary materials
+- Status workflow enables review and approval process
+- JSONField used for flexible learning objectives and materials lists
+- Teachers can share plans publicly or keep them private
+- Template feature allows reusable lesson plans
+- Estimate: 2 hours
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Review planning documentation
+6. Verify all risks identified
+7. Confirm rollback procedures documented
+8. Ensure dependencies are mapped

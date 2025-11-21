@@ -1,0 +1,440 @@
+# Task ID: 124
+# Title: Optimize Database Indexes
+# Status: pending
+# Dependencies: 123
+# Priority: high
+# Description: Analyze and optimize database indexes for improved query performance. Add missing indexes on foreign keys, frequently queried columns, and fields used
+
+# Details:
+Analyze and optimize database indexes for improved query performance. Add missing indexes on foreign keys, frequently queried columns, and fields used in WHERE/ORDER BY clauses. Remove redundant or unused indexes. This is a PERFORMANCE OPTIMIZATION task with minimal data risk.
+
+## Implementation Steps:
+1. **Create Database Backup (MANDATORY)**:
+   ```bash
+   pg_dump -h localhost -U postgres -d madaris_db \
+     -F c -b -v -f "backups/db_backup_task124_$(date +%Y%m%d_%H%M%S).dump"
+
+   echo "=== Task 124 Backup - $(date) ===" >> backups/BACKUP_LOG.md
+   ```
+
+2. **Create index analysis script**:
+   ```python
+   # scripts/analyze_database_indexes.py
+   import django
+   import os
+   from django.db import connection
+   from datetime import datetime
+
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   def analyze_indexes():
+       """Analyze current database indexes"""
+
+       with connection.cursor() as cursor:
+           # Get all indexes with usage statistics
+           cursor.execute("""
+               SELECT
+                   schemaname,
+                   tablename,
+                   indexname,
+                   idx_scan as scans,
+                   idx_tup_read as tuples_read,
+                   idx_tup_fetch as tuples_fetched,
+                   pg_size_pretty(pg_relation_size(indexrelid)) as size
+               FROM pg_stat_user_indexes
+               ORDER BY idx_scan ASC, pg_relation_size(indexrelid) DESC;
+           """)
+
+           all_indexes = cursor.fetchall()
+
+           # Find unused indexes (0 scans)
+           unused_indexes = [idx for idx in all_indexes if idx[3] == 0]
+
+           # Find foreign keys without indexes
+           cursor.execute("""
+               SELECT
+                   tc.table_name,
+                   kcu.column_name,
+                   tc.constraint_name
+               FROM information_schema.table_constraints tc
+               JOIN information_schema.key_column_usage kcu
+                   ON tc.constraint_name = kcu.constraint_name
+               WHERE tc.constraint_type = 'FOREIGN KEY'
+               AND NOT EXISTS (
+                   SELECT 1
+                   FROM pg_indexes
+                   WHERE schemaname = 'public'
+                   AND tablename = tc.table_name
+                   AND indexdef LIKE '%' || kcu.column_name || '%'
+               )
+               ORDER BY tc.table_name, kcu.column_name;
+           """)
+
+           missing_fk_indexes = cursor.fetchall()
+
+           # Find duplicate indexes (same columns)
+           cursor.execute("""
+               SELECT
+                   idx1.tablename,
+                   idx1.indexname as index1,
+                   idx2.indexname as index2,
+                   idx1.indexdef
+               FROM pg_indexes idx1
+               JOIN pg_indexes idx2
+                   ON idx1.tablename = idx2.tablename
+                   AND idx1.indexname < idx2.indexname
+                   AND idx1.indexdef = idx2.indexdef
+               WHERE idx1.schemaname = 'public';
+           """)
+
+           duplicate_indexes = cursor.fetchall()
+
+       return {
+           'all_indexes': all_indexes,
+           'unused_indexes': unused_indexes,
+           'missing_fk_indexes': missing_fk_indexes,
+           'duplicate_indexes': duplicate_indexes
+       }
+
+   def generate_optimization_plan(analysis):
+       """Generate index optimization recommendations"""
+
+       plan = f"""# Database Index Optimization Plan
+
+   **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+   **Phase:** 13 - Database Final Cleanup
+   **Task:** 124
+
+   ---
+
+   ## Current Index Statistics
+
+   **Total Indexes:** {len(analysis['all_indexes'])}
+   **Unused Indexes:** {len(analysis['unused_indexes'])}
+   **Missing FK Indexes:** {len(analysis['missing_fk_indexes'])}
+   **Duplicate Indexes:** {len(analysis['duplicate_indexes'])}
+
+   ---
+
+   ## Unused Indexes (Candidates for Removal)
+
+   These indexes have 0 scans - consider removing if not needed:
+
+   """
+
+       if analysis['unused_indexes']:
+           plan += "| Table | Index Name | Size |\n"
+           plan += "|-------|------------|------|\n"
+           for idx in analysis['unused_indexes']:
+               plan += f"| {idx[1]} | {idx[2]} | {idx[6]} |\n"
+
+           plan += "\n**⚠️ CAUTION:** Verify index is truly unused before dropping.\n"
+       else:
+           plan += "✅ No unused indexes found.\n"
+
+       plan += "\n---\n\n## Missing Foreign Key Indexes\n\n"
+       plan += "These foreign keys lack indexes and may cause slow joins:\n\n"
+
+       if analysis['missing_fk_indexes']:
+           plan += "| Table | Column | Constraint |\n"
+           plan += "|-------|--------|------------|\n"
+           for fk in analysis['missing_fk_indexes']:
+               plan += f"| {fk[0]} | {fk[1]} | {fk[2]} |\n"
+
+           plan += "\n**✅ RECOMMENDED:** Add indexes for these columns.\n"
+       else:
+           plan += "✅ All foreign keys have indexes.\n"
+
+       plan += "\n---\n\n## Duplicate Indexes\n\n"
+
+       if analysis['duplicate_indexes']:
+           plan += "These indexes are duplicates - consider removing one:\n\n"
+           plan += "| Table | Index 1 | Index 2 |\n"
+           plan += "|-------|---------|--------|\n"
+           for dup in analysis['duplicate_indexes']:
+               plan += f"| {dup[0]} | {dup[1]} | {dup[2]} |\n"
+       else:
+           plan += "✅ No duplicate indexes found.\n"
+
+       plan += "\n---\n\n## Recommended Actions\n\n"
+       plan += "### 1. Add Missing FK Indexes\n\n"
+
+       if analysis['missing_fk_indexes']:
+           plan += "```sql\n"
+           for fk in analysis['missing_fk_indexes']:
+               idx_name = f"idx_{fk[0]}_{fk[1]}"
+               plan += f"CREATE INDEX CONCURRENTLY {idx_name} ON {fk[0]} ({fk[1]});\n"
+           plan += "```\n\n"
+
+       plan += "### 2. Remove Unused Indexes\n\n"
+
+       if analysis['unused_indexes']:
+           plan += "```sql\n"
+           plan += "-- Verify these are truly unused first!\n"
+           for idx in analysis['unused_indexes'][:5]:  # Show first 5
+               plan += f"DROP INDEX CONCURRENTLY IF EXISTS {idx[2]};\n"
+           plan += "```\n\n"
+
+       plan += "### 3. Remove Duplicate Indexes\n\n"
+
+       if analysis['duplicate_indexes']:
+           plan += "```sql\n"
+           for dup in analysis['duplicate_indexes']:
+               plan += f"DROP INDEX CONCURRENTLY IF EXISTS {dup[2]};\n"
+           plan += "```\n\n"
+
+       return plan
+
+   if __name__ == '__main__':
+       print("Analyzing database indexes...")
+       analysis = analyze_indexes()
+
+       plan = generate_optimization_plan(analysis)
+
+       with open('docs/INDEX_OPTIMIZATION_PLAN.md', 'w') as f:
+           f.write(plan)
+
+       print(f"\n✅ Analysis complete!")
+       print(f"Report saved to: docs/INDEX_OPTIMIZATION_PLAN.md")
+       print(f"\nSummary:")
+       print(f"  - Total indexes: {len(analysis['all_indexes'])}")
+       print(f"  - Unused: {len(analysis['unused_indexes'])}")
+       print(f"  - Missing FK indexes: {len(analysis['missing_fk_indexes'])}")
+       print(f"  - Duplicates: {len(analysis['duplicate_indexes'])}")
+   ```
+
+3. **Run index analysis**:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python scripts/analyze_database_indexes.py
+   ```
+
+4. **Review optimization plan**:
+   ```bash
+   cat docs/INDEX_OPTIMIZATION_PLAN.md
+   ```
+
+5. **Benchmark current query performance**:
+   ```python
+   # scripts/benchmark_queries.py
+   import django
+   import os
+   import time
+   from django.db import connection, reset_queries
+   from django.conf import settings
+
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   # Enable query logging
+   settings.DEBUG = True
+
+   # Common queries to benchmark
+   QUERIES_TO_BENCHMARK = [
+       "SELECT * FROM chapters_madrasah WHERE is_active = true ORDER BY name;",
+       "SELECT * FROM users_user WHERE role = 'asatidz';",
+       "SELECT * FROM constituents_student WHERE enrollment_status = 'active';",
+       # Add more common queries
+   ]
+
+   def benchmark_query(sql, iterations=10):
+       """Benchmark a single query"""
+
+       times = []
+
+       for i in range(iterations):
+           reset_queries()
+           start = time.time()
+
+           with connection.cursor() as cursor:
+               cursor.execute(sql)
+               cursor.fetchall()
+
+           elapsed = time.time() - start
+           times.append(elapsed)
+
+       avg_time = sum(times) / len(times)
+       min_time = min(times)
+       max_time = max(times)
+
+       return {
+           'avg': avg_time,
+           'min': min_time,
+           'max': max_time
+       }
+
+   def run_benchmarks():
+       """Run all query benchmarks"""
+
+       results = []
+
+       for query in QUERIES_TO_BENCHMARK:
+           print(f"Benchmarking: {query[:50]}...")
+           result = benchmark_query(query)
+           results.append({
+               'query': query,
+               'avg_ms': result['avg'] * 1000,
+               'min_ms': result['min'] * 1000,
+               'max_ms': result['max'] * 1000
+           })
+
+       return results
+
+   if __name__ == '__main__':
+       print("Running query benchmarks...")
+       results = run_benchmarks()
+
+       print("\n" + "=" * 60)
+       print("QUERY PERFORMANCE BENCHMARKS")
+       print("=" * 60)
+
+       for result in results:
+           print(f"\nQuery: {result['query'][:60]}")
+           print(f"  Avg: {result['avg_ms']:.2f}ms")
+           print(f"  Min: {result['min_ms']:.2f}ms")
+           print(f"  Max: {result['max_ms']:.2f}ms")
+
+       # Save results
+       import json
+       with open('benchmarks/query_performance_before.json', 'w') as f:
+           json.dump(results, f, indent=2)
+
+       print(f"\n✅ Benchmarks saved to: benchmarks/query_performance_before.json")
+   ```
+
+6. **Create Django migration for new indexes**:
+   ```python
+   # Generated migration example
+   from django.db import migrations, models
+
+   class Migration(migrations.Migration):
+
+       dependencies = [
+           ('your_app', 'previous_migration'),
+       ]
+
+       operations = [
+           # Add missing foreign key indexes
+           migrations.AddIndex(
+               model_name='student',
+               index=models.Index(fields=['madrasah'], name='idx_student_madrasah'),
+           ),
+           migrations.AddIndex(
+               model_name='enrollment',
+               index=models.Index(fields=['student'], name='idx_enrollment_student'),
+           ),
+
+           # Add indexes for frequently filtered fields
+           migrations.AddIndex(
+               model_name='user',
+               index=models.Index(fields=['role', 'is_active'], name='idx_user_role_active'),
+           ),
+
+           # Remove unused indexes (after verification)
+           migrations.RunSQL(
+               sql='DROP INDEX CONCURRENTLY IF EXISTS old_unused_index;',
+               reverse_sql='CREATE INDEX old_unused_index ON table_name (column);'
+           ),
+       ]
+   ```
+
+7. **Test migration on staging**:
+   ```bash
+   # On STAGING environment
+   python manage.py migrate --plan
+
+   # Apply migration with CONCURRENT index creation
+   python manage.py migrate
+
+   # Verify indexes were created
+   python manage.py dbshell
+   \di  # List indexes
+   ```
+
+8. **Run post-optimization benchmarks**:
+   ```bash
+   # Run same benchmarks again
+   python scripts/benchmark_queries.py
+
+   # Save as query_performance_after.json
+
+   # Compare results
+   python scripts/compare_benchmarks.py \
+     benchmarks/query_performance_before.json \
+     benchmarks/query_performance_after.json
+   ```
+
+9. **Monitor index usage in production**:
+   ```sql
+   -- Run this query weekly to check index usage
+   SELECT
+       schemaname,
+       tablename,
+       indexname,
+       idx_scan,
+       pg_size_pretty(pg_relation_size(indexrelid))
+   FROM pg_stat_user_indexes
+   WHERE schemaname = 'public'
+   ORDER BY idx_scan ASC;
+   ```
+
+10. **Document changes**:
+    ```bash
+    echo "## Task 124 Complete - $(date)" >> docs/PHASE_13_LOG.md
+    echo "- Indexes analyzed and optimized" >> docs/PHASE_13_LOG.md
+    echo "- Missing indexes added: [count]" >> docs/PHASE_13_LOG.md
+    echo "- Unused indexes removed: [count]" >> docs/PHASE_13_LOG.md
+    echo "- Performance improvement: [X%]" >> docs/PHASE_13_LOG.md
+    ```
+
+## Acceptance Criteria:
+- Database backup created before index changes
+- Current indexes documented and analyzed
+- Missing indexes identified (foreign keys, frequent queries)
+- Redundant indexes identified and documented
+- Index optimization plan created and approved
+- New indexes created using CONCURRENT operations
+- Unused indexes removed (after verification)
+- Query performance benchmarks compared (before/after)
+- Index usage statistics collected
+- Changes tested on staging environment first
+
+## Files Modified:
+- `scripts/analyze_database_indexes.py (create)`
+- `scripts/benchmark_queries.py (create)`
+- `scripts/compare_benchmarks.py (create)`
+- `docs/INDEX_OPTIMIZATION_PLAN.md (create)`
+- `benchmarks/query_performance_before.json (create)`
+- `benchmarks/query_performance_after.json (create)`
+- `src/apps/[app]/migrations/XXXX_optimize_indexes.py (create)`
+- `docs/PHASE_13_LOG.md (update)`
+- `backups/db_backup_task124_[timestamp].dump (create)`
+
+## Important Notes:
+- Use CONCURRENTLY to avoid locking tables in production
+- Test index changes on staging first
+- Monitor query performance before and after
+- Some indexes may take time to build on large tables
+- Keep unused indexes for 1 week before dropping (verify usage)
+- Estimate: 90 minutes
+- Risk Level: LOW (indexes don't affect data)
+
+## Backup Requirements:
+1. **Pre-Operation Backup**: Full database dump
+2. **Schema Backup**: Export current schema definition
+3. **Quick Rollback**: Document how to drop new indexes if needed
+
+## Data Integrity Checks:
+- Verify all indexes created successfully
+- Check index usage after 1 week
+- Monitor query performance metrics
+- Ensure no queries got slower
+- Validate disk space usage acceptable
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

@@ -1,0 +1,55 @@
+# Task ID: 003
+# Title: Create Git Tag and Code Backup
+# Status: done
+# Dependencies: none
+# Priority: high
+# Description: Create Git tag marking the pre-refactoring state and ensure code is backed up.
+
+# Details:
+Create Git tag marking the pre-refactoring state and ensure code is backed up.
+
+## Implementation Steps:
+1. Commit any uncommitted changes:
+   ```bash
+   git add .
+   git commit -m "Pre-Tarbiyyah refactoring snapshot"
+   ```
+2. Create annotated tag:
+   ```bash
+   git tag -a v1.0-pre-tarbiyyah -m "Pre-Tarbiyyah Management System refactoring"
+   ```
+3. Push tag to remote:
+   ```bash
+   git push origin v1.0-pre-tarbiyyah
+   ```
+4. Backup .env files:
+   ```bash
+   cp .env .env.backup_$(date +%Y%m%d)
+   ```
+5. Document current git commit hash in BACKUP_LOG.md
+6. Verify tag exists: `git tag -l`
+
+## Acceptance Criteria:
+- All current changes are committed
+- Git tag created: v1.0-pre-tarbiyyah
+- Tag pushed to remote repository
+- Remote backup verified on GitHub/GitLab
+- Environment files (.env) backed up separately
+- Settings files documented
+
+## Files Modified:
+- `Git repository (tag created)`
+- `.env.backup_YYYYMMDD`
+- `BACKUP_LOG.md`
+
+## Important Notes:
+- DO NOT commit .env files to git (security risk)
+- Ensure sensitive data is not in version control
+- Tag allows easy rollback: `git checkout v1.0-pre-tarbiyyah`
+- Estimate: 10 minutes
+
+# Test Strategy:
+1. Verify backup file exists and has reasonable size
+2. Restore on test database to verify integrity
+3. Confirm all tables present in restored database
+4. Compare row counts with original database

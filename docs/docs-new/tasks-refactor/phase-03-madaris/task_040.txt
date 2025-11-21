@@ -1,0 +1,90 @@
+# Task ID: 040
+# Title: Create MadrasahEnrollmentForm
+# Status: pending
+# Dependencies: 039
+# Priority: medium
+# Description: Create MadrasahEnrollmentForm for enrolling students or assigning staff to madrasah with dynamic fields based on enrollment type.
+
+# Details:
+Create MadrasahEnrollmentForm for enrolling students or assigning staff to madrasah with dynamic fields based on enrollment type.
+
+## Implementation Steps:
+1. Add enrollment form:
+   ```python
+   class MadrasahEnrollmentForm(forms.ModelForm):
+       class Meta:
+           model = MadrasahEnrollment
+           fields = [
+               'madrasah', 'user', 'enrollment_type',
+               'academic_year', 'grade_level', 'section', 'student_number',
+               'position', 'subjects_taught', 'department',
+               'enrollment_date', 'is_volunteer'
+           ]
+
+       def __init__(self, *args, **kwargs):
+           enrollment_type = kwargs.pop('enrollment_type', None)
+           super().__init__(*args, **kwargs)
+
+           if enrollment_type == 'student':
+               # Show student fields only
+               self.fields['academic_year'].required = True
+               self.fields['grade_level'].required = True
+               del self.fields['position']
+               del self.fields['subjects_taught']
+               del self.fields['department']
+
+           elif enrollment_type in ['asatidz', 'staff']:
+               # Show staff fields only
+               self.fields['position'].required = True
+               del self.fields['academic_year']
+               del self.fields['grade_level']
+               del self.fields['section']
+               del self.fields['student_number']
+   ```
+2. Create enrollment view:
+   ```python
+   @role_required('madrasah_admin', 'muder')
+   def enroll_student(request, madrasah_pk):
+       madrasah = get_object_or_404(Madrasah, pk=madrasah_pk)
+       if request.method == 'POST':
+           form = MadrasahEnrollmentForm(
+               request.POST,
+               enrollment_type='student'
+           )
+           if form.is_valid():
+               enrollment = form.save()
+               messages.success(request, 'Student enrolled successfully!')
+               return redirect('chapters:detail', pk=madrasah_pk)
+       else:
+           form = MadrasahEnrollmentForm(
+               enrollment_type='student',
+               initial={'madrasah': madrasah, 'enrollment_type': 'student'}
+           )
+       return render(request, 'chapters/enroll_student.html', {
+           'form': form, 'madrasah': madrasah
+       })
+   ```
+3. Test enrollment workflow
+
+## Acceptance Criteria:
+- Form created for MadrasahEnrollment model
+- Dynamic field display based on enrollment_type
+- Student fields shown for student enrollment
+- Staff fields shown for asatidz/staff enrollment
+- Form validation works
+- Test enrolling student and teacher
+
+## Files Modified:
+- `src/apps/chapters/forms.py`
+- `src/apps/chapters/views.py`
+
+## Important Notes:
+- Dynamic form fields improve UX
+- Estimate: 50 minutes
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

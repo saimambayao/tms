@@ -1,0 +1,54 @@
+# Task ID: 037
+# Title: Add Madrasah Contact and History Fields
+# Status: pending
+# Dependencies: 036
+# Priority: medium
+# Description: Add contact information (email, phone, website) and historical fields (founded_date, founder_name, facebook_page).
+
+# Details:
+Add contact information (email, phone, website) and historical fields (founded_date, founder_name, facebook_page).
+
+## Implementation Steps:
+1. Add contact/history fields:
+   ```python
+   class Madrasah(models.Model):
+       ...
+       # Contact Information
+       email = EmailField(blank=True)
+       phone = CharField(max_length=20, blank=True)
+       mobile = CharField(max_length=20)  # Required
+       website = URLField(blank=True)
+
+       # Founding & History
+       founded_date = DateField(null=True, blank=True)
+       founder_name = CharField(max_length=255, blank=True)
+
+       # Social Media
+       facebook_page = URLField(blank=True)
+   ```
+2. Create migration
+3. Add validation in form for Philippine phone format
+
+## Acceptance Criteria:
+- email, phone, mobile, website fields added
+- founded_date and founder_name fields added
+- facebook_page field added
+- Mobile field required, others optional
+- Migration created
+- Validation for email/URL formats
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_add_contact_history_fields.py`
+
+## Important Notes:
+- Mobile is required for SMS notifications
+- Facebook important for community engagement
+- Estimate: 25 minutes
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

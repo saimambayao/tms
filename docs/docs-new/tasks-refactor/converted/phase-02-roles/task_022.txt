@@ -1,0 +1,153 @@
+# Task ID: 022
+# Title: Update Dashboard Routing by Role
+# Status: pending
+# Dependencies: 021
+# Priority: high
+# Description: Update dashboard routing to redirect users to role-appropriate dashboards. Different roles should see different dashboard views tailored to their need
+
+# Details:
+Update dashboard routing to redirect users to role-appropriate dashboards. Different roles should see different dashboard views tailored to their needs.
+
+## Implementation Steps:
+1. Update main dashboard view:
+   ```python
+   # apps/dashboards/views.py
+   from django.shortcuts import render, redirect
+   from django.contrib.auth.decorators import login_required
+
+   @login_required
+   def dashboard_router(request):
+       """Route users to appropriate dashboard based on role"""
+       user = request.user
+
+       role_dashboard_map = {
+           'superuser': 'dashboards:admin_dashboard',
+           'tarbiyyah_admin': 'dashboards:tarbiyyah_dashboard',
+           'madrasah_admin': 'dashboards:madrasah_admin_dashboard',
+           'muder': 'dashboards:muder_dashboard',
+           'asatidz': 'dashboards:teacher_dashboard',
+           'student': 'dashboards:student_dashboard',
+           'parent': 'dashboards:parent_dashboard',
+       }
+
+       dashboard_url = role_dashboard_map.get(user.role, 'dashboards:default')
+       return redirect(dashboard_url)
+   ```
+2. Create placeholder dashboard views for each role:
+   ```python
+   from apps.users.decorators import role_required
+
+   @role_required('tarbiyyah_admin')
+   def tarbiyyah_dashboard(request):
+       context = {
+           'total_madaris': Madrasah.objects.count(),
+           'total_students': User.objects.filter(role='student').count(),
+           'total_teachers': User.objects.filter(role='asatidz').count(),
+           'pending_accreditations': Madrasah.objects.filter(
+               accreditation_status='pending'  # Pending accreditation by MBHTE
+           ).count(),
+       }
+       return render(request, 'dashboards/tarbiyyah_admin.html', context)
+
+   @role_required('madrasah_admin', 'muder')
+   def madrasah_admin_dashboard(request):
+       # Get user's madrasah
+       madrasah = request.user.madrasah_enrollments.first().madrasah
+       context = {
+           'madrasah': madrasah,
+           'total_students': madrasah.enrollments.filter(enrollment_type='student').count(),
+           'total_teachers': madrasah.enrollments.filter(enrollment_type='asatidz').count(),
+           'upcoming_activities': madrasah.activities.filter(date__gte=timezone.now()).order_by('date')[:5],
+       }
+       return render(request, 'dashboards/madrasah_admin.html', context)
+
+   @role_required('asatidz')
+   def teacher_dashboard(request):
+       context = {
+           'my_classes': request.user.classes_taught.all(),
+           'total_students': request.user.get_total_students(),
+           'upcoming_lessons': request.user.lesson_plans.filter(date__gte=timezone.now()).order_by('date')[:5],
+       }
+       return render(request, 'dashboards/teacher.html', context)
+
+   @role_required('student')
+   def student_dashboard(request):
+       context = {
+           'my_grades': request.user.grades.all(),
+           'my_attendance': request.user.attendance_records.all(),
+           'class_schedule': request.user.get_class_schedule(),
+       }
+       return render(request, 'dashboards/student.html', context)
+
+   @role_required('parent')
+   def parent_dashboard(request):
+       context = {
+           'children': request.user.children.all(),
+       }
+       return render(request, 'dashboards/parent.html', context)
+   ```
+3. Update dashboard URLs:
+   ```python
+   # apps/dashboards/urls.py
+   from django.urls import path
+   from . import views
+
+   app_name = 'dashboards'
+
+   urlpatterns = [
+       path('', views.dashboard_router, name='dashboard'),
+       path('tarbiyyah/', views.tarbiyyah_dashboard, name='tarbiyyah_dashboard'),
+       path('madrasah-admin/', views.madrasah_admin_dashboard, name='madrasah_admin_dashboard'),
+       path('muder/', views.muder_dashboard, name='muder_dashboard'),
+       path('teacher/', views.teacher_dashboard, name='teacher_dashboard'),
+       path('student/', views.student_dashboard, name='student_dashboard'),
+       path('parent/', views.parent_dashboard, name='parent_dashboard'),
+   ]
+   ```
+4. Update login redirect in settings:
+   ```python
+   # settings/base.py
+   LOGIN_REDIRECT_URL = 'dashboards:dashboard'  # Routes to role-specific dashboard
+   ```
+
+## Acceptance Criteria:
+- Dashboard view routes by role
+- TARBIYYAH_ADMIN sees system-wide dashboard
+- MADRASAH_ADMIN sees school management dashboard
+- MUDER sees school overview dashboard
+- ASATIDZ sees teacher dashboard (classes, students)
+- STUDENT sees student dashboard (grades, schedule)
+- PARENT sees parent dashboard (children's progress)
+- Test dashboard access for each role
+
+## Files Modified:
+- `src/apps/dashboards/views.py`
+- `src/apps/dashboards/urls.py`
+- `src/config/settings/base.py`
+- `src/templates/dashboards/tarbiyyah_admin.html (create later)`
+- `src/templates/dashboards/madrasah_admin.html (create later)`
+- `src/templates/dashboards/teacher.html (create later)`
+- `src/templates/dashboards/student.html (create later)`
+- `src/templates/dashboards/parent.html (create later)`
+
+## Important Notes:
+- Dashboard templates will be created in later tasks
+- This sets up routing structure
+- Keep placeholder views simple for now
+- 'pending_accreditations' shows madaris awaiting accreditation by MBHTE (Ministry of Basic, Higher, and Technical Education)
+- Tarbiyyah Committee coordinates the accreditation process with MBHTE
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Access view URL and verify HTTP 200 response
+10. Test with different user permissions
+11. Verify context data passed to template
+12. Test any query parameters or filters

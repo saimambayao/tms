@@ -1,0 +1,87 @@
+# Task ID: 026
+# Title: Backup Chapter App Before Renaming
+# Status: pending
+# Dependencies: 001, 025
+# Priority: high
+# Description: Create comprehensive backup of chapters app directory and database tables before renaming Chapter model to Madrasah. This allows rollback if issues oc
+
+# Details:
+Create comprehensive backup of chapters app directory and database tables before renaming Chapter model to Madrasah. This allows rollback if issues occur.
+
+## Implementation Steps:
+1. Create backup directory:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/backups/phase3_chapters
+   ```
+2. Backup chapters app directory:
+   ```bash
+   cp -r /Users/saidamenmambayao/apps/madaris-ms/src/apps/chapters \
+         /Users/saidamenmambayao/apps/madaris-ms/backups/phase3_chapters/chapters_app_backup
+   ```
+3. Count current records:
+   ```bash
+   python manage.py shell
+   from apps.chapters.models import Chapter, ChapterMembership, ChapterActivity
+   print(f"Chapter: {Chapter.objects.count()}")
+   print(f"ChapterMembership: {ChapterMembership.objects.count()}")
+   print(f"ChapterActivity: {ChapterActivity.objects.count()}")
+   ```
+4. Export table data:
+   ```bash
+   python manage.py dumpdata chapters.Chapter > backups/phase3_chapters/chapter_data.json
+   python manage.py dumpdata chapters.ChapterMembership > backups/phase3_chapters/membership_data.json
+   python manage.py dumpdata chapters.ChapterActivity > backups/phase3_chapters/activity_data.json
+   ```
+5. Document foreign key relationships:
+   ```bash
+   python manage.py inspectdb chapters_chapter chapters_chaptermembership chapters_chapteractivity > backups/phase3_chapters/schema_before.sql
+   ```
+6. Document counts in log file:
+   ```bash
+   cat > backups/phase3_chapters/BACKUP_LOG.txt << EOF
+   Backup Date: $(date)
+   Chapter records: $(python manage.py shell -c "from apps.chapters.models import Chapter; print(Chapter.objects.count())")
+   ChapterMembership records: $(python manage.py shell -c "from apps.chapters.models import ChapterMembership; print(ChapterMembership.objects.count())")
+   ChapterActivity records: $(python manage.py shell -c "from apps.chapters.models import ChapterActivity; print(ChapterActivity.objects.count())")
+   EOF
+   ```
+7. Verify backup files exist:
+   ```bash
+   ls -lh /Users/saidamenmambayao/apps/madaris-ms/backups/phase3_chapters/
+   ```
+
+## Acceptance Criteria:
+- chapters app directory backed up
+- Chapter-related database tables exported
+- Backup verified (can be restored)
+- Backup location documented
+- Table row counts recorded
+- Foreign key relationships documented
+
+## Files Modified:
+- `backups/phase3_chapters/chapters_app_backup/ (directory backup)`
+- `backups/phase3_chapters/chapter_data.json`
+- `backups/phase3_chapters/membership_data.json`
+- `backups/phase3_chapters/activity_data.json`
+- `backups/phase3_chapters/schema_before.sql`
+- `backups/phase3_chapters/BACKUP_LOG.txt`
+
+## Important Notes:
+- This backup is specific to Phase 3 (different from task_001)
+- Keep backup until Phase 3 is fully verified
+- Document record counts for verification after migration
+- Estimate: 20 minutes
+
+# Test Strategy:
+1. Verify backup file exists and has reasonable size
+2. Restore on test database to verify integrity
+3. Confirm all tables present in restored database
+4. Compare row counts with original database
+5. Run migrations and verify schema changes
+6. Create test instances to verify new fields
+7. Test admin interface with new fields
+8. Verify backward compatibility with existing data
+9. Verify app appears in INSTALLED_APPS
+10. Run migrations successfully
+11. Import app models without errors
+12. Verify app shows in Django admin

@@ -1,0 +1,716 @@
+# Task ID: 107
+# Title: Create Data Export Features
+# Status: pending
+# Dependencies: 045, 050, 104
+# Priority: medium
+# Description: Create comprehensive data export functionality for students, teachers, madaris, and academic records. Support multiple formats (CSV, Excel, PDF) with 
+
+# Details:
+Create comprehensive data export functionality for students, teachers, madaris, and academic records. Support multiple formats (CSV, Excel, PDF) with filtering and customization options.
+
+## Implementation Steps:
+1. Install required export libraries:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   pip install openpyxl xlsxwriter reportlab pandas django-import-export
+   pip freeze > requirements.txt
+   ```
+
+2. Create export utilities in `apps/core/utils/exporters.py`:
+   ```python
+   import csv
+   from io import BytesIO, StringIO
+   from django.http import HttpResponse
+   from django.utils import timezone
+   import xlsxwriter
+   from reportlab.lib import colors
+   from reportlab.lib.pagesizes import letter, A4, landscape
+   from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph
+   from reportlab.lib.styles import getSampleStyleSheet
+   from reportlab.lib.units import inch
+
+   class BaseExporter:
+       """Base class for data exporters"""
+
+       def __init__(self, queryset, fields, filename_prefix):
+           self.queryset = queryset
+           self.fields = fields
+           self.filename_prefix = filename_prefix
+           self.timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+
+       def get_field_values(self, obj):
+           """Extract field values from object"""
+           values = []
+           for field in self.fields:
+               if '.' in field:
+                   # Handle nested fields like 'user.email'
+                   value = obj
+                   for attr in field.split('.'):
+                       value = getattr(value, attr, '')
+                       if callable(value):
+                           value = value()
+               else:
+                   value = getattr(obj, field, '')
+                   if callable(value):
+                       value = value()
+               values.append(str(value) if value is not None else '')
+           return values
+
+       def get_headers(self):
+           """Get human-readable headers"""
+           return [field.replace('_', ' ').title() for field in self.fields]
+
+   class CSVExporter(BaseExporter):
+       """Export data to CSV format"""
+
+       def export(self):
+           response = HttpResponse(content_type='text/csv; charset=utf-8')
+           filename = f"{self.filename_prefix}_{self.timestamp}.csv"
+           response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+           # Add BOM for Excel compatibility with UTF-8
+           response.write('\ufeff')
+
+           writer = csv.writer(response)
+           writer.writerow(self.get_headers())
+
+           for obj in self.queryset:
+               writer.writerow(self.get_field_values(obj))
+
+           return response
+
+   class ExcelExporter(BaseExporter):
+       """Export data to Excel format"""
+
+       def export(self):
+           output = BytesIO()
+           workbook = xlsxwriter.Workbook(output, {'in_memory': True})
+           worksheet = workbook.add_worksheet()
+
+           # Create formats
+           header_format = workbook.add_format({
+               'bold': True,
+               'bg_color': '#2c5282',
+               'font_color': 'white',
+               'border': 1
+           })
+
+           cell_format = workbook.add_format({
+               'border': 1,
+               'text_wrap': True
+           })
+
+           # Write headers
+           headers = self.get_headers()
+           for col, header in enumerate(headers):
+               worksheet.write(0, col, header, header_format)
+               worksheet.set_column(col, col, 15)  # Set column width
+
+           # Write data
+           for row, obj in enumerate(self.queryset, start=1):
+               values = self.get_field_values(obj)
+               for col, value in enumerate(values):
+                   worksheet.write(row, col, value, cell_format)
+
+           # Auto-filter
+           worksheet.autofilter(0, 0, row, len(headers) - 1)
+
+           workbook.close()
+           output.seek(0)
+
+           response = HttpResponse(
+               output.read(),
+               content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+           )
+           filename = f"{self.filename_prefix}_{self.timestamp}.xlsx"
+           response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+           return response
+
+   class PDFExporter(BaseExporter):
+       """Export data to PDF format"""
+
+       def export(self):
+           buffer = BytesIO()
+           doc = SimpleDocTemplate(
+               buffer,
+               pagesize=landscape(A4),
+               rightMargin=0.5*inch,
+               leftMargin=0.5*inch,
+               topMargin=0.5*inch,
+               bottomMargin=0.5*inch
+           )
+
+           elements = []
+           styles = getSampleStyleSheet()
+
+           # Title
+           title = Paragraph(
+               f"<b>{self.filename_prefix}</b><br/>{timezone.now().strftime('%B %d, %Y')}",
+               styles['Title']
+           )
+           elements.append(title)
+           elements.append(Paragraph("<br/>", styles['Normal']))
+
+           # Prepare table data
+           data = [self.get_headers()]
+           for obj in self.queryset:
+               data.append(self.get_field_values(obj))
+
+           # Create table
+           table = Table(data, repeatRows=1)
+           table.setStyle(TableStyle([
+               ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#2c5282')),
+               ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+               ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+               ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+               ('FONTSIZE', (0, 0), (-1, 0), 10),
+               ('FONTSIZE', (0, 1), (-1, -1), 8),
+               ('BOTTOMPADDING', (0, 0), (-1, 0), 12),
+               ('GRID', (0, 0), (-1, -1), 1, colors.black),
+               ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f0f0')])
+           ]))
+
+           elements.append(table)
+           doc.build(elements)
+
+           pdf = buffer.getvalue()
+           buffer.close()
+
+           response = HttpResponse(content_type='application/pdf')
+           filename = f"{self.filename_prefix}_{self.timestamp}.pdf"
+           response['Content-Disposition'] = f'attachment; filename="{filename}"'
+           response.write(pdf)
+
+           return response
+
+   class DataExportManager:
+       """Manage data exports with filtering"""
+
+       EXPORT_FORMATS = {
+           'csv': CSVExporter,
+           'excel': ExcelExporter,
+           'pdf': PDFExporter
+       }
+
+       def __init__(self, model, queryset, export_format='csv'):
+           self.model = model
+           self.queryset = queryset
+           self.export_format = export_format
+
+       def export(self, fields, filename_prefix):
+           """Execute export"""
+           exporter_class = self.EXPORT_FORMATS.get(self.export_format, CSVExporter)
+           exporter = exporter_class(self.queryset, fields, filename_prefix)
+           return exporter.export()
+   ```
+
+3. Create export views in `apps/core/views/export_views.py`:
+   ```python
+   from django.views import View
+   from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+   from django.http import HttpResponseBadRequest
+   from django.db.models import Q
+   from apps.students.models import Student
+   from apps.teachers.models import TeacherProfile
+   from apps.madaris.models import Madrasah
+   from apps.academic.models import Attendance, Grade
+   from apps.core.utils.exporters import DataExportManager
+
+   class StudentExportView(LoginRequiredMixin, PermissionRequiredMixin, View):
+       permission_required = 'students.view_student'
+
+       def get(self, request):
+           # Get filters from query params
+           madrasah_id = request.GET.get('madrasah')
+           grade_level = request.GET.get('grade')
+           status = request.GET.get('status', 'active')
+           export_format = request.GET.get('format', 'csv')
+
+           # Build queryset
+           queryset = Student.objects.filter(status=status)
+
+           if madrasah_id:
+               queryset = queryset.filter(enrollments__madrasah_id=madrasah_id)
+
+           if grade_level:
+               queryset = queryset.filter(grade_level=grade_level)
+
+           # Apply role-based filtering
+           if request.user.has_role('madrasah_admin'):
+               queryset = queryset.filter(
+                   enrollments__madrasah__admins=request.user
+               )
+           elif request.user.has_role('asatidz'):
+               queryset = queryset.filter(
+                   enrollments__class__teacher=request.user.teacher_profile
+               )
+
+           queryset = queryset.select_related('user').distinct()
+
+           # Define fields to export
+           fields = [
+               'student_id',
+               'user.first_name',
+               'user.last_name',
+               'user.email',
+               'grade_level',
+               'date_of_birth',
+               'gender',
+               'status',
+               'created_at'
+           ]
+
+           # Export
+           manager = DataExportManager(Student, queryset, export_format)
+           return manager.export(fields, 'students_export')
+
+   class TeacherExportView(LoginRequiredMixin, PermissionRequiredMixin, View):
+       permission_required = 'teachers.view_teacherprofile'
+
+       def get(self, request):
+           madrasah_id = request.GET.get('madrasah')
+           status = request.GET.get('status', 'active')
+           export_format = request.GET.get('format', 'csv')
+
+           queryset = TeacherProfile.objects.filter(status=status)
+
+           if madrasah_id:
+               queryset = queryset.filter(madrasah_id=madrasah_id)
+
+           # Role-based filtering
+           if request.user.has_role('madrasah_admin'):
+               queryset = queryset.filter(madrasah__admins=request.user)
+
+           queryset = queryset.select_related('user', 'madrasah')
+
+           fields = [
+               'employee_id',
+               'user.first_name',
+               'user.last_name',
+               'user.email',
+               'specialization',
+               'qualification',
+               'madrasah.name',
+               'hire_date',
+               'status'
+           ]
+
+           manager = DataExportManager(TeacherProfile, queryset, export_format)
+           return manager.export(fields, 'teachers_export')
+
+   class MadrasahExportView(LoginRequiredMixin, PermissionRequiredMixin, View):
+       permission_required = 'madaris.view_madrasah'
+
+       def get(self, request):
+           madrasah_type = request.GET.get('type')
+           region = request.GET.get('region')
+           status = request.GET.get('status', 'active')
+           export_format = request.GET.get('format', 'csv')
+
+           queryset = Madrasah.objects.filter(status=status)
+
+           if madrasah_type:
+               queryset = queryset.filter(madrasah_type=madrasah_type)
+
+           if region:
+               queryset = queryset.filter(region=region)
+
+           fields = [
+               'name',
+               'arabic_name',
+               'madrasah_type',
+               'location',
+               'region',
+               'capacity',
+               'principal_name',
+               'contact_email',
+               'contact_phone',
+               'established_date',
+               'accreditation_status'
+           ]
+
+           manager = DataExportManager(Madrasah, queryset, export_format)
+           return manager.export(fields, 'madaris_export')
+
+   class AttendanceExportView(LoginRequiredMixin, PermissionRequiredMixin, View):
+       permission_required = 'academic.view_attendance'
+
+       def get(self, request):
+           start_date = request.GET.get('start_date')
+           end_date = request.GET.get('end_date')
+           madrasah_id = request.GET.get('madrasah')
+           student_id = request.GET.get('student')
+           export_format = request.GET.get('format', 'csv')
+
+           if not start_date or not end_date:
+               return HttpResponseBadRequest("Start date and end date are required")
+
+           queryset = Attendance.objects.filter(
+               date__range=[start_date, end_date]
+           )
+
+           if madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=madrasah_id
+               )
+
+           if student_id:
+               queryset = queryset.filter(student_id=student_id)
+
+           # Role-based filtering
+           if request.user.has_role('asatidz'):
+               queryset = queryset.filter(
+                   student__enrollments__class__teacher=request.user.teacher_profile
+               )
+
+           queryset = queryset.select_related('student__user').order_by('date')
+
+           fields = [
+               'date',
+               'student.student_id',
+               'student.user.get_full_name',
+               'status',
+               'remarks'
+           ]
+
+           manager = DataExportManager(Attendance, queryset, export_format)
+           return manager.export(fields, 'attendance_export')
+
+   class GradeExportView(LoginRequiredMixin, PermissionRequiredMixin, View):
+       permission_required = 'academic.view_grade'
+
+       def get(self, request):
+           academic_year = request.GET.get('academic_year')
+           madrasah_id = request.GET.get('madrasah')
+           subject_id = request.GET.get('subject')
+           student_id = request.GET.get('student')
+           export_format = request.GET.get('format', 'csv')
+
+           queryset = Grade.objects.all()
+
+           if academic_year:
+               queryset = queryset.filter(academic_year=academic_year)
+
+           if madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=madrasah_id
+               )
+
+           if subject_id:
+               queryset = queryset.filter(subject_id=subject_id)
+
+           if student_id:
+               queryset = queryset.filter(student_id=student_id)
+
+           # Role-based filtering
+           if request.user.has_role('asatidz'):
+               queryset = queryset.filter(
+                   assessment__class__teacher=request.user.teacher_profile
+               )
+
+           queryset = queryset.select_related(
+               'student__user', 'subject', 'assessment'
+           ).order_by('student__student_id', 'subject__name')
+
+           fields = [
+               'student.student_id',
+               'student.user.get_full_name',
+               'subject.name',
+               'assessment.name',
+               'score',
+               'academic_year',
+               'created_at'
+           ]
+
+           manager = DataExportManager(Grade, queryset, export_format)
+           return manager.export(fields, 'grades_export')
+
+   class BulkExportView(LoginRequiredMixin, View):
+       """Export multiple data types at once"""
+
+       def get(self, request):
+           # Create a zip file with multiple exports
+           import zipfile
+           from io import BytesIO
+
+           zip_buffer = BytesIO()
+           with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+               # Export students
+               # Export teachers
+               # Export madaris
+               # etc.
+               pass
+
+           # Return zip file
+           response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+           response['Content-Disposition'] = 'attachment; filename="tarbiyyah_data_export.zip"'
+           return response
+   ```
+
+4. Create export UI templates:
+   ```html
+   <!-- templates/core/export_data.html -->
+   {% extends "base.html" %}
+
+   {% block title %}Export Data{% endblock %}
+
+   {% block content %}
+   <div class="export-container">
+       <h1>Export Data</h1>
+
+       <div class="export-sections">
+           <!-- Student Export -->
+           <div class="export-section">
+               <h2>Export Students</h2>
+               <form method="get" action="{% url 'core:export_students' %}">
+                   <div class="form-group">
+                       <label>Madrasah:</label>
+                       <select name="madrasah">
+                           <option value="">All Madaris</option>
+                           {% for madrasah in madaris %}
+                           <option value="{{ madrasah.id }}">{{ madrasah.name }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Grade Level:</label>
+                       <select name="grade">
+                           <option value="">All Grades</option>
+                           {% for grade in grade_levels %}
+                           <option value="{{ grade }}">{{ grade }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Status:</label>
+                       <select name="status">
+                           <option value="active">Active</option>
+                           <option value="inactive">Inactive</option>
+                           <option value="">All</option>
+                       </select>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Format:</label>
+                       <div class="format-options">
+                           <button type="submit" name="format" value="csv" class="btn">CSV</button>
+                           <button type="submit" name="format" value="excel" class="btn">Excel</button>
+                           <button type="submit" name="format" value="pdf" class="btn">PDF</button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+
+           <!-- Teacher Export -->
+           <div class="export-section">
+               <h2>Export Teachers</h2>
+               <form method="get" action="{% url 'core:export_teachers' %}">
+                   <div class="form-group">
+                       <label>Madrasah:</label>
+                       <select name="madrasah">
+                           <option value="">All Madaris</option>
+                           {% for madrasah in madaris %}
+                           <option value="{{ madrasah.id }}">{{ madrasah.name }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Format:</label>
+                       <div class="format-options">
+                           <button type="submit" name="format" value="csv" class="btn">CSV</button>
+                           <button type="submit" name="format" value="excel" class="btn">Excel</button>
+                           <button type="submit" name="format" value="pdf" class="btn">PDF</button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+
+           <!-- Attendance Export -->
+           <div class="export-section">
+               <h2>Export Attendance</h2>
+               <form method="get" action="{% url 'core:export_attendance' %}">
+                   <div class="form-group">
+                       <label>Start Date:</label>
+                       <input type="date" name="start_date" required>
+                   </div>
+
+                   <div class="form-group">
+                       <label>End Date:</label>
+                       <input type="date" name="end_date" required>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Madrasah:</label>
+                       <select name="madrasah">
+                           <option value="">All Madaris</option>
+                           {% for madrasah in madaris %}
+                           <option value="{{ madrasah.id }}">{{ madrasah.name }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Format:</label>
+                       <div class="format-options">
+                           <button type="submit" name="format" value="csv" class="btn">CSV</button>
+                           <button type="submit" name="format" value="excel" class="btn">Excel</button>
+                           <button type="submit" name="format" value="pdf" class="btn">PDF</button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+
+           <!-- Grades Export -->
+           <div class="export-section">
+               <h2>Export Grades</h2>
+               <form method="get" action="{% url 'core:export_grades' %}">
+                   <div class="form-group">
+                       <label>Academic Year:</label>
+                       <select name="academic_year">
+                           {% for year in academic_years %}
+                           <option value="{{ year }}">{{ year }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Subject:</label>
+                       <select name="subject">
+                           <option value="">All Subjects</option>
+                           {% for subject in subjects %}
+                           <option value="{{ subject.id }}">{{ subject.name }}</option>
+                           {% endfor %}
+                       </select>
+                   </div>
+
+                   <div class="form-group">
+                       <label>Format:</label>
+                       <div class="format-options">
+                           <button type="submit" name="format" value="csv" class="btn">CSV</button>
+                           <button type="submit" name="format" value="excel" class="btn">Excel</button>
+                           <button type="submit" name="format" value="pdf" class="btn">PDF</button>
+                       </div>
+                   </div>
+               </form>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+5. Update URLs for export views:
+   ```python
+   # apps/core/urls.py
+   from .views.export_views import (
+       StudentExportView, TeacherExportView, MadrasahExportView,
+       AttendanceExportView, GradeExportView, BulkExportView
+   )
+
+   urlpatterns = [
+       # ... existing patterns ...
+       path('export/', ExportDataView.as_view(), name='export_data'),
+       path('export/students/', StudentExportView.as_view(), name='export_students'),
+       path('export/teachers/', TeacherExportView.as_view(), name='export_teachers'),
+       path('export/madaris/', MadrasahExportView.as_view(), name='export_madaris'),
+       path('export/attendance/', AttendanceExportView.as_view(), name='export_attendance'),
+       path('export/grades/', GradeExportView.as_view(), name='export_grades'),
+       path('export/bulk/', BulkExportView.as_view(), name='export_bulk'),
+   ]
+   ```
+
+6. Add export link to navigation:
+   ```html
+   <!-- In base.html or sidebar -->
+   {% if user.has_perm('students.view_student') %}
+   <a href="{% url 'core:export_data' %}">Export Data</a>
+   {% endif %}
+   ```
+
+7. Create background task for scheduled exports (optional):
+   ```python
+   # apps/core/tasks.py
+   from celery import shared_task
+   from django.core.mail import EmailMessage
+   from .utils.exporters import DataExportManager
+
+   @shared_task
+   def scheduled_export(export_type, user_email, filters):
+       """Run scheduled export and email results"""
+       # Generate export
+       # Email to user
+       pass
+   ```
+
+8. Add export logging:
+   ```python
+   import logging
+   logger = logging.getLogger(__name__)
+
+   def get(self, request):
+       logger.info(f"User {request.user.username} exported students data")
+       # ... export logic
+   ```
+
+9. Create export tests:
+   ```python
+   # apps/core/tests/test_exports.py
+   from django.test import TestCase, Client
+   from django.contrib.auth import get_user_model
+
+   class ExportTestCase(TestCase):
+       def test_student_csv_export(self):
+           response = self.client.get('/export/students/?format=csv')
+           self.assertEqual(response.status_code, 200)
+           self.assertEqual(response['Content-Type'], 'text/csv; charset=utf-8')
+   ```
+
+10. Document export functionality:
+    ```markdown
+    # Data Export Guide
+    - CSV: Best for simple data, Excel compatibility
+    - Excel: Best for formatted data with filtering
+    - PDF: Best for printable reports
+    ```
+
+## Acceptance Criteria:
+- Student data export functionality created
+- Teacher data export functionality created
+- Madrasah data export functionality created
+- Academic records export functionality created
+- Attendance records export functionality created
+- Support CSV, Excel, PDF formats
+- Export filtering by date range, madrasah, grade
+- Custom field selection for exports
+- Bulk export scheduling (background tasks)
+- Export permissions enforced
+
+## Files Modified:
+- `src/apps/core/utils/exporters.py (new)`
+- `src/apps/core/views/export_views.py (new)`
+- `src/apps/core/urls.py (add export URLs)`
+- `src/apps/core/templates/core/export_data.html (new)`
+- `src/apps/core/tasks.py (optional - for scheduled exports)`
+- `src/apps/core/tests/test_exports.py (new)`
+- `requirements.txt (add export libraries)`
+
+## Important Notes:
+- Enforce permissions - users should only export data they can view
+- Add rate limiting to prevent abuse
+- Consider chunking large exports
+- Log all export activities for audit trail
+- Add email delivery for large exports
+- Implement background processing for exports >10k records
+- Support custom field selection
+- Add export history tracking
+- Estimate: 4-5 hours
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

@@ -1,0 +1,568 @@
+# Task ID: 101
+# Title: Create Parent Portal Tests
+# Status: pending
+# Dependencies: 100
+# Priority: high
+# Description: Create comprehensive test suite for parent portal functionality including model tests, view tests, form tests, and integration tests. Ensure all paren
+
+# Details:
+Create comprehensive test suite for parent portal functionality including model tests, view tests, form tests, and integration tests. Ensure all parent portal features work correctly and securely.
+
+## Implementation Steps:
+1. Create test fixtures:
+   ```python
+   # apps/parents/tests/__init__.py
+   # (empty file to make it a package)
+
+   # apps/parents/tests/fixtures.py
+   from django.contrib.auth import get_user_model
+   from apps.parents.models import ParentStudent
+   import pytest
+
+   User = get_user_model()
+
+   @pytest.fixture
+   def parent_user(db):
+       """Create a parent user"""
+       return User.objects.create_user(
+           username='parent1',
+           email='parent1@example.com',
+           password='testpass123',
+           first_name='John',
+           last_name='Doe',
+           role='parent'
+       )
+
+   @pytest.fixture
+   def student_user(db):
+       """Create a student user"""
+       return User.objects.create_user(
+           username='student1',
+           email='student1@example.com',
+           password='testpass123',
+           first_name='Jane',
+           last_name='Doe',
+           role='student'
+       )
+
+   @pytest.fixture
+   def teacher_user(db):
+       """Create a teacher user"""
+       return User.objects.create_user(
+           username='teacher1',
+           email='teacher1@example.com',
+           password='testpass123',
+           first_name='Ahmad',
+           last_name='Hassan',
+           role='asatidz'
+       )
+
+   @pytest.fixture
+   def parent_student_relationship(parent_user, student_user):
+       """Create parent-student relationship"""
+       return ParentStudent.objects.create(
+           parent=parent_user,
+           student=student_user,
+           relationship_type='father',
+           is_primary_contact=True,
+           status='active'
+       )
+   ```
+
+2. Create model tests:
+   ```python
+   # apps/parents/tests/test_models.py
+   import pytest
+   from django.utils import timezone
+   from apps.parents.models import (
+       ParentStudent,
+       ParentTeacherMessage,
+       ParentNotification
+   )
+
+   @pytest.mark.django_db
+   class TestParentStudentModel:
+       """Test ParentStudent model"""
+
+       def test_create_parent_student_relationship(self, parent_user, student_user):
+           """Test creating parent-student relationship"""
+           relationship = ParentStudent.objects.create(
+               parent=parent_user,
+               student=student_user,
+               relationship_type='father',
+               is_primary_contact=True
+           )
+
+           assert relationship.parent == parent_user
+           assert relationship.student == student_user
+           assert relationship.relationship_type == 'father'
+           assert relationship.is_primary_contact is True
+           assert relationship.status == 'active'
+
+       def test_string_representation(self, parent_student_relationship):
+           """Test __str__ method"""
+           expected = f"{parent_student_relationship.parent.get_full_name()} (father) - {parent_student_relationship.student.get_full_name()}"
+           assert str(parent_student_relationship) == expected
+
+       def test_unique_parent_student_pair(self, parent_user, student_user):
+           """Test that same parent-student pair cannot be created twice"""
+           ParentStudent.objects.create(
+               parent=parent_user,
+               student=student_user,
+               relationship_type='father'
+           )
+
+           with pytest.raises(Exception):  # IntegrityError
+               ParentStudent.objects.create(
+                   parent=parent_user,
+                   student=student_user,
+                   relationship_type='mother'
+               )
+
+   @pytest.mark.django_db
+   class TestParentTeacherMessage:
+       """Test ParentTeacherMessage model"""
+
+       def test_create_message(self, parent_user, teacher_user, student_user):
+           """Test creating message"""
+           message = ParentTeacherMessage.objects.create(
+               sender=parent_user,
+               recipient=teacher_user,
+               student=student_user,
+               subject='Question about homework',
+               body='Can you explain the math assignment?',
+               message_type='academic'
+           )
+
+           assert message.sender == parent_user
+           assert message.recipient == teacher_user
+           assert message.is_read is False
+           assert message.read_at is None
+
+       def test_mark_as_read(self, parent_user, teacher_user):
+           """Test marking message as read"""
+           message = ParentTeacherMessage.objects.create(
+               sender=parent_user,
+               recipient=teacher_user,
+               subject='Test',
+               body='Test message'
+           )
+
+           assert message.is_read is False
+           message.mark_as_read()
+           message.refresh_from_db()
+
+           assert message.is_read is True
+           assert message.read_at is not None
+
+       def test_message_threading(self, parent_user, teacher_user):
+           """Test message thread functionality"""
+           original = ParentTeacherMessage.objects.create(
+               sender=parent_user,
+               recipient=teacher_user,
+               subject='Question',
+               body='Original message'
+           )
+
+           reply = ParentTeacherMessage.objects.create(
+               sender=teacher_user,
+               recipient=parent_user,
+               subject='Re: Question',
+               body='Reply message',
+               parent_message=original
+           )
+
+           thread = original.get_thread()
+           assert thread.count() == 2
+           assert original in thread
+           assert reply in thread
+
+   @pytest.mark.django_db
+   class TestParentNotification:
+       """Test ParentNotification model"""
+
+       def test_create_notification(self, parent_user, student_user):
+           """Test creating notification"""
+           notification = ParentNotification.objects.create(
+               parent=parent_user,
+               student=student_user,
+               notification_type='grade_posted',
+               priority='normal',
+               title='New grade posted',
+               message='A new grade has been posted for Mathematics'
+           )
+
+           assert notification.parent == parent_user
+           assert notification.student == student_user
+           assert notification.is_read is False
+
+       def test_mark_notification_as_read(self, parent_user):
+           """Test marking notification as read"""
+           notification = ParentNotification.objects.create(
+               parent=parent_user,
+               title='Test',
+               message='Test notification'
+           )
+
+           notification.mark_as_read()
+           notification.refresh_from_db()
+
+           assert notification.is_read is True
+           assert notification.read_at is not None
+   ```
+
+3. Create view tests:
+   ```python
+   # apps/parents/tests/test_views.py
+   import pytest
+   from django.urls import reverse
+   from django.test import Client
+   from apps.parents.models import ParentStudent, ParentNotification
+
+   @pytest.mark.django_db
+   class TestParentDashboard:
+       """Test parent dashboard view"""
+
+       def test_dashboard_requires_login(self):
+           """Test that dashboard requires authentication"""
+           client = Client()
+           url = reverse('parents:dashboard')
+           response = client.get(url)
+           assert response.status_code == 302  # Redirect to login
+
+       def test_dashboard_requires_parent_role(self, student_user):
+           """Test that dashboard requires parent role"""
+           client = Client()
+           client.force_login(student_user)
+           url = reverse('parents:dashboard')
+           response = client.get(url)
+           assert response.status_code == 302  # Redirect with error
+
+       def test_dashboard_shows_linked_students(self, parent_user, student_user,
+                                                parent_student_relationship):
+           """Test dashboard displays linked students"""
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:dashboard')
+           response = client.get(url)
+
+           assert response.status_code == 200
+           assert student_user in response.context['students']
+           assert response.context['student_count'] == 1
+
+       def test_dashboard_empty_state(self, parent_user):
+           """Test dashboard with no linked students"""
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:dashboard')
+           response = client.get(url)
+
+           assert response.status_code == 200
+           assert response.context['student_count'] == 0
+
+   @pytest.mark.django_db
+   class TestStudentProgressViews:
+       """Test student progress viewing"""
+
+       def test_parent_can_view_linked_student(self, parent_user, student_user,
+                                               parent_student_relationship):
+           """Test parent can view their student's details"""
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:student-detail', kwargs={'student_id': student_user.id})
+           response = client.get(url)
+
+           assert response.status_code == 200
+           assert response.context['student'] == student_user
+
+       def test_parent_cannot_view_non_linked_student(self, parent_user, student_user):
+           """Test parent cannot view non-linked student"""
+           # No relationship created
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:student-detail', kwargs={'student_id': student_user.id})
+           response = client.get(url)
+
+           assert response.status_code == 404  # Not found
+
+       def test_parent_cannot_view_other_student(self, parent_user):
+           """Test parent cannot access other students"""
+           from django.contrib.auth import get_user_model
+           User = get_user_model()
+
+           other_student = User.objects.create_user(
+               username='other_student',
+               email='other@example.com',
+               password='test123',
+               role='student'
+           )
+
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:student-detail', kwargs={'student_id': other_student.id})
+           response = client.get(url)
+
+           assert response.status_code == 404
+
+   @pytest.mark.django_db
+   class TestNotificationViews:
+       """Test notification views"""
+
+       def test_notification_list(self, parent_user, student_user):
+           """Test notification list view"""
+           # Create test notifications
+           ParentNotification.objects.create(
+               parent=parent_user,
+               student=student_user,
+               title='Test notification',
+               message='Test message'
+           )
+
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:notifications')
+           response = client.get(url)
+
+           assert response.status_code == 200
+           assert len(response.context['notifications']) == 1
+
+       def test_mark_notification_read(self, parent_user):
+           """Test marking notification as read"""
+           notification = ParentNotification.objects.create(
+               parent=parent_user,
+               title='Test',
+               message='Test'
+           )
+
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:notification-read',
+                        kwargs={'notification_id': notification.id})
+           response = client.get(url)
+
+           notification.refresh_from_db()
+           assert notification.is_read is True
+   ```
+
+4. Create form tests:
+   ```python
+   # apps/parents/tests/test_forms.py
+   import pytest
+   from apps.parents.forms import (
+       ParentRegistrationForm,
+       StudentLinkForm,
+       ComposeMessageForm
+   )
+
+   @pytest.mark.django_db
+   class TestParentRegistrationForm:
+       """Test parent registration form"""
+
+       def test_valid_registration(self):
+           """Test valid registration data"""
+           form_data = {
+               'email': 'newparent@example.com',
+               'first_name': 'Ahmad',
+               'last_name': 'Ibrahim',
+               'phone_number': '+60123456789',
+               'password1': 'SecurePass123!',
+               'password2': 'SecurePass123!'
+           }
+           form = ParentRegistrationForm(data=form_data)
+           assert form.is_valid()
+
+       def test_password_mismatch(self):
+           """Test password mismatch validation"""
+           form_data = {
+               'email': 'test@example.com',
+               'first_name': 'Test',
+               'last_name': 'User',
+               'phone_number': '+60123456789',
+               'password1': 'SecurePass123!',
+               'password2': 'DifferentPass123!'
+           }
+           form = ParentRegistrationForm(data=form_data)
+           assert not form.is_valid()
+
+       def test_creates_parent_role(self):
+           """Test that form creates user with parent role"""
+           form_data = {
+               'email': 'parent@example.com',
+               'first_name': 'Parent',
+               'last_name': 'User',
+               'phone_number': '+60123456789',
+               'password1': 'SecurePass123!',
+               'password2': 'SecurePass123!'
+           }
+           form = ParentRegistrationForm(data=form_data)
+           assert form.is_valid()
+           user = form.save()
+           assert user.role == 'parent'
+           assert user.is_active is False  # Requires verification
+
+   @pytest.mark.django_db
+   class TestStudentLinkForm:
+       """Test student linking form"""
+
+       def test_requires_student_id_or_code(self):
+           """Test that either student ID or verification code is required"""
+           form_data = {
+               'relationship_type': 'father'
+           }
+           form = StudentLinkForm(data=form_data)
+           assert not form.is_valid()
+
+       def test_valid_with_student_id(self):
+           """Test form is valid with student ID"""
+           form_data = {
+               'student_id': 'STU001',
+               'relationship_type': 'father',
+               'is_primary_contact': True
+           }
+           form = StudentLinkForm(data=form_data)
+           assert form.is_valid()
+   ```
+
+5. Create integration tests:
+   ```python
+   # apps/parents/tests/test_integration.py
+   import pytest
+   from django.test import Client
+   from django.urls import reverse
+   from apps.parents.models import ParentStudent
+   from apps.parents.utils import create_notification, notify_parents_of_student
+
+   @pytest.mark.django_db
+   class TestParentPortalWorkflow:
+       """Test complete parent portal workflows"""
+
+       def test_parent_registration_and_link_student(self, student_user):
+           """Test complete workflow: register parent, link to student"""
+           client = Client()
+
+           # Register parent
+           register_url = reverse('parents:register')
+           registration_data = {
+               'email': 'newparent@example.com',
+               'first_name': 'Ali',
+               'last_name': 'Ahmad',
+               'phone_number': '+60123456789',
+               'password1': 'SecurePass123!',
+               'password2': 'SecurePass123!'
+           }
+           response = client.post(register_url, registration_data)
+           # Would redirect to success page
+
+           # Login (skip email verification for test)
+           from django.contrib.auth import get_user_model
+           User = get_user_model()
+           parent = User.objects.get(email='newparent@example.com')
+           parent.is_active = True
+           parent.save()
+           client.force_login(parent)
+
+           # Link to student
+           link_url = reverse('parents:link-student')
+           link_data = {
+               'student_id': student_user.username,
+               'relationship_type': 'father',
+               'is_primary_contact': True
+           }
+           # Form submission would create relationship
+
+           # Verify relationship exists
+           assert ParentStudent.objects.filter(
+               parent=parent,
+               student=student_user
+           ).exists()
+
+       def test_notification_workflow(self, parent_user, student_user,
+                                      parent_student_relationship):
+           """Test notification creation and delivery"""
+           # Create notification for student
+           notifications = notify_parents_of_student(
+               student=student_user,
+               title='Grade Posted',
+               message='New grade posted for Mathematics',
+               notification_type='grade_posted',
+               priority='normal'
+           )
+
+           assert len(notifications) == 1
+           assert notifications[0].parent == parent_user
+
+           # Parent views notifications
+           client = Client()
+           client.force_login(parent_user)
+           url = reverse('parents:notifications')
+           response = client.get(url)
+
+           assert response.status_code == 200
+           assert response.context['unread_count'] == 1
+   ```
+
+6. Run tests and check coverage:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+
+   # Run all parent app tests
+   pytest apps/parents/tests/ -v
+
+   # Run with coverage
+   pytest apps/parents/tests/ --cov=apps/parents --cov-report=html
+
+   # Check coverage report
+   open htmlcov/index.html
+   ```
+
+## Acceptance Criteria:
+- Model tests created for ParentStudent, ParentTeacherMessage, ParentNotification
+- View tests created for all parent portal views
+- Permission tests verify parents can only access their students
+- Form validation tests created
+- Notification helper function tests created
+- Test fixtures created for sample data
+- Integration tests for complete workflows
+- Test coverage above 80% for parent portal app
+- All tests pass successfully
+- Tests documented with clear descriptions
+
+## Files Modified:
+- `src/apps/parents/tests/__init__.py (new file)`
+- `src/apps/parents/tests/fixtures.py (new file)`
+- `src/apps/parents/tests/test_models.py (new file)`
+- `src/apps/parents/tests/test_views.py (new file)`
+- `src/apps/parents/tests/test_forms.py (new file)`
+- `src/apps/parents/tests/test_integration.py (new file)`
+
+## Important Notes:
+- Tests use pytest framework with django plugin
+- Fixtures provide reusable test data
+- Tests cover models, views, forms, and complete workflows
+- Permission tests ensure security (parents only access their students)
+- Integration tests verify end-to-end functionality
+- Coverage target is 80% or higher
+- Tests are documented with clear descriptions
+- Use pytest-django for database access
+- Consider adding factory_boy for complex test data
+- Tests should run fast (< 30 seconds for full suite)
+- Estimate: 120 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Access view URL and verify HTTP 200 response
+11. Test with different user permissions
+12. Verify context data passed to template
+13. Test any query parameters or filters
+14. Run test suite with `python manage.py test`
+15. Verify test coverage meets requirements
+16. Check for any failing tests
+17. Verify test assertions are correct

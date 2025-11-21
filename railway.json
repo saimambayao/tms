@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "dockerfile",
+    "dockerfile": "./Dockerfile"
+  },
+  "deploy": {
+    "startCommand": "sh /app/entrypoint.sh",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 10
+  }
+}

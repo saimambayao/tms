@@ -1,0 +1,551 @@
+# Task ID: 080
+# Title: Create Academic Calendar
+# Status: pending
+# Dependencies: 074
+# Priority: medium
+# Description: Create academic calendar system to manage important dates, events, holidays, and academic milestones. Support for both Gregorian and Hijri calendars w
+
+# Details:
+Create academic calendar system to manage important dates, events, holidays, and academic milestones. Support for both Gregorian and Hijri calendars with event notifications.
+
+## Implementation Steps:
+1. Create AcademicEvent model:
+   ```python
+   # apps/academics/models.py (add to existing file)
+
+   class AcademicEvent(models.Model):
+       """Academic calendar events and important dates"""
+
+       EVENT_TYPES = [
+           ('holiday', 'Holiday'),
+           ('exam', 'Examination'),
+           ('quiz', 'Quiz/Test'),
+           ('registration', 'Registration Period'),
+           ('orientation', 'Orientation'),
+           ('parent_meeting', 'Parent-Teacher Meeting'),
+           ('report_card', 'Report Card Distribution'),
+           ('break', 'Term Break'),
+           ('graduation', 'Graduation Ceremony'),
+           ('ramadan', 'Ramadan Schedule'),
+           ('eid', 'Eid Holiday'),
+           ('islamic', 'Islamic Observance'),
+           ('other', 'Other Event'),
+       ]
+
+       RECURRENCE_TYPES = [
+           ('none', 'Does not repeat'),
+           ('daily', 'Daily'),
+           ('weekly', 'Weekly'),
+           ('monthly', 'Monthly'),
+           ('yearly', 'Yearly'),
+       ]
+
+       # Core fields
+       title = models.CharField(
+           max_length=200,
+           help_text="Event title"
+       )
+
+       description = models.TextField(
+           blank=True,
+           help_text="Detailed description"
+       )
+
+       event_type = models.CharField(
+           max_length=30,
+           choices=EVENT_TYPES,
+           help_text="Type of event"
+       )
+
+       # Dates
+       start_date = models.DateField(
+           help_text="Event start date (Gregorian)"
+       )
+
+       end_date = models.DateField(
+           help_text="Event end date (Gregorian)"
+       )
+
+       # Hijri dates (optional)
+       hijri_start_date = models.CharField(
+           max_length=30,
+           blank=True,
+           help_text="Hijri start date (e.g., '1 Ramadan 1446')"
+       )
+
+       hijri_end_date = models.CharField(
+           max_length=30,
+           blank=True,
+           help_text="Hijri end date"
+       )
+
+       # Time (for events with specific times)
+       start_time = models.TimeField(
+           null=True,
+           blank=True,
+           help_text="Event start time"
+       )
+
+       end_time = models.TimeField(
+           null=True,
+           blank=True,
+           help_text="Event end time"
+       )
+
+       # Scope
+       academic_year = models.ForeignKey(
+           AcademicYear,
+           on_delete=models.CASCADE,
+           related_name='events',
+           help_text="Academic year for this event"
+       )
+
+       madrasah = models.ForeignKey(
+           'madrasahs.Madrasah',
+           on_delete=models.CASCADE,
+           null=True,
+           blank=True,
+           related_name='academic_events',
+           help_text="Specific madrasah (blank for all madrasahs)"
+       )
+
+       grade_levels = models.JSONField(
+           default=list,
+           blank=True,
+           help_text="Specific grade levels (empty for all grades)"
+       )
+
+       # Location
+       location = models.CharField(
+           max_length=200,
+           blank=True,
+           help_text="Event location/venue"
+       )
+
+       # Recurrence
+       recurrence = models.CharField(
+           max_length=20,
+           choices=RECURRENCE_TYPES,
+           default='none',
+           help_text="Event recurrence pattern"
+       )
+
+       # Notifications
+       send_notification = models.BooleanField(
+           default=False,
+           help_text="Send notifications to affected users"
+       )
+
+       notification_days_before = models.PositiveIntegerField(
+           default=1,
+           help_text="Send notification N days before event"
+       )
+
+       # Status
+       is_active = models.BooleanField(
+           default=True,
+           help_text="Event is active and visible"
+       )
+
+       is_school_closure = models.BooleanField(
+           default=False,
+           help_text="School is closed on this date"
+       )
+
+       # Metadata
+       created_by = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.SET_NULL,
+           null=True,
+           related_name='created_events'
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'academics_academic_event'
+           verbose_name = 'Academic Event'
+           verbose_name_plural = 'Academic Events'
+           ordering = ['start_date', 'start_time']
+           indexes = [
+               models.Index(fields=['start_date', 'end_date']),
+               models.Index(fields=['event_type']),
+               models.Index(fields=['academic_year']),
+           ]
+
+       def __str__(self):
+           return f"{self.title} ({self.start_date})"
+
+       @property
+       def duration_days(self):
+           """Calculate event duration in days"""
+           return (self.end_date - self.start_date).days + 1
+
+       @property
+       def is_upcoming(self):
+           """Check if event is upcoming"""
+           from django.utils import timezone
+           today = timezone.now().date()
+           return self.start_date > today
+
+       @property
+       def is_ongoing(self):
+           """Check if event is currently happening"""
+           from django.utils import timezone
+           today = timezone.now().date()
+           return self.start_date <= today <= self.end_date
+
+       @property
+       def is_past(self):
+           """Check if event has passed"""
+           from django.utils import timezone
+           today = timezone.now().date()
+           return self.end_date < today
+
+       @property
+       def status_label(self):
+           """Get human-readable status"""
+           if self.is_ongoing:
+               return 'Ongoing'
+           elif self.is_upcoming:
+               return 'Upcoming'
+           else:
+               return 'Past'
+
+       def get_affected_users(self):
+           """Get users affected by this event"""
+           from apps.users.models import User
+
+           users = User.objects.none()
+
+           # If madrasah-specific
+           if self.madrasah:
+               from apps.madrasahs.models import MadrasahEnrollment
+               enrollments = MadrasahEnrollment.objects.filter(
+                   madrasah=self.madrasah
+               )
+
+               # Filter by grade level if specified
+               if self.grade_levels:
+                   enrollments = enrollments.filter(
+                       grade_level__in=self.grade_levels
+                   )
+
+               users = User.objects.filter(
+                   id__in=enrollments.values_list('user_id', flat=True)
+               )
+
+           # All users if no madrasah specified
+           else:
+               users = User.objects.filter(is_active=True)
+
+           return users
+   ```
+
+2. Create calendar views:
+   ```python
+   # apps/academics/views.py (add to existing file)
+   import calendar
+   from datetime import datetime, timedelta
+   from django.db.models import Q
+
+   @login_required
+   def academic_calendar(request, year=None, month=None):
+       """Display academic calendar for a specific month"""
+       # Default to current month
+       if not year or not month:
+           today = date.today()
+           year = today.year
+           month = today.month
+
+       year = int(year)
+       month = int(month)
+
+       # Get active academic year
+       academic_year = AcademicYear.objects.filter(status='active').first()
+
+       # Calculate month boundaries
+       first_day = date(year, month, 1)
+       last_day = date(year, month, calendar.monthrange(year, month)[1])
+
+       # Get events for this month
+       events = AcademicEvent.objects.filter(
+           Q(start_date__lte=last_day) & Q(end_date__gte=first_day),
+           is_active=True
+       ).select_related('madrasah', 'academic_year')
+
+       # Filter by user's madrasah if not staff
+       if not request.user.is_staff:
+           user_madrasah = request.user.madrasah_enrollments.first()
+           if user_madrasah:
+               events = events.filter(
+                   Q(madrasah=user_madrasah.madrasah) | Q(madrasah__isnull=True)
+               )
+
+       # Create calendar grid
+       cal = calendar.monthcalendar(year, month)
+
+       # Map events to days
+       events_by_date = {}
+       for event in events:
+           current_date = event.start_date
+           while current_date <= event.end_date:
+               if current_date.year == year and current_date.month == month:
+                   date_key = current_date.day
+                   if date_key not in events_by_date:
+                       events_by_date[date_key] = []
+                   events_by_date[date_key].append(event)
+               current_date += timedelta(days=1)
+
+       # Previous and next month navigation
+       prev_month = month - 1 if month > 1 else 12
+       prev_year = year if month > 1 else year - 1
+       next_month = month + 1 if month < 12 else 1
+       next_year = year if month < 12 else year + 1
+
+       context = {
+           'calendar': cal,
+           'events_by_date': events_by_date,
+           'current_month': month,
+           'current_year': year,
+           'month_name': calendar.month_name[month],
+           'prev_month': prev_month,
+           'prev_year': prev_year,
+           'next_month': next_month,
+           'next_year': next_year,
+           'academic_year': academic_year,
+           'page_title': 'Academic Calendar',
+       }
+
+       return render(request, 'academics/calendar.html', context)
+
+   @login_required
+   def event_detail(request, event_id):
+       """Display event details"""
+       event = get_object_or_404(AcademicEvent, pk=event_id)
+
+       # Check permission
+       if event.madrasah:
+           user_madrasah = request.user.madrasah_enrollments.first()
+           if user_madrasah and user_madrasah.madrasah != event.madrasah:
+               if not request.user.is_staff:
+                   messages.error(request, "You don't have permission to view this event.")
+                   return redirect('academics:calendar')
+
+       context = {
+           'event': event,
+           'page_title': event.title,
+       }
+
+       return render(request, 'academics/event_detail.html', context)
+
+   @login_required
+   def upcoming_events(request):
+       """List all upcoming events"""
+       today = date.today()
+
+       events = AcademicEvent.objects.filter(
+           start_date__gte=today,
+           is_active=True
+       ).select_related('madrasah', 'academic_year').order_by('start_date')
+
+       # Filter by user's madrasah if not staff
+       if not request.user.is_staff:
+           user_madrasah = request.user.madrasah_enrollments.first()
+           if user_madrasah:
+               events = events.filter(
+                   Q(madrasah=user_madrasah.madrasah) | Q(madrasah__isnull=True)
+               )
+
+       # Group by month
+       events_by_month = {}
+       for event in events:
+           month_key = event.start_date.strftime('%B %Y')
+           if month_key not in events_by_month:
+               events_by_month[month_key] = []
+           events_by_month[month_key].append(event)
+
+       context = {
+           'events_by_month': events_by_month,
+           'page_title': 'Upcoming Events',
+       }
+
+       return render(request, 'academics/upcoming_events.html', context)
+
+   @login_required
+   def event_icalendar(request, event_id):
+       """Export event as iCalendar file"""
+       event = get_object_or_404(AcademicEvent, pk=event_id)
+
+       # Create iCalendar content
+       ical_content = f"""BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Madaris Management System//Academic Calendar//EN
+BEGIN:VEVENT
+UID:{event.id}@madaris-ms.local
+DTSTAMP:{datetime.now().strftime('%Y%m%dT%H%M%SZ')}
+DTSTART:{event.start_date.strftime('%Y%m%d')}
+DTEND:{event.end_date.strftime('%Y%m%d')}
+SUMMARY:{event.title}
+DESCRIPTION:{event.description}
+LOCATION:{event.location}
+STATUS:CONFIRMED
+END:VEVENT
+END:VCALENDAR"""
+
+       response = HttpResponse(ical_content, content_type='text/calendar')
+       response['Content-Disposition'] = f'attachment; filename="{event.title}.ics"'
+
+       return response
+   ```
+
+3. Add URL patterns:
+   ```python
+   # apps/academics/urls.py (add to existing)
+   urlpatterns = [
+       ...
+       # Calendar
+       path('calendar/', views.academic_calendar, name='calendar'),
+       path('calendar/<int:year>/<int:month>/', views.academic_calendar, name='calendar_month'),
+       path('events/upcoming/', views.upcoming_events, name='upcoming_events'),
+       path('events/<int:event_id>/', views.event_detail, name='event_detail'),
+       path('events/<int:event_id>/ical/', views.event_icalendar, name='event_icalendar'),
+   ]
+   ```
+
+4. Create calendar template:
+   ```html
+   <!-- templates/academics/calendar.html -->
+   {% extends "base.html" %}
+   {% load static %}
+
+   {% block title %}{{ page_title }}{% endblock %}
+
+   {% block content %}
+   <div class="container mx-auto px-4 py-8">
+       <div class="mb-6 flex justify-between items-center">
+           <h1 class="text-3xl font-bold">{{ month_name }} {{ current_year }}</h1>
+
+           <div class="flex gap-2">
+               <a href="{% url 'academics:calendar_month' prev_year prev_month %}"
+                  class="btn btn-outline">
+                   ← Previous
+               </a>
+               <a href="{% url 'academics:calendar' %}"
+                  class="btn btn-secondary">
+                   Today
+               </a>
+               <a href="{% url 'academics:calendar_month' next_year next_month %}"
+                  class="btn btn-outline">
+                   Next →
+               </a>
+           </div>
+       </div>
+
+       <!-- Calendar Grid -->
+       <div class="bg-white shadow rounded-lg overflow-hidden">
+           <div class="grid grid-cols-7 gap-px bg-gray-200">
+               <!-- Day headers -->
+               {% for day in "Mon Tue Wed Thu Fri Sat Sun"|split:" " %}
+               <div class="bg-gray-50 p-2 text-center font-semibold text-sm">
+                   {{ day }}
+               </div>
+               {% endfor %}
+
+               <!-- Calendar days -->
+               {% for week in calendar %}
+                   {% for day in week %}
+                   <div class="bg-white min-h-24 p-2 {% if day == 0 %}bg-gray-50{% endif %}">
+                       {% if day != 0 %}
+                           <div class="font-semibold text-gray-700 mb-1">{{ day }}</div>
+
+                           {% if day in events_by_date %}
+                               {% for event in events_by_date|lookup:day %}
+                               <a href="{% url 'academics:event_detail' event.id %}"
+                                  class="block text-xs p-1 mb-1 rounded
+                                         {% if event.event_type == 'holiday' or event.event_type == 'eid' %}
+                                             bg-red-100 text-red-800
+                                         {% elif event.event_type == 'exam' %}
+                                             bg-yellow-100 text-yellow-800
+                                         {% elif event.event_type == 'islamic' or event.event_type == 'ramadan' %}
+                                             bg-green-100 text-green-800
+                                         {% else %}
+                                             bg-blue-100 text-blue-800
+                                         {% endif %}">
+                                   {{ event.title|truncatewords:3 }}
+                               </a>
+                               {% endfor %}
+                           {% endif %}
+                       {% endif %}
+                   </div>
+                   {% endfor %}
+               {% endfor %}
+           </div>
+       </div>
+
+       <!-- Event Legend -->
+       <div class="mt-6 p-4 bg-white shadow rounded-lg">
+           <h3 class="font-semibold mb-3">Event Types</h3>
+           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+               <div class="flex items-center gap-2">
+                   <span class="w-4 h-4 bg-red-100 border border-red-300 rounded"></span>
+                   Holidays
+               </div>
+               <div class="flex items-center gap-2">
+                   <span class="w-4 h-4 bg-yellow-100 border border-yellow-300 rounded"></span>
+                   Exams
+               </div>
+               <div class="flex items-center gap-2">
+                   <span class="w-4 h-4 bg-green-100 border border-green-300 rounded"></span>
+                   Islamic Events
+               </div>
+               <div class="flex items-center gap-2">
+                   <span class="w-4 h-4 bg-blue-100 border border-blue-300 rounded"></span>
+                   Other Events
+               </div>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+5. Create migration:
+   ```bash
+   python manage.py makemigrations academics
+   python manage.py migrate academics
+   ```
+
+## Acceptance Criteria:
+- AcademicEvent model created
+- Event categories (holidays, exams, etc.)
+- Calendar view interface
+- Hijri calendar integration
+- Event notifications
+- Recurring events support
+- Migration created successfully
+- Calendar accessible to users
+
+## Files Modified:
+- `src/apps/academics/models.py`
+- `src/apps/academics/views.py`
+- `src/apps/academics/urls.py`
+- `src/apps/academics/migrations/0005_academic_event.py`
+- `src/templates/academics/calendar.html (new)`
+- `src/templates/academics/event_detail.html (new)`
+- `src/templates/academics/upcoming_events.html (new)`
+
+## Important Notes:
+- Support for both Gregorian and Hijri calendars
+- Recurring events functionality
+- iCalendar export for external calendar apps
+- Event notifications (can be triggered via background task)
+- Madrasah-specific and system-wide events
+- Color-coded event types
+- Estimate: 70 minutes
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

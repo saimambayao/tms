@@ -1,0 +1,186 @@
+# Task ID: 024
+# Title: Update User Fixtures and Seed Data
+# Status: pending
+# Dependencies: 020
+# Priority: high
+# Description: Update user fixtures and seed data scripts to include sample users with new Tarbiyyah roles for development and testing.
+
+# Details:
+Update user fixtures and seed data scripts to include sample users with new Tarbiyyah roles for development and testing.
+
+## Implementation Steps:
+1. Locate or create fixtures file:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/apps/users/fixtures
+   touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/users/fixtures/sample_users.json
+   ```
+2. Create fixture with sample users:
+   ```json
+   [
+     {
+       "model": "users.user",
+       "pk": 1,
+       "fields": {
+         "username": "tarbiyyah_admin",
+         "email": "tarbiyyah.admin@barmm.gov.ph",
+         "first_name": "Ahmad",
+         "last_name": "Rahman",
+         "role": "tarbiyyah_admin",
+         "is_active": true,
+         "is_staff": true
+       }
+     },
+     {
+       "model": "users.user",
+       "pk": 2,
+       "fields": {
+         "username": "madrasah_admin",
+         "email": "admin@madrasah-alfurqan.edu",
+         "first_name": "Fatima",
+         "last_name": "Abdullah",
+         "role": "madrasah_admin",
+         "is_active": true
+       }
+     },
+     {
+       "model": "users.user",
+       "pk": 3,
+       "fields": {
+         "username": "muder001",
+         "email": "muder@madrasah-alfurqan.edu",
+         "first_name": "Ibrahim",
+         "last_name": "Hassan",
+         "role": "muder",
+         "is_active": true
+       }
+     },
+     {
+       "model": "users.user",
+       "pk": 4,
+       "fields": {
+         "username": "ustadz001",
+         "email": "ustadz.ali@madrasah-alfurqan.edu",
+         "first_name": "Ali",
+         "last_name": "Omar",
+         "role": "asatidz",
+         "is_active": true
+       }
+     },
+     {
+       "model": "users.user",
+       "pk": 5,
+       "fields": {
+         "username": "student001",
+         "email": "student001@example.com",
+         "first_name": "Yusuf",
+         "last_name": "Ahmed",
+         "role": "student",
+         "is_active": true
+       }
+     },
+     {
+       "model": "users.user",
+       "pk": 6,
+       "fields": {
+         "username": "parent001",
+         "email": "parent.ahmed@example.com",
+         "first_name": "Abdullah",
+         "last_name": "Ahmed",
+         "role": "parent",
+         "is_active": true
+       }
+     }
+   ]
+   ```
+3. Create management command to seed users:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/apps/users/management/commands
+   touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/users/management/commands/seed_users.py
+   ```
+4. Implement seed command:
+   ```python
+   # apps/users/management/commands/seed_users.py
+   from django.core.management.base import BaseCommand
+   from apps.users.models import User
+
+   class Command(BaseCommand):
+       help = 'Create sample users with different roles'
+
+       def handle(self, *args, **kwargs):
+           users_data = [
+               ('tarbiyyah_admin', 'Ahmad', 'Rahman', 'tarbiyyah_admin'),
+               ('madrasah_admin', 'Fatima', 'Abdullah', 'madrasah_admin'),
+               ('muder001', 'Ibrahim', 'Hassan', 'muder'),
+               ('ustadz001', 'Ali', 'Omar', 'asatidz'),
+               ('ustadza001', 'Aisha', 'Mohammad', 'asatidz'),
+               ('student001', 'Yusuf', 'Ahmed', 'student'),
+               ('student002', 'Maryam', 'Ibrahim', 'student'),
+               ('parent001', 'Abdullah', 'Ahmed', 'parent'),
+           ]
+
+           for username, first_name, last_name, role in users_data:
+               user, created = User.objects.get_or_create(
+                   username=username,
+                   defaults={
+                       'first_name': first_name,
+                       'last_name': last_name,
+                       'email': f'{username}@example.com',
+                       'role': role,
+                       'is_active': True,
+                   }
+               )
+               if created:
+                   user.set_password('password123')
+                   user.save()
+                   self.stdout.write(
+                       self.style.SUCCESS(f'Created user: {username} ({role})')
+                   )
+               else:
+                   self.stdout.write(
+                       self.style.WARNING(f'User already exists: {username}')
+                   )
+   ```
+5. Load fixtures:
+   ```bash
+   python manage.py loaddata sample_users
+   ```
+6. Run seed command:
+   ```bash
+   python manage.py seed_users
+   ```
+7. Verify users created:
+   ```bash
+   python manage.py shell
+   from apps.users.models import User
+   for role in User.Role:
+       count = User.objects.filter(role=role.value).count()
+       print(f"{role.label}: {count} users")
+   ```
+
+## Acceptance Criteria:
+- Fixture file updated with new role users
+- Seed script creates users for all roles
+- Sample users have realistic data
+- Fixture can be loaded successfully
+- Users created with proper role assignments
+- Development database has sample users for each role
+
+## Files Modified:
+- `src/apps/users/fixtures/sample_users.json (new file)`
+- `src/apps/users/management/commands/seed_users.py (new file)`
+
+## Important Notes:
+- Use realistic Islamic names for authenticity
+- Set simple passwords for development only
+- Document default credentials in README
+- Estimate: 40 minutes
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Run test suite with `python manage.py test`
+6. Verify test coverage meets requirements
+7. Check for any failing tests
+8. Verify test assertions are correct

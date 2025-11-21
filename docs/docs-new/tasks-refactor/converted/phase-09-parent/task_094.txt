@@ -1,0 +1,155 @@
+# Task ID: 094
+# Title: Create ParentStudent Relationship Model
+# Status: pending
+# Dependencies: 092, 093
+# Priority: high
+# Description: Create ParentStudent junction model to link parent users with student users. Supports multiple parents per student and multiple children per parent, w
+
+# Details:
+Create ParentStudent junction model to link parent users with student users. Supports multiple parents per student and multiple children per parent, with relationship type tracking.
+
+## Implementation Steps:
+1. Create ParentStudent model:
+   ```python
+   # apps/parents/models.py
+   from django.db import models
+   from apps.users.models import User
+
+   class ParentStudent(models.Model):
+       """
+       Junction table linking parents to students.
+       Supports multiple parents per student and multiple children per parent.
+       """
+
+       class RelationshipType(models.TextChoices):
+           FATHER = 'father', 'Father (Bapa)'
+           MOTHER = 'mother', 'Mother (Ibu)'
+           LEGAL_GUARDIAN = 'legal_guardian', 'Legal Guardian (Penjaga Sah)'
+           GRANDFATHER = 'grandfather', 'Grandfather (Datuk)'
+           GRANDMOTHER = 'grandmother', 'Grandmother (Nenek)'
+           UNCLE = 'uncle', 'Uncle (Bapa Saudara)'
+           AUNT = 'aunt', 'Aunt (Ibu Saudara)'
+           OTHER = 'other', 'Other Relative (Saudara Lain)'
+
+       class Status(models.TextChoices):
+           ACTIVE = 'active', 'Active'
+           INACTIVE = 'inactive', 'Inactive'
+
+       parent = models.ForeignKey(
+           User,
+           on_delete=models.CASCADE,
+           related_name='parent_relationships',
+           limit_choices_to={'role': 'parent'},
+           help_text="Parent/guardian user account"
+       )
+
+       student = models.ForeignKey(
+           User,
+           on_delete=models.CASCADE,
+           related_name='student_relationships',
+           limit_choices_to={'role': 'student'},
+           help_text="Student user account"
+       )
+
+       relationship_type = models.CharField(
+           max_length=20,
+           choices=RelationshipType.choices,
+           default=RelationshipType.FATHER,
+           help_text="Type of relationship to student"
+       )
+
+       is_primary_contact = models.BooleanField(
+           default=False,
+           help_text="Primary contact for school communications"
+       )
+
+       is_emergency_contact = models.BooleanField(
+           default=False,
+           help_text="Emergency contact for student"
+       )
+
+       can_pickup = models.BooleanField(
+           default=True,
+           help_text="Authorized to pick up student from school"
+       )
+
+       status = models.CharField(
+           max_length=10,
+           choices=Status.choices,
+           default=Status.ACTIVE,
+           help_text="Relationship status"
+       )
+
+       notes = models.TextField(
+           blank=True,
+           help_text="Additional notes about this relationship"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           verbose_name = "Parent-Student Relationship"
+           verbose_name_plural = "Parent-Student Relationships"
+           unique_together = ['parent', 'student']
+           ordering = ['-is_primary_contact', 'relationship_type']
+
+       def __str__(self):
+           return f"{self.parent.get_full_name()} ({self.relationship_type}) - {self.student.get_full_name()}"
+   ```
+
+2. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations parents
+   ```
+
+3. Review migration file - should create ParentStudent table with proper indexes
+
+4. Apply migration:
+   ```bash
+   python manage.py migrate parents
+   ```
+
+5. Test in Django shell:
+   ```python
+   from apps.parents.models import ParentStudent
+   from apps.users.models import User
+
+   # Verify relationship types
+   print(ParentStudent.RelationshipType.choices)
+
+   # Test model creation (if test data exists)
+   # parent = User.objects.filter(role='parent').first()
+   # student = User.objects.filter(role='student').first()
+   # rel = ParentStudent.objects.create(parent=parent, student=student)
+   ```
+
+## Acceptance Criteria:
+- ParentStudent model created in parents/models.py
+- Model links User(role=PARENT) to User(role=STUDENT)
+- Relationship type field added (father, mother, guardian, etc.)
+- Primary contact flag added
+- Status field added (active, inactive)
+- Timestamps (created, updated) added
+- Migration created and applied
+- Model registered in Django admin with inline display
+
+## Files Modified:
+- `src/apps/parents/models.py`
+- `src/apps/parents/migrations/0001_initial.py`
+
+## Important Notes:
+- Supports multiple parents per student (polygamous families, guardians)
+- Supports multiple children per parent account
+- Includes Malay translations for relationship types
+- Primary contact flag for main communication
+- Emergency contact and pickup authorization for school safety
+- Status field allows deactivating relationships without deletion
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

@@ -1,0 +1,479 @@
+# Task ID: 078
+# Title: Create Gradebook Interface
+# Status: pending
+# Dependencies: 076, 077
+# Priority: medium
+# Description: Create gradebook views and templates for teachers to manage grades and attendance. Includes bulk entry, class roster view, and individual student perf
+
+# Details:
+Create gradebook views and templates for teachers to manage grades and attendance. Includes bulk entry, class roster view, and individual student performance tracking.
+
+## Implementation Steps:
+1. Create gradebook views:
+   ```python
+   # apps/academics/views.py
+   from django.shortcuts import render, get_object_or_404, redirect
+   from django.contrib.auth.decorators import login_required
+   from django.contrib import messages
+   from django.http import HttpResponse, JsonResponse
+   from django.db.models import Avg, Count, Q
+   from datetime import date
+   import csv
+
+   from .models import Class, Grade, Attendance, GradeReport, ClassEnrollment
+   from apps.users.models import User
+
+   @login_required
+   def gradebook_class_list(request):
+       """List all classes for teacher's gradebook"""
+       # Get classes where user is the teacher
+       classes = Class.objects.filter(
+           teacher=request.user,
+           is_active=True
+       ).select_related('subject', 'madrasah', 'academic_year')
+
+       context = {
+           'classes': classes,
+           'page_title': 'My Classes - Gradebook'
+       }
+       return render(request, 'academics/gradebook_class_list.html', context)
+
+   @login_required
+   def gradebook_class_roster(request, class_id):
+       """Display class roster with grades and attendance summary"""
+       class_obj = get_object_or_404(
+           Class.objects.select_related('subject', 'teacher', 'academic_year'),
+           pk=class_id
+       )
+
+       # Check permission
+       if class_obj.teacher != request.user and not request.user.is_staff:
+           messages.error(request, "You don't have permission to view this gradebook.")
+           return redirect('academics:gradebook_class_list')
+
+       # Get enrolled students with their performance data
+       enrollments = ClassEnrollment.objects.filter(
+           class_instance=class_obj,
+           status='enrolled'
+       ).select_related('student').order_by('student__last_name')
+
+       # Calculate statistics for each student
+       student_data = []
+       for enrollment in enrollments:
+           student = enrollment.student
+
+           # Get grades
+           grades = Grade.objects.filter(
+               student=student,
+               class_instance=class_obj
+           )
+
+           # Calculate average
+           avg_grade = grades.aggregate(Avg('percentage'))['percentage__avg'] or 0
+
+           # Get attendance stats
+           attendance_records = Attendance.objects.filter(
+               student=student,
+               class_instance=class_obj
+           )
+           total_sessions = attendance_records.count()
+           present_count = attendance_records.filter(
+               status__in=['present', 'late']
+           ).count()
+           attendance_pct = (present_count / total_sessions * 100) if total_sessions > 0 else 0
+
+           student_data.append({
+               'student': student,
+               'enrollment': enrollment,
+               'average_grade': round(avg_grade, 2),
+               'total_grades': grades.count(),
+               'attendance_percentage': round(attendance_pct, 2),
+               'total_sessions': total_sessions,
+               'present_count': present_count
+           })
+
+       context = {
+           'class': class_obj,
+           'student_data': student_data,
+           'page_title': f'Gradebook - {class_obj}'
+       }
+       return render(request, 'academics/gradebook_roster.html', context)
+
+   @login_required
+   def gradebook_grade_entry(request, class_id):
+       """Bulk grade entry form for an assessment"""
+       class_obj = get_object_or_404(Class, pk=class_id)
+
+       # Check permission
+       if class_obj.teacher != request.user and not request.user.is_staff:
+           messages.error(request, "You don't have permission to enter grades.")
+           return redirect('academics:gradebook_class_list')
+
+       enrollments = ClassEnrollment.objects.filter(
+           class_instance=class_obj,
+           status='enrolled'
+       ).select_related('student').order_by('student__last_name')
+
+       if request.method == 'POST':
+           assessment_name = request.POST.get('assessment_name')
+           assessment_type = request.POST.get('assessment_type')
+           assessment_date = request.POST.get('assessment_date')
+           max_score = float(request.POST.get('max_score', 100))
+           weight = float(request.POST.get('weight', 1.0))
+           term = int(request.POST.get('term', 1))
+
+           # Process each student's grade
+           created_count = 0
+           for enrollment in enrollments:
+               student_id = enrollment.student.id
+               score_key = f'score_{student_id}'
+               score = request.POST.get(score_key)
+
+               if score and score.strip():
+                   try:
+                       Grade.objects.create(
+                           student=enrollment.student,
+                           class_instance=class_obj,
+                           academic_year=class_obj.academic_year,
+                           assessment_type=assessment_type,
+                           assessment_name=assessment_name,
+                           assessment_date=assessment_date,
+                           score=float(score),
+                           max_score=max_score,
+                           weight=weight,
+                           term=term,
+                           recorded_by=request.user
+                       )
+                       created_count += 1
+                   except Exception as e:
+                       messages.error(request, f"Error saving grade for {enrollment.student}: {e}")
+
+           messages.success(request, f"Successfully entered {created_count} grades.")
+           return redirect('academics:gradebook_roster', class_id=class_id)
+
+       context = {
+           'class': class_obj,
+           'enrollments': enrollments,
+           'assessment_types': Grade.ASSESSMENT_TYPES,
+           'page_title': f'Grade Entry - {class_obj}'
+       }
+       return render(request, 'academics/gradebook_grade_entry.html', context)
+
+   @login_required
+   def gradebook_attendance_entry(request, class_id):
+       """Bulk attendance entry for a class session"""
+       class_obj = get_object_or_404(Class, pk=class_id)
+
+       # Check permission
+       if class_obj.teacher != request.user and not request.user.is_staff:
+           messages.error(request, "You don't have permission to enter attendance.")
+           return redirect('academics:gradebook_class_list')
+
+       enrollments = ClassEnrollment.objects.filter(
+           class_instance=class_obj,
+           status='enrolled'
+       ).select_related('student').order_by('student__last_name')
+
+       if request.method == 'POST':
+           attendance_date = request.POST.get('attendance_date', str(date.today()))
+
+           # Process each student's attendance
+           recorded_count = 0
+           for enrollment in enrollments:
+               student_id = enrollment.student.id
+               status_key = f'status_{student_id}'
+               status = request.POST.get(status_key, 'present')
+
+               # Check if already recorded
+               existing = Attendance.objects.filter(
+                   student=enrollment.student,
+                   class_instance=class_obj,
+                   date=attendance_date
+               ).first()
+
+               if existing:
+                   existing.status = status
+                   existing.recorded_by = request.user
+                   existing.save()
+               else:
+                   Attendance.objects.create(
+                       student=enrollment.student,
+                       class_instance=class_obj,
+                       academic_year=class_obj.academic_year,
+                       date=attendance_date,
+                       status=status,
+                       recorded_by=request.user
+                   )
+               recorded_count += 1
+
+           messages.success(request, f"Attendance recorded for {recorded_count} students.")
+           return redirect('academics:gradebook_roster', class_id=class_id)
+
+       # Get today's attendance if already recorded
+       today = date.today()
+       existing_attendance = {}
+       for att in Attendance.objects.filter(class_instance=class_obj, date=today):
+           existing_attendance[att.student.id] = att.status
+
+       context = {
+           'class': class_obj,
+           'enrollments': enrollments,
+           'status_choices': Attendance.STATUS_CHOICES,
+           'existing_attendance': existing_attendance,
+           'default_date': today,
+           'page_title': f'Attendance Entry - {class_obj}'
+       }
+       return render(request, 'academics/gradebook_attendance_entry.html', context)
+
+   @login_required
+   def student_performance_detail(request, class_id, student_id):
+       """Detailed performance view for a single student in a class"""
+       class_obj = get_object_or_404(Class, pk=class_id)
+       student = get_object_or_404(User, pk=student_id, role='student')
+
+       # Check permission
+       if class_obj.teacher != request.user and not request.user.is_staff:
+           messages.error(request, "You don't have permission to view this.")
+           return redirect('academics:gradebook_class_list')
+
+       # Get grades
+       grades = Grade.objects.filter(
+           student=student,
+           class_instance=class_obj
+       ).order_by('-assessment_date')
+
+       # Get attendance
+       attendance = Attendance.objects.filter(
+           student=student,
+           class_instance=class_obj
+       ).order_by('-date')
+
+       # Calculate stats
+       avg_grade = grades.aggregate(Avg('percentage'))['percentage__avg'] or 0
+       total_sessions = attendance.count()
+       present_count = attendance.filter(status__in=['present', 'late']).count()
+       attendance_pct = (present_count / total_sessions * 100) if total_sessions > 0 else 0
+
+       context = {
+           'class': class_obj,
+           'student': student,
+           'grades': grades,
+           'attendance': attendance,
+           'average_grade': round(avg_grade, 2),
+           'attendance_percentage': round(attendance_pct, 2),
+           'page_title': f'{student.get_full_name()} - Performance'
+       }
+       return render(request, 'academics/student_performance_detail.html', context)
+
+   @login_required
+   def export_gradebook_csv(request, class_id):
+       """Export gradebook data as CSV"""
+       class_obj = get_object_or_404(Class, pk=class_id)
+
+       # Check permission
+       if class_obj.teacher != request.user and not request.user.is_staff:
+           return HttpResponse("Permission denied", status=403)
+
+       response = HttpResponse(content_type='text/csv')
+       response['Content-Disposition'] = f'attachment; filename="gradebook_{class_obj.class_code}.csv"'
+
+       writer = csv.writer(response)
+       writer.writerow(['Student ID', 'Name', 'Email', 'Average Grade', 'Attendance %'])
+
+       enrollments = ClassEnrollment.objects.filter(
+           class_instance=class_obj,
+           status='enrolled'
+       ).select_related('student')
+
+       for enrollment in enrollments:
+           student = enrollment.student
+           grades = Grade.objects.filter(student=student, class_instance=class_obj)
+           avg_grade = grades.aggregate(Avg('percentage'))['percentage__avg'] or 0
+
+           attendance = Attendance.objects.filter(student=student, class_instance=class_obj)
+           total = attendance.count()
+           present = attendance.filter(status__in=['present', 'late']).count()
+           att_pct = (present / total * 100) if total > 0 else 0
+
+           writer.writerow([
+               student.username,
+               student.get_full_name(),
+               student.email,
+               f"{avg_grade:.2f}",
+               f"{att_pct:.2f}"
+           ])
+
+       return response
+   ```
+
+2. Create URL patterns:
+   ```python
+   # apps/academics/urls.py (new file)
+   from django.urls import path
+   from . import views
+
+   app_name = 'academics'
+
+   urlpatterns = [
+       # Gradebook
+       path('gradebook/', views.gradebook_class_list, name='gradebook_class_list'),
+       path('gradebook/class/<int:class_id>/', views.gradebook_class_roster, name='gradebook_roster'),
+       path('gradebook/class/<int:class_id>/grade-entry/', views.gradebook_grade_entry, name='grade_entry'),
+       path('gradebook/class/<int:class_id>/attendance-entry/', views.gradebook_attendance_entry, name='attendance_entry'),
+       path('gradebook/class/<int:class_id>/student/<int:student_id>/', views.student_performance_detail, name='student_performance'),
+       path('gradebook/class/<int:class_id>/export/', views.export_gradebook_csv, name='export_gradebook'),
+   ]
+   ```
+
+3. Include URLs in main config:
+   ```python
+   # config/urls.py (add to existing urlpatterns)
+   urlpatterns = [
+       ...
+       path('academics/', include('apps.academics.urls')),
+       ...
+   ]
+   ```
+
+4. Create base gradebook template:
+   ```html
+   <!-- templates/academics/gradebook_roster.html -->
+   {% extends "base.html" %}
+   {% load static %}
+
+   {% block title %}{{ page_title }}{% endblock %}
+
+   {% block content %}
+   <div class="container mx-auto px-4 py-8">
+       <div class="mb-6">
+           <h1 class="text-3xl font-bold mb-2">{{ class }}</h1>
+           <p class="text-gray-600">
+               {{ class.academic_year }} | {{ class.madrasah.name }}
+           </p>
+       </div>
+
+       <!-- Action buttons -->
+       <div class="mb-6 flex gap-4">
+           <a href="{% url 'academics:grade_entry' class.id %}"
+              class="btn btn-primary">
+               Enter Grades
+           </a>
+           <a href="{% url 'academics:attendance_entry' class.id %}"
+              class="btn btn-secondary">
+               Mark Attendance
+           </a>
+           <a href="{% url 'academics:export_gradebook' class.id %}"
+              class="btn btn-outline">
+               Export CSV
+           </a>
+       </div>
+
+       <!-- Student roster table -->
+       <div class="bg-white shadow rounded-lg overflow-hidden">
+           <table class="min-w-full divide-y divide-gray-200">
+               <thead class="bg-gray-50">
+                   <tr>
+                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                           Student
+                       </th>
+                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                           Average Grade
+                       </th>
+                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                           Attendance
+                       </th>
+                       <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                           Actions
+                       </th>
+                   </tr>
+               </thead>
+               <tbody class="bg-white divide-y divide-gray-200">
+                   {% for data in student_data %}
+                   <tr>
+                       <td class="px-6 py-4 whitespace-nowrap">
+                           <div class="text-sm font-medium text-gray-900">
+                               {{ data.student.get_full_name }}
+                           </div>
+                           <div class="text-sm text-gray-500">
+                               {{ data.student.email }}
+                           </div>
+                       </td>
+                       <td class="px-6 py-4 whitespace-nowrap">
+                           <span class="text-sm font-semibold">
+                               {{ data.average_grade }}%
+                           </span>
+                           <span class="text-xs text-gray-500">
+                               ({{ data.total_grades }} grades)
+                           </span>
+                       </td>
+                       <td class="px-6 py-4 whitespace-nowrap">
+                           <span class="text-sm font-semibold">
+                               {{ data.attendance_percentage }}%
+                           </span>
+                           <span class="text-xs text-gray-500">
+                               ({{ data.present_count }}/{{ data.total_sessions }})
+                           </span>
+                       </td>
+                       <td class="px-6 py-4 whitespace-nowrap text-sm">
+                           <a href="{% url 'academics:student_performance' class.id data.student.id %}"
+                              class="text-blue-600 hover:text-blue-900">
+                               View Details
+                           </a>
+                       </td>
+                   </tr>
+                   {% empty %}
+                   <tr>
+                       <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+                           No students enrolled in this class.
+                       </td>
+                   </tr>
+                   {% endfor %}
+               </tbody>
+           </table>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+## Acceptance Criteria:
+- Gradebook view created
+- Class roster display
+- Bulk grade entry form
+- Attendance marking interface
+- Student performance detail view
+- Export functionality (CSV/PDF)
+- Templates created and styled
+- URL patterns configured
+
+## Files Modified:
+- `src/apps/academics/views.py`
+- `src/apps/academics/urls.py (new file)`
+- `src/config/urls.py`
+- `src/templates/academics/gradebook_class_list.html (new)`
+- `src/templates/academics/gradebook_roster.html (new)`
+- `src/templates/academics/gradebook_grade_entry.html (new)`
+- `src/templates/academics/gradebook_attendance_entry.html (new)`
+- `src/templates/academics/student_performance_detail.html (new)`
+
+## Important Notes:
+- Bulk entry forms for efficient data entry
+- Real-time statistics calculation
+- Export functionality for external use
+- Permission checks ensure only assigned teachers can access
+- Responsive design with Tailwind CSS
+- Estimate: 90 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Access view URL and verify HTTP 200 response
+11. Test with different user permissions
+12. Verify context data passed to template
+13. Test any query parameters or filters

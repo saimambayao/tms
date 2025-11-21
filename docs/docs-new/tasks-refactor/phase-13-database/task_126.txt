@@ -1,0 +1,447 @@
+# Task ID: 126
+# Title: Update Database Constraints
+# Status: pending
+# Dependencies: 125
+# Priority: high
+# Description: Add, update, or strengthen database constraints (CHECK, UNIQUE, NOT NULL) to enforce data integrity at the database level. Ensure constraints align wi
+
+# Details:
+Add, update, or strengthen database constraints (CHECK, UNIQUE, NOT NULL) to enforce data integrity at the database level. Ensure constraints align with business rules and prevent invalid data from being inserted. This improves data quality and reduces application-level validation burden.
+
+## Implementation Steps:
+1. **Create Database Backup (MANDATORY)**:
+   ```bash
+   pg_dump -h localhost -U postgres -d madaris_db \
+     -F c -b -v -f "backups/db_backup_task126_$(date +%Y%m%d_%H%M%S).dump"
+
+   echo "=== Task 126 Backup - $(date) ===" >> backups/BACKUP_LOG.md
+   ```
+
+2. **Review data integrity report from task_125**:
+   ```bash
+   # Ensure all critical/high issues are resolved
+   cat docs/DATA_INTEGRITY_REPORT.md
+
+   # Verify no constraint violations exist
+   python scripts/check_data_integrity.py
+   ```
+
+3. **Define constraints to add**:
+   ```python
+   # scripts/define_constraints.py
+   """
+   Define database constraints to enforce data integrity
+   """
+
+   CONSTRAINTS_TO_ADD = {
+       'users_user': [
+           {
+               'type': 'CHECK',
+               'name': 'check_valid_role',
+               'condition': "role IN ('superuser', 'tarbiyyah_admin', 'madrasah_admin', 'muder', 'asatidz', 'student', 'parent')",
+               'description': 'Ensure role is one of valid choices'
+           },
+           {
+               'type': 'CHECK',
+               'name': 'check_email_format',
+               'condition': "email ~* '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Z|a-z]{2,}$'",
+               'description': 'Ensure email is valid format'
+           },
+           {
+               'type': 'UNIQUE',
+               'name': 'unique_username',
+               'columns': ['username'],
+               'description': 'Username must be unique'
+           },
+           {
+               'type': 'NOT NULL',
+               'column': 'role',
+               'description': 'Role is required for all users'
+           }
+       ],
+
+       'chapters_madrasah': [
+           {
+               'type': 'CHECK',
+               'name': 'check_valid_madrasah_type',
+               'condition': "madrasah_type IN ('elementary', 'secondary', 'tertiary', 'vocational')",
+               'description': 'Ensure madrasah_type is valid'
+           },
+           {
+               'type': 'CHECK',
+               'name': 'check_positive_capacity',
+               'condition': "capacity IS NULL OR capacity > 0",
+               'description': 'Capacity must be positive if set'
+           },
+           {
+               'type': 'UNIQUE',
+               'name': 'unique_madrasah_code',
+               'columns': ['code'],
+               'description': 'Madrasah code must be unique'
+           },
+           {
+               'type': 'NOT NULL',
+               'column': 'name',
+               'description': 'Madrasah name is required'
+           }
+       ],
+
+       'constituents_student': [
+           {
+               'type': 'CHECK',
+               'name': 'check_valid_enrollment_status',
+               'condition': "enrollment_status IN ('active', 'inactive', 'graduated', 'withdrawn', 'suspended')",
+               'description': 'Ensure enrollment status is valid'
+           },
+           {
+               'type': 'UNIQUE',
+               'name': 'unique_student_number',
+               'columns': ['student_number'],
+               'description': 'Student number must be unique'
+           },
+           {
+               'type': 'NOT NULL',
+               'column': 'student_number',
+               'description': 'Student number is required'
+           }
+       ],
+
+       'chapters_madrasahenrollment': [
+           {
+               'type': 'CHECK',
+               'name': 'check_valid_date_range',
+               'condition': "end_date IS NULL OR start_date <= end_date",
+               'description': 'End date must be after start date'
+           },
+           {
+               'type': 'CHECK',
+               'name': 'check_reasonable_dates',
+               'condition': "start_date >= '2020-01-01' AND start_date <= CURRENT_DATE + INTERVAL '1 year'",
+               'description': 'Enrollment dates must be reasonable'
+           },
+           {
+               'type': 'UNIQUE',
+               'name': 'unique_active_enrollment',
+               'columns': ['student_id', 'madrasah_id', 'academic_year'],
+               'description': 'Student can only have one enrollment per madrasah per year'
+           }
+       ]
+   }
+
+   def generate_constraint_sql():
+       """Generate SQL statements to add constraints"""
+
+       sql_statements = []
+
+       for table, constraints in CONSTRAINTS_TO_ADD.items():
+           for constraint in constraints:
+               if constraint['type'] == 'CHECK':
+                   sql = f"""
+   -- {constraint['description']}
+   ALTER TABLE {table}
+   ADD CONSTRAINT {constraint['name']}
+   CHECK ({constraint['condition']})
+   NOT VALID;  -- Add as NOT VALID first for minimal downtime
+
+   -- Then validate separately
+   ALTER TABLE {table}
+   VALIDATE CONSTRAINT {constraint['name']};
+   """
+                   sql_statements.append(sql)
+
+               elif constraint['type'] == 'UNIQUE':
+                   columns = ', '.join(constraint['columns'])
+                   sql = f"""
+   -- {constraint['description']}
+   ALTER TABLE {table}
+   ADD CONSTRAINT {constraint['name']}
+   UNIQUE ({columns});
+   """
+                   sql_statements.append(sql)
+
+               elif constraint['type'] == 'NOT NULL':
+                   sql = f"""
+   -- {constraint['description']}
+   ALTER TABLE {table}
+   ALTER COLUMN {constraint['column']} SET NOT NULL;
+   """
+                   sql_statements.append(sql)
+
+       return '\n\n'.join(sql_statements)
+
+   if __name__ == '__main__':
+       sql = generate_constraint_sql()
+
+       with open('scripts/add_constraints.sql', 'w') as f:
+           f.write("-- Database Constraints for Phase 13\n")
+           f.write(f"-- Generated: {datetime.now()}\n\n")
+           f.write(sql)
+
+       print("✅ Constraint SQL generated: scripts/add_constraints.sql")
+   ```
+
+4. **Generate constraint SQL**:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python scripts/define_constraints.py
+   ```
+
+5. **Clean data to satisfy constraints** (if needed):
+   ```python
+   # scripts/clean_data_for_constraints.py
+   import django
+   import os
+
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   from apps.users.models import User
+   from apps.chapters.models import Madrasah
+   from apps.constituents.models import Student
+
+   def clean_user_data():
+       """Ensure user data satisfies new constraints"""
+
+       # Fix users without roles
+       users_without_role = User.objects.filter(role__isnull=True)
+       count = users_without_role.update(role='student')  # Default to student
+       print(f"Fixed {count} users without role")
+
+       # Fix invalid email formats (if any)
+       # ... additional cleaning ...
+
+   def clean_madrasah_data():
+       """Ensure madrasah data satisfies new constraints"""
+
+       # Fix madrasahs without codes
+       madrasahs_without_code = Madrasah.objects.filter(code__isnull=True)
+       for madrasah in madrasahs_without_code:
+           madrasah.code = f"MAD{madrasah.id:05d}"
+           madrasah.save()
+
+       print(f"Generated codes for {madrasahs_without_code.count()} madrasahs")
+
+   def clean_student_data():
+       """Ensure student data satisfies new constraints"""
+
+       # Fix students without student numbers
+       students_without_number = Student.objects.filter(student_number__isnull=True)
+       for student in students_without_number:
+           student.student_number = f"STU{student.id:06d}"
+           student.save()
+
+       print(f"Generated student numbers for {students_without_number.count()} students")
+
+   if __name__ == '__main__':
+       print("Cleaning data to satisfy new constraints...")
+       clean_user_data()
+       clean_madrasah_data()
+       clean_student_data()
+       print("✅ Data cleaning complete")
+   ```
+
+6. **Run data cleaning** (if needed):
+   ```bash
+   # Only run if task_125 identified data that violates constraints
+   python scripts/clean_data_for_constraints.py
+   ```
+
+7. **Create Django migration for constraints**:
+   ```python
+   # Generated migration example
+   from django.db import migrations, models
+   from django.db.models import Q, CheckConstraint, UniqueConstraint
+
+   class Migration(migrations.Migration):
+
+       dependencies = [
+           ('users', 'previous_migration'),
+       ]
+
+       operations = [
+           # Add CHECK constraints
+           migrations.AddConstraint(
+               model_name='user',
+               constraint=CheckConstraint(
+                   check=Q(role__in=[
+                       'superuser', 'tarbiyyah_admin', 'madrasah_admin',
+                       'muder', 'asatidz', 'student', 'parent'
+                   ]),
+                   name='check_valid_role'
+               ),
+           ),
+
+           migrations.AddConstraint(
+               model_name='madrasah',
+               constraint=CheckConstraint(
+                   check=Q(capacity__isnull=True) | Q(capacity__gt=0),
+                   name='check_positive_capacity'
+               ),
+           ),
+
+           # Add UNIQUE constraints
+           migrations.AddConstraint(
+               model_name='madrasah',
+               constraint=UniqueConstraint(
+                   fields=['code'],
+                   name='unique_madrasah_code'
+               ),
+           ),
+
+           # Add NOT NULL constraints
+           migrations.AlterField(
+               model_name='user',
+               name='role',
+               field=models.CharField(
+                   max_length=50,
+                   choices=User.Role.choices,
+                   null=False,  # Changed from null=True
+                   blank=False
+               ),
+           ),
+
+           # Date range validation
+           migrations.AddConstraint(
+               model_name='madrasahenrollment',
+               constraint=CheckConstraint(
+                   check=Q(end_date__isnull=True) | Q(start_date__lte=models.F('end_date')),
+                   name='check_valid_date_range'
+               ),
+           ),
+       ]
+   ```
+
+8. **Test constraints on staging**:
+   ```bash
+   # On STAGING environment
+   python manage.py makemigrations
+   python manage.py migrate --plan
+
+   # Apply migration
+   python manage.py migrate
+
+   # Test constraints work
+   python manage.py shell
+   ```
+
+9. **Verify constraints in database**:
+   ```sql
+   -- List all CHECK constraints
+   SELECT
+       con.conname as constraint_name,
+       rel.relname as table_name,
+       pg_get_constraintdef(con.oid) as definition
+   FROM pg_constraint con
+   JOIN pg_class rel ON rel.oid = con.conrelid
+   WHERE con.contype = 'c'
+   AND rel.relname NOT LIKE 'pg_%'
+   ORDER BY rel.relname;
+
+   -- List all UNIQUE constraints
+   SELECT
+       con.conname as constraint_name,
+       rel.relname as table_name
+   FROM pg_constraint con
+   JOIN pg_class rel ON rel.oid = con.conrelid
+   WHERE con.contype = 'u'
+   ORDER BY rel.relname;
+   ```
+
+10. **Test constraint violations**:
+    ```python
+    # scripts/test_constraints.py
+    from apps.users.models import User
+    from django.db import IntegrityError
+
+    def test_constraints():
+        """Test that constraints prevent invalid data"""
+
+        # Test 1: Invalid role
+        try:
+            user = User.objects.create(
+                username='testuser',
+                email='test@example.com',
+                role='invalid_role'  # Should fail
+            )
+            print("✗ CHECK constraint failed - invalid role accepted")
+        except IntegrityError:
+            print("✓ CHECK constraint working - invalid role rejected")
+
+        # Test 2: Duplicate username
+        try:
+            User.objects.create(username='admin', email='test1@example.com')
+            User.objects.create(username='admin', email='test2@example.com')
+            print("✗ UNIQUE constraint failed - duplicate username accepted")
+        except IntegrityError:
+            print("✓ UNIQUE constraint working - duplicate username rejected")
+
+        # Test 3: NULL in required field
+        try:
+            User.objects.create(username='user', email='test@example.com', role=None)
+            print("✗ NOT NULL constraint failed - NULL role accepted")
+        except IntegrityError:
+            print("✓ NOT NULL constraint working - NULL role rejected")
+
+    if __name__ == '__main__':
+        test_constraints()
+    ```
+
+11. **Document constraints added**:
+    ```bash
+    echo "## Task 126 Complete - $(date)" >> docs/PHASE_13_LOG.md
+    echo "- Database constraints added" >> docs/PHASE_13_LOG.md
+    echo "- CHECK constraints: [count]" >> docs/PHASE_13_LOG.md
+    echo "- UNIQUE constraints: [count]" >> docs/PHASE_13_LOG.md
+    echo "- NOT NULL constraints: [count]" >> docs/PHASE_13_LOG.md
+    echo "- All constraints tested and validated" >> docs/PHASE_13_LOG.md
+    ```
+
+## Acceptance Criteria:
+- Database backup created before constraint changes
+- Data cleaned to satisfy new constraints
+- CHECK constraints added for business rules
+- UNIQUE constraints added where appropriate
+- NOT NULL constraints added for required fields
+- Constraints tested on staging first
+- Migration created with reversible operations
+- Constraint violations documented and fixed
+- Database performance not degraded
+- All existing data complies with new constraints
+
+## Files Modified:
+- `scripts/define_constraints.py (create)`
+- `scripts/clean_data_for_constraints.py (create)`
+- `scripts/test_constraints.py (create)`
+- `scripts/add_constraints.sql (create)`
+- `src/apps/users/migrations/XXXX_add_user_constraints.py (create)`
+- `src/apps/chapters/migrations/XXXX_add_madrasah_constraints.py (create)`
+- `src/apps/constituents/migrations/XXXX_add_student_constraints.py (create)`
+- `docs/PHASE_13_LOG.md (update)`
+- `backups/db_backup_task126_[timestamp].dump (create)`
+
+## Important Notes:
+- Use NOT VALID then VALIDATE for minimal downtime
+- Fix existing data before adding constraints
+- Test all constraints thoroughly on staging
+- Document business rules enforced by each constraint
+- Keep constraint names descriptive
+- Estimate: 120 minutes
+- Risk Level: MEDIUM (can prevent inserts if data doesn't comply)
+
+## Backup Requirements:
+1. **Pre-Operation Backup**: Full database dump before adding constraints
+2. **Data Cleaning Backup**: Backup after cleaning, before constraints
+3. **Rollback Plan**: Document how to remove constraints if needed
+
+## Data Integrity Checks:
+- Verify existing data complies with new constraints
+- Test constraint violations are properly rejected
+- Ensure application still functions correctly
+- Check performance impact of constraints
+- Validate constraint error messages are clear
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin

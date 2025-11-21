@@ -1,0 +1,79 @@
+# Task ID: 093
+# Title: Create Parent Portal App Structure
+# Status: pending
+# Dependencies: 092
+# Priority: medium
+# Description: Create new Django app for parent portal functionality. This app will handle parent-student relationships, parent dashboard, and parent-specific featur
+
+# Details:
+Create new Django app for parent portal functionality. This app will handle parent-student relationships, parent dashboard, and parent-specific features for the Tarbiyyah Management System.
+
+## Implementation Steps:
+1. Create parent portal app:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src/apps
+   python ../manage.py startapp parents
+   ```
+2. Add to INSTALLED_APPS in settings:
+   ```python
+   # config/settings/base.py
+   INSTALLED_APPS = [
+       ...
+       'apps.academics',
+       'apps.parents',  # New app
+       ...
+   ]
+   ```
+3. Create __init__.py and apps.py:
+   ```python
+   # apps/parents/apps.py
+   from django.apps import AppConfig
+
+   class ParentsConfig(AppConfig):
+       default_auto_field = 'django.db.models.BigAutoField'
+       name = 'apps.parents'
+       verbose_name = 'Parent Portal'
+   ```
+4. Create initial directory structure:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/apps/parents/templates/parents
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/apps/parents/static/parents
+   ```
+5. Run initial migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations parents
+   python manage.py migrate parents
+   ```
+6. Verify app is registered in Django admin
+
+## Acceptance Criteria:
+- Parent portal app created in apps directory
+- App added to INSTALLED_APPS in settings
+- Basic app structure verified (models, views, admin, urls)
+- Initial migration created and applied
+- App accessible and registered in Django admin
+
+## Files Modified:
+- `src/apps/parents/ (new directory)`
+- `src/apps/parents/__init__.py`
+- `src/apps/parents/apps.py`
+- `src/apps/parents/models.py`
+- `src/apps/parents/admin.py`
+- `src/apps/parents/views.py`
+- `src/apps/parents/urls.py`
+- `src/apps/parents/templates/parents/ (new directory)`
+- `src/apps/parents/static/parents/ (new directory)`
+- `src/config/settings/base.py`
+
+## Important Notes:
+- App name is 'parents' following Django conventions
+- Will be referred to as 'Parent Portal' in UI
+- Template and static directories follow Django best practices
+- Estimate: 20 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin

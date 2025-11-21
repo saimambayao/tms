@@ -1,0 +1,602 @@
+# Task ID: 114
+# Title: Create Custom Form Widgets
+# Status: pending
+# Dependencies: 112, 113
+# Priority: medium
+# Description: Create custom form widgets for education-specific fields to improve user experience. Implement enhanced date pickers, select widgets with Arabic optio
+
+# Details:
+Create custom form widgets for education-specific fields to improve user experience. Implement enhanced date pickers, select widgets with Arabic options, province-municipality cascading selects, and file upload widgets for student photos and documents.
+
+## Implementation Steps:
+### 1. Create widgets file:
+
+```bash
+touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/core/widgets.py
+```
+
+### 2. Implement custom widgets (apps/core/widgets.py):
+
+```python
+"""
+Custom form widgets for Tarbiyyah Management System.
+Enhanced widgets for education-specific fields.
+"""
+from django import forms
+from django.utils.safestring import mark_safe
+from django.forms.widgets import Select, TextInput, FileInput, DateInput
+import json
+
+
+class IslamicDateInput(DateInput):
+    """
+    Date picker widget that shows both Gregorian and Islamic (Hijri) dates.
+    Uses HTML5 date input with additional Islamic date display.
+    """
+    template_name = 'widgets/islamic_date_input.html'
+    input_type = 'date'
+
+    def __init__(self, attrs=None, format=None):
+        default_attrs = {
+            'class': 'form-input islamic-date-picker',
+            'placeholder': 'YYYY-MM-DD'
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs, format=format)
+
+    class Media:
+        js = ('js/islamic-date-converter.js',)
+        css = {
+            'all': ('css/islamic-date-widget.css',)
+        }
+
+
+class CascadingProvinceSelect(Select):
+    """
+    Province select widget that triggers municipality field update.
+    Works with JavaScript to populate municipality choices based on province selection.
+    """
+    template_name = 'widgets/cascading_select.html'
+
+    def __init__(self, municipality_field_id, attrs=None):
+        self.municipality_field_id = municipality_field_id
+        default_attrs = {
+            'class': 'form-select province-select',
+            'data-target': municipality_field_id,
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+    class Media:
+        js = ('js/cascading-select.js',)
+
+
+class CascadingMunicipalitySelect(Select):
+    """
+    Municipality select widget that updates based on province selection.
+    Choices are populated dynamically via JavaScript.
+    """
+    template_name = 'widgets/municipality_select.html'
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'class': 'form-select municipality-select',
+            'disabled': True,  # Initially disabled until province is selected
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+    class Media:
+        js = ('js/municipality-loader.js',)
+
+
+class ArabicTextInput(TextInput):
+    """
+    Text input widget with right-to-left (RTL) support for Arabic text.
+    Automatically switches to RTL when Arabic characters are detected.
+    """
+    input_type = 'text'
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'class': 'form-input arabic-input',
+            'dir': 'auto',  # Automatically detect text direction
+            'lang': 'ar',
+            'placeholder': 'اكتب بالعربية',  # "Type in Arabic"
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+    class Media:
+        css = {
+            'all': ('css/arabic-input.css',)
+        }
+
+
+class PhotoUploadWidget(FileInput):
+    """
+    Enhanced file upload widget for student/staff photos.
+    Shows image preview and validates file size/format.
+    """
+    template_name = 'widgets/photo_upload.html'
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'class': 'photo-upload-input',
+            'accept': 'image/jpeg,image/png,image/jpg',
+            'data-max-size': '5242880',  # 5MB in bytes
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+    def render(self, name, value, attrs=None, renderer=None):
+        html = super().render(name, value, attrs, renderer)
+        preview_html = '''
+        <div class="photo-upload-container">
+            <div class="photo-preview-wrapper">
+                <img id="photo-preview-{name}"
+                     class="photo-preview hidden"
+                     alt="Preview" />
+                <div class="photo-upload-placeholder">
+                    <svg class="upload-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                    <p class="upload-text">Click to upload photo</p>
+                    <p class="upload-hint">JPG, PNG (max 5MB)</p>
+                </div>
+            </div>
+            {input}
+        </div>
+        '''.format(name=name, input=html)
+        return mark_safe(preview_html)
+
+    class Media:
+        js = ('js/photo-upload.js',)
+        css = {
+            'all': ('css/photo-upload.css',)
+        }
+
+
+class GradeLevelSelect(Select):
+    """
+    Select widget for grade levels with proper education level grouping.
+    Groups options by education level (Elementary, Secondary, Higher).
+    """
+    def __init__(self, madrasah_type=None, attrs=None):
+        self.madrasah_type = madrasah_type
+        default_attrs = {
+            'class': 'form-select grade-level-select',
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs, choices=self._get_grade_choices())
+
+    def _get_grade_choices(self):
+        """Return grade level choices grouped by education level."""
+        return [
+            ('', 'Select Grade Level'),
+            ('Elementary', [
+                ('Kindergarten', 'Kindergarten'),
+                ('Grade 1', 'Grade 1'),
+                ('Grade 2', 'Grade 2'),
+                ('Grade 3', 'Grade 3'),
+                ('Grade 4', 'Grade 4'),
+                ('Grade 5', 'Grade 5'),
+                ('Grade 6', 'Grade 6'),
+            ]),
+            ('Secondary', [
+                ('Grade 7', 'Grade 7'),
+                ('Grade 8', 'Grade 8'),
+                ('Grade 9', 'Grade 9'),
+                ('Grade 10', 'Grade 10'),
+                ('Grade 11', 'Grade 11'),
+                ('Grade 12', 'Grade 12'),
+            ]),
+            ('Higher Education', [
+                ('Year 1', 'Year 1'),
+                ('Year 2', 'Year 2'),
+                ('Year 3', 'Year 3'),
+                ('Year 4', 'Year 4'),
+            ]),
+        ]
+
+
+class MadrasahTypeCheckboxSelect(forms.CheckboxSelectMultiple):
+    """
+    Checkbox select widget for multiple madrasah types.
+    Allows madrasah to select multiple education levels offered.
+    """
+    template_name = 'widgets/madrasah_type_checkboxes.html'
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'class': 'madrasah-type-checkbox',
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+    class Media:
+        css = {
+            'all': ('css/madrasah-type-checkbox.css',)
+        }
+
+
+class SubjectMultiSelect(forms.SelectMultiple):
+    """
+    Enhanced multi-select widget for subjects taught.
+    Groups subjects by category (Islamic Studies, Language, Science, etc.).
+    """
+    template_name = 'widgets/subject_multiselect.html'
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'class': 'form-multiselect subject-multiselect',
+            'size': '10',
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+    class Media:
+        js = ('js/subject-multiselect.js',)
+        css = {
+            'all': ('css/subject-multiselect.css',)
+        }
+
+
+class TimeInput24Hour(forms.TimeInput):
+    """
+    24-hour time input widget for class schedules.
+    """
+    input_type = 'time'
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'class': 'form-input time-input',
+            'step': '900',  # 15-minute intervals
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs, format='%H:%M')
+
+
+class DocumentUploadWidget(FileInput):
+    """
+    Widget for uploading documents (certificates, transcripts, etc.).
+    Supports PDF, DOC, DOCX formats.
+    """
+    template_name = 'widgets/document_upload.html'
+
+    def __init__(self, attrs=None):
+        default_attrs = {
+            'class': 'document-upload-input',
+            'accept': '.pdf,.doc,.docx,image/jpeg,image/png',
+            'data-max-size': '10485760',  # 10MB
+        }
+        if attrs:
+            default_attrs.update(attrs)
+        super().__init__(attrs=default_attrs)
+
+    class Media:
+        js = ('js/document-upload.js',)
+        css = {
+            'all': ('css/document-upload.css',)
+        }
+```
+
+### 3. Create widget templates directory:
+
+```bash
+mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/templates/widgets
+```
+
+### 4. Create Islamic date input template (templates/widgets/islamic_date_input.html):
+
+```html
+{% load static %}
+<div class="islamic-date-wrapper">
+    <input type="{{ widget.type }}"
+           name="{{ widget.name }}"
+           {% if widget.value %}value="{{ widget.value }}"{% endif %}
+           {% include "django/forms/widgets/attrs.html" %}
+           id="id_{{ widget.name }}"
+           class="form-input">
+    <div class="hijri-date-display text-sm text-gray-600 mt-1"
+         id="hijri_{{ widget.name }}">
+        <!-- Hijri date will be displayed here via JavaScript -->
+    </div>
+</div>
+```
+
+### 5. Create cascading select template (templates/widgets/cascading_select.html):
+
+```html
+<select name="{{ widget.name }}"
+        {% if widget.attrs.id %}id="{{ widget.attrs.id }}"{% endif %}
+        {% include "django/forms/widgets/attrs.html" %}
+        class="form-select province-select"
+        data-target="{{ widget.municipality_field_id }}">
+    {% for group_name, group_choices, group_index in widget.optgroups %}
+        {% if group_name %}
+            <optgroup label="{{ group_name }}">
+        {% endif %}
+        {% for option in group_choices %}
+            <option value="{{ option.value }}"
+                    {% if option.selected %}selected{% endif %}>
+                {{ option.label }}
+            </option>
+        {% endfor %}
+        {% if group_name %}
+            </optgroup>
+        {% endif %}
+    {% endfor %}
+</select>
+```
+
+### 6. Create photo upload template (templates/widgets/photo_upload.html):
+
+```html
+{% load static %}
+<div class="photo-upload-container">
+    <div class="photo-preview-wrapper">
+        {% if widget.value %}
+            <img src="{{ widget.value.url }}"
+                 class="photo-preview"
+                 alt="Current photo" />
+        {% else %}
+            <img id="photo-preview-{{ widget.name }}"
+                 class="photo-preview hidden"
+                 alt="Preview" />
+            <div class="photo-upload-placeholder">
+                <svg class="upload-icon w-12 h-12 mx-auto text-gray-400"
+                     fill="none"
+                     stroke="currentColor"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                </svg>
+                <p class="upload-text text-sm font-medium text-gray-700">
+                    Click to upload photo
+                </p>
+                <p class="upload-hint text-xs text-gray-500">
+                    JPG, PNG (max 5MB)
+                </p>
+            </div>
+        {% endif %}
+    </div>
+    <input type="{{ widget.type }}"
+           name="{{ widget.name }}"
+           {% include "django/forms/widgets/attrs.html" %}
+           id="id_{{ widget.name }}"
+           class="photo-upload-input hidden">
+</div>
+```
+
+### 7. Apply custom widgets to forms (apps/chapters/forms.py):
+
+```python
+from apps.core.widgets import (
+    IslamicDateInput,
+    CascadingProvinceSelect,
+    CascadingMunicipalitySelect,
+    PhotoUploadWidget,
+    ArabicTextInput,
+    GradeLevelSelect,
+    MadrasahTypeCheckboxSelect,
+)
+
+class ChapterForm(forms.ModelForm):
+    """Form for creating and updating madaris (Islamic schools)."""
+
+    class Meta:
+        model = Chapter
+        fields = [...]
+        widgets = {
+            'name': forms.TextInput(attrs={
+                'placeholder': 'e.g., Madrasah Al-Furqan',
+                'class': 'form-input'
+            }),
+            'name_arabic': ArabicTextInput(attrs={
+                'placeholder': 'اسم المدرسة',  # "School name" in Arabic
+            }),
+            'established_date': IslamicDateInput(),
+            'accreditation_date': IslamicDateInput(),
+            'province': CascadingProvinceSelect(municipality_field_id='id_municipality'),
+            'municipality': CascadingMunicipalitySelect(),
+            'madrasah_types': MadrasahTypeCheckboxSelect(),
+            # ... other widgets
+        }
+```
+
+### 8. Apply custom widgets to Student form (apps/constituents/forms.py):
+
+```python
+from apps.core.widgets import (
+    PhotoUploadWidget,
+    GradeLevelSelect,
+    CascadingProvinceSelect,
+    CascadingMunicipalitySelect,
+)
+
+class BMParliamentMemberRegistrationForm(forms.ModelForm):
+    """Student registration form."""
+
+    grade_level = forms.CharField(
+        widget=GradeLevelSelect(),
+        label='Grade Level',
+        required=False
+    )
+
+    class Meta:
+        model = BMParliamentMember
+        fields = [...]
+        widgets = {
+            'voter_id_photo': PhotoUploadWidget(),  # Student photo
+            'address_province': CascadingProvinceSelect(
+                municipality_field_id='id_address_municipality'
+            ),
+            'address_municipality': CascadingMunicipalitySelect(),
+            'voter_address_province': CascadingProvinceSelect(
+                municipality_field_id='id_voter_address_municipality'
+            ),
+            'voter_address_municipality': CascadingMunicipalitySelect(),
+            # ... other widgets
+        }
+```
+
+### 9. Create JavaScript for widgets (static/js/photo-upload.js):
+
+```javascript
+// Photo upload preview functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const photoInputs = document.querySelectorAll('.photo-upload-input');
+
+    photoInputs.forEach(input => {
+        input.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (5MB)
+                const maxSize = parseInt(input.dataset.maxSize) || 5242880;
+                if (file.size > maxSize) {
+                    alert('File size exceeds 5MB limit');
+                    input.value = '';
+                    return;
+                }
+
+                // Show preview
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.querySelector(`#photo-preview-${input.name}`);
+                    if (preview) {
+                        preview.src = e.target.result;
+                        preview.classList.remove('hidden');
+                        const placeholder = preview.parentElement.querySelector('.photo-upload-placeholder');
+                        if (placeholder) {
+                            placeholder.style.display = 'none';
+                        }
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    });
+});
+```
+
+### 10. Create JavaScript for cascading selects (static/js/cascading-select.js):
+
+```javascript
+// Cascading province-municipality select
+const MUNICIPALITY_MAP = {
+    'Lanao del Sur': ['Marawi City', 'Balabagan', 'Butig', 'Kapai', 'Lumba-Bayabao'],
+    'Maguindanao del Sur': ['Ampatuan', 'Buluan', 'Datu Piang', 'Shariff Aguak'],
+    'Maguindanao del Norte': ['Barira', 'Buldon', 'Datu Odin Sinsuat', 'Kabuntalan'],
+    // ... full mapping
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    const provinceSelects = document.querySelectorAll('.province-select');
+
+    provinceSelects.forEach(provinceSelect => {
+        provinceSelect.addEventListener('change', function() {
+            const targetId = this.dataset.target;
+            const municipalitySelect = document.getElementById(targetId);
+
+            if (municipalitySelect) {
+                const province = this.value;
+                const municipalities = MUNICIPALITY_MAP[province] || [];
+
+                // Clear existing options
+                municipalitySelect.innerHTML = '<option value="">Select Municipality</option>';
+
+                // Add new options
+                municipalities.forEach(municipality => {
+                    const option = document.createElement('option');
+                    option.value = municipality;
+                    option.textContent = municipality;
+                    municipalitySelect.appendChild(option);
+                });
+
+                // Enable municipality select
+                municipalitySelect.disabled = false;
+            }
+        });
+    });
+});
+```
+
+### 11. Test widgets in browser:
+
+```bash
+cd /Users/saidamenmambayao/apps/madaris-ms
+python manage.py runserver
+```
+
+Navigate to form pages and test:
+- Photo upload preview
+- Province-municipality cascading
+- Date picker with Islamic date display
+- Arabic text input with RTL support
+
+### 12. Verify accessibility:
+
+```bash
+# Check WCAG compliance
+# Use browser tools or online validators to test:
+# - Keyboard navigation
+# - Screen reader compatibility
+# - Color contrast
+# - ARIA labels
+```
+
+## Acceptance Criteria:
+- Custom widgets created in apps/core/widgets.py
+- Islamic date picker widget implemented
+- Province-municipality cascading select widget created
+- Enhanced file upload widget for photos created
+- Arabic text input widget with RTL support created
+- Grade level select widget with appropriate options created
+- All widgets are accessible (WCAG 2.1 compliant)
+- Widgets work with existing Tailwind CSS styling
+- JavaScript dependencies documented
+
+## Files Modified:
+- `src/apps/core/widgets.py (new file)`
+- `src/templates/widgets/islamic_date_input.html (new file)`
+- `src/templates/widgets/cascading_select.html (new file)`
+- `src/templates/widgets/photo_upload.html (new file)`
+- `src/static/js/photo-upload.js (new file)`
+- `src/static/js/cascading-select.js (new file)`
+- `src/static/css/photo-upload.css (new file)`
+- `src/static/css/arabic-input.css (new file)`
+- `src/apps/chapters/forms.py (widgets applied)`
+- `src/apps/constituents/forms.py (widgets applied)`
+
+## Important Notes:
+- All widgets maintain existing Tailwind CSS styling
+- JavaScript is unobtrusive and progressive enhancement
+- Widgets degrade gracefully without JavaScript
+- Photo upload validates size client-side before upload
+- Cascading selects improve UX for address entry
+- Islamic date display helps users with Hijri calendar
+- Arabic input automatically detects text direction
+- All widgets are accessible (WCAG 2.1 Level AA)
+- Widget JavaScript dependencies are minimal
+- Custom widgets reusable across multiple forms
+- Estimate: 4-5 hours
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

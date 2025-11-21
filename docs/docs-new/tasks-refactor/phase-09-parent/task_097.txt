@@ -1,0 +1,328 @@
+# Task ID: 097
+# Title: Build Student Progress Viewing
+# Status: pending
+# Dependencies: 096
+# Priority: medium
+# Description: Create views and templates for parents to view their children's academic progress including grades, attendance records, and academic performance. Pare
+
+# Details:
+Create views and templates for parents to view their children's academic progress including grades, attendance records, and academic performance. Parents should only access information for their linked students.
+
+## Implementation Steps:
+1. Create student progress views:
+   ```python
+   # apps/parents/views.py
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.views.generic import DetailView, ListView
+   from django.shortcuts import get_object_or_404
+   from django.http import Http404
+   from apps.parents.models import ParentStudent
+   from apps.users.models import User
+
+   class ParentAccessMixin(LoginRequiredMixin):
+       """Mixin to ensure parent can only access their linked students"""
+
+       def get_student(self):
+           """Get student and verify parent has access"""
+           student_id = self.kwargs.get('student_id')
+           student = get_object_or_404(User, id=student_id, role=User.Role.STUDENT)
+
+           # Verify parent has access to this student
+           if not ParentStudent.objects.filter(
+               parent=self.request.user,
+               student=student,
+               status=ParentStudent.Status.ACTIVE
+           ).exists():
+               raise Http404("You do not have access to this student's information")
+
+           return student
+
+   class StudentDetailView(ParentAccessMixin, DetailView):
+       """View student details for parent"""
+       template_name = 'parents/student_detail.html'
+       context_object_name = 'student'
+
+       def get_object(self):
+           return self.get_student()
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           student = self.object
+
+           # Get parent-student relationship info
+           relationship = ParentStudent.objects.get(
+               parent=self.request.user,
+               student=student
+           )
+           context['relationship'] = relationship
+
+           # TODO: Add enrollment info when Enrollment model exists
+           # context['current_enrollment'] = student.enrollments.filter(
+           #     status='active'
+           # ).first()
+
+           return context
+
+   class StudentGradesView(ParentAccessMixin, ListView):
+       """View student grades for parent"""
+       template_name = 'parents/student_grades.html'
+       context_object_name = 'grades'
+
+       def get_queryset(self):
+           student = self.get_student()
+           # TODO: Import Grade model from academics app
+           # from apps.academics.models import Grade
+           # queryset = Grade.objects.filter(student=student).order_by('-date_recorded')
+
+           # Filter by term if specified
+           # term = self.request.GET.get('term')
+           # if term:
+           #     queryset = queryset.filter(term=term)
+
+           # return queryset.select_related('subject', 'class_enrolled')
+           return []  # Placeholder until Grade model is available
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['student'] = self.get_student()
+
+           # Calculate grade statistics
+           grades = self.get_queryset()
+           if grades:
+               # context['average_grade'] = grades.aggregate(Avg('score'))['score__avg']
+               # context['highest_grade'] = grades.aggregate(Max('score'))['score__max']
+               # context['lowest_grade'] = grades.aggregate(Min('score'))['score__min']
+               pass
+
+           # TODO: Get available terms for filtering
+           # context['terms'] = AcademicTerm.objects.filter(
+           #     year__status='active'
+           # ).order_by('-start_date')
+
+           return context
+
+   class StudentAttendanceView(ParentAccessMixin, ListView):
+       """View student attendance for parent"""
+       template_name = 'parents/student_attendance.html'
+       context_object_name = 'attendance_records'
+
+       def get_queryset(self):
+           student = self.get_student()
+           # TODO: Import Attendance model from academics app
+           # from apps.academics.models import Attendance
+           # queryset = Attendance.objects.filter(
+           #     student=student
+           # ).order_by('-date')
+
+           # Filter by date range if specified
+           # start_date = self.request.GET.get('start_date')
+           # end_date = self.request.GET.get('end_date')
+           # if start_date:
+           #     queryset = queryset.filter(date__gte=start_date)
+           # if end_date:
+           #     queryset = queryset.filter(date__lte=end_date)
+
+           # return queryset.select_related('class_enrolled')
+           return []  # Placeholder until Attendance model is available
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['student'] = self.get_student()
+
+           # Calculate attendance statistics
+           attendance = self.get_queryset()
+           if attendance:
+               # total_days = attendance.count()
+               # present_days = attendance.filter(status='present').count()
+               # context['attendance_percentage'] = (present_days / total_days * 100) if total_days > 0 else 0
+               # context['total_absences'] = attendance.filter(status='absent').count()
+               # context['total_late'] = attendance.filter(status='late').count()
+               pass
+
+           return context
+   ```
+
+2. Add URLs:
+   ```python
+   # apps/parents/urls.py
+   from django.urls import path
+   from apps.parents import views
+
+   app_name = 'parents'
+
+   urlpatterns = [
+       path('', views.ParentDashboardView.as_view(), name='dashboard'),
+       path('register/', views.ParentRegistrationView.as_view(), name='register'),
+       path('link-student/', views.LinkStudentView.as_view(), name='link-student'),
+
+       # Student progress views
+       path('student/<int:student_id>/',
+            views.StudentDetailView.as_view(),
+            name='student-detail'),
+       path('student/<int:student_id>/grades/',
+            views.StudentGradesView.as_view(),
+            name='student-grades'),
+       path('student/<int:student_id>/attendance/',
+            views.StudentAttendanceView.as_view(),
+            name='student-attendance'),
+   ]
+   ```
+
+3. Create student detail template:
+   ```html
+   <!-- templates/parents/student_detail.html -->
+   {% extends "base.html" %}
+
+   {% block title %}{{ student.get_full_name }} - Details{% endblock %}
+
+   {% block content %}
+   <div class="container mx-auto px-4 py-8">
+       <!-- Breadcrumb -->
+       <nav class="mb-4 text-sm">
+           <a href="{% url 'parents:dashboard' %}" class="text-blue-600 hover:underline">Dashboard</a>
+           <span class="mx-2">/</span>
+           <span class="text-gray-600">{{ student.get_full_name }}</span>
+       </nav>
+
+       <!-- Student Header -->
+       <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+           <div class="flex items-center">
+               {% if student.profile_photo %}
+               <img src="{{ student.profile_photo.url }}"
+                    alt="{{ student.get_full_name }}"
+                    class="w-24 h-24 rounded-full object-cover">
+               {% else %}
+               <div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center">
+                   <span class="text-4xl text-gray-500">
+                       {{ student.first_name|first }}{{ student.last_name|first }}
+                   </span>
+               </div>
+               {% endif %}
+
+               <div class="ml-6">
+                   <h1 class="text-2xl font-bold text-gray-800">
+                       {{ student.get_full_name }}
+                   </h1>
+                   <p class="text-gray-600">{{ relationship.get_relationship_type_display }}</p>
+                   {% if student.email %}
+                   <p class="text-sm text-gray-500">{{ student.email }}</p>
+                   {% endif %}
+               </div>
+           </div>
+       </div>
+
+       <!-- Quick Links -->
+       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+           <a href="{% url 'parents:student-grades' student.id %}"
+              class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition text-center">
+               <svg class="w-12 h-12 mx-auto text-blue-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                         d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+               </svg>
+               <h3 class="font-semibold text-gray-800">View Grades</h3>
+           </a>
+
+           <a href="{% url 'parents:student-attendance' student.id %}"
+              class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition text-center">
+               <svg class="w-12 h-12 mx-auto text-green-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+               </svg>
+               <h3 class="font-semibold text-gray-800">View Attendance</h3>
+           </a>
+
+           <a href="#" class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition text-center">
+               <svg class="w-12 h-12 mx-auto text-purple-600 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+               </svg>
+               <h3 class="font-semibold text-gray-800">Messages</h3>
+           </a>
+       </div>
+
+       <!-- Student Information -->
+       <div class="bg-white rounded-lg shadow-md p-6">
+           <h2 class="text-xl font-bold text-gray-800 mb-4">Student Information</h2>
+           <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+               <div>
+                   <dt class="text-sm font-medium text-gray-500">Full Name</dt>
+                   <dd class="text-gray-800">{{ student.get_full_name }}</dd>
+               </div>
+               <div>
+                   <dt class="text-sm font-medium text-gray-500">Email</dt>
+                   <dd class="text-gray-800">{{ student.email|default:"Not provided" }}</dd>
+               </div>
+               <!-- Add more fields as needed -->
+           </dl>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+4. Create placeholder templates for grades and attendance:
+   ```html
+   <!-- templates/parents/student_grades.html -->
+   {% extends "base.html" %}
+   {% block title %}{{ student.get_full_name }} - Grades{% endblock %}
+   {% block content %}
+   <div class="container mx-auto px-4 py-8">
+       <h1 class="text-2xl font-bold mb-4">Grades - {{ student.get_full_name }}</h1>
+       <div class="bg-white rounded-lg shadow-md p-6">
+           <p class="text-gray-600">Grade viewing will be available when academic records are implemented.</p>
+           <a href="{% url 'parents:student-detail' student.id %}" class="btn btn-secondary mt-4">
+               Back to Student Details
+           </a>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+5. Test student progress views:
+   - Login as parent with linked students
+   - Navigate to student detail page
+   - Verify permission checks (try accessing non-linked student)
+   - Test all quick action links
+   - Verify mobile responsiveness
+
+## Acceptance Criteria:
+- Student detail view created for parents
+- Student grades view created with filtering by term/subject
+- Student attendance view created with calendar display
+- Permission checks implemented (parent can only view their students)
+- Templates created with responsive design
+- Grade summary statistics calculated (average, highest, lowest)
+- Attendance statistics calculated (percentage, absences)
+- Views tested with sample academic data
+- 404 error if parent tries to access non-linked student
+
+## Files Modified:
+- `src/apps/parents/views.py`
+- `src/apps/parents/urls.py`
+- `src/apps/parents/templates/parents/student_detail.html (new file)`
+- `src/apps/parents/templates/parents/student_grades.html (new file)`
+- `src/apps/parents/templates/parents/student_attendance.html (new file)`
+
+## Important Notes:
+- ParentAccessMixin provides reusable permission checking
+- Views have placeholders for Grade and Attendance models (Phase 7)
+- Statistics calculations ready to be implemented when data available
+- 404 error raised if parent tries to access non-linked student
+- Templates use consistent Tailwind CSS styling
+- Mobile-responsive design for parent access on phones
+- Filter options for grades (by term) and attendance (by date range)
+- Estimate: 90 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Access view URL and verify HTTP 200 response
+11. Test with different user permissions
+12. Verify context data passed to template
+13. Test any query parameters or filters

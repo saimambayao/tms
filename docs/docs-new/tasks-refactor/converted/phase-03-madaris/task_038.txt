@@ -1,0 +1,115 @@
+# Task ID: 038
+# Title: Create MadrasahRegistrationForm
+# Status: pending
+# Dependencies: 037
+# Priority: medium
+# Description: Create comprehensive MadrasahRegistrationForm for registering new madaris with all required and optional fields.
+
+# Details:
+Create comprehensive MadrasahRegistrationForm for registering new madaris with all required and optional fields.
+
+## Implementation Steps:
+1. Create forms.py in chapters app:
+   ```python
+   # apps/chapters/forms.py
+   from django import forms
+   from .models import Madrasah
+
+   class MadrasahRegistrationForm(forms.ModelForm):
+       class Meta:
+           model = Madrasah
+           fields = [
+               'name', 'name_arabic', 'school_code', 'madrasah_types',
+               'region', 'province', 'municipality', 'barangay', 'address',
+               'muder', 'assistant_muder', 'registrar',
+               'email', 'phone', 'mobile', 'website', 'facebook_page',
+               'accreditation_status', 'accreditation_date', 'accreditation_number',  # Accreditation by MBHTE
+               'total_capacity',
+               'facility_level', 'has_library', 'has_computer_lab',
+               'has_masjid', 'has_dormitory',
+               'offers_arabic_language', 'offers_quran_studies',
+               'offers_hadith_studies', 'offers_islamic_studies',
+               'offers_general_education',
+               'founded_date', 'founder_name',
+           ]
+           widgets = {
+               'name': forms.TextInput(attrs={
+                   'class': 'form-input',
+                   'placeholder': 'e.g., Madrasah Al-Furqan'
+               }),
+               'address': forms.Textarea(attrs={
+                   'rows': 3,
+                   'class': 'form-textarea'
+               }),
+               'madrasah_types': forms.CheckboxSelectMultiple(),
+               'founded_date': forms.DateInput(attrs={'type': 'date'}),
+               'accreditation_date': forms.DateInput(attrs={'type': 'date'}),
+           }
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           # Make certain fields required
+           self.fields['mobile'].required = True
+           self.fields['province'].required = True
+           self.fields['municipality'].required = True
+           self.fields['madrasah_types'].required = True
+
+           # Filter muder choices
+           self.fields['muder'].queryset = User.objects.filter(role='muder')
+
+       def clean(self):
+           cleaned_data = super().clean()
+           madrasah_types = cleaned_data.get('madrasah_types')
+           if not madrasah_types:
+               raise forms.ValidationError(
+                   "Please select at least one education level."
+               )
+           return cleaned_data
+   ```
+2. Create views.py create view:
+   ```python
+   # apps/chapters/views.py
+   from apps.users.decorators import role_required
+
+   @role_required('tarbiyyah_admin', 'madrasah_admin')
+   def create_madrasah(request):
+       if request.method == 'POST':
+           form = MadrasahRegistrationForm(request.POST)
+           if form.is_valid():
+               madrasah = form.save(commit=False)
+               madrasah.created_by = request.user
+               madrasah.save()
+               messages.success(request, 'Madrasah registered successfully!')
+               return redirect('chapters:detail', pk=madrasah.pk)
+       else:
+           form = MadrasahRegistrationForm()
+       return render(request, 'chapters/create.html', {'form': form})
+   ```
+3. Test form rendering and submission
+
+## Acceptance Criteria:
+- MadrasahRegistrationForm class created
+- All essential fields included in form
+- Field widgets properly configured
+- Madrasah types uses CheckboxSelectMultiple
+- Date fields use HTML5 date input
+- Form validation works
+- Help text displayed
+
+## Files Modified:
+- `src/apps/chapters/forms.py (create new file)`
+- `src/apps/chapters/views.py (update)`
+
+## Important Notes:
+- Form will be refined in later tasks
+- Focus on comprehensive field coverage
+- Accreditation fields (status, date, number) are for recording accreditation by MBHTE (Ministry of Basic, Higher, and Technical Education)
+- Tarbiyyah Committee coordinates the accreditation process and maintains these records
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

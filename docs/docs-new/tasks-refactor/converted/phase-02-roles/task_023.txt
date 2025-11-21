@@ -1,0 +1,134 @@
+# Task ID: 023
+# Title: Create Role-Based Tests
+# Status: pending
+# Dependencies: 021, 022
+# Priority: high
+# Description: Create comprehensive tests for role-based access control. Test that each role can only access authorized views and resources.
+
+# Details:
+Create comprehensive tests for role-based access control. Test that each role can only access authorized views and resources.
+
+## Implementation Steps:
+1. Create test file:
+   ```bash
+   touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/users/tests/test_role_permissions.py
+   ```
+2. Write role permission tests:
+   ```python
+   # apps/users/tests/test_role_permissions.py
+   from django.test import TestCase, Client
+   from django.urls import reverse
+   from apps.users.models import User
+
+   class RolePermissionTests(TestCase):
+       def setUp(self):
+           """Create test users with different roles"""
+           self.client = Client()
+
+           self.superuser = User.objects.create_user(
+               username='superuser',
+               password='test123',
+               role='superuser'
+           )
+           self.tarbiyyah_admin = User.objects.create_user(
+               username='tarbiyyah_admin',
+               password='test123',
+               role='tarbiyyah_admin'
+           )
+           self.madrasah_admin = User.objects.create_user(
+               username='madrasah_admin',
+               password='test123',
+               role='madrasah_admin'
+           )
+           self.asatidz = User.objects.create_user(
+               username='teacher',
+               password='test123',
+               role='asatidz'
+           )
+           self.student = User.objects.create_user(
+               username='student',
+               password='test123',
+               role='student'
+           )
+
+       def test_tarbiyyah_admin_dashboard_access(self):
+           """Tarbiyyah admin should access admin dashboard"""
+           self.client.login(username='tarbiyyah_admin', password='test123')
+           response = self.client.get(reverse('dashboards:tarbiyyah_dashboard'))
+           self.assertEqual(response.status_code, 200)
+
+       def test_student_cannot_access_admin_dashboard(self):
+           """Student should not access admin dashboard"""
+           self.client.login(username='student', password='test123')
+           response = self.client.get(reverse('dashboards:tarbiyyah_dashboard'))
+           self.assertEqual(response.status_code, 403)  # Forbidden
+
+       def test_teacher_can_access_teacher_dashboard(self):
+           """Teacher should access teacher dashboard"""
+           self.client.login(username='teacher', password='test123')
+           response = self.client.get(reverse('dashboards:teacher_dashboard'))
+           self.assertEqual(response.status_code, 200)
+
+       def test_dashboard_routing(self):
+           """Users should route to correct dashboard"""
+           # Login as student
+           self.client.login(username='student', password='test123')
+           response = self.client.get(reverse('dashboards:dashboard'))
+           self.assertRedirects(response, reverse('dashboards:student_dashboard'))
+
+           # Login as teacher
+           self.client.logout()
+           self.client.login(username='teacher', password='test123')
+           response = self.client.get(reverse('dashboards:dashboard'))
+           self.assertRedirects(response, reverse('dashboards:teacher_dashboard'))
+
+       def test_role_hierarchy(self):
+           """Higher roles should have access to lower role resources"""
+           # Tarbiyyah admin should access madrasah admin views
+           self.client.login(username='tarbiyyah_admin', password='test123')
+           response = self.client.get(reverse('dashboards:madrasah_admin_dashboard'))
+           self.assertEqual(response.status_code, 200)
+   ```
+3. Run tests:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py test apps.users.tests.test_role_permissions
+   ```
+4. Check test coverage:
+   ```bash
+   coverage run --source='apps/users' manage.py test apps.users
+   coverage report
+   ```
+5. Fix any failing tests
+
+## Acceptance Criteria:
+- Test file created for role permissions
+- Tests for each role's allowed views
+- Tests for unauthorized access (403 responses)
+- Tests for dashboard routing
+- Tests for permission decorators
+- All tests pass
+- Code coverage > 80% for users app
+
+## Files Modified:
+- `src/apps/users/tests/test_role_permissions.py (new file)`
+
+## Important Notes:
+- Tests ensure security is maintained
+- Add more tests as views are created
+- Run tests in CI/CD pipeline
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Access view URL and verify HTTP 200 response
+6. Test with different user permissions
+7. Verify context data passed to template
+8. Test any query parameters or filters
+9. Run test suite with `python manage.py test`
+10. Verify test coverage meets requirements
+11. Check for any failing tests
+12. Verify test assertions are correct

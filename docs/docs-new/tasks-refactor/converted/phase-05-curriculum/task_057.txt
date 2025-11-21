@@ -1,0 +1,497 @@
+# Task ID: 057
+# Title: Create Curriculum Views and URLs
+# Status: pending
+# Dependencies: 052, 053, 054, 056
+# Priority: medium
+# Description: Create Django views and URL patterns for curriculum management, including list views, detail views, create/edit views, and specialized views for lesso
+
+# Details:
+Create Django views and URL patterns for curriculum management, including list views, detail views, create/edit views, and specialized views for lesson plan management. Implement proper permission checks and user-specific filtering.
+
+## Implementation Steps:
+1. Create apps/curriculum/urls.py:
+   ```python
+   from django.urls import path
+   from . import views
+
+   app_name = 'curriculum'
+
+   urlpatterns = [
+       # Subject URLs
+       path('subjects/', views.SubjectListView.as_view(), name='subject-list'),
+       path('subjects/create/', views.SubjectCreateView.as_view(), name='subject-create'),
+       path('subjects/<int:pk>/', views.SubjectDetailView.as_view(), name='subject-detail'),
+       path('subjects/<int:pk>/update/', views.SubjectUpdateView.as_view(), name='subject-update'),
+       path('subjects/<int:pk>/delete/', views.SubjectDeleteView.as_view(), name='subject-delete'),
+
+       # CurriculumFramework URLs
+       path('frameworks/', views.CurriculumFrameworkListView.as_view(), name='framework-list'),
+       path('frameworks/create/', views.CurriculumFrameworkCreateView.as_view(), name='framework-create'),
+       path('frameworks/<int:pk>/', views.CurriculumFrameworkDetailView.as_view(), name='framework-detail'),
+       path('frameworks/<int:pk>/update/', views.CurriculumFrameworkUpdateView.as_view(), name='framework-update'),
+       path('frameworks/<int:pk>/delete/', views.CurriculumFrameworkDeleteView.as_view(), name='framework-delete'),
+
+       # LessonPlan URLs
+       path('lesson-plans/', views.LessonPlanListView.as_view(), name='lesson-plan-list'),
+       path('lesson-plans/my/', views.MyLessonPlansView.as_view(), name='my-lesson-plans'),
+       path('lesson-plans/public/', views.PublicLessonPlansView.as_view(), name='public-lesson-plans'),
+       path('lesson-plans/create/', views.LessonPlanCreateView.as_view(), name='lesson-plan-create'),
+       path('lesson-plans/<int:pk>/', views.LessonPlanDetailView.as_view(), name='lesson-plan-detail'),
+       path('lesson-plans/<int:pk>/update/', views.LessonPlanUpdateView.as_view(), name='lesson-plan-update'),
+       path('lesson-plans/<int:pk>/delete/', views.LessonPlanDeleteView.as_view(), name='lesson-plan-delete'),
+       path('lesson-plans/<int:pk>/submit/', views.LessonPlanSubmitView.as_view(), name='lesson-plan-submit'),
+       path('lesson-plans/<int:pk>/approve/', views.LessonPlanApproveView.as_view(), name='lesson-plan-approve'),
+   ]
+   ```
+
+2. Create apps/curriculum/views.py:
+   ```python
+   from django.contrib import messages
+   from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
+   from django.db.models import Q, Count, Prefetch
+   from django.shortcuts import get_object_or_404, redirect
+   from django.urls import reverse_lazy
+   from django.utils.translation import gettext_lazy as _
+   from django.views.generic import (
+       ListView, DetailView, CreateView, UpdateView, DeleteView, View
+   )
+
+   from .models import Subject, CurriculumFramework, CurriculumSubject, LessonPlan
+   from .forms import SubjectForm, CurriculumFrameworkForm, LessonPlanForm
+
+
+   # ============================================================================
+   # Subject Views
+   # ============================================================================
+
+   class SubjectListView(LoginRequiredMixin, ListView):
+       """Display list of all subjects."""
+       model = Subject
+       template_name = 'curriculum/subject_list.html'
+       context_object_name = 'subjects'
+       paginate_by = 50
+
+       def get_queryset(self):
+           queryset = Subject.objects.filter(is_active=True)
+
+           # Search
+           search = self.request.GET.get('search')
+           if search:
+               queryset = queryset.filter(
+                   Q(code__icontains=search) |
+                   Q(name__icontains=search) |
+                   Q(name_arabic__icontains=search)
+               )
+
+           # Filter by category
+           category = self.request.GET.get('category')
+           if category:
+               queryset = queryset.filter(category=category)
+
+           # Filter by type
+           is_core = self.request.GET.get('is_core')
+           if is_core:
+               queryset = queryset.filter(is_core=(is_core == 'true'))
+
+           return queryset.order_by('category', 'code')
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['categories'] = Subject.SubjectCategory.choices
+           context['search'] = self.request.GET.get('search', '')
+           context['selected_category'] = self.request.GET.get('category', '')
+           return context
+
+
+   class SubjectDetailView(LoginRequiredMixin, DetailView):
+       """Display detailed information about a subject."""
+       model = Subject
+       template_name = 'curriculum/subject_detail.html'
+       context_object_name = 'subject'
+
+       def get_queryset(self):
+           return Subject.objects.prefetch_related(
+               'prerequisites',
+               'prerequisite_for'
+           )
+
+
+   class SubjectCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+       """Create a new subject."""
+       model = Subject
+       form_class = SubjectForm
+       template_name = 'curriculum/subject_form.html'
+       success_url = reverse_lazy('curriculum:subject-list')
+       permission_required = 'curriculum.add_subject'
+
+       def form_valid(self, form):
+           messages.success(self.request, _('Subject created successfully.'))
+           return super().form_valid(form)
+
+
+   class SubjectUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+       """Update an existing subject."""
+       model = Subject
+       form_class = SubjectForm
+       template_name = 'curriculum/subject_form.html'
+       success_url = reverse_lazy('curriculum:subject-list')
+       permission_required = 'curriculum.change_subject'
+
+       def form_valid(self, form):
+           messages.success(self.request, _('Subject updated successfully.'))
+           return super().form_valid(form)
+
+
+   class SubjectDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+       """Delete a subject."""
+       model = Subject
+       template_name = 'curriculum/subject_confirm_delete.html'
+       success_url = reverse_lazy('curriculum:subject-list')
+       permission_required = 'curriculum.delete_subject'
+
+       def delete(self, request, *args, **kwargs):
+           messages.success(request, _('Subject deleted successfully.'))
+           return super().delete(request, *args, **kwargs)
+
+
+   # ============================================================================
+   # CurriculumFramework Views
+   # ============================================================================
+
+   class CurriculumFrameworkListView(LoginRequiredMixin, ListView):
+       """Display list of curriculum frameworks."""
+       model = CurriculumFramework
+       template_name = 'curriculum/framework_list.html'
+       context_object_name = 'frameworks'
+       paginate_by = 25
+
+       def get_queryset(self):
+           queryset = CurriculumFramework.objects.select_related('created_by')
+
+           # Filter by education level
+           education_level = self.request.GET.get('education_level')
+           if education_level:
+               queryset = queryset.filter(education_level=education_level)
+
+           # Filter by MBHTE approval
+           is_approved = self.request.GET.get('is_approved')
+           if is_approved:
+               queryset = queryset.filter(is_mbhte_approved=(is_approved == 'true'))
+
+           # Only active by default
+           if not self.request.GET.get('show_inactive'):
+               queryset = queryset.filter(is_active=True)
+
+           return queryset.annotate(
+               subject_count=Count('subjects')
+           ).order_by('-is_active', 'education_level', 'name')
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['education_levels'] = CurriculumFramework.EducationLevel.choices
+           return context
+
+
+   class CurriculumFrameworkDetailView(LoginRequiredMixin, DetailView):
+       """Display detailed framework with subjects."""
+       model = CurriculumFramework
+       template_name = 'curriculum/framework_detail.html'
+       context_object_name = 'framework'
+
+       def get_queryset(self):
+           return CurriculumFramework.objects.select_related(
+               'created_by'
+           ).prefetch_related(
+               Prefetch(
+                   'curriculum_subjects',
+                   queryset=CurriculumSubject.objects.select_related('subject').order_by('grade_level', 'order')
+               )
+           )
+
+
+   class CurriculumFrameworkCreateView(LoginRequiredMixin, PermissionRequiredMixin, CreateView):
+       """Create a new curriculum framework."""
+       model = CurriculumFramework
+       form_class = CurriculumFrameworkForm
+       template_name = 'curriculum/framework_form.html'
+       permission_required = 'curriculum.add_curriculumframework'
+
+       def form_valid(self, form):
+           form.instance.created_by = self.request.user
+           messages.success(self.request, _('Curriculum framework created successfully.'))
+           return super().form_valid(form)
+
+       def get_success_url(self):
+           return reverse_lazy('curriculum:framework-detail', kwargs={'pk': self.object.pk})
+
+
+   class CurriculumFrameworkUpdateView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+       """Update an existing curriculum framework."""
+       model = CurriculumFramework
+       form_class = CurriculumFrameworkForm
+       template_name = 'curriculum/framework_form.html'
+       permission_required = 'curriculum.change_curriculumframework'
+
+       def form_valid(self, form):
+           messages.success(self.request, _('Curriculum framework updated successfully.'))
+           return super().form_valid(form)
+
+       def get_success_url(self):
+           return reverse_lazy('curriculum:framework-detail', kwargs={'pk': self.object.pk})
+
+
+   class CurriculumFrameworkDeleteView(LoginRequiredMixin, PermissionRequiredMixin, DeleteView):
+       """Delete a curriculum framework."""
+       model = CurriculumFramework
+       template_name = 'curriculum/framework_confirm_delete.html'
+       success_url = reverse_lazy('curriculum:framework-list')
+       permission_required = 'curriculum.delete_curriculumframework'
+
+       def delete(self, request, *args, **kwargs):
+           messages.success(request, _('Curriculum framework deleted successfully.'))
+           return super().delete(request, *args, **kwargs)
+
+
+   # ============================================================================
+   # LessonPlan Views
+   # ============================================================================
+
+   class LessonPlanListView(LoginRequiredMixin, ListView):
+       """Display list of all lesson plans (for admins)."""
+       model = LessonPlan
+       template_name = 'curriculum/lesson_plan_list.html'
+       context_object_name = 'lesson_plans'
+       paginate_by = 25
+
+       def get_queryset(self):
+           queryset = LessonPlan.objects.select_related(
+               'subject', 'teacher', 'madrasah'
+           )
+
+           # Filter by status
+           status = self.request.GET.get('status')
+           if status:
+               queryset = queryset.filter(status=status)
+
+           # Filter by grade level
+           grade_level = self.request.GET.get('grade_level')
+           if grade_level:
+               queryset = queryset.filter(grade_level=grade_level)
+
+           # Search
+           search = self.request.GET.get('search')
+           if search:
+               queryset = queryset.filter(
+                   Q(title__icontains=search) |
+                   Q(description__icontains=search) |
+                   Q(subject__name__icontains=search)
+               )
+
+           return queryset.order_by('-created_at')
+
+
+   class MyLessonPlansView(LoginRequiredMixin, ListView):
+       """Display current user's lesson plans."""
+       model = LessonPlan
+       template_name = 'curriculum/my_lesson_plans.html'
+       context_object_name = 'lesson_plans'
+       paginate_by = 25
+
+       def get_queryset(self):
+           return LessonPlan.objects.filter(
+               teacher=self.request.user
+           ).select_related('subject', 'madrasah').order_by('-created_at')
+
+
+   class PublicLessonPlansView(LoginRequiredMixin, ListView):
+       """Display public lesson plans shared by other teachers."""
+       model = LessonPlan
+       template_name = 'curriculum/public_lesson_plans.html'
+       context_object_name = 'lesson_plans'
+       paginate_by = 25
+
+       def get_queryset(self):
+           queryset = LessonPlan.objects.filter(
+               is_public=True,
+               status='approved'
+           ).exclude(
+               teacher=self.request.user
+           ).select_related('subject', 'teacher', 'madrasah')
+
+           # Filter by subject
+           subject = self.request.GET.get('subject')
+           if subject:
+               queryset = queryset.filter(subject_id=subject)
+
+           # Filter by grade level
+           grade_level = self.request.GET.get('grade_level')
+           if grade_level:
+               queryset = queryset.filter(grade_level=grade_level)
+
+           return queryset.order_by('-created_at')
+
+
+   class LessonPlanDetailView(LoginRequiredMixin, DetailView):
+       """Display lesson plan details."""
+       model = LessonPlan
+       template_name = 'curriculum/lesson_plan_detail.html'
+       context_object_name = 'lesson_plan'
+
+       def get_queryset(self):
+           queryset = LessonPlan.objects.select_related(
+               'subject', 'teacher', 'madrasah', 'reviewed_by'
+           )
+           # Only show public plans or own plans
+           if not self.request.user.role in ['tarbiyyah_admin', 'madrasah_admin', 'muder']:
+               queryset = queryset.filter(
+                   Q(teacher=self.request.user) | Q(is_public=True)
+               )
+           return queryset
+
+
+   class LessonPlanCreateView(LoginRequiredMixin, CreateView):
+       """Create a new lesson plan."""
+       model = LessonPlan
+       form_class = LessonPlanForm
+       template_name = 'curriculum/lesson_plan_form.html'
+
+       def get_form_kwargs(self):
+           kwargs = super().get_form_kwargs()
+           kwargs['user'] = self.request.user
+           return kwargs
+
+       def form_valid(self, form):
+           form.instance.teacher = self.request.user
+           messages.success(self.request, _('Lesson plan created successfully.'))
+           return super().form_valid(form)
+
+       def get_success_url(self):
+           return reverse_lazy('curriculum:lesson-plan-detail', kwargs={'pk': self.object.pk})
+
+
+   class LessonPlanUpdateView(LoginRequiredMixin, UpdateView):
+       """Update an existing lesson plan."""
+       model = LessonPlan
+       form_class = LessonPlanForm
+       template_name = 'curriculum/lesson_plan_form.html'
+
+       def get_queryset(self):
+           # Only allow editing own plans or if admin
+           qs = LessonPlan.objects.all()
+           if not self.request.user.role in ['tarbiyyah_admin', 'madrasah_admin', 'muder']:
+               qs = qs.filter(teacher=self.request.user)
+           return qs
+
+       def get_form_kwargs(self):
+           kwargs = super().get_form_kwargs()
+           kwargs['user'] = self.request.user
+           return kwargs
+
+       def form_valid(self, form):
+           messages.success(self.request, _('Lesson plan updated successfully.'))
+           return super().form_valid(form)
+
+       def get_success_url(self):
+           return reverse_lazy('curriculum:lesson-plan-detail', kwargs={'pk': self.object.pk})
+
+
+   class LessonPlanDeleteView(LoginRequiredMixin, DeleteView):
+       """Delete a lesson plan."""
+       model = LessonPlan
+       template_name = 'curriculum/lesson_plan_confirm_delete.html'
+       success_url = reverse_lazy('curriculum:my-lesson-plans')
+
+       def get_queryset(self):
+           # Only allow deleting own plans or if admin
+           qs = LessonPlan.objects.all()
+           if not self.request.user.role in ['tarbiyyah_admin', 'madrasah_admin', 'muder']:
+               qs = qs.filter(teacher=self.request.user)
+           return qs
+
+       def delete(self, request, *args, **kwargs):
+           messages.success(request, _('Lesson plan deleted successfully.'))
+           return super().delete(request, *args, **kwargs)
+
+
+   class LessonPlanSubmitView(LoginRequiredMixin, View):
+       """Submit lesson plan for review."""
+
+       def post(self, request, pk):
+           lesson_plan = get_object_or_404(
+               LessonPlan,
+               pk=pk,
+               teacher=request.user
+           )
+           if lesson_plan.status == 'draft':
+               lesson_plan.submit_for_review()
+               messages.success(request, _('Lesson plan submitted for review.'))
+           else:
+               messages.warning(request, _('This lesson plan has already been submitted.'))
+           return redirect('curriculum:lesson-plan-detail', pk=pk)
+
+
+   class LessonPlanApproveView(LoginRequiredMixin, PermissionRequiredMixin, View):
+       """Approve a lesson plan."""
+       permission_required = 'curriculum.approve_lesson_plan'
+
+       def post(self, request, pk):
+           lesson_plan = get_object_or_404(LessonPlan, pk=pk)
+           review_notes = request.POST.get('review_notes', '')
+           lesson_plan.approve(reviewer=request.user, notes=review_notes)
+           messages.success(request, _('Lesson plan approved successfully.'))
+           return redirect('curriculum:lesson-plan-detail', pk=pk)
+   ```
+
+3. Update main project urls.py to include curriculum URLs:
+   ```python
+   # In src/config/urls.py
+   urlpatterns = [
+       # ... existing patterns ...
+       path('curriculum/', include('apps.curriculum.urls')),
+   ]
+   ```
+
+4. Test URLs:
+   ```bash
+   python manage.py show_urls | grep curriculum
+   ```
+
+5. Test views in browser:
+   - Navigate to /curriculum/subjects/
+   - Navigate to /curriculum/frameworks/
+   - Navigate to /curriculum/lesson-plans/
+   - Test create, update, delete operations
+
+## Acceptance Criteria:
+- URL patterns defined for all curriculum views
+- List views created for subjects, frameworks, and lesson plans
+- Detail views display complete information
+- Create/Update views use proper forms
+- Delete views with confirmation implemented
+- Permission checks ensure proper access control
+- Views are optimized with select_related/prefetch_related
+- Success messages displayed after operations
+
+## Files Modified:
+- `apps/curriculum/urls.py (new file)`
+- `apps/curriculum/views.py (new file)`
+- `src/config/urls.py (update to include curriculum URLs)`
+
+## Important Notes:
+- Views implement proper permission checks
+- Queryset optimization with select_related and prefetch_related
+- Search and filtering capabilities included
+- User-specific views for lesson plans
+- Approval workflow for lesson plans
+- Success messages provide user feedback
+- Estimate: 3 hours
+
+# Test Strategy:
+1. Access view URL and verify HTTP 200 response
+2. Test with different user permissions
+3. Verify context data passed to template
+4. Test any query parameters or filters
+5. Review planning documentation
+6. Verify all risks identified
+7. Confirm rollback procedures documented
+8. Ensure dependencies are mapped

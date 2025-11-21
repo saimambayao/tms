@@ -1,0 +1,672 @@
+# Task ID: 108
+# Title: Add Bulk Operations Support
+# Status: pending
+# Dependencies: 045, 050, 107
+# Priority: high
+# Description: Implement bulk operations functionality for students, teachers, and academic records. Enable bulk create, update, delete, and status changes with vali
+
+# Details:
+Implement bulk operations functionality for students, teachers, and academic records. Enable bulk create, update, delete, and status changes with validation and rollback support.
+
+## Implementation Steps:
+1. Create bulk operations module:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src/apps/core
+   mkdir -p utils/bulk_operations
+   touch utils/bulk_operations/__init__.py
+   touch utils/bulk_operations/handlers.py
+   touch utils/bulk_operations/validators.py
+   touch utils/bulk_operations/importers.py
+   ```
+
+2. Create bulk operation base class in `apps/core/utils/bulk_operations/handlers.py`:
+   ```python
+   from django.db import transaction
+   from django.core.exceptions import ValidationError
+   import logging
+
+   logger = logging.getLogger(__name__)
+
+   class BulkOperationResult:
+       """Result object for bulk operations"""
+
+       def __init__(self):
+           self.success_count = 0
+           self.error_count = 0
+           self.errors = []
+           self.warnings = []
+           self.created = []
+           self.updated = []
+           self.deleted = []
+
+       def add_success(self, obj, action='created'):
+           self.success_count += 1
+           if action == 'created':
+               self.created.append(obj)
+           elif action == 'updated':
+               self.updated.append(obj)
+           elif action == 'deleted':
+               self.deleted.append(obj)
+
+       def add_error(self, row_num, error_message, data=None):
+           self.error_count += 1
+           self.errors.append({
+               'row': row_num,
+               'message': error_message,
+               'data': data
+           })
+
+       def add_warning(self, row_num, warning_message):
+           self.warnings.append({
+               'row': row_num,
+               'message': warning_message
+           })
+
+       def is_success(self):
+           return self.error_count == 0
+
+       def get_summary(self):
+           return {
+               'success_count': self.success_count,
+               'error_count': self.error_count,
+               'created': len(self.created),
+               'updated': len(self.updated),
+               'deleted': len(self.deleted),
+               'total_errors': len(self.errors),
+               'total_warnings': len(self.warnings)
+           }
+
+   class BulkOperationHandler:
+       """Base class for bulk operations"""
+
+       def __init__(self, user, dry_run=False):
+           self.user = user
+           self.dry_run = dry_run
+           self.result = BulkOperationResult()
+
+       def validate_permissions(self):
+           """Override to check user permissions"""
+           raise NotImplementedError
+
+       def validate_row(self, row_num, data):
+           """Override to validate individual row"""
+           raise NotImplementedError
+
+       def process_row(self, row_num, data):
+           """Override to process individual row"""
+           raise NotImplementedError
+
+       @transaction.atomic
+       def execute(self, data_rows):
+           """Execute bulk operation"""
+           if not self.validate_permissions():
+               raise PermissionError("User does not have permission for this operation")
+
+           # Set savepoint for rollback
+           sid = transaction.savepoint()
+
+           try:
+               for row_num, row_data in enumerate(data_rows, start=1):
+                   try:
+                       # Validate row
+                       validation_errors = self.validate_row(row_num, row_data)
+                       if validation_errors:
+                           for error in validation_errors:
+                               self.result.add_error(row_num, error, row_data)
+                           continue
+
+                       # Process row
+                       if not self.dry_run:
+                           obj, action = self.process_row(row_num, row_data)
+                           self.result.add_success(obj, action)
+                       else:
+                           # Dry run - just validate
+                           self.result.add_success(None, 'validated')
+
+                   except Exception as e:
+                       logger.exception(f"Error processing row {row_num}")
+                       self.result.add_error(row_num, str(e), row_data)
+
+               # Rollback if dry run or if errors occurred
+               if self.dry_run or not self.result.is_success():
+                   transaction.savepoint_rollback(sid)
+               else:
+                   transaction.savepoint_commit(sid)
+
+           except Exception as e:
+               logger.exception("Bulk operation failed")
+               transaction.savepoint_rollback(sid)
+               raise
+
+           return self.result
+   ```
+
+3. Create student bulk operations in `apps/students/bulk_operations.py`:
+   ```python
+   from django.contrib.auth import get_user_model
+   from apps.core.utils.bulk_operations.handlers import BulkOperationHandler
+   from apps.students.models import Student
+   from apps.madaris.models import Madrasah, MadrasahEnrollment
+   import re
+
+   User = get_user_model()
+
+   class BulkStudentEnrollment(BulkOperationHandler):
+       """Bulk enroll students"""
+
+       def validate_permissions(self):
+           return self.user.has_perm('students.add_student')
+
+       def validate_row(self, row_num, data):
+           errors = []
+
+           # Required fields
+           required = ['first_name', 'last_name', 'email', 'student_id', 'madrasah_id', 'grade_level']
+           for field in required:
+               if not data.get(field):
+                   errors.append(f"Missing required field: {field}")
+
+           # Validate email format
+           if data.get('email'):
+               email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+               if not re.match(email_regex, data['email']):
+                   errors.append("Invalid email format")
+
+               # Check for duplicate email
+               if User.objects.filter(email=data['email']).exists():
+                   errors.append(f"Email {data['email']} already exists")
+
+           # Validate student_id uniqueness
+           if data.get('student_id'):
+               if Student.objects.filter(student_id=data['student_id']).exists():
+                   errors.append(f"Student ID {data['student_id']} already exists")
+
+           # Validate madrasah exists
+           if data.get('madrasah_id'):
+               if not Madrasah.objects.filter(id=data['madrasah_id']).exists():
+                   errors.append(f"Madrasah with ID {data['madrasah_id']} not found")
+
+           return errors
+
+       def process_row(self, row_num, data):
+           """Create student and enrollment"""
+           # Create user
+           user = User.objects.create_user(
+               username=data['email'].split('@')[0],
+               email=data['email'],
+               first_name=data['first_name'],
+               last_name=data['last_name'],
+               role='student'
+           )
+
+           # Create student profile
+           student = Student.objects.create(
+               user=user,
+               student_id=data['student_id'],
+               grade_level=data['grade_level'],
+               date_of_birth=data.get('date_of_birth'),
+               gender=data.get('gender', 'other'),
+               status='active'
+           )
+
+           # Create enrollment
+           madrasah = Madrasah.objects.get(id=data['madrasah_id'])
+           MadrasahEnrollment.objects.create(
+               student=student,
+               madrasah=madrasah,
+               academic_year=data.get('academic_year', '2025'),
+               enrollment_status='active'
+           )
+
+           return student, 'created'
+
+   class BulkStudentUpdate(BulkOperationHandler):
+       """Bulk update student information"""
+
+       def validate_permissions(self):
+           return self.user.has_perm('students.change_student')
+
+       def validate_row(self, row_num, data):
+           errors = []
+
+           # Must have student_id to identify student
+           if not data.get('student_id'):
+               errors.append("Missing student_id")
+               return errors
+
+           # Check student exists
+           if not Student.objects.filter(student_id=data['student_id']).exists():
+               errors.append(f"Student {data['student_id']} not found")
+
+           return errors
+
+       def process_row(self, row_num, data):
+           """Update student information"""
+           student = Student.objects.get(student_id=data['student_id'])
+
+           # Update fields if provided
+           if data.get('grade_level'):
+               student.grade_level = data['grade_level']
+
+           if data.get('status'):
+               student.status = data['status']
+
+           if data.get('first_name'):
+               student.user.first_name = data['first_name']
+
+           if data.get('last_name'):
+               student.user.last_name = data['last_name']
+
+           student.save()
+           student.user.save()
+
+           return student, 'updated'
+
+   class BulkStatusChange(BulkOperationHandler):
+       """Bulk change student status"""
+
+       def __init__(self, user, new_status, dry_run=False):
+           super().__init__(user, dry_run)
+           self.new_status = new_status
+
+       def validate_permissions(self):
+           return self.user.has_perm('students.change_student')
+
+       def validate_row(self, row_num, data):
+           errors = []
+           if not data.get('student_id'):
+               errors.append("Missing student_id")
+           return errors
+
+       def process_row(self, row_num, data):
+           student = Student.objects.get(student_id=data['student_id'])
+           student.status = self.new_status
+           student.save()
+           return student, 'updated'
+   ```
+
+4. Create attendance bulk operations in `apps/academic/bulk_operations.py`:
+   ```python
+   from apps.core.utils.bulk_operations.handlers import BulkOperationHandler
+   from apps.academic.models import Attendance
+   from apps.students.models import Student
+   from datetime import datetime
+
+   class BulkAttendanceRecording(BulkOperationHandler):
+       """Bulk record attendance for multiple students"""
+
+       def __init__(self, user, date, dry_run=False):
+           super().__init__(user, dry_run)
+           self.date = date
+
+       def validate_permissions(self):
+           return self.user.has_perm('academic.add_attendance')
+
+       def validate_row(self, row_num, data):
+           errors = []
+
+           if not data.get('student_id'):
+               errors.append("Missing student_id")
+
+           if not data.get('status'):
+               errors.append("Missing attendance status")
+
+           if data.get('status') not in ['present', 'absent', 'late', 'excused']:
+               errors.append("Invalid status. Must be: present, absent, late, or excused")
+
+           # Check student exists
+           if data.get('student_id'):
+               if not Student.objects.filter(student_id=data['student_id']).exists():
+                   errors.append(f"Student {data['student_id']} not found")
+
+           return errors
+
+       def process_row(self, row_num, data):
+           student = Student.objects.get(student_id=data['student_id'])
+
+           # Check if attendance already recorded
+           attendance, created = Attendance.objects.update_or_create(
+               student=student,
+               date=self.date,
+               defaults={
+                   'status': data['status'],
+                   'remarks': data.get('remarks', '')
+               }
+           )
+
+           action = 'created' if created else 'updated'
+           return attendance, action
+   ```
+
+5. Create grade bulk operations in `apps/academic/bulk_operations.py` (add to existing):
+   ```python
+   from apps.academic.models import Grade, Assessment, Subject
+
+   class BulkGradeEntry(BulkOperationHandler):
+       """Bulk enter grades for an assessment"""
+
+       def __init__(self, user, assessment_id, dry_run=False):
+           super().__init__(user, dry_run)
+           self.assessment = Assessment.objects.get(id=assessment_id)
+
+       def validate_permissions(self):
+           return self.user.has_perm('academic.add_grade')
+
+       def validate_row(self, row_num, data):
+           errors = []
+
+           if not data.get('student_id'):
+               errors.append("Missing student_id")
+
+           if not data.get('score'):
+               errors.append("Missing score")
+
+           # Validate score range
+           if data.get('score'):
+               try:
+                   score = float(data['score'])
+                   if score < 0 or score > 100:
+                       errors.append("Score must be between 0 and 100")
+               except ValueError:
+                   errors.append("Score must be a number")
+
+           # Check student exists
+           if data.get('student_id'):
+               if not Student.objects.filter(student_id=data['student_id']).exists():
+                   errors.append(f"Student {data['student_id']} not found")
+
+           return errors
+
+       def process_row(self, row_num, data):
+           student = Student.objects.get(student_id=data['student_id'])
+
+           grade, created = Grade.objects.update_or_create(
+               student=student,
+               assessment=self.assessment,
+               subject=self.assessment.subject,
+               defaults={
+                   'score': float(data['score']),
+                   'academic_year': self.assessment.academic_year,
+                   'remarks': data.get('remarks', '')
+               }
+           )
+
+           action = 'created' if created else 'updated'
+           return grade, action
+   ```
+
+6. Create CSV/Excel importer in `apps/core/utils/bulk_operations/importers.py`:
+   ```python
+   import csv
+   import openpyxl
+   from io import TextIOWrapper
+
+   class DataImporter:
+       """Import data from CSV or Excel files"""
+
+       @staticmethod
+       def import_csv(file):
+           """Import data from CSV file"""
+           rows = []
+           text_file = TextIOWrapper(file, encoding='utf-8')
+           reader = csv.DictReader(text_file)
+
+           for row in reader:
+               # Clean empty strings
+               cleaned_row = {k: v.strip() if v else None for k, v in row.items()}
+               rows.append(cleaned_row)
+
+           return rows
+
+       @staticmethod
+       def import_excel(file):
+           """Import data from Excel file"""
+           rows = []
+           workbook = openpyxl.load_workbook(file)
+           worksheet = workbook.active
+
+           # Get headers from first row
+           headers = [cell.value for cell in worksheet[1]]
+
+           # Read data rows
+           for row in worksheet.iter_rows(min_row=2, values_only=True):
+               row_data = dict(zip(headers, row))
+               rows.append(row_data)
+
+           return rows
+
+       @staticmethod
+       def detect_format(filename):
+           """Detect file format from extension"""
+           if filename.endswith('.csv'):
+               return 'csv'
+           elif filename.endswith(('.xlsx', '.xls')):
+               return 'excel'
+           else:
+               raise ValueError("Unsupported file format")
+   ```
+
+7. Create bulk operation views:
+   ```python
+   # apps/core/views/bulk_operation_views.py
+   from django.views.generic import TemplateView, FormView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.http import JsonResponse
+   from django.views import View
+   from apps.core.utils.bulk_operations.importers import DataImporter
+   from apps.students.bulk_operations import BulkStudentEnrollment, BulkStudentUpdate
+
+   class BulkStudentEnrollmentView(LoginRequiredMixin, FormView):
+       template_name = 'core/bulk_student_enrollment.html'
+
+       def post(self, request):
+           uploaded_file = request.FILES.get('file')
+           dry_run = request.POST.get('dry_run') == 'true'
+
+           if not uploaded_file:
+               return JsonResponse({'error': 'No file uploaded'}, status=400)
+
+           # Import data
+           file_format = DataImporter.detect_format(uploaded_file.name)
+           if file_format == 'csv':
+               data_rows = DataImporter.import_csv(uploaded_file)
+           else:
+               data_rows = DataImporter.import_excel(uploaded_file)
+
+           # Execute bulk operation
+           handler = BulkStudentEnrollment(request.user, dry_run=dry_run)
+           result = handler.execute(data_rows)
+
+           return JsonResponse({
+               'success': result.is_success(),
+               'summary': result.get_summary(),
+               'errors': result.errors,
+               'warnings': result.warnings
+           })
+
+   class BulkOperationDashboardView(LoginRequiredMixin, TemplateView):
+       template_name = 'core/bulk_operations.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['operations'] = [
+               {'name': 'Student Enrollment', 'url': 'bulk_student_enrollment'},
+               {'name': 'Student Updates', 'url': 'bulk_student_update'},
+               {'name': 'Attendance Recording', 'url': 'bulk_attendance'},
+               {'name': 'Grade Entry', 'url': 'bulk_grade_entry'},
+           ]
+           return context
+   ```
+
+8. Create bulk operation templates:
+   ```html
+   <!-- templates/core/bulk_student_enrollment.html -->
+   {% extends "base.html" %}
+
+   {% block title %}Bulk Student Enrollment{% endblock %}
+
+   {% block content %}
+   <div class="bulk-operation-container">
+       <h1>Bulk Student Enrollment</h1>
+
+       <div class="instructions">
+           <h3>Instructions:</h3>
+           <ol>
+               <li>Download the template CSV/Excel file</li>
+               <li>Fill in student information</li>
+               <li>Upload the completed file</li>
+               <li>Review preview and confirm</li>
+           </ol>
+           <a href="{% url 'core:download_template' 'student_enrollment' %}" class="btn">Download Template</a>
+       </div>
+
+       <form id="bulk-upload-form" enctype="multipart/form-data">
+           {% csrf_token %}
+           <div class="form-group">
+               <label>Upload File:</label>
+               <input type="file" name="file" accept=".csv,.xlsx" required>
+           </div>
+
+           <div class="form-group">
+               <label>
+                   <input type="checkbox" name="dry_run" value="true" checked>
+                   Preview before saving (recommended)
+               </label>
+           </div>
+
+           <button type="submit" class="btn btn-primary">Upload and Process</button>
+       </form>
+
+       <div id="results" style="display:none;">
+           <h3>Results</h3>
+           <div class="summary"></div>
+           <div class="errors"></div>
+           <div class="warnings"></div>
+       </div>
+   </div>
+
+   <script>
+   document.getElementById('bulk-upload-form').addEventListener('submit', function(e) {
+       e.preventDefault();
+
+       const formData = new FormData(this);
+
+       fetch('{% url "core:bulk_student_enrollment" %}', {
+           method: 'POST',
+           body: formData,
+           headers: {
+               'X-CSRFToken': '{{ csrf_token }}'
+           }
+       })
+       .then(response => response.json())
+       .then(data => {
+           document.getElementById('results').style.display = 'block';
+
+           // Display summary
+           const summary = data.summary;
+           document.querySelector('.summary').innerHTML = `
+               <p>Success: ${summary.success_count}</p>
+               <p>Errors: ${summary.error_count}</p>
+               <p>Created: ${summary.created}</p>
+               <p>Updated: ${summary.updated}</p>
+           `;
+
+           // Display errors
+           if (data.errors.length > 0) {
+               let errorHtml = '<h4>Errors:</h4><ul>';
+               data.errors.forEach(error => {
+                   errorHtml += `<li>Row ${error.row}: ${error.message}</li>`;
+               });
+               errorHtml += '</ul>';
+               document.querySelector('.errors').innerHTML = errorHtml;
+           }
+
+           // If preview mode and no errors, allow confirmation
+           if (formData.get('dry_run') === 'true' && data.success) {
+               const confirmBtn = document.createElement('button');
+               confirmBtn.textContent = 'Confirm and Save';
+               confirmBtn.className = 'btn btn-success';
+               confirmBtn.onclick = function() {
+                   formData.set('dry_run', 'false');
+                   // Resubmit without dry run
+               };
+               document.querySelector('.summary').appendChild(confirmBtn);
+           }
+       });
+   });
+   </script>
+   {% endblock %}
+   ```
+
+9. Update URLs:
+   ```python
+   # apps/core/urls.py
+   from .views.bulk_operation_views import (
+       BulkStudentEnrollmentView, BulkOperationDashboardView
+   )
+
+   urlpatterns = [
+       # ... existing patterns ...
+       path('bulk-operations/', BulkOperationDashboardView.as_view(), name='bulk_operations'),
+       path('bulk-operations/students/enroll/', BulkStudentEnrollmentView.as_view(), name='bulk_student_enrollment'),
+       # Add more bulk operation URLs
+   ]
+   ```
+
+10. Create tests for bulk operations:
+    ```python
+    # apps/core/tests/test_bulk_operations.py
+    from django.test import TestCase
+    from apps.students.bulk_operations import BulkStudentEnrollment
+
+    class BulkOperationTests(TestCase):
+        def test_bulk_student_enrollment_validation(self):
+            # Test validation logic
+            pass
+
+        def test_bulk_student_enrollment_success(self):
+            # Test successful enrollment
+            pass
+    ```
+
+## Acceptance Criteria:
+- Bulk student enrollment/update created
+- Bulk teacher assignment created
+- Bulk attendance recording created
+- Bulk grade entry created
+- Bulk status updates (activate/deactivate)
+- CSV/Excel import for bulk operations
+- Validation and error reporting
+- Preview before commit
+- Rollback support for failed operations
+- Bulk operation logging
+
+## Files Modified:
+- `src/apps/core/utils/bulk_operations/__init__.py (new)`
+- `src/apps/core/utils/bulk_operations/handlers.py (new)`
+- `src/apps/core/utils/bulk_operations/validators.py (new)`
+- `src/apps/core/utils/bulk_operations/importers.py (new)`
+- `src/apps/students/bulk_operations.py (new)`
+- `src/apps/academic/bulk_operations.py (new)`
+- `src/apps/core/views/bulk_operation_views.py (new)`
+- `src/apps/core/templates/core/bulk_operations.html (new)`
+- `src/apps/core/templates/core/bulk_student_enrollment.html (new)`
+- `src/apps/core/urls.py (add bulk operation URLs)`
+- `src/apps/core/tests/test_bulk_operations.py (new)`
+
+## Important Notes:
+- Always provide preview mode before committing
+- Implement proper rollback for failed operations
+- Log all bulk operations for audit trail
+- Validate data thoroughly before processing
+- Provide clear error messages with row numbers
+- Support both CSV and Excel formats
+- Add progress indicators for large batches
+- Consider background processing for >1000 records
+- Estimate: 5-6 hours
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

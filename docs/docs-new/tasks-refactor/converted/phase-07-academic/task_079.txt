@@ -1,0 +1,524 @@
+# Task ID: 079
+# Title: Create Report Card Templates
+# Status: pending
+# Dependencies: 076, 077
+# Priority: medium
+# Description: Create report card generation system with PDF templates for student academic reports. Support for term reports, progress reports, and final transcript
+
+# Details:
+Create report card generation system with PDF templates for student academic reports. Support for term reports, progress reports, and final transcripts with Islamic formatting.
+
+## Implementation Steps:
+1. Install required packages:
+   ```bash
+   pip install reportlab weasyprint
+   ```
+
+2. Create report card views:
+   ```python
+   # apps/academics/views.py (add to existing file)
+   from django.template.loader import get_template
+   from django.http import HttpResponse
+   from weasyprint import HTML, CSS
+   from weasyprint.text.fonts import FontConfiguration
+   import tempfile
+   from datetime import datetime
+
+   @login_required
+   def generate_report_card(request, student_id, academic_year_id, term):
+       """Generate PDF report card for a student"""
+       student = get_object_or_404(User, pk=student_id, role='student')
+       academic_year = get_object_or_404(AcademicYear, pk=academic_year_id)
+
+       # Check permission
+       if not (request.user.is_staff or
+               request.user.role in ['muder', 'asatidz'] or
+               request.user == student):
+           messages.error(request, "Permission denied")
+           return redirect('dashboard:home')
+
+       # Get all classes student is enrolled in
+       enrollments = ClassEnrollment.objects.filter(
+           student=student,
+           class_instance__academic_year=academic_year,
+           status='enrolled'
+       ).select_related('class_instance__subject', 'class_instance__teacher')
+
+       # Collect grade reports
+       report_data = []
+       overall_average = 0
+       total_credits = 0
+
+       for enrollment in enrollments:
+           class_obj = enrollment.class_instance
+
+           # Get or create grade report
+           report, created = GradeReport.objects.get_or_create(
+               student=student,
+               class_instance=class_obj,
+               academic_year=academic_year,
+               term=term
+           )
+
+           if created:
+               report.calculate_final_grade()
+               report.save()
+
+           # Get detailed grades
+           grades = Grade.objects.filter(
+               student=student,
+               class_instance=class_obj,
+               academic_year=academic_year,
+               term=term
+           ).order_by('assessment_date')
+
+           # Get attendance
+           attendance = Attendance.objects.filter(
+               student=student,
+               class_instance=class_obj,
+               academic_year=academic_year
+           )
+           total_sessions = attendance.count()
+           present = attendance.filter(status__in=['present', 'late']).count()
+           attendance_pct = (present / total_sessions * 100) if total_sessions > 0 else 0
+
+           report_data.append({
+               'subject': class_obj.subject.name,
+               'subject_code': class_obj.subject.code,
+               'teacher': class_obj.teacher_name,
+               'final_grade': report.final_percentage,
+               'letter_grade': report.final_letter_grade,
+               'grades': grades,
+               'attendance_percentage': round(attendance_pct, 2),
+               'teacher_remarks': report.teacher_remarks,
+               'conduct_grade': report.conduct_grade,
+           })
+
+           # Calculate overall average
+           overall_average += float(report.final_percentage)
+           total_credits += 1
+
+       overall_average = overall_average / total_credits if total_credits > 0 else 0
+
+       # Calculate overall letter grade
+       if overall_average >= 90:
+           overall_letter = 'A+'
+       elif overall_average >= 85:
+           overall_letter = 'A'
+       elif overall_average >= 80:
+           overall_letter = 'B+'
+       elif overall_average >= 75:
+           overall_letter = 'B'
+       elif overall_average >= 70:
+           overall_letter = 'C+'
+       elif overall_average >= 65:
+           overall_letter = 'C'
+       elif overall_average >= 60:
+           overall_letter = 'D'
+       else:
+           overall_letter = 'F'
+
+       # Get student's madrasah
+       madrasah_enrollment = student.madrasah_enrollments.filter(
+           enrollment_type='student',
+           academic_year=academic_year
+       ).first()
+       madrasah = madrasah_enrollment.madrasah if madrasah_enrollment else None
+
+       context = {
+           'student': student,
+           'madrasah': madrasah,
+           'academic_year': academic_year,
+           'term': term,
+           'report_data': report_data,
+           'overall_average': round(overall_average, 2),
+           'overall_letter': overall_letter,
+           'generation_date': datetime.now(),
+           'report_title': f'Term {term} Report Card',
+       }
+
+       # Render HTML template
+       template = get_template('academics/report_card_pdf.html')
+       html_content = template.render(context)
+
+       # Generate PDF
+       font_config = FontConfiguration()
+       html = HTML(string=html_content)
+       pdf = html.write_pdf(font_config=font_config)
+
+       # Return PDF response
+       response = HttpResponse(pdf, content_type='application/pdf')
+       filename = f'report_card_{student.username}_term{term}_{academic_year.year}.pdf'
+       response['Content-Disposition'] = f'inline; filename="{filename}"'
+
+       return response
+
+   @login_required
+   def generate_progress_report(request, student_id, class_id):
+       """Generate mid-term progress report for a student in a specific class"""
+       student = get_object_or_404(User, pk=student_id, role='student')
+       class_obj = get_object_or_404(Class, pk=class_id)
+
+       # Check permission
+       if not (request.user.is_staff or
+               request.user == class_obj.teacher or
+               request.user == student):
+           messages.error(request, "Permission denied")
+           return redirect('dashboard:home')
+
+       # Get recent grades (last 30 days)
+       from datetime import timedelta
+       thirty_days_ago = date.today() - timedelta(days=30)
+
+       grades = Grade.objects.filter(
+           student=student,
+           class_instance=class_obj,
+           assessment_date__gte=thirty_days_ago
+       ).order_by('-assessment_date')
+
+       # Calculate current average
+       avg_percentage = grades.aggregate(Avg('percentage'))['percentage__avg'] or 0
+
+       # Get recent attendance
+       attendance = Attendance.objects.filter(
+           student=student,
+           class_instance=class_obj,
+           date__gte=thirty_days_ago
+       ).order_by('-date')
+
+       total_sessions = attendance.count()
+       present = attendance.filter(status__in=['present', 'late']).count()
+       attendance_pct = (present / total_sessions * 100) if total_sessions > 0 else 0
+
+       context = {
+           'student': student,
+           'class': class_obj,
+           'grades': grades,
+           'average_grade': round(avg_percentage, 2),
+           'attendance': attendance,
+           'attendance_percentage': round(attendance_pct, 2),
+           'period': '30 Days',
+           'generation_date': datetime.now(),
+       }
+
+       template = get_template('academics/progress_report_pdf.html')
+       html_content = template.render(context)
+
+       font_config = FontConfiguration()
+       html = HTML(string=html_content)
+       pdf = html.write_pdf(font_config=font_config)
+
+       response = HttpResponse(pdf, content_type='application/pdf')
+       filename = f'progress_report_{student.username}_{class_obj.class_code}.pdf'
+       response['Content-Disposition'] = f'inline; filename="{filename}"'
+
+       return response
+
+   @login_required
+   def bulk_generate_report_cards(request, class_id, term):
+       """Generate report cards for all students in a class"""
+       class_obj = get_object_or_404(Class, pk=class_id)
+
+       # Check permission
+       if class_obj.teacher != request.user and not request.user.is_staff:
+           messages.error(request, "Permission denied")
+           return redirect('academics:gradebook_class_list')
+
+       enrollments = ClassEnrollment.objects.filter(
+           class_instance=class_obj,
+           status='enrolled'
+       ).select_related('student')
+
+       # Generate reports
+       import zipfile
+       from io import BytesIO
+
+       zip_buffer = BytesIO()
+       with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+           for enrollment in enrollments:
+               # Generate individual PDF
+               pdf_response = generate_report_card(
+                   request,
+                   enrollment.student.id,
+                   class_obj.academic_year.id,
+                   term
+               )
+
+               filename = f'{enrollment.student.username}_report_term{term}.pdf'
+               zip_file.writestr(filename, pdf_response.content)
+
+       zip_buffer.seek(0)
+       response = HttpResponse(zip_buffer.read(), content_type='application/zip')
+       response['Content-Disposition'] = f'attachment; filename="report_cards_{class_obj.class_code}_term{term}.zip"'
+
+       return response
+   ```
+
+3. Create report card PDF template:
+   ```html
+   <!-- templates/academics/report_card_pdf.html -->
+   <!DOCTYPE html>
+   <html>
+   <head>
+       <meta charset="UTF-8">
+       <title>Report Card - {{ student.get_full_name }}</title>
+       <style>
+           @page {
+               size: A4;
+               margin: 2cm;
+           }
+           body {
+               font-family: Arial, sans-serif;
+               font-size: 11pt;
+               line-height: 1.4;
+           }
+           .header {
+               text-align: center;
+               margin-bottom: 30px;
+               border-bottom: 3px solid #2c5282;
+               padding-bottom: 20px;
+           }
+           .header h1 {
+               color: #2c5282;
+               margin: 5px 0;
+               font-size: 24pt;
+           }
+           .header h2 {
+               color: #4a5568;
+               margin: 5px 0;
+               font-size: 14pt;
+           }
+           .student-info {
+               margin: 20px 0;
+               padding: 15px;
+               background-color: #f7fafc;
+               border-radius: 5px;
+           }
+           .student-info table {
+               width: 100%;
+           }
+           .student-info td {
+               padding: 5px 10px;
+           }
+           .grades-table {
+               width: 100%;
+               border-collapse: collapse;
+               margin: 20px 0;
+           }
+           .grades-table th {
+               background-color: #2c5282;
+               color: white;
+               padding: 10px;
+               text-align: left;
+               font-size: 10pt;
+           }
+           .grades-table td {
+               padding: 8px 10px;
+               border-bottom: 1px solid #e2e8f0;
+           }
+           .grades-table tr:nth-child(even) {
+               background-color: #f7fafc;
+           }
+           .summary {
+               margin-top: 30px;
+               padding: 15px;
+               background-color: #ebf8ff;
+               border-left: 4px solid #3182ce;
+           }
+           .summary h3 {
+               color: #2c5282;
+               margin-top: 0;
+           }
+           .grade-excellent { color: #22543d; font-weight: bold; }
+           .grade-good { color: #2f855a; }
+           .grade-average { color: #d69e2e; }
+           .grade-poor { color: #c53030; font-weight: bold; }
+           .footer {
+               margin-top: 40px;
+               padding-top: 20px;
+               border-top: 2px solid #e2e8f0;
+               font-size: 9pt;
+               color: #718096;
+           }
+           .signatures {
+               margin-top: 50px;
+               display: table;
+               width: 100%;
+           }
+           .signature {
+               display: table-cell;
+               width: 33%;
+               text-align: center;
+           }
+           .signature-line {
+               border-top: 1px solid #000;
+               margin-top: 50px;
+               padding-top: 5px;
+           }
+       </style>
+   </head>
+   <body>
+       <!-- Header -->
+       <div class="header">
+           <h1>{{ madrasah.name }}</h1>
+           <h2>{{ report_title }}</h2>
+           <p>Academic Year: {{ academic_year.year }}</p>
+       </div>
+
+       <!-- Student Information -->
+       <div class="student-info">
+           <table>
+               <tr>
+                   <td><strong>Student Name:</strong></td>
+                   <td>{{ student.get_full_name }}</td>
+                   <td><strong>Student ID:</strong></td>
+                   <td>{{ student.username }}</td>
+               </tr>
+               <tr>
+                   <td><strong>Grade Level:</strong></td>
+                   <td>{{ madrasah_enrollment.grade_level }}</td>
+                   <td><strong>Section:</strong></td>
+                   <td>{{ madrasah_enrollment.section }}</td>
+               </tr>
+           </table>
+       </div>
+
+       <!-- Grades Table -->
+       <table class="grades-table">
+           <thead>
+               <tr>
+                   <th>Subject</th>
+                   <th>Teacher</th>
+                   <th>Grade</th>
+                   <th>Letter</th>
+                   <th>Attendance</th>
+                   <th>Remarks</th>
+               </tr>
+           </thead>
+           <tbody>
+               {% for data in report_data %}
+               <tr>
+                   <td>
+                       <strong>{{ data.subject }}</strong><br>
+                       <small>{{ data.subject_code }}</small>
+                   </td>
+                   <td>{{ data.teacher }}</td>
+                   <td>
+                       {% if data.final_grade >= 85 %}
+                           <span class="grade-excellent">{{ data.final_grade }}%</span>
+                       {% elif data.final_grade >= 75 %}
+                           <span class="grade-good">{{ data.final_grade }}%</span>
+                       {% elif data.final_grade >= 60 %}
+                           <span class="grade-average">{{ data.final_grade }}%</span>
+                       {% else %}
+                           <span class="grade-poor">{{ data.final_grade }}%</span>
+                       {% endif %}
+                   </td>
+                   <td><strong>{{ data.letter_grade }}</strong></td>
+                   <td>{{ data.attendance_percentage }}%</td>
+                   <td><small>{{ data.teacher_remarks|default:"" }}</small></td>
+               </tr>
+               {% endfor %}
+           </tbody>
+       </table>
+
+       <!-- Overall Summary -->
+       <div class="summary">
+           <h3>Overall Performance</h3>
+           <p>
+               <strong>Overall Average:</strong> {{ overall_average }}%
+               ({{ overall_letter }})
+           </p>
+           <p><strong>Islamic Grading Scale:</strong></p>
+           <ul>
+               <li>A+ (90-100): Mumtaz (ممتاز) - Excellent</li>
+               <li>A (85-89): Jayyid Jiddan (جيد جداً) - Very Good</li>
+               <li>B+ (80-84): Jayyid (جيد) - Good</li>
+               <li>B (75-79): Maqbool Jiddan (مقبول جداً) - Above Average</li>
+               <li>C+ (70-74): Maqbool (مقبول) - Average</li>
+               <li>D (60-64): Najah (نجاح) - Pass</li>
+               <li>F (0-59): Rasib (راسب) - Fail</li>
+           </ul>
+       </div>
+
+       <!-- Signatures -->
+       <div class="signatures">
+           <div class="signature">
+               <div class="signature-line">
+                   Class Teacher
+               </div>
+           </div>
+           <div class="signature">
+               <div class="signature-line">
+                   Principal/Mudir
+               </div>
+           </div>
+           <div class="signature">
+               <div class="signature-line">
+                   Parent/Guardian
+               </div>
+           </div>
+       </div>
+
+       <!-- Footer -->
+       <div class="footer">
+           <p>Generated on: {{ generation_date|date:"F d, Y" }}</p>
+           <p style="text-align: center;">
+               <em>This is an official academic record. Please keep for your records.</em>
+           </p>
+       </div>
+   </body>
+   </html>
+   ```
+
+4. Add URL patterns:
+   ```python
+   # apps/academics/urls.py (add to existing)
+   urlpatterns = [
+       ...
+       # Report cards
+       path('report-card/<int:student_id>/<int:academic_year_id>/term/<int:term>/',
+            views.generate_report_card, name='report_card'),
+       path('progress-report/<int:student_id>/class/<int:class_id>/',
+            views.generate_progress_report, name='progress_report'),
+       path('report-cards/bulk/<int:class_id>/term/<int:term>/',
+            views.bulk_generate_report_cards, name='bulk_report_cards'),
+   ]
+   ```
+
+## Acceptance Criteria:
+- Report card view created
+- PDF generation using ReportLab/WeasyPrint
+- Term report card template
+- Progress report template
+- Islamic grading display
+- Parent-friendly formatting
+- Digital signature support
+- Bulk report generation
+
+## Files Modified:
+- `src/apps/academics/views.py`
+- `src/apps/academics/urls.py`
+- `src/templates/academics/report_card_pdf.html (new)`
+- `src/templates/academics/progress_report_pdf.html (new)`
+- `requirements.txt (add weasyprint, reportlab)`
+
+## Important Notes:
+- WeasyPrint for HTML to PDF conversion
+- Islamic grading system display
+- Professional formatting for parents
+- Bulk generation for entire class
+- Support for digital signatures
+- Export as ZIP for multiple reports
+- Estimate: 80 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection

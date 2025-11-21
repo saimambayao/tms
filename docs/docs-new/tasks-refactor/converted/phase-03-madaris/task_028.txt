@@ -1,0 +1,67 @@
+# Task ID: 028
+# Title: Update Imports - Chapter to Madrasah
+# Status: pending
+# Dependencies: 027
+# Priority: medium
+# Description: Update all imports across codebase from 'from apps.chapters.models import Chapter' to 'from apps.chapters.models import Madrasah'
+
+# Details:
+Update all imports across codebase from 'from apps.chapters.models import Chapter' to 'from apps.chapters.models import Madrasah'
+
+## Implementation Steps:
+1. Find all Chapter imports:
+   ```bash
+   grep -r "from apps.chapters.models import Chapter" /Users/saidamenmambayao/apps/madaris-ms/src --include="*.py"
+   grep -r "from .models import Chapter" /Users/saidamenmambayao/apps/madaris-ms/src/apps/chapters --include="*.py"
+   ```
+2. Update imports pattern:
+   ```bash
+   # Find and replace
+   find /Users/saidamenmambayao/apps/madaris-ms/src -name "*.py" -exec sed -i '' 's/from apps\.chapters\.models import Chapter/from apps.chapters.models import Madrasah/g' {} +
+   find /Users/saidamenmambayao/apps/madaris-ms/src -name "*.py" -exec sed -i '' 's/from \.models import Chapter/from .models import Madrasah/g' {} +
+   ```
+3. Update variable names in common files:
+   - views.py: chapter → madrasah
+   - forms.py: chapter → madrasah
+   - serializers.py: chapter → madrasah
+4. Run Django check:
+   ```bash
+   python manage.py check
+   ```
+5. Test importing model:
+   ```python
+   python manage.py shell
+   from apps.chapters.models import Madrasah
+   print(Madrasah.objects.first())
+   ```
+
+## Acceptance Criteria:
+- All Chapter imports identified
+- Imports updated to Madrasah
+- No ImportError exceptions
+- Code runs without errors
+- At least 20 files updated
+
+## Files Modified:
+- `src/apps/chapters/views.py`
+- `src/apps/chapters/forms.py`
+- `src/apps/chapters/admin.py`
+- `src/apps/chapters/serializers.py`
+- `src/apps/*/views.py (multiple apps)`
+- `(20+ files estimated)`
+
+## Important Notes:
+- Use find/replace carefully
+- Test after changes
+- May need manual fixes in some files
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin

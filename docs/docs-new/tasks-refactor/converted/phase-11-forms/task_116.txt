@@ -1,0 +1,65 @@
+# Task ID: 116
+# Title: Verify Phase 11 Forms Cleanup Complete
+# Status: pending
+# Dependencies: 111, 112, 113, 114, 115
+# Priority: high
+# Description: Comprehensive verification that all Phase 11 forms cleanup tasks are complete. Test all form functionality, validate terminology updates, ensure error
+
+# Details:
+Comprehensive verification that all Phase 11 forms cleanup tasks are complete. Test all form functionality, validate terminology updates, ensure error messages are clear, and verify custom widgets work correctly. Document any issues for resolution.
+
+## Implementation Steps:
+### 1. Create verification checklist:
+
+```bash
+cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-11-forms/PHASE_11_VERIFICATION_CHECKLIST.md << 'EOF'
+# Phase 11 Forms Cleanup - Verification Checklist
+
+## Acceptance Criteria:
+- All forms render correctly with new terminology
+- All form labels use education terminology
+- All placeholders updated (no "BM Parliament" references)
+- All custom validators functioning correctly
+- All custom widgets working (date pickers, photo upload, cascading selects)
+- All error messages clear and contextual
+- Form submissions process successfully
+- No broken field references or imports
+- Accessibility standards met (WCAG 2.1)
+- Cross-browser testing passed
+- Mobile responsive forms verified
+- Documentation updated
+
+## Files Modified:
+- `docs/docs-new/tasks-refactor/phase-11-forms/PHASE_11_VERIFICATION_CHECKLIST.md (new)`
+- `docs/docs-new/tasks-refactor/phase-11-forms/VERIFICATION_ISSUES.md (new)`
+- `docs/docs-new/tasks-refactor/phase-11-forms/PHASE_11_COMPLETION_REPORT.md (new)`
+- `docs/docs-new/tasks-refactor/phase-11-forms/README.md (updated)`
+
+## Important Notes:
+- This is a comprehensive verification task
+- All previous tasks (111-115) must be complete
+- Manual browser testing is critical
+- Accessibility testing ensures WCAG 2.1 compliance
+- Mobile testing ensures responsive forms
+- Document any issues found for resolution
+- Create completion report for stakeholders
+- Phase 11 must be fully verified before proceeding to Phase 12
+- Estimated time includes all testing and documentation
+- Estimate: 2-3 hours (assuming no major issues found)
+
+## Next Steps After Verification:
+1. Mark task_116.txt status as "done"
+2. Update README.md in phase-11-forms/ directory
+3. Create git commit for Phase 11 completion
+4. Proceed to Phase 12: Templates Cleanup
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection
+6. Run test suite with `python manage.py test`
+7. Verify test coverage meets requirements
+8. Check for any failing tests
+9. Verify test assertions are correct

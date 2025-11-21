@@ -1,0 +1,69 @@
+# Task ID: 042
+# Title: Update Chapter URLs to Madrasah
+# Status: pending
+# Dependencies: 038
+# Priority: medium
+# Description: Update URL patterns in chapters app to use madrasah terminology and add new views for registration, enrollment, activities.
+
+# Details:
+Update URL patterns in chapters app to use madrasah terminology and add new views for registration, enrollment, activities.
+
+## Implementation Steps:
+1. Update chapters/urls.py:
+   ```python
+   from django.urls import path
+   from . import views
+
+   app_name = 'chapters'
+
+   urlpatterns = [
+       # List and detail
+       path('', views.MadrasahListView.as_view(), name='madrasah-list'),
+       path('<int:pk>/', views.MadrasahDetailView.as_view(), name='madrasah-detail'),
+
+       # Create and update
+       path('register/', views.create_madrasah, name='madrasah-register'),
+       path('<int:pk>/update/', views.update_madrasah, name='madrasah-update'),
+
+       # Enrollment
+       path('<int:pk>/enroll/', views.enroll_student, name='madrasah-enroll'),
+       path('<int:pk>/assign-teacher/', views.assign_teacher, name='madrasah-assign-teacher'),
+
+       # Activities
+       path('<int:pk>/activities/', views.MadrasahActivityListView.as_view(), name='madrasah-activities'),
+       path('<int:pk>/activities/create/', views.create_activity, name='activity-create'),
+   ]
+   ```
+2. Update references in templates:
+   ```bash
+   grep -r "{% url 'chapters:" /Users/saidamenmambayao/apps/madaris-ms/src/templates --include="*.html"
+   # Update to use new URL names
+   ```
+3. Test URL resolution
+
+## Acceptance Criteria:
+- URL patterns updated
+- URL names use 'madrasah' instead of 'chapter'
+- All CRUD URLs defined
+- Enrollment URLs added
+- Activity URLs added
+- URL reverse lookups work
+
+## Files Modified:
+- `src/apps/chapters/urls.py`
+- `src/templates/chapters/*.html (URL references)`
+
+## Important Notes:
+- Keep app_name as 'chapters' for now (rename app later)
+- Update URL names to be more descriptive
+- Estimate: 40 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin
+5. Access view URL and verify HTTP 200 response
+6. Test with different user permissions
+7. Verify context data passed to template
+8. Test any query parameters or filters

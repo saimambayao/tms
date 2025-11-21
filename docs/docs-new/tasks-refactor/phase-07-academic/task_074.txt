@@ -1,0 +1,188 @@
+# Task ID: 074
+# Title: Create AcademicYear Model
+# Status: pending
+# Dependencies: 073
+# Priority: medium
+# Description: Create AcademicYear model to manage school years with support for both Gregorian and Hijri calendars. Supports semester/term divisions and status trac
+
+# Details:
+Create AcademicYear model to manage school years with support for both Gregorian and Hijri calendars. Supports semester/term divisions and status tracking.
+
+## Implementation Steps:
+1. Create AcademicYear model:
+   ```python
+   # apps/academics/models.py
+   from django.db import models
+   from django.core.exceptions import ValidationError
+   from django.utils import timezone
+
+   class AcademicYear(models.Model):
+       """Academic year/school year management"""
+
+       STATUS_CHOICES = [
+           ('upcoming', 'Upcoming'),
+           ('active', 'Active'),
+           ('completed', 'Completed'),
+       ]
+
+       year = models.CharField(
+           max_length=20,
+           unique=True,
+           help_text="e.g., '2024-2025' or '1445-1446 H'"
+       )
+
+       # Gregorian dates
+       start_date = models.DateField(
+           help_text="Start date (Gregorian calendar)"
+       )
+       end_date = models.DateField(
+           help_text="End date (Gregorian calendar)"
+       )
+
+       # Hijri calendar support
+       hijri_year = models.CharField(
+           max_length=20,
+           blank=True,
+           help_text="Hijri year (e.g., '1445-1446')"
+       )
+       hijri_start_date = models.CharField(
+           max_length=20,
+           blank=True,
+           help_text="Start date in Hijri calendar"
+       )
+       hijri_end_date = models.CharField(
+           max_length=20,
+           blank=True,
+           help_text="End date in Hijri calendar"
+       )
+
+       status = models.CharField(
+           max_length=20,
+           choices=STATUS_CHOICES,
+           default='upcoming'
+       )
+
+       # Semester/term configuration
+       term_structure = models.JSONField(
+           default=dict,
+           help_text="Term structure: e.g., {'terms': 2, 'semesters': ['Fall', 'Spring']}"
+       )
+
+       # Metadata
+       description = models.TextField(blank=True)
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'academics_academic_year'
+           verbose_name = 'Academic Year'
+           verbose_name_plural = 'Academic Years'
+           ordering = ['-start_date']
+
+       def __str__(self):
+           return f"{self.year} ({self.get_status_display()})"
+
+       def clean(self):
+           # Validate date range
+           if self.start_date and self.end_date:
+               if self.start_date >= self.end_date:
+                   raise ValidationError(
+                       "End date must be after start date"
+                   )
+
+           # Only one active academic year allowed
+           if self.status == 'active':
+               active_years = AcademicYear.objects.filter(
+                   status='active'
+               ).exclude(pk=self.pk)
+               if active_years.exists():
+                   raise ValidationError(
+                       "Only one academic year can be active at a time"
+                   )
+
+       @property
+       def is_current(self):
+           """Check if this is the current academic year"""
+           today = timezone.now().date()
+           return self.start_date <= today <= self.end_date
+
+       @property
+       def duration_days(self):
+           """Calculate academic year duration in days"""
+           return (self.end_date - self.start_date).days
+
+       def get_term_dates(self, term_number):
+           """Get start and end dates for a specific term"""
+           if not self.term_structure or 'terms' not in self.term_structure:
+               return None
+
+           num_terms = self.term_structure['terms']
+           if term_number > num_terms:
+               return None
+
+           term_duration = self.duration_days // num_terms
+           term_start = self.start_date + timezone.timedelta(
+               days=(term_number - 1) * term_duration
+           )
+           term_end = term_start + timezone.timedelta(days=term_duration - 1)
+
+           return {'start': term_start, 'end': term_end}
+   ```
+
+2. Create migration:
+   ```bash
+   python manage.py makemigrations academics
+   ```
+
+3. Apply migration:
+   ```bash
+   python manage.py migrate academics
+   ```
+
+4. Test model in shell:
+   ```python
+   from apps.academics.models import AcademicYear
+   from datetime import date
+
+   # Create academic year
+   ay = AcademicYear.objects.create(
+       year='2024-2025',
+       start_date=date(2024, 9, 1),
+       end_date=date(2025, 6, 30),
+       hijri_year='1446-1447',
+       status='active',
+       term_structure={'terms': 2, 'semesters': ['Fall', 'Spring']}
+   )
+
+   # Test properties
+   print(ay.is_current)
+   print(ay.duration_days)
+   print(ay.get_term_dates(1))
+   ```
+
+## Acceptance Criteria:
+- AcademicYear model created
+- Year field with unique constraint
+- Start and end dates for Gregorian calendar
+- Hijri year support added
+- Status field (active, upcoming, completed)
+- Semester/term configuration support
+- Migration created successfully
+- Model accessible in admin
+
+## Files Modified:
+- `src/apps/academics/models.py`
+- `src/apps/academics/migrations/0001_initial.py`
+
+## Important Notes:
+- Support for both Gregorian and Hijri calendars
+- Flexible term structure via JSONField
+- Only one active academic year at a time
+- Will be referenced by Class, Grade, Attendance models
+- Estimate: 50 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

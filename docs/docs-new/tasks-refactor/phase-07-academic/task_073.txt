@@ -1,0 +1,64 @@
+# Task ID: 073
+# Title: Create Academic Records App
+# Status: pending
+# Dependencies: 072
+# Priority: medium
+# Description: Create new Django app for academic records management including grades, attendance, and academic calendar functionality.
+
+# Details:
+Create new Django app for academic records management including grades, attendance, and academic calendar functionality.
+
+## Implementation Steps:
+1. Create academics app:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src/apps
+   python ../manage.py startapp academics
+   ```
+2. Add to INSTALLED_APPS in settings:
+   ```python
+   # config/settings/base.py
+   INSTALLED_APPS = [
+       ...
+       'apps.students',
+       'apps.academics',  # New app
+       ...
+   ]
+   ```
+3. Create __init__.py files:
+   ```bash
+   touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/academics/__init__.py
+   ```
+4. Run initial migration:
+   ```bash
+   python manage.py makemigrations academics
+   python manage.py migrate academics
+   ```
+5. Verify in Django admin
+
+## Acceptance Criteria:
+- Academics app created
+- App added to INSTALLED_APPS
+- Basic app structure verified
+- Initial migration created
+- App accessible in admin
+
+## Files Modified:
+- `src/apps/academics/ (new directory)`
+- `src/apps/academics/__init__.py`
+- `src/apps/academics/models.py`
+- `src/apps/academics/admin.py`
+- `src/apps/academics/views.py`
+- `src/apps/academics/apps.py`
+- `src/config/settings/base.py`
+
+## Important Notes:
+- Will contain AcademicYear, Class, Grade, Attendance models
+- Support for Islamic grading systems
+- Hijri calendar integration planned
+- Estimate: 20 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin

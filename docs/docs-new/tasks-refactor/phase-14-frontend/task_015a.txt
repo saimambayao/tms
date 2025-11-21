@@ -1,0 +1,62 @@
+# Task ID: 015a
+# Title: Initialize Next.js Frontend Foundation
+# Status: pending
+# Dependencies: 015
+# Priority: medium
+# Description: Set up Next.js 15 with React 19 and TypeScript and Tailwind CSS as the frontend layer for TMS. Keep implementation minimal and focused.
+
+# Details:
+Set up Next.js 15 with React 19 and TypeScript and Tailwind CSS as the frontend layer for TMS. Keep implementation minimal and focused.
+
+## Implementation Steps:
+1. Create Next.js project:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/
+   npx create-next-app@latest frontend --typescript --tailwind --app
+   ```
+2. Configure environment variables:
+   ```bash
+   cd frontend
+   echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api/v1" > .env.local
+   ```
+3. Install additional dependencies:
+   ```bash
+   npm install axios swr next-pwa
+   ```
+4. Create basic folder structure:
+   ```
+   frontend/
+   ├── app/
+   ├── components/
+   ├── lib/
+   ├── public/
+   └── types/
+   ```
+5. Configure next.config.js for PWA
+6. Test dev server: `npm run dev`
+
+## Acceptance Criteria:
+- Next.js 15 with React 19 project initialized with TypeScript
+- Tailwind CSS configured (maintain existing design)
+- Environment variables configured for Django API connection
+- Basic project structure created
+- PWA configuration added
+- Dev server runs successfully
+
+## Files Modified:
+- `NEW: /Users/saidamenmambayao/apps/madaris-ms/frontend/ (entire directory)`
+- `NEW: frontend/next.config.js`
+- `NEW: frontend/tailwind.config.js`
+- `NEW: frontend/.env.local`
+
+## Important Notes:
+- Minimal setup - just foundation
+- Keep configuration simple
+- Tailwind CSS ensures design consistency
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

@@ -1,0 +1,136 @@
+<!-- Constituent Information Partial -->
+<div class="info-grid">
+    <div class="info-group">
+        <label class="info-label">Voter ID</label>
+        <div class="info-value">{{ constituent.voter_id|default:"N/A" }}</div>
+    </div>
+    <div class="info-group">
+        <label class="info-label">Voting Center</label>
+        <div class="info-value">{{ constituent.voting_center|default:"N/A" }}</div>
+    </div>
+    <div class="info-group">
+        <label class="info-label">Birth Date</label>
+        <div class="info-value">{{ constituent.birth_date|date:"M d, Y"|default:"N/A" }}</div>
+    </div>
+    <div class="info-group">
+        <label class="info-label">Gender</label>
+        <div class="info-value">{{ constituent.get_gender_display|default:"N/A" }}</div>
+    </div>
+    <div class="info-group">
+        <label class="info-label">Education Level</label>
+        <div class="info-value">{{ constituent.get_education_level_display|default:"N/A" }}</div>
+    </div>
+    <div class="info-group">
+        <label class="info-label">Occupation</label>
+        <div class="info-value">{{ constituent.occupation|default:"N/A" }}</div>
+    </div>
+</div>
+
+<!-- Additional Information -->
+<div class="mt-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Additional Information</h3>
+    <div class="info-grid">
+        <div class="info-group">
+            <label class="info-label">Household Size</label>
+            <div class="info-value">{{ constituent.household_size|default:"N/A" }}</div>
+        </div>
+        <div class="info-group">
+            <label class="info-label">Voter Status</label>
+            <div class="info-value">
+                {% if constituent.is_voter %}
+                    <span class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">Registered Voter</span>
+                {% else %}
+                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm font-medium">Not Registered</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="info-group">
+            <label class="info-label">Engagement Level</label>
+            <div class="info-value">
+                <div class="flex items-center gap-2">
+                    <div class="flex-1 bg-gray-200 rounded-full h-2">
+                        <div class="bg-blue-600 h-2 rounded-full engagement-progress" data-percentage="{{ constituent.engagement_level|default:0 }}"></div>
+                    </div>
+                    <span class="text-sm font-medium">{{ constituent.engagement_level|default:0 }}/10</span>
+                </div>
+            </div>
+        </div>
+        <div class="info-group">
+            <label class="info-label">Volunteer</label>
+            <div class="info-value">
+                {% if constituent.is_volunteer %}
+                    <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-sm font-medium">Yes</span>
+                {% else %}
+                    <span class="bg-gray-100 text-gray-800 px-2 py-1 rounded-full text-sm font-medium">No</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Contact & Interests -->
+{% if constituent.alternate_contact or constituent.bio or constituent.interests %}
+<div class="mt-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Contact & Interests</h3>
+    <div class="info-grid">
+        {% if constituent.alternate_contact %}
+        <div class="info-group">
+            <label class="info-label">Alternate Contact</label>
+            <div class="info-value">{{ constituent.alternate_contact }}</div>
+        </div>
+        {% endif %}
+        {% if constituent.language_preference %}
+        <div class="info-group">
+            <label class="info-label">Language Preference</label>
+            <div class="info-value">{{ constituent.language_preference }}</div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if constituent.bio %}
+    <div class="info-group mt-4">
+        <label class="info-label">Bio</label>
+        <div class="info-value bg-white p-3 border rounded-lg">{{ constituent.bio }}</div>
+    </div>
+    {% endif %}
+
+    {% if constituent.interests %}
+    <div class="info-group mt-4">
+        <label class="info-label">Interests & Concerns</label>
+        <div class="info-value bg-white p-3 border rounded-lg">{{ constituent.interests }}</div>
+    </div>
+    {% endif %}
+
+    {% if constituent.volunteer_interests %}
+    <div class="info-group mt-4">
+        <label class="info-label">Volunteer Interests</label>
+        <div class="info-value bg-white p-3 border rounded-lg">{{ constituent.volunteer_interests }}</div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<!-- Membership Information -->
+<div class="mt-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Membership Information</h3>
+    <div class="info-grid">
+        <div class="info-group">
+            <label class="info-label">Membership Date</label>
+            <div class="info-value">{{ constituent.membership_date|date:"M d, Y"|default:"N/A" }}</div>
+        </div>
+        <div class="info-group">
+            <label class="info-label">Last Engagement</label>
+            <div class="info-value">{{ constituent.last_engagement|date:"M d, Y"|default:"N/A" }}</div>
+        </div>
+    </div>
+</div>
+
+<!-- Notes -->
+{% if constituent.notes %}
+<div class="mt-6">
+    <h3 class="text-lg font-semibold text-gray-800 mb-3">Notes</h3>
+    <div class="info-group">
+        <div class="info-value bg-yellow-50 p-3 border border-yellow-200 rounded-lg">{{ constituent.notes }}</div>
+    </div>
+</div>
+{% endif %}

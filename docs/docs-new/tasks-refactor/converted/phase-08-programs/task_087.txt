@@ -1,0 +1,566 @@
+# Task ID: 087
+# Title: Add Program Requirements Tracking
+# Status: pending
+# Dependencies: 086
+# Priority: medium
+# Description: Create ProgramRequirement model to track prerequisites, eligibility requirements, and completion requirements for educational programs. Link requireme
+
+# Details:
+Create ProgramRequirement model to track prerequisites, eligibility requirements, and completion requirements for educational programs. Link requirements to program enrollments for tracking student/teacher progress.
+
+## Implementation Steps:
+1. Add ProgramRequirement model to apps/services/models.py:
+   ```python
+   # Add after ProgramEnrollment model:
+
+   class ProgramRequirement(models.Model):
+       """
+       Define requirements for program eligibility or completion.
+       Examples: minimum GPA, attendance rate, prerequisite courses, age limits.
+       """
+
+       REQUIREMENT_TYPE = (
+           ('prerequisite', 'Prerequisite'),
+           ('eligibility', 'Eligibility Requirement'),
+           ('completion', 'Completion Requirement'),
+           ('documentation', 'Documentation Required'),
+       )
+
+       program = models.ForeignKey(
+           MinistryProgram,
+           on_delete=models.CASCADE,
+           related_name='requirements',
+           help_text="Program this requirement applies to"
+       )
+
+       requirement_type = models.CharField(
+           max_length=20,
+           choices=REQUIREMENT_TYPE,
+           help_text="Type of requirement"
+       )
+
+       title = models.CharField(
+           max_length=255,
+           help_text="Brief title of requirement"
+       )
+
+       description = models.TextField(
+           help_text="Detailed description of requirement"
+       )
+
+       is_mandatory = models.BooleanField(
+           default=True,
+           help_text="Whether this requirement is mandatory or optional"
+       )
+
+       verification_method = models.CharField(
+           max_length=200,
+           blank=True,
+           help_text="How this requirement is verified (e.g., transcript review, document submission)"
+       )
+
+       order = models.PositiveIntegerField(
+           default=0,
+           help_text="Display order (lower numbers appear first)"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'services_programrequirement'
+           ordering = ['order', 'id']
+
+       def __str__(self):
+           return f"{self.program.title} - {self.title}"
+
+       def check_eligibility_for_user(self, user):
+           """
+           Check if user meets this requirement.
+           Override in subclass or extend with specific logic.
+           """
+           # Base implementation - check if requirement is marked as met
+           return EnrollmentRequirementStatus.objects.filter(
+               enrollment__participant=user,
+               enrollment__program=self.program,
+               requirement=self,
+               is_met=True
+           ).exists()
+
+
+   class EnrollmentRequirementStatus(models.Model):
+       """
+       Track whether an enrollment has met specific program requirements.
+       """
+
+       enrollment = models.ForeignKey(
+           ProgramEnrollment,
+           on_delete=models.CASCADE,
+           related_name='requirement_statuses',
+           help_text="Program enrollment"
+       )
+
+       requirement = models.ForeignKey(
+           ProgramRequirement,
+           on_delete=models.CASCADE,
+           related_name='enrollment_statuses',
+           help_text="Requirement being tracked"
+       )
+
+       is_met = models.BooleanField(
+           default=False,
+           help_text="Whether requirement has been met"
+       )
+
+       verification_date = models.DateTimeField(
+           null=True,
+           blank=True,
+           help_text="When requirement was verified as met"
+       )
+
+       verified_by = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.SET_NULL,
+           null=True,
+           blank=True,
+           related_name='verified_requirements',
+           help_text="Who verified this requirement"
+       )
+
+       supporting_document = models.FileField(
+           upload_to='program_requirements/documents/',
+           blank=True,
+           null=True,
+           help_text="Document proving requirement is met"
+       )
+
+       notes = models.TextField(
+           blank=True,
+           help_text="Notes about requirement verification"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'services_enrollmentrequirementstatus'
+           unique_together = ['enrollment', 'requirement']
+           ordering = ['requirement__order']
+
+       def __str__(self):
+           status = "✓ Met" if self.is_met else "✗ Not Met"
+           return f"{self.enrollment.participant.get_full_name()} - {self.requirement.title}: {status}"
+
+       def mark_as_met(self, verified_by, notes=''):
+           """Mark requirement as met"""
+           from django.utils import timezone
+           self.is_met = True
+           self.verification_date = timezone.now()
+           self.verified_by = verified_by
+           if notes:
+               self.notes = notes
+           self.save()
+
+       def mark_as_unmet(self, notes=''):
+           """Mark requirement as not met"""
+           self.is_met = False
+           self.verification_date = None
+           self.verified_by = None
+           if notes:
+               self.notes = notes
+           self.save()
+   ```
+2. Add methods to ProgramEnrollment for requirement checking:
+   ```python
+   # Add these methods to ProgramEnrollment class:
+
+   def initialize_requirements(self):
+       """Create requirement status records for all program requirements"""
+       for requirement in self.program.requirements.all():
+           EnrollmentRequirementStatus.objects.get_or_create(
+               enrollment=self,
+               requirement=requirement
+           )
+
+   def get_requirements_progress(self):
+       """Get percentage of requirements met"""
+       total = self.requirement_statuses.count()
+       if total == 0:
+           return 100
+       met = self.requirement_statuses.filter(is_met=True).count()
+       return int((met / total) * 100)
+
+   def are_prerequisites_met(self):
+       """Check if all mandatory prerequisites are met"""
+       prerequisite_statuses = self.requirement_statuses.filter(
+           requirement__requirement_type='prerequisite',
+           requirement__is_mandatory=True
+       )
+       return all(status.is_met for status in prerequisite_statuses)
+
+   def are_eligibility_requirements_met(self):
+       """Check if all mandatory eligibility requirements are met"""
+       eligibility_statuses = self.requirement_statuses.filter(
+           requirement__requirement_type='eligibility',
+           requirement__is_mandatory=True
+       )
+       return all(status.is_met for status in eligibility_statuses)
+
+   def are_completion_requirements_met(self):
+       """Check if all mandatory completion requirements are met"""
+       completion_statuses = self.requirement_statuses.filter(
+           requirement__requirement_type='completion',
+           requirement__is_mandatory=True
+       )
+       return all(status.is_met for status in completion_statuses)
+
+   def can_enroll(self):
+       """Check if participant meets all requirements to enroll"""
+       return (
+           self.status in ['pending', 'approved']
+           and self.are_prerequisites_met()
+           and self.are_eligibility_requirements_met()
+       )
+
+   def can_complete(self):
+       """Check if participant meets all requirements to complete"""
+       return (
+           self.status == 'enrolled'
+           and self.are_completion_requirements_met()
+       )
+   ```
+3. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py makemigrations services -n "add_program_requirements"
+   ```
+4. Review migration:
+   ```bash
+   cat apps/services/migrations/*_add_program_requirements.py
+   ```
+5. Run migration:
+   ```bash
+   python manage.py migrate services
+   ```
+6. Register in admin (apps/services/admin.py):
+   ```python
+   # Add to admin.py:
+   from .models import ProgramRequirement, EnrollmentRequirementStatus
+
+   class ProgramRequirementInline(admin.TabularInline):
+       model = ProgramRequirement
+       extra = 1
+       fields = ['requirement_type', 'title', 'is_mandatory', 'order']
+
+   # Update MinistryProgramAdmin to include inline:
+   # Add to MinistryProgramAdmin class:
+   # inlines = [ProgramRequirementInline]
+
+   @admin.register(ProgramRequirement)
+   class ProgramRequirementAdmin(admin.ModelAdmin):
+       list_display = [
+           'title',
+           'program',
+           'requirement_type',
+           'is_mandatory',
+           'order',
+       ]
+       list_filter = ['requirement_type', 'is_mandatory']
+       search_fields = ['title', 'description', 'program__title']
+       ordering = ['program', 'order']
+
+   class EnrollmentRequirementStatusInline(admin.TabularInline):
+       model = EnrollmentRequirementStatus
+       extra = 0
+       fields = ['requirement', 'is_met', 'verification_date', 'verified_by']
+       readonly_fields = ['verification_date']
+
+   # Update ProgramEnrollmentAdmin to include inline:
+   # Add to ProgramEnrollmentAdmin class:
+   # inlines = [EnrollmentRequirementStatusInline]
+
+   @admin.register(EnrollmentRequirementStatus)
+   class EnrollmentRequirementStatusAdmin(admin.ModelAdmin):
+       list_display = [
+           'enrollment',
+           'requirement',
+           'is_met',
+           'verification_date',
+           'verified_by',
+       ]
+       list_filter = ['is_met', 'requirement__requirement_type']
+       search_fields = [
+           'enrollment__participant__first_name',
+           'enrollment__participant__last_name',
+           'requirement__title',
+       ]
+   ```
+7. Test creating requirements:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram, ProgramRequirement
+   from apps.users.models import User
+   from datetime import date, timedelta
+
+   admin = User.objects.filter(is_superuser=True).first()
+
+   # Create test program
+   program = MinistryProgram.objects.create(
+       code='REQ_TEST_001',
+       title='Scholarship Program with Requirements',
+       slug='scholarship-requirements-test',
+       ministry='mbasiced',
+       program_source='education',
+       program_category='scholarship',
+       ppa_type='program',
+       description='Test',
+       objectives='Test',
+       expected_outcomes='Test',
+       key_performance_indicators='Test',
+       target_beneficiaries='Students',
+       geographic_coverage='Test',
+       implementation_strategy='Test',
+       implementing_units='Test',
+       start_date=date.today(),
+       end_date=date.today() + timedelta(days=365),
+       funding_source='regional',
+       created_by=admin,
+   )
+
+   # Create requirements
+   req1 = ProgramRequirement.objects.create(
+       program=program,
+       requirement_type='eligibility',
+       title='Minimum GPA 2.5',
+       description='Student must have at least 2.5 GPA',
+       is_mandatory=True,
+       verification_method='Transcript review',
+       order=1
+   )
+
+   req2 = ProgramRequirement.objects.create(
+       program=program,
+       requirement_type='eligibility',
+       title='Financial Need Documentation',
+       description='Submit proof of financial need',
+       is_mandatory=True,
+       verification_method='Document submission',
+       order=2
+   )
+
+   req3 = ProgramRequirement.objects.create(
+       program=program,
+       requirement_type='completion',
+       title='Maintain 2.0 GPA',
+       description='Maintain at least 2.0 GPA throughout scholarship period',
+       is_mandatory=True,
+       verification_method='Semester grade review',
+       order=3
+   )
+
+   print(f'✓ Created program: {program.title}')
+   print(f'✓ Created {program.requirements.count()} requirements:')
+   for req in program.requirements.all():
+       print(f'  - {req.title} ({req.get_requirement_type_display()})')
+
+   # Cleanup
+   program.delete()
+   print('✓ Test data cleaned up')
+   "
+   ```
+8. Test requirement tracking workflow:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import (
+       MinistryProgram, ProgramEnrollment,
+       ProgramRequirement, EnrollmentRequirementStatus
+   )
+   from apps.users.models import User
+   from datetime import date, timedelta
+
+   admin = User.objects.filter(is_superuser=True).first()
+
+   # Create program with requirements
+   program = MinistryProgram.objects.create(
+       code='WORKFLOW_REQ_001',
+       title='Teacher Training with Requirements',
+       slug='teacher-training-requirements',
+       ministry='mbasiced',
+       program_source='education',
+       program_category='teacher_training',
+       ppa_type='program',
+       description='Test',
+       objectives='Test',
+       expected_outcomes='Test',
+       key_performance_indicators='Test',
+       target_beneficiaries='Teachers',
+       geographic_coverage='Test',
+       implementation_strategy='Test',
+       implementing_units='Test',
+       start_date=date.today(),
+       end_date=date.today() + timedelta(days=180),
+       funding_source='regional',
+       created_by=admin,
+   )
+
+   # Add prerequisites
+   prereq1 = ProgramRequirement.objects.create(
+       program=program,
+       requirement_type='prerequisite',
+       title='2+ years teaching experience',
+       description='Must have at least 2 years of teaching experience',
+       is_mandatory=True,
+       order=1
+   )
+
+   prereq2 = ProgramRequirement.objects.create(
+       program=program,
+       requirement_type='completion',
+       title='Complete all 12 modules',
+       description='Attend and complete all 12 training modules',
+       is_mandatory=True,
+       order=2
+   )
+
+   # Create teacher enrollment
+   teacher = User.objects.create_user(
+       username='teacher_req_test',
+       email='teacher@test.com',
+       first_name='Test',
+       last_name='Teacher',
+       role='asatidz'
+   )
+
+   enrollment = ProgramEnrollment.objects.create(
+       program=program,
+       participant=teacher,
+       participant_type='teacher'
+   )
+
+   # Initialize requirements
+   enrollment.initialize_requirements()
+
+   print('Requirements Workflow Test:')
+   print(f'Total requirements: {enrollment.requirement_statuses.count()}')
+   print(f'Requirements progress: {enrollment.get_requirements_progress()}%')
+   print(f'Prerequisites met: {enrollment.are_prerequisites_met()}')
+   print(f'Can enroll: {enrollment.can_enroll()}')
+
+   # Mark prerequisite as met
+   prereq_status = enrollment.requirement_statuses.get(requirement=prereq1)
+   prereq_status.mark_as_met(verified_by=admin, notes='Verified employment history')
+
+   print(f'\\nAfter marking prerequisite as met:')
+   print(f'Prerequisites met: {enrollment.are_prerequisites_met()}')
+   print(f'Requirements progress: {enrollment.get_requirements_progress()}%')
+
+   # Cleanup
+   enrollment.delete()
+   teacher.delete()
+   program.delete()
+   print('\\n✓ Workflow test complete')
+   "
+   ```
+9. Verify admin interface:
+   ```bash
+   python manage.py check
+   ```
+10. Create comprehensive test scenario:
+    ```bash
+    python manage.py shell -c "
+    from apps.services.models import (
+        MinistryProgram, ProgramEnrollment,
+        ProgramRequirement, EnrollmentRequirementStatus
+    )
+    from apps.users.models import User
+    from datetime import date, timedelta
+
+    admin = User.objects.filter(is_superuser=True).first()
+
+    # Create scholarship program
+    program = MinistryProgram.objects.create(
+        code='SCHOLARSHIP_FULL_001',
+        title='Merit Scholarship Program',
+        slug='merit-scholarship',
+        ministry='mbasiced',
+        program_source='education',
+        program_category='scholarship',
+        ppa_type='program',
+        description='Merit-based scholarship',
+        objectives='Support high-achieving students',
+        expected_outcomes='Increased academic excellence',
+        key_performance_indicators='Student GPA',
+        target_beneficiaries='High-achieving students',
+        geographic_coverage='BARMM',
+        implementation_strategy='Direct financial aid',
+        implementing_units='Education Ministry',
+        start_date=date.today(),
+        end_date=date.today() + timedelta(days=365),
+        funding_source='regional',
+        created_by=admin,
+    )
+
+    # Create comprehensive requirements
+    requirements = [
+        ('eligibility', 'Minimum GPA 3.5', True, 1),
+        ('eligibility', 'Full-time enrollment', True, 2),
+        ('documentation', 'Submit transcript', True, 3),
+        ('documentation', 'Submit recommendation letter', True, 4),
+        ('completion', 'Maintain GPA 3.0', True, 5),
+        ('completion', 'Submit progress reports', True, 6),
+    ]
+
+    for req_type, title, mandatory, order in requirements:
+        ProgramRequirement.objects.create(
+            program=program,
+            requirement_type=req_type,
+            title=title,
+            description=f'Description for {title}',
+            is_mandatory=mandatory,
+            order=order
+        )
+
+    print(f'✓ Created scholarship program with {program.requirements.count()} requirements')
+    print('Requirements:')
+    for req in program.requirements.all():
+        print(f'  {req.order}. [{req.get_requirement_type_display()}] {req.title}')
+
+    # Cleanup
+    program.delete()
+    print('✓ Test complete')
+    "
+    ```
+
+## Acceptance Criteria:
+- ProgramRequirement model created
+- Requirement types defined (prerequisite, eligibility, completion)
+- Link to MinistryProgram established
+- Verification tracking added
+- EnrollmentRequirementStatus model created
+- Requirement checking methods added
+- Migration created and applied
+- Admin interface configured
+- Test requirements created
+- Verification workflow tested
+
+## Files Modified:
+- `src/apps/services/models.py (ProgramRequirement and EnrollmentRequirementStatus models)`
+- `src/apps/services/admin.py (admin classes and inlines)`
+- `src/apps/services/migrations/*_add_program_requirements.py (new)`
+
+## Important Notes:
+- ProgramRequirement defines what is needed for a program
+- EnrollmentRequirementStatus tracks individual progress
+- Three requirement types: prerequisite, eligibility, completion
+- Methods added to ProgramEnrollment for checking requirements
+- Initialize requirements when enrollment is created
+- Track verification with dates and verifying user
+- Support for mandatory and optional requirements
+- Can attach supporting documents to requirement status
+- Estimate: 55 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

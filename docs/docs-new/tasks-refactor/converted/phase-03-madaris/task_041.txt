@@ -1,0 +1,62 @@
+# Task ID: 041
+# Title: Create MadrasahActivityForm
+# Status: pending
+# Dependencies: 040
+# Priority: medium
+# Description: Create MadrasahActivityForm for creating madrasah activities and events.
+
+# Details:
+Create MadrasahActivityForm for creating madrasah activities and events.
+
+## Implementation Steps:
+1. Add activity form:
+   ```python
+   class MadrasahActivityForm(forms.ModelForm):
+       class Meta:
+           model = MadrasahActivity
+           fields = [
+               'madrasah', 'title', 'description', 'activity_type',
+               'date', 'start_time', 'end_time', 'venue',
+               'budget', 'organizer'
+           ]
+           widgets = {
+               'date': forms.DateInput(attrs={'type': 'date'}),
+               'start_time': forms.TimeInput(attrs={'type': 'time'}),
+               'end_time': forms.TimeInput(attrs={'type': 'time'}),
+               'description': forms.Textarea(attrs={'rows': 4}),
+           }
+
+       def clean(self):
+           cleaned_data = super().clean()
+           start_time = cleaned_data.get('start_time')
+           end_time = cleaned_data.get('end_time')
+           if start_time and end_time and end_time <= start_time:
+               raise forms.ValidationError(
+                   "End time must be after start time."
+               )
+           return cleaned_data
+   ```
+2. Create activity view
+3. Test creating activity
+
+## Acceptance Criteria:
+- Form created for MadrasahActivity model
+- Date/time widgets properly configured
+- Activity type choices available
+- Form validation works
+- Test creating activity
+
+## Files Modified:
+- `src/apps/chapters/forms.py`
+- `src/apps/chapters/views.py`
+
+## Important Notes:
+- Validate time ranges
+- Estimate: 35 minutes
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

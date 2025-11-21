@@ -1,0 +1,618 @@
+# Task ID: 113
+# Title: Add Education-Specific Validation
+# Status: pending
+# Dependencies: 027, 037, 112
+# Priority: medium
+# Description: Add education-specific validation rules to forms for madrasah registration, student enrollment, and academic data. Implement custom validators for sch
+
+# Details:
+Add education-specific validation rules to forms for madrasah registration, student enrollment, and academic data. Implement custom validators for school codes, student numbers, age-appropriate grade levels, and Philippine contact information.
+
+## Implementation Steps:
+### 1. Create custom validators file:
+
+```bash
+mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/apps/core
+touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/core/validators.py
+```
+
+### 2. Implement custom validators (apps/core/validators.py):
+
+```python
+"""
+Custom validators for Tarbiyyah Management System forms.
+"""
+from django.core.exceptions import ValidationError
+from django.core.validators import RegexValidator
+from django.utils.translation import gettext_lazy as _
+import re
+from datetime import date
+
+
+# School Code Validator
+def validate_school_code(value):
+    """
+    Validates madrasah school code format: MAD-XXX-###
+    Example: MAD-LDS-001 (Lanao del Sur, school #1)
+    """
+    pattern = r'^MAD-[A-Z]{3}-\d{3}$'
+    if not re.match(pattern, value):
+        raise ValidationError(
+            _('School code must be in format MAD-XXX-### where XXX is province code and ### is school number. '
+              'Example: MAD-LDS-001'),
+            code='invalid_school_code'
+        )
+
+
+# Student Number Validator
+def validate_student_number(value):
+    """
+    Validates student number format: MAD-XXX-YYYY-####
+    Example: MAD-LDS-2025-0001 (Lanao del Sur, year 2025, student #1)
+    """
+    pattern = r'^MAD-[A-Z]{3}-\d{4}-\d{4}$'
+    if not re.match(pattern, value):
+        raise ValidationError(
+            _('Student number must be in format MAD-XXX-YYYY-#### where XXX is province code, '
+              'YYYY is enrollment year, and #### is student number. Example: MAD-LDS-2025-0001'),
+            code='invalid_student_number'
+        )
+
+
+# Age Range Validator for Students
+def validate_student_age(value):
+    """
+    Validates student age is within reasonable range for basic education (4-25 years).
+    """
+    if value < 4:
+        raise ValidationError(
+            _('Student age must be at least 4 years old for enrollment.'),
+            code='student_too_young'
+        )
+    if value > 25:
+        raise ValidationError(
+            _('Student age exceeds typical basic education range. Please verify or contact admin.'),
+            code='student_age_high'
+        )
+
+
+# Age-Appropriate Grade Level Validator
+def validate_age_grade_match(age, grade_level):
+    """
+    Validates that student's age is appropriate for the grade level.
+    Returns ValidationError if mismatch is significant.
+    """
+    grade_age_map = {
+        'Kindergarten': (4, 6),
+        'Grade 1': (6, 8),
+        'Grade 2': (7, 9),
+        'Grade 3': (8, 10),
+        'Grade 4': (9, 11),
+        'Grade 5': (10, 12),
+        'Grade 6': (11, 13),
+        'Grade 7': (12, 14),
+        'Grade 8': (13, 15),
+        'Grade 9': (14, 16),
+        'Grade 10': (15, 17),
+        'Grade 11': (16, 18),
+        'Grade 12': (17, 19),
+    }
+
+    if grade_level in grade_age_map:
+        min_age, max_age = grade_age_map[grade_level]
+        # Allow 2-year buffer for flexibility
+        if age < (min_age - 2) or age > (max_age + 2):
+            raise ValidationError(
+                _(f'Age {age} may not be appropriate for {grade_level}. '
+                  f'Typical age range is {min_age}-{max_age} years. '
+                  'Please verify or contact the registrar.'),
+                code='age_grade_mismatch'
+            )
+
+
+# Philippine Phone Number Validator (Enhanced)
+philippine_phone_validator = RegexValidator(
+    regex=r'^(\+63|0)?9\d{9}$',
+    message=_(
+        'Please enter a valid Philippine mobile number. '
+        'Format: +639XXXXXXXXX or 09XXXXXXXXX'
+    ),
+    code='invalid_phone_number'
+)
+
+
+# Philippine Landline Validator
+philippine_landline_validator = RegexValidator(
+    regex=r'^(\+63|0)?(2|3[2-4]|4[2-8]|5[2-5]|6[2-3]|7[2]|8[2])\d{7}$',
+    message=_(
+        'Please enter a valid Philippine landline number. '
+        'Format: +63XXXXXXXXXX or 0XXXXXXXXXX'
+    ),
+    code='invalid_landline'
+)
+
+
+# Educational Email Validator
+def validate_educational_email(value):
+    """
+    Validates email format for educational institutions.
+    Allows .edu.ph domains or general email addresses.
+    """
+    if '@' not in value:
+        raise ValidationError(
+            _('Please enter a valid email address.'),
+            code='invalid_email'
+        )
+
+    domain = value.split('@')[1].lower()
+
+    # Warn if not using educational domain (but don't block)
+    if not (domain.endswith('.edu.ph') or domain.endswith('.edu')):
+        # This is just informational, not blocking
+        pass
+
+
+# Enrollment Capacity Validator
+def validate_enrollment_capacity(current_enrollment, total_capacity):
+    """
+    Validates that current enrollment doesn't exceed madrasah capacity.
+    """
+    if current_enrollment > total_capacity:
+        raise ValidationError(
+            _(f'Current enrollment ({current_enrollment}) cannot exceed total capacity ({total_capacity}).'),
+            code='enrollment_over_capacity'
+        )
+
+
+# Founded Date Validator
+def validate_founded_date(value):
+    """
+    Validates that madrasah founded date is not in the future.
+    """
+    if value > date.today():
+        raise ValidationError(
+            _('Founded date cannot be in the future.'),
+            code='future_date'
+        )
+
+    # Warn if very old (before 1900)
+    if value.year < 1900:
+        raise ValidationError(
+            _('Founded date seems too old. Please verify the year.'),
+            code='date_too_old'
+        )
+
+
+# Academic Year Validator
+def validate_academic_year(start_date, end_date):
+    """
+    Validates academic year dates are logical.
+    """
+    if start_date >= end_date:
+        raise ValidationError(
+            _('Academic year start date must be before end date.'),
+            code='invalid_date_range'
+        )
+
+    # Academic year should be roughly 10 months
+    duration_days = (end_date - start_date).days
+    if duration_days < 200:  # Less than ~7 months
+        raise ValidationError(
+            _('Academic year duration seems too short. Typical duration is 10 months.'),
+            code='academic_year_too_short'
+        )
+    if duration_days > 400:  # More than ~13 months
+        raise ValidationError(
+            _('Academic year duration seems too long. Please verify dates.'),
+            code='academic_year_too_long'
+        )
+
+
+# Arabic Name Validator (Optional Field)
+def validate_arabic_name(value):
+    """
+    Validates that Arabic name contains Arabic script.
+    This is a soft validation - warns but doesn't block.
+    """
+    if value:
+        # Check if string contains Arabic Unicode characters
+        arabic_pattern = r'[\u0600-\u06FF]+'
+        if not re.search(arabic_pattern, value):
+            # This is informational, not blocking
+            # Could be logged or shown as warning in UI
+            pass
+
+
+# Accreditation Number Validator
+def validate_accreditation_number(value):
+    """
+    Validates MBHTE accreditation number format.
+    Format: MBHTE-YYYY-####
+    """
+    if value:  # Optional field
+        pattern = r'^MBHTE-\d{4}-\d{4}$'
+        if not re.match(pattern, value):
+            raise ValidationError(
+                _('Accreditation number must be in format MBHTE-YYYY-#### '
+                  'where YYYY is year and #### is certificate number. '
+                  'Example: MBHTE-2023-0015'),
+                code='invalid_accreditation_number'
+            )
+
+
+# Grade Level Validator
+def validate_grade_level(value):
+    """
+    Validates grade level is within accepted range.
+    """
+    valid_levels = [
+        'Kindergarten',
+        'Grade 1', 'Grade 2', 'Grade 3', 'Grade 4', 'Grade 5', 'Grade 6',
+        'Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12',
+        'Year 1', 'Year 2', 'Year 3', 'Year 4',  # For higher education
+    ]
+
+    if value not in valid_levels:
+        raise ValidationError(
+            _(f'Grade level must be one of: {", ".join(valid_levels)}'),
+            code='invalid_grade_level'
+        )
+
+
+# Section Name Validator
+def validate_section_name(value):
+    """
+    Validates section/class name format.
+    Examples: "Grade 5-A", "Year 1-Section 1"
+    """
+    if value:
+        # Allow alphanumeric with hyphens and spaces
+        pattern = r'^[A-Za-z0-9\s\-]+$'
+        if not re.match(pattern, value):
+            raise ValidationError(
+                _('Section name should contain only letters, numbers, hyphens, and spaces.'),
+                code='invalid_section_name'
+            )
+```
+
+### 3. Apply validators to forms (apps/chapters/forms.py):
+
+```python
+from apps.core.validators import (
+    validate_school_code,
+    validate_founded_date,
+    validate_enrollment_capacity,
+    philippine_phone_validator,
+    validate_educational_email,
+    validate_accreditation_number,
+)
+
+class ChapterForm(forms.ModelForm):
+    """Form for creating and updating madaris (Islamic schools)."""
+
+    # Add custom validation
+    def clean_school_code(self):
+        school_code = self.cleaned_data.get('school_code')
+        if school_code:
+            validate_school_code(school_code)
+        return school_code
+
+    def clean_founded_date(self):
+        founded_date = self.cleaned_data.get('founded_date')
+        if founded_date:
+            validate_founded_date(founded_date)
+        return founded_date
+
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            validate_educational_email(email)
+        return email
+
+    def clean_phone(self):
+        phone = self.cleaned_data.get('phone')
+        if phone:
+            # Validate as Philippine phone number
+            philippine_phone_validator(phone)
+        return phone
+
+    def clean_accreditation_number(self):
+        acc_number = self.cleaned_data.get('accreditation_number')
+        if acc_number:
+            validate_accreditation_number(acc_number)
+        return acc_number
+
+    def clean(self):
+        cleaned_data = super().clean()
+        current_enrollment = cleaned_data.get('current_enrollment')
+        total_capacity = cleaned_data.get('total_capacity')
+
+        # Validate enrollment capacity
+        if current_enrollment and total_capacity:
+            validate_enrollment_capacity(current_enrollment, total_capacity)
+
+        return cleaned_data
+```
+
+### 4. Apply validators to Student form (apps/constituents/forms.py):
+
+```python
+from apps.core.validators import (
+    validate_student_number,
+    validate_student_age,
+    validate_age_grade_match,
+    philippine_phone_validator,
+)
+
+class BMParliamentMemberRegistrationForm(forms.ModelForm):
+    """Student registration form for Tarbiyyah Management System."""
+
+    # Add grade_level field for validation
+    grade_level = forms.CharField(
+        max_length=50,
+        required=False,
+        label='Grade Level Applying For',
+        help_text='Enter the grade level you are applying for'
+    )
+
+    def clean_contact_number(self):
+        contact_number = self.cleaned_data.get('contact_number')
+        if contact_number:
+            philippine_phone_validator(contact_number)
+        return contact_number
+
+    def clean_age(self):
+        age = self.cleaned_data.get('age')
+        if age:
+            validate_student_age(age)
+        return age
+
+    def clean(self):
+        cleaned_data = super().clean()
+        age = cleaned_data.get('age')
+        grade_level = cleaned_data.get('grade_level')
+
+        # Validate age-grade match if both provided
+        if age and grade_level:
+            try:
+                validate_age_grade_match(age, grade_level)
+            except ValidationError as e:
+                self.add_error('grade_level', e)
+
+        return cleaned_data
+```
+
+### 5. Create unit tests (apps/core/tests/test_validators.py):
+
+```bash
+mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/apps/core/tests
+touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/core/tests/__init__.py
+touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/core/tests/test_validators.py
+```
+
+```python
+"""
+Unit tests for custom validators in Tarbiyyah Management System.
+"""
+from django.test import TestCase
+from django.core.exceptions import ValidationError
+from apps.core.validators import (
+    validate_school_code,
+    validate_student_number,
+    validate_student_age,
+    validate_age_grade_match,
+    validate_founded_date,
+    validate_enrollment_capacity,
+    validate_accreditation_number,
+    philippine_phone_validator,
+)
+from datetime import date, timedelta
+
+
+class SchoolCodeValidatorTest(TestCase):
+    def test_valid_school_code(self):
+        """Test valid school code formats"""
+        try:
+            validate_school_code('MAD-LDS-001')
+            validate_school_code('MAD-MDN-123')
+        except ValidationError:
+            self.fail('Valid school code raised ValidationError')
+
+    def test_invalid_school_code_format(self):
+        """Test invalid school code formats"""
+        with self.assertRaises(ValidationError):
+            validate_school_code('INVALID-CODE')
+        with self.assertRaises(ValidationError):
+            validate_school_code('MAD-L-001')  # Province code too short
+        with self.assertRaises(ValidationError):
+            validate_school_code('MAD-LDS-1')  # School number too short
+
+
+class StudentNumberValidatorTest(TestCase):
+    def test_valid_student_number(self):
+        """Test valid student number formats"""
+        try:
+            validate_student_number('MAD-LDS-2025-0001')
+            validate_student_number('MAD-MDN-2024-9999')
+        except ValidationError:
+            self.fail('Valid student number raised ValidationError')
+
+    def test_invalid_student_number_format(self):
+        """Test invalid student number formats"""
+        with self.assertRaises(ValidationError):
+            validate_student_number('INVALID')
+        with self.assertRaises(ValidationError):
+            validate_student_number('MAD-LDS-25-0001')  # Year too short
+
+
+class StudentAgeValidatorTest(TestCase):
+    def test_valid_age_range(self):
+        """Test valid student ages"""
+        for age in [4, 10, 15, 25]:
+            try:
+                validate_student_age(age)
+            except ValidationError:
+                self.fail(f'Valid age {age} raised ValidationError')
+
+    def test_age_too_young(self):
+        """Test student too young"""
+        with self.assertRaises(ValidationError):
+            validate_student_age(3)
+
+    def test_age_too_old(self):
+        """Test student age high warning"""
+        with self.assertRaises(ValidationError):
+            validate_student_age(26)
+
+
+class AgeGradeMatchValidatorTest(TestCase):
+    def test_appropriate_age_grade_match(self):
+        """Test appropriate age-grade combinations"""
+        try:
+            validate_age_grade_match(6, 'Grade 1')
+            validate_age_grade_match(12, 'Grade 7')
+            validate_age_grade_match(17, 'Grade 12')
+        except ValidationError:
+            self.fail('Appropriate age-grade match raised ValidationError')
+
+    def test_inappropriate_age_grade_match(self):
+        """Test inappropriate age-grade combinations"""
+        with self.assertRaises(ValidationError):
+            validate_age_grade_match(5, 'Grade 10')  # Too young
+        with self.assertRaises(ValidationError):
+            validate_age_grade_match(20, 'Grade 1')  # Too old
+
+
+class PhoneNumberValidatorTest(TestCase):
+    def test_valid_philippine_numbers(self):
+        """Test valid Philippine mobile numbers"""
+        valid_numbers = [
+            '+639171234567',
+            '09171234567',
+            '+639991234567',
+        ]
+        for number in valid_numbers:
+            try:
+                philippine_phone_validator(number)
+            except ValidationError:
+                self.fail(f'Valid phone number {number} raised ValidationError')
+
+    def test_invalid_phone_numbers(self):
+        """Test invalid phone number formats"""
+        invalid_numbers = [
+            '12345',
+            '+1234567890',
+            '123456789012345',
+        ]
+        for number in invalid_numbers:
+            with self.assertRaises(ValidationError):
+                philippine_phone_validator(number)
+
+
+class FoundedDateValidatorTest(TestCase):
+    def test_valid_founded_date(self):
+        """Test valid founded dates"""
+        try:
+            validate_founded_date(date(1990, 1, 1))
+            validate_founded_date(date(2020, 6, 15))
+        except ValidationError:
+            self.fail('Valid founded date raised ValidationError')
+
+    def test_future_founded_date(self):
+        """Test future date validation"""
+        future_date = date.today() + timedelta(days=365)
+        with self.assertRaises(ValidationError):
+            validate_founded_date(future_date)
+
+    def test_very_old_date(self):
+        """Test very old date validation"""
+        with self.assertRaises(ValidationError):
+            validate_founded_date(date(1800, 1, 1))
+
+
+class EnrollmentCapacityValidatorTest(TestCase):
+    def test_valid_capacity(self):
+        """Test valid enrollment within capacity"""
+        try:
+            validate_enrollment_capacity(50, 100)
+            validate_enrollment_capacity(100, 100)
+        except ValidationError:
+            self.fail('Valid capacity raised ValidationError')
+
+    def test_over_capacity(self):
+        """Test enrollment exceeding capacity"""
+        with self.assertRaises(ValidationError):
+            validate_enrollment_capacity(150, 100)
+```
+
+### 6. Run validator tests:
+
+```bash
+cd /Users/saidamenmambayao/apps/madaris-ms
+python manage.py test apps.core.tests.test_validators
+```
+
+### 7. Verify forms with new validation:
+
+```bash
+python manage.py shell << 'EOF'
+from apps.chapters.forms import ChapterForm
+from apps.constituents.forms import BMParliamentMemberRegistrationForm
+
+# Test invalid school code
+form_data = {'school_code': 'INVALID'}
+form = ChapterForm(data=form_data)
+if not form.is_valid():
+    print("School code validation working:", form.errors['school_code'])
+
+# Test invalid phone
+form_data = {'contact_number': '12345'}
+form = BMParliamentMemberRegistrationForm(data=form_data)
+if not form.is_valid():
+    print("Phone validation working:", form.errors['contact_number'])
+
+print("\nValidation tests completed!")
+EOF
+```
+
+## Acceptance Criteria:
+- Custom validators created in apps/core/validators.py
+- School code validation implemented (format: MAD-XXX-###)
+- Student number validation implemented
+- Age-appropriate grade level validation added
+- Philippine phone number validation improved
+- Email validation for educational context
+- Enrollment capacity validation added
+- Academic year validation implemented
+- All validators have comprehensive error messages
+- Unit tests created for validators
+
+## Files Modified:
+- `src/apps/core/validators.py (new file)`
+- `src/apps/core/tests/test_validators.py (new file)`
+- `src/apps/chapters/forms.py (validation added)`
+- `src/apps/constituents/forms.py (validation added)`
+
+## Important Notes:
+- All validators have clear, user-friendly error messages
+- Validators are reusable across multiple forms
+- Unit tests ensure validators work correctly
+- Phone number validation uses Philippine format
+- Age-grade validation allows 2-year buffer for flexibility
+- Founded date validation prevents future dates
+- Enrollment capacity validation prevents overbooking
+- Some validations are "soft" (warnings) vs "hard" (blocking)
+- Arabic name validation is informational only
+- All error messages use Django's translation framework for i18n
+- Estimate: 3-4 hours
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection

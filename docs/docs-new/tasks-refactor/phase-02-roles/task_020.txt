@@ -1,0 +1,142 @@
+# Task ID: 020
+# Title: Update User Registration Form with New Roles
+# Status: pending
+# Dependencies: 016, 019
+# Priority: high
+# Description: Update user registration and admin forms to include new role choices. Ensure appropriate roles are available based on who is registering the user.
+
+# Details:
+Update user registration and admin forms to include new role choices. Ensure appropriate roles are available based on who is registering the user.
+
+## Implementation Steps:
+1. Locate user forms:
+   ```bash
+   find /Users/saidamenmambayao/apps/madaris-ms/src/apps/users -name "forms.py"
+   ```
+2. Update UserCreationForm:
+   ```python
+   # apps/users/forms.py
+   from django import forms
+   from .models import User
+
+   class UserCreationForm(forms.ModelForm):
+       class Meta:
+           model = User
+           fields = ['username', 'email', 'first_name', 'last_name', 'role', 'password']
+           widgets = {
+               'role': forms.Select(attrs={
+                   'class': 'form-control',
+                   'help_text': 'Select the appropriate role for this user'
+               })
+           }
+
+       def __init__(self, *args, **kwargs):
+           current_user = kwargs.pop('current_user', None)
+           super().__init__(*args, **kwargs)
+
+           # Filter roles based on who is creating the user
+           if current_user:
+               if current_user.role == 'tarbiyyah_admin':
+                   # Can create any role except superuser
+                   self.fields['role'].choices = [
+                       choice for choice in User.Role.choices
+                       if choice[0] != 'superuser'
+                   ]
+               elif current_user.role == 'madrasah_admin':
+                   # Can only create muder, asatidz, student, parent
+                   self.fields['role'].choices = [
+                       (User.Role.MUDER, User.Role.MUDER.label),
+                       (User.Role.ASATIDZ, User.Role.ASATIDZ.label),
+                       (User.Role.STUDENT, User.Role.STUDENT.label),
+                       (User.Role.PARENT, User.Role.PARENT.label),
+                   ]
+   ```
+3. Update UserUpdateForm:
+   ```python
+   class UserUpdateForm(forms.ModelForm):
+       class Meta:
+           model = User
+           fields = ['first_name', 'last_name', 'email', 'role', 'is_active']
+
+       def __init__(self, *args, **kwargs):
+           current_user = kwargs.pop('current_user', None)
+           super().__init__(*args, **kwargs)
+
+           # Prevent users from elevating their own role
+           if current_user and self.instance == current_user:
+               self.fields['role'].disabled = True
+   ```
+4. Update UserAdmin in admin.py:
+   ```python
+   # apps/users/admin.py
+   from django.contrib import admin
+   from .models import User
+
+   @admin.register(User)
+   class UserAdmin(admin.ModelAdmin):
+       list_display = ['username', 'email', 'role', 'is_active', 'date_joined']
+       list_filter = ['role', 'is_active', 'date_joined']
+       search_fields = ['username', 'email', 'first_name', 'last_name']
+
+       fieldsets = (
+           (None, {'fields': ('username', 'password')}),
+           ('Personal info', {'fields': ('first_name', 'last_name', 'email')}),
+           ('Role & Permissions', {'fields': ('role', 'is_active', 'is_staff', 'is_superuser')}),
+           ('Important dates', {'fields': ('last_login', 'date_joined')}),
+       )
+
+       def get_form(self, request, obj=None, **kwargs):
+           form = super().get_form(request, obj, **kwargs)
+           # Add help text for role field
+           if 'role' in form.base_fields:
+               form.base_fields['role'].help_text = (
+                   "Select role carefully. Hierarchy: "
+                   "superuser > tarbiyyah_admin > madrasah_admin > muder > asatidz/student/parent"
+               )
+           return form
+   ```
+5. Test in Django admin:
+   - Create user with role='tarbiyyah_admin'
+   - Create user with role='asatidz'
+   - Create user with role='student'
+   - Verify all roles available in dropdown
+6. Test in user registration view (if public registration exists)
+
+## Acceptance Criteria:
+- UserCreationForm includes new role choices
+- UserUpdateForm includes new role choices
+- Role choices filtered based on current user's permissions
+- Help text explains each role
+- Form validation prevents unauthorized role assignment
+- Django admin shows all role choices
+- Test user creation with each new role
+
+## Files Modified:
+- `src/apps/users/forms.py`
+- `src/apps/users/admin.py`
+- `src/apps/users/views.py (may need to pass current_user to form)`
+
+## Important Notes:
+- Role choices should be filtered based on permissions
+- Prevent privilege escalation (users creating higher roles)
+- Add validation to ensure role assignment is authorized
+- Estimate: 45 minutes
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Test form validation with valid data
+10. Test form validation with invalid data
+11. Verify error messages display correctly
+12. Test form submission and data persistence
+13. Test CSRF protection
+14. Login to Django admin as superuser
+15. Verify models appear in admin interface
+16. Test create, read, update, delete operations
+17. Verify list display, filters, and search work

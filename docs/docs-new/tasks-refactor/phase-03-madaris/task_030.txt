@@ -1,0 +1,52 @@
+# Task ID: 030
+# Title: Rename ChapterActivity to MadrasahActivity
+# Status: pending
+# Dependencies: 029
+# Priority: high
+# Description: Rename ChapterActivity model to MadrasahActivity using RenameModel migration.
+
+# Details:
+Rename ChapterActivity model to MadrasahActivity using RenameModel migration.
+
+## Implementation Steps:
+1. Update model in chapters/models.py:
+   ```python
+   class MadrasahActivity(models.Model):
+       madrasah = ForeignKey(Madrasah, on_delete=CASCADE, related_name='activities')
+       ...
+       class Meta:
+           db_table = 'chapters_madrasahactivity'
+           verbose_name = 'Madrasah Activity'
+           verbose_name_plural = 'Madrasah Activities'
+   ```
+2. Create migration:
+   ```bash
+   python manage.py makemigrations chapters --name rename_activity_to_madrasah_activity
+   ```
+3. Test migration on staging
+4. Update imports across codebase
+
+## Acceptance Criteria:
+- Migration created for RenameModel
+- Table renamed: chapters_chapteractivity → chapters_madrasahactivity
+- All activity data preserved
+- Foreign keys updated
+- Model accessible as MadrasahActivity
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_rename_activity_to_madrasah_activity.py`
+
+## Important Notes:
+- Estimate: 25 minutes
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Run migrations and verify schema changes
+7. Create test instances to verify new fields
+8. Test admin interface with new fields
+9. Verify backward compatibility with existing data

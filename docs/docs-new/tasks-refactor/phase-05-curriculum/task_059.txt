@@ -1,0 +1,556 @@
+# Task ID: 059
+# Title: Create Curriculum Tests
+# Status: pending
+# Dependencies: 052, 053, 054, 056, 057
+# Priority: medium
+# Description: Create comprehensive test suite for the curriculum app including model tests, form tests, view tests, and integration tests. Tests should cover all ma
+
+# Details:
+Create comprehensive test suite for the curriculum app including model tests, form tests, view tests, and integration tests. Tests should cover all major functionality and edge cases.
+
+## Implementation Steps:
+1. Update apps/curriculum/tests.py with comprehensive tests:
+   ```python
+   from django.test import TestCase, Client
+   from django.urls import reverse
+   from django.contrib.auth import get_user_model
+   from django.core.files.uploadedfile import SimpleUploadedFile
+   from decimal import Decimal
+
+   from apps.madaris.models import Madrasah
+   from .models import Subject, CurriculumFramework, CurriculumSubject, LessonPlan
+   from .forms import SubjectForm, CurriculumFrameworkForm, LessonPlanForm
+
+   User = get_user_model()
+
+
+   # ============================================================================
+   # Model Tests
+   # ============================================================================
+
+   class SubjectModelTest(TestCase):
+       """Test Subject model."""
+
+       def setUp(self):
+           """Create test subject."""
+           self.subject = Subject.objects.create(
+               code='QRN101',
+               name='Introduction to Tajweed',
+               name_arabic='مقدمة في التجويد',
+               category='tajweed',
+               credit_hours=Decimal('3.0'),
+               lecture_hours=Decimal('2.5'),
+               lab_hours=Decimal('0.5'),
+               is_core=True,
+               is_active=True
+           )
+
+       def test_subject_creation(self):
+           """Test subject is created correctly."""
+           self.assertEqual(self.subject.code, 'QRN101')
+           self.assertEqual(self.subject.name, 'Introduction to Tajweed')
+           self.assertTrue(self.subject.is_core)
+           self.assertTrue(self.subject.is_active)
+
+       def test_subject_str(self):
+           """Test subject string representation."""
+           expected = "QRN101 - Introduction to Tajweed"
+           self.assertEqual(str(self.subject), expected)
+
+       def test_get_total_hours(self):
+           """Test total hours calculation."""
+           total = self.subject.get_total_hours()
+           self.assertEqual(total, 3.0)
+
+       def test_get_category_display_arabic(self):
+           """Test Arabic category display."""
+           arabic_name = self.subject.get_category_display_arabic()
+           self.assertEqual(arabic_name, 'التجويد')
+
+       def test_subject_prerequisites(self):
+           """Test subject prerequisites relationship."""
+           prereq = Subject.objects.create(
+               code='ARB100',
+               name='Basic Arabic',
+               category='arabic',
+               credit_hours=Decimal('3.0')
+           )
+           self.subject.prerequisites.add(prereq)
+           self.assertEqual(self.subject.prerequisites.count(), 1)
+           self.assertEqual(prereq.prerequisite_for.count(), 1)
+
+
+   class CurriculumFrameworkModelTest(TestCase):
+       """Test CurriculumFramework model."""
+
+       def setUp(self):
+           """Create test data."""
+           self.user = User.objects.create_user(
+               username='testadmin',
+               email='admin@test.com',
+               password='testpass123',
+               role='tarbiyyah_admin'
+           )
+           self.framework = CurriculumFramework.objects.create(
+               name='MBHTE Islamic Education Framework',
+               code='MBHTE-IED-2024',
+               description='Test framework',
+               education_level='ibtidaiyyah',
+               grade_levels=['Grade 1', 'Grade 2', 'Grade 3'],
+               total_credit_hours=Decimal('120.0'),
+               is_mbhte_approved=True,
+               is_active=True,
+               created_by=self.user
+           )
+           self.subject1 = Subject.objects.create(
+               code='QRN101',
+               name='Quran Studies',
+               category='quran',
+               credit_hours=Decimal('3.0'),
+               is_core=True
+           )
+           self.subject2 = Subject.objects.create(
+               code='ARB101',
+               name='Arabic Language',
+               category='arabic',
+               credit_hours=Decimal('3.0'),
+               is_core=True
+           )
+
+       def test_framework_creation(self):
+           """Test framework is created correctly."""
+           self.assertEqual(self.framework.code, 'MBHTE-IED-2024')
+           self.assertEqual(self.framework.education_level, 'ibtidaiyyah')
+           self.assertTrue(self.framework.is_mbhte_approved)
+           self.assertEqual(len(self.framework.grade_levels), 3)
+
+       def test_framework_str(self):
+           """Test framework string representation."""
+           expected = "MBHTE Islamic Education Framework (Ibtidaiyyah (Elementary))"
+           self.assertEqual(str(self.framework), expected)
+
+       def test_get_total_subjects(self):
+           """Test total subjects count."""
+           CurriculumSubject.objects.create(
+               framework=self.framework,
+               subject=self.subject1,
+               grade_level='Grade 1',
+               is_required=True
+           )
+           CurriculumSubject.objects.create(
+               framework=self.framework,
+               subject=self.subject2,
+               grade_level='Grade 1',
+               is_required=True
+           )
+           self.assertEqual(self.framework.get_total_subjects(), 2)
+
+       def test_get_core_subjects(self):
+           """Test core subjects filtering."""
+           CurriculumSubject.objects.create(
+               framework=self.framework,
+               subject=self.subject1,
+               grade_level='Grade 1',
+               is_required=True
+           )
+           core_subjects = self.framework.get_core_subjects()
+           self.assertEqual(core_subjects.count(), 1)
+
+
+   class LessonPlanModelTest(TestCase):
+       """Test LessonPlan model."""
+
+       def setUp(self):
+           """Create test data."""
+           self.teacher = User.objects.create_user(
+               username='teacher1',
+               email='teacher@test.com',
+               password='testpass123',
+               role='asatidz',
+               first_name='Ahmad',
+               last_name='Ali'
+           )
+           self.madrasah = Madrasah.objects.create(
+               name='Test Madrasah',
+               school_code='TEST001',
+               province='Lanao del Sur',
+               municipality='Marawi City',
+               mobile='09123456789'
+           )
+           self.subject = Subject.objects.create(
+               code='QRN101',
+               name='Tajweed',
+               category='tajweed',
+               credit_hours=Decimal('3.0')
+           )
+           self.lesson_plan = LessonPlan.objects.create(
+               title='Introduction to Tajweed Rules',
+               subject=self.subject,
+               teacher=self.teacher,
+               grade_level='grade_1',
+               madrasah=self.madrasah,
+               academic_year='2024-2025',
+               description='Basic tajweed lesson',
+               learning_objectives=['Learn basic rules', 'Practice pronunciation'],
+               content='Detailed lesson content',
+               duration_minutes=60,
+               status='draft'
+           )
+
+       def test_lesson_plan_creation(self):
+           """Test lesson plan is created correctly."""
+           self.assertEqual(self.lesson_plan.title, 'Introduction to Tajweed Rules')
+           self.assertEqual(self.lesson_plan.teacher, self.teacher)
+           self.assertEqual(self.lesson_plan.status, 'draft')
+           self.assertEqual(self.lesson_plan.duration_minutes, 60)
+
+       def test_lesson_plan_str(self):
+           """Test lesson plan string representation."""
+           expected = "Introduction to Tajweed Rules - QRN101 (grade_1)"
+           self.assertEqual(str(self.lesson_plan), expected)
+
+       def test_get_duration_display(self):
+           """Test duration display."""
+           self.assertEqual(self.lesson_plan.get_duration_display(), "60 minutes")
+
+           # Test with hours
+           self.lesson_plan.duration_minutes = 90
+           self.assertEqual(self.lesson_plan.get_duration_display(), "1h 30min")
+
+       def test_is_editable_by(self):
+           """Test edit permission check."""
+           self.assertTrue(self.lesson_plan.is_editable_by(self.teacher))
+
+           # Create different user
+           other_user = User.objects.create_user(
+               username='other',
+               password='testpass123',
+               role='asatidz'
+           )
+           self.assertFalse(self.lesson_plan.is_editable_by(other_user))
+
+       def test_submit_for_review(self):
+           """Test submission workflow."""
+           self.assertEqual(self.lesson_plan.status, 'draft')
+           self.lesson_plan.submit_for_review()
+           self.assertEqual(self.lesson_plan.status, 'submitted')
+
+       def test_approve(self):
+           """Test approval workflow."""
+           admin = User.objects.create_user(
+               username='admin',
+               password='testpass123',
+               role='madrasah_admin'
+           )
+           self.lesson_plan.approve(reviewer=admin, notes='Looks good')
+           self.assertEqual(self.lesson_plan.status, 'approved')
+           self.assertEqual(self.lesson_plan.reviewed_by, admin)
+           self.assertIsNotNone(self.lesson_plan.approved_at)
+
+
+   # ============================================================================
+   # Form Tests
+   # ============================================================================
+
+   class SubjectFormTest(TestCase):
+       """Test SubjectForm."""
+
+       def test_valid_form(self):
+           """Test form with valid data."""
+           form_data = {
+               'code': 'QRN101',
+               'name': 'Quran Studies',
+               'category': 'quran',
+               'credit_hours': 3.0,
+               'lecture_hours': 2.5,
+               'lab_hours': 0.5,
+               'is_core': True,
+               'is_active': True,
+           }
+           form = SubjectForm(data=form_data)
+           self.assertTrue(form.is_valid())
+
+       def test_duplicate_code(self):
+           """Test form rejects duplicate codes."""
+           Subject.objects.create(
+               code='QRN101',
+               name='Test',
+               category='quran',
+               credit_hours=3.0
+           )
+           form_data = {
+               'code': 'QRN101',
+               'name': 'Another',
+               category': 'quran',
+               'credit_hours': 3.0,
+           }
+           form = SubjectForm(data=form_data)
+           self.assertFalse(form.is_valid())
+           self.assertIn('code', form.errors)
+
+       def test_code_uppercase(self):
+           """Test code is converted to uppercase."""
+           form_data = {
+               'code': 'qrn101',
+               'name': 'Test',
+               'category': 'quran',
+               'credit_hours': 3.0,
+               'is_core': True,
+               'is_active': True,
+           }
+           form = SubjectForm(data=form_data)
+           self.assertTrue(form.is_valid())
+           self.assertEqual(form.cleaned_data['code'], 'QRN101')
+
+
+   class LessonPlanFormTest(TestCase):
+       """Test LessonPlanForm."""
+
+       def setUp(self):
+           """Create test data."""
+           self.teacher = User.objects.create_user(
+               username='teacher',
+               password='testpass123',
+               role='asatidz'
+           )
+           self.madrasah = Madrasah.objects.create(
+               name='Test Madrasah',
+               school_code='TEST001',
+               province='Lanao del Sur',
+               municipality='Marawi',
+               mobile='09123456789'
+           )
+           self.subject = Subject.objects.create(
+               code='QRN101',
+               name='Quran',
+               category='quran',
+               credit_hours=3.0
+           )
+
+       def test_valid_form(self):
+           """Test form with valid data."""
+           form_data = {
+               'title': 'Test Lesson',
+               'subject': self.subject.id,
+               'grade_level': 'grade_1',
+               'madrasah': self.madrasah.id,
+               'academic_year': '2024-2025',
+               'description': 'Test description',
+               'learning_objectives_text': 'Objective 1\nObjective 2',
+               'content': 'Lesson content',
+               'duration_minutes': 60,
+               'is_public': False,
+               'is_template': False,
+           }
+           form = LessonPlanForm(data=form_data, user=self.teacher)
+           self.assertTrue(form.is_valid())
+
+
+   # ============================================================================
+   # View Tests
+   # ============================================================================
+
+   class SubjectViewTest(TestCase):
+       """Test Subject views."""
+
+       def setUp(self):
+           """Create test data and client."""
+           self.client = Client()
+           self.user = User.objects.create_user(
+               username='testuser',
+               password='testpass123',
+               role='tarbiyyah_admin'
+           )
+           self.client.login(username='testuser', password='testpass123')
+           self.subject = Subject.objects.create(
+               code='QRN101',
+               name='Quran Studies',
+               category='quran',
+               credit_hours=3.0
+           )
+
+       def test_subject_list_view(self):
+           """Test subject list view."""
+           response = self.client.get(reverse('curriculum:subject-list'))
+           self.assertEqual(response.status_code, 200)
+           self.assertContains(response, 'QRN101')
+
+       def test_subject_detail_view(self):
+           """Test subject detail view."""
+           response = self.client.get(
+               reverse('curriculum:subject-detail', kwargs={'pk': self.subject.pk})
+           )
+           self.assertEqual(response.status_code, 200)
+           self.assertContains(response, 'Quran Studies')
+
+       def test_subject_create_view(self):
+           """Test subject create view."""
+           response = self.client.post(
+               reverse('curriculum:subject-create'),
+               data={
+                   'code': 'ARB101',
+                   'name': 'Arabic',
+                   'category': 'arabic',
+                   'credit_hours': 3.0,
+                   'is_core': True,
+                   'is_active': True,
+               }
+           )
+           self.assertEqual(response.status_code, 302)  # Redirect after success
+           self.assertTrue(Subject.objects.filter(code='ARB101').exists())
+
+
+   class LessonPlanViewTest(TestCase):
+       """Test LessonPlan views."""
+
+       def setUp(self):
+           """Create test data."""
+           self.client = Client()
+           self.teacher = User.objects.create_user(
+               username='teacher',
+               password='testpass123',
+               role='asatidz'
+           )
+           self.client.login(username='teacher', password='testpass123')
+           self.madrasah = Madrasah.objects.create(
+               name='Test Madrasah',
+               school_code='TEST001',
+               province='Lanao del Sur',
+               municipality='Marawi',
+               mobile='09123456789'
+           )
+           self.subject = Subject.objects.create(
+               code='QRN101',
+               name='Quran',
+               category='quran',
+               credit_hours=3.0
+           )
+           self.lesson_plan = LessonPlan.objects.create(
+               title='Test Lesson',
+               subject=self.subject,
+               teacher=self.teacher,
+               grade_level='grade_1',
+               madrasah=self.madrasah,
+               academic_year='2024-2025',
+               description='Test',
+               content='Content',
+               duration_minutes=60
+           )
+
+       def test_my_lesson_plans_view(self):
+           """Test user's lesson plans view."""
+           response = self.client.get(reverse('curriculum:my-lesson-plans'))
+           self.assertEqual(response.status_code, 200)
+           self.assertContains(response, 'Test Lesson')
+
+       def test_lesson_plan_detail_view(self):
+           """Test lesson plan detail view."""
+           response = self.client.get(
+               reverse('curriculum:lesson-plan-detail', kwargs={'pk': self.lesson_plan.pk})
+           )
+           self.assertEqual(response.status_code, 200)
+           self.assertContains(response, 'Test Lesson')
+
+       def test_submit_lesson_plan(self):
+           """Test submitting lesson plan for review."""
+           response = self.client.post(
+               reverse('curriculum:lesson-plan-submit', kwargs={'pk': self.lesson_plan.pk})
+           )
+           self.assertEqual(response.status_code, 302)
+           self.lesson_plan.refresh_from_db()
+           self.assertEqual(self.lesson_plan.status, 'submitted')
+   ```
+
+2. Create test fixtures in apps/curriculum/fixtures/test_data.json:
+   ```json
+   [
+     {
+       "model": "curriculum.subject",
+       "pk": 1,
+       "fields": {
+         "code": "QRN101",
+         "name": "Introduction to Quran",
+         "category": "quran",
+         "credit_hours": "3.00",
+         "is_core": true,
+         "is_active": true
+       }
+     },
+     {
+       "model": "curriculum.subject",
+       "pk": 2,
+       "fields": {
+         "code": "ARB101",
+         "name": "Arabic Language Basics",
+         "category": "arabic",
+         "credit_hours": "3.00",
+         "is_core": true,
+         "is_active": true
+       }
+     }
+   ]
+   ```
+
+3. Run tests:
+   ```bash
+   python manage.py test apps.curriculum
+   ```
+
+4. Check test coverage:
+   ```bash
+   coverage run --source='apps.curriculum' manage.py test apps.curriculum
+   coverage report
+   coverage html
+   ```
+
+5. Review coverage report and add tests for uncovered areas
+
+6. Run specific test classes:
+   ```bash
+   python manage.py test apps.curriculum.tests.SubjectModelTest
+   python manage.py test apps.curriculum.tests.LessonPlanViewTest
+   ```
+
+## Acceptance Criteria:
+- Model tests cover all models and methods
+- Form tests validate data and edge cases
+- View tests cover all CRUD operations
+- Permission tests ensure proper access control
+- Integration tests verify complete workflows
+- Test coverage above 80%
+- All tests pass successfully
+
+## Files Modified:
+- `apps/curriculum/tests.py (comprehensive update)`
+- `apps/curriculum/fixtures/test_data.json (new file)`
+
+## Important Notes:
+- Tests cover models, forms, views, and permissions
+- Use fixtures for consistent test data
+- Coverage report helps identify gaps
+- Integration tests verify complete workflows
+- Tests should be maintained as features evolve
+- Estimate: 3 hours
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Test form validation with valid data
+10. Test form validation with invalid data
+11. Verify error messages display correctly
+12. Test form submission and data persistence
+13. Test CSRF protection
+14. Access view URL and verify HTTP 200 response
+15. Test with different user permissions
+16. Verify context data passed to template
+17. Test any query parameters or filters
+18. Run test suite with `python manage.py test`
+19. Verify test coverage meets requirements
+20. Check for any failing tests
+21. Verify test assertions are correct

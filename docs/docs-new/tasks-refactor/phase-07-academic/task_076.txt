@@ -1,0 +1,468 @@
+# Task ID: 076
+# Title: Create Grade/Marks Model
+# Status: pending
+# Dependencies: 075
+# Priority: medium
+# Description: Create Grade model to track student academic performance including assessments, quizzes, exams, and final grades. Support for Islamic grading criteria
+
+# Details:
+Create Grade model to track student academic performance including assessments, quizzes, exams, and final grades. Support for Islamic grading criteria and multiple assessment types.
+
+## Implementation Steps:
+1. Create Grade model:
+   ```python
+   # apps/academics/models.py (add to existing file)
+
+   class Grade(models.Model):
+       """Academic grades and assessment records"""
+
+       ASSESSMENT_TYPES = [
+           ('quiz', 'Quiz'),
+           ('test', 'Test'),
+           ('midterm', 'Midterm Exam'),
+           ('final', 'Final Exam'),
+           ('project', 'Project'),
+           ('homework', 'Homework'),
+           ('participation', 'Class Participation'),
+           ('memorization', 'Quran Memorization'),
+           ('recitation', 'Quran Recitation'),
+           ('tajweed', 'Tajweed Assessment'),
+           ('other', 'Other'),
+       ]
+
+       LETTER_GRADES = [
+           ('A+', '90-100 (Excellent/Mumtaz)'),
+           ('A', '85-89 (Very Good/Jayyid Jiddan)'),
+           ('B+', '80-84 (Good/Jayyid)'),
+           ('B', '75-79 (Above Average/Maqbool Jiddan)'),
+           ('C+', '70-74 (Average/Maqbool)'),
+           ('C', '65-69 (Satisfactory/Mutawassit)'),
+           ('D', '60-64 (Pass/Najah)'),
+           ('F', '0-59 (Fail/Rasib)'),
+       ]
+
+       # Core relationships
+       student = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.CASCADE,
+           limit_choices_to={'role': 'student'},
+           related_name='grades',
+           help_text="Student receiving the grade"
+       )
+
+       class_instance = models.ForeignKey(
+           Class,
+           on_delete=models.CASCADE,
+           related_name='grades',
+           help_text="Class/subject for this grade"
+       )
+
+       academic_year = models.ForeignKey(
+           AcademicYear,
+           on_delete=models.CASCADE,
+           related_name='grades'
+       )
+
+       # Assessment details
+       assessment_type = models.CharField(
+           max_length=20,
+           choices=ASSESSMENT_TYPES,
+           help_text="Type of assessment"
+       )
+
+       assessment_name = models.CharField(
+           max_length=100,
+           help_text="Name of assessment (e.g., 'Chapter 3 Quiz', 'Surah Al-Baqarah Memorization')"
+       )
+
+       assessment_date = models.DateField(
+           help_text="Date of assessment"
+       )
+
+       # Grading period
+       term = models.PositiveIntegerField(
+           default=1,
+           help_text="Term/semester number (1, 2, etc.)"
+       )
+
+       # Scores
+       score = models.DecimalField(
+           max_digits=6,
+           decimal_places=2,
+           help_text="Score achieved"
+       )
+
+       max_score = models.DecimalField(
+           max_digits=6,
+           decimal_places=2,
+           default=100,
+           help_text="Maximum possible score"
+       )
+
+       # Calculated fields
+       percentage = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           editable=False,
+           help_text="Calculated percentage"
+       )
+
+       letter_grade = models.CharField(
+           max_length=3,
+           choices=LETTER_GRADES,
+           editable=False,
+           help_text="Calculated letter grade"
+       )
+
+       # Weight for final grade calculation
+       weight = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           default=1.0,
+           help_text="Weight of this assessment in final grade (e.g., 0.2 for 20%)"
+       )
+
+       # Islamic assessment criteria (for Islamic subjects)
+       tajweed_score = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           null=True,
+           blank=True,
+           help_text="Tajweed/recitation quality score"
+       )
+
+       memorization_accuracy = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           null=True,
+           blank=True,
+           help_text="Memorization accuracy percentage"
+       )
+
+       # Comments and feedback
+       teacher_comments = models.TextField(
+           blank=True,
+           help_text="Teacher's feedback and comments"
+       )
+
+       # Status
+       is_excused = models.BooleanField(
+           default=False,
+           help_text="Student excused from this assessment"
+       )
+
+       is_makeup = models.BooleanField(
+           default=False,
+           help_text="This is a makeup assessment"
+       )
+
+       # Metadata
+       recorded_by = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.SET_NULL,
+           null=True,
+           related_name='recorded_grades',
+           help_text="Teacher who recorded this grade"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'academics_grade'
+           verbose_name = 'Grade'
+           verbose_name_plural = 'Grades'
+           ordering = ['-assessment_date', 'student__last_name']
+           indexes = [
+               models.Index(fields=['student', 'academic_year']),
+               models.Index(fields=['class_instance', 'assessment_type']),
+           ]
+
+       def __str__(self):
+           return f"{self.student.get_full_name()} - {self.assessment_name}: {self.percentage}%"
+
+       def save(self, *args, **kwargs):
+           # Calculate percentage
+           if self.score is not None and self.max_score:
+               self.percentage = (self.score / self.max_score) * 100
+           else:
+               self.percentage = 0
+
+           # Calculate letter grade
+           self.letter_grade = self.calculate_letter_grade()
+
+           super().save(*args, **kwargs)
+
+       def calculate_letter_grade(self):
+           """Convert percentage to letter grade"""
+           percentage = float(self.percentage)
+
+           if percentage >= 90:
+               return 'A+'
+           elif percentage >= 85:
+               return 'A'
+           elif percentage >= 80:
+               return 'B+'
+           elif percentage >= 75:
+               return 'B'
+           elif percentage >= 70:
+               return 'C+'
+           elif percentage >= 65:
+               return 'C'
+           elif percentage >= 60:
+               return 'D'
+           else:
+               return 'F'
+
+       @property
+       def is_passing(self):
+           """Check if grade is passing (60% or higher)"""
+           return self.percentage >= 60
+
+       @property
+       def weighted_score(self):
+           """Calculate weighted score for final grade"""
+           return float(self.percentage) * float(self.weight)
+
+       @property
+       def arabic_grade_name(self):
+           """Get Arabic name for letter grade"""
+           grade_map = {
+               'A+': 'Mumtaz (ممتاز)',
+               'A': 'Jayyid Jiddan (جيد جداً)',
+               'B+': 'Jayyid (جيد)',
+               'B': 'Maqbool Jiddan (مقبول جداً)',
+               'C+': 'Maqbool (مقبول)',
+               'C': 'Mutawassit (متوسط)',
+               'D': 'Najah (نجاح)',
+               'F': 'Rasib (راسب)',
+           }
+           return grade_map.get(self.letter_grade, '')
+   ```
+
+2. Create GradeReport model for consolidated reports:
+   ```python
+   # apps/academics/models.py (add after Grade model)
+
+   class GradeReport(models.Model):
+       """Consolidated grade report for a student in a class"""
+
+       student = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.CASCADE,
+           limit_choices_to={'role': 'student'},
+           related_name='grade_reports'
+       )
+
+       class_instance = models.ForeignKey(
+           Class,
+           on_delete=models.CASCADE,
+           related_name='grade_reports'
+       )
+
+       academic_year = models.ForeignKey(
+           AcademicYear,
+           on_delete=models.CASCADE,
+           related_name='grade_reports'
+       )
+
+       term = models.PositiveIntegerField(
+           help_text="Term/semester number"
+       )
+
+       # Calculated grades
+       final_percentage = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           help_text="Final calculated percentage"
+       )
+
+       final_letter_grade = models.CharField(
+           max_length=3,
+           choices=Grade.LETTER_GRADES
+       )
+
+       # Statistics
+       total_assessments = models.PositiveIntegerField(default=0)
+       completed_assessments = models.PositiveIntegerField(default=0)
+
+       # Teacher evaluation
+       conduct_grade = models.CharField(
+           max_length=20,
+           blank=True,
+           help_text="Student conduct/behavior grade"
+       )
+
+       attendance_percentage = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           null=True,
+           blank=True
+       )
+
+       teacher_remarks = models.TextField(
+           blank=True,
+           help_text="Overall teacher remarks for the term"
+       )
+
+       # Status
+       is_finalized = models.BooleanField(
+           default=False,
+           help_text="Report is finalized and locked"
+       )
+
+       finalized_date = models.DateTimeField(null=True, blank=True)
+
+       # Metadata
+       generated_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'academics_grade_report'
+           verbose_name = 'Grade Report'
+           verbose_name_plural = 'Grade Reports'
+           unique_together = [['student', 'class_instance', 'academic_year', 'term']]
+           ordering = ['-academic_year', 'student__last_name']
+
+       def __str__(self):
+           return f"{self.student.get_full_name()} - {self.class_instance} - Term {self.term}"
+
+       def calculate_final_grade(self):
+           """Calculate final grade from all assessments"""
+           grades = Grade.objects.filter(
+               student=self.student,
+               class_instance=self.class_instance,
+               academic_year=self.academic_year,
+               term=self.term,
+               is_excused=False
+           )
+
+           if not grades.exists():
+               return 0
+
+           total_weight = sum(float(g.weight) for g in grades)
+           if total_weight == 0:
+               return 0
+
+           weighted_sum = sum(g.weighted_score for g in grades)
+           self.final_percentage = weighted_sum / total_weight
+
+           # Calculate letter grade
+           if self.final_percentage >= 90:
+               self.final_letter_grade = 'A+'
+           elif self.final_percentage >= 85:
+               self.final_letter_grade = 'A'
+           elif self.final_percentage >= 80:
+               self.final_letter_grade = 'B+'
+           elif self.final_percentage >= 75:
+               self.final_letter_grade = 'B'
+           elif self.final_percentage >= 70:
+               self.final_letter_grade = 'C+'
+           elif self.final_percentage >= 65:
+               self.final_letter_grade = 'C'
+           elif self.final_percentage >= 60:
+               self.final_letter_grade = 'D'
+           else:
+               self.final_letter_grade = 'F'
+
+           self.total_assessments = grades.count()
+           self.completed_assessments = grades.filter(score__isnull=False).count()
+
+           return self.final_percentage
+   ```
+
+3. Create migration:
+   ```bash
+   python manage.py makemigrations academics
+   ```
+
+4. Apply migration:
+   ```bash
+   python manage.py migrate academics
+   ```
+
+5. Test model in shell:
+   ```python
+   from apps.academics.models import Grade, GradeReport
+   from apps.academics.models import Class
+   from apps.users.models import User
+
+   # Get objects
+   student = User.objects.filter(role='student').first()
+   class_obj = Class.objects.first()
+
+   # Create grades
+   quiz_grade = Grade.objects.create(
+       student=student,
+       class_instance=class_obj,
+       academic_year=class_obj.academic_year,
+       assessment_type='quiz',
+       assessment_name='Chapter 1 Quiz',
+       assessment_date='2024-09-15',
+       score=85,
+       max_score=100,
+       weight=0.2,
+       term=1
+   )
+
+   midterm_grade = Grade.objects.create(
+       student=student,
+       class_instance=class_obj,
+       academic_year=class_obj.academic_year,
+       assessment_type='midterm',
+       assessment_name='Midterm Exam',
+       assessment_date='2024-10-20',
+       score=78,
+       max_score=100,
+       weight=0.3,
+       term=1
+   )
+
+   # Test calculations
+   print(f"Quiz: {quiz_grade.percentage}% - {quiz_grade.letter_grade}")
+   print(f"Arabic: {quiz_grade.arabic_grade_name}")
+
+   # Create grade report
+   report = GradeReport.objects.create(
+       student=student,
+       class_instance=class_obj,
+       academic_year=class_obj.academic_year,
+       term=1
+   )
+   report.calculate_final_grade()
+   report.save()
+   print(f"Final: {report.final_percentage}% - {report.final_letter_grade}")
+   ```
+
+## Acceptance Criteria:
+- Grade model created
+- Links to Student, Class, AcademicYear
+- Multiple assessment types supported
+- Percentage and letter grade conversion
+- Islamic grading criteria support
+- Grade calculation methods
+- Migration created successfully
+- Model accessible in admin
+
+## Files Modified:
+- `src/apps/academics/models.py`
+- `src/apps/academics/migrations/0003_grade.py`
+
+## Important Notes:
+- Support for Islamic assessment criteria (Tajweed, memorization)
+- Weighted grade calculations for flexibility
+- Letter grades with Arabic equivalents
+- GradeReport consolidates term performance
+- Automatic percentage and letter grade calculation
+- Estimate: 70 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection

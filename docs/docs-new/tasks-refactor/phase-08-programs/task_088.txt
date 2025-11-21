@@ -1,0 +1,608 @@
+# Task ID: 088
+# Title: Update Program Application Forms
+# Status: pending
+# Dependencies: 087
+# Priority: medium
+# Description: Create and update forms for program applications (scholarships, training, activities) using Django forms. Adapt ServiceApplication forms for education
+
+# Details:
+Create and update forms for program applications (scholarships, training, activities) using Django forms. Adapt ServiceApplication forms for educational use and create program enrollment forms.
+
+## Implementation Steps:
+1. Create/update forms in apps/services/forms.py:
+   ```python
+   # Add to forms.py:
+   from django import forms
+   from django.core.exceptions import ValidationError
+   from .models import (
+       MinistryProgram,
+       ProgramEnrollment,
+       ProgramRequirement,
+       EnrollmentRequirementStatus
+   )
+
+   class ProgramApplicationForm(forms.ModelForm):
+       """
+       Form for students/teachers to apply for programs.
+       """
+
+       accept_terms = forms.BooleanField(
+           required=True,
+           label="I accept the program terms and conditions",
+           help_text="You must accept the terms to apply"
+       )
+
+       class Meta:
+           model = ProgramEnrollment
+           fields = [
+               'program',
+               'participant_type',
+               'application_notes',
+               'submitted_documents',
+           ]
+           widgets = {
+               'application_notes': forms.Textarea(
+                   attrs={
+                       'rows': 6,
+                       'placeholder': 'Please explain why you are applying for this program...',
+                       'class': 'form-control'
+                   }
+               ),
+               'submitted_documents': forms.FileInput(
+                   attrs={'class': 'form-control'}
+               ),
+               'program': forms.Select(attrs={'class': 'form-control'}),
+               'participant_type': forms.Select(attrs={'class': 'form-control'}),
+           }
+           labels = {
+               'application_notes': 'Application Statement',
+               'submitted_documents': 'Supporting Documents',
+               'participant_type': 'Applying As',
+           }
+
+       def __init__(self, *args, **kwargs):
+           self.user = kwargs.pop('user', None)
+           super().__init__(*args, **kwargs)
+
+           # Filter programs to only show active, accepting applications
+           self.fields['program'].queryset = MinistryProgram.objects.filter(
+               status='active',
+               program_category__in=[
+                   'scholarship',
+                   'teacher_training',
+                   'extracurricular',
+                   'curriculum',
+               ]
+           )
+
+           # If user provided, set participant automatically
+           if self.user:
+               self.instance.participant = self.user
+
+       def clean_program(self):
+           """Validate program is accepting applications"""
+           program = self.cleaned_data.get('program')
+           if not program:
+               return program
+
+           if not program.is_accepting_applications():
+               raise ValidationError(
+                   f"'{program.title}' is not currently accepting applications. "
+                   f"Application deadline: {program.application_deadline or 'Not set'}"
+               )
+
+           if not program.has_capacity():
+               raise ValidationError(
+                   f"'{program.title}' has reached maximum enrollment capacity."
+               )
+
+           # Check for duplicate application
+           if self.user and ProgramEnrollment.objects.filter(
+               program=program,
+               participant=self.user
+           ).exists():
+               raise ValidationError(
+                   f"You have already applied to '{program.title}'."
+               )
+
+           return program
+
+       def clean_submitted_documents(self):
+           """Validate uploaded documents"""
+           file = self.cleaned_data.get('submitted_documents')
+           if file:
+               # Check file size (max 10MB)
+               if file.size > 10 * 1024 * 1024:
+                   raise ValidationError("File size must not exceed 10MB")
+
+               # Check file type
+               allowed_types = [
+                   'application/pdf',
+                   'image/jpeg',
+                   'image/png',
+                   'application/msword',
+                   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+               ]
+               if file.content_type not in allowed_types:
+                   raise ValidationError(
+                       "Only PDF, Word, and image files are allowed"
+                   )
+
+           return file
+
+
+   class ProgramEnrollmentAdminForm(forms.ModelForm):
+       """
+       Admin form for managing program enrollments.
+       """
+
+       class Meta:
+           model = ProgramEnrollment
+           fields = '__all__'
+
+       def clean(self):
+           """Validate enrollment status transitions"""
+           cleaned_data = super().clean()
+           status = cleaned_data.get('status')
+           program = cleaned_data.get('program')
+
+           # Check capacity when approving
+           if status == 'approved' and program:
+               if not program.has_capacity():
+                   raise ValidationError(
+                       f"Cannot approve: '{program.title}' has reached maximum capacity"
+                   )
+
+           return cleaned_data
+
+
+   class RequirementVerificationForm(forms.ModelForm):
+       """
+       Form for administrators to verify program requirements.
+       """
+
+       class Meta:
+           model = EnrollmentRequirementStatus
+           fields = [
+               'is_met',
+               'supporting_document',
+               'notes',
+           ]
+           widgets = {
+               'is_met': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+               'notes': forms.Textarea(
+                   attrs={
+                       'rows': 3,
+                       'class': 'form-control',
+                       'placeholder': 'Notes about verification...'
+                   }
+               ),
+               'supporting_document': forms.FileInput(
+                   attrs={'class': 'form-control'}
+               ),
+           }
+
+       def save(self, commit=True, verified_by=None):
+           """Save with verification metadata"""
+           instance = super().save(commit=False)
+
+           if instance.is_met and verified_by:
+               from django.utils import timezone
+               instance.verification_date = timezone.now()
+               instance.verified_by = verified_by
+
+           if commit:
+               instance.save()
+
+           return instance
+
+
+   class ProgramFilterForm(forms.Form):
+       """
+       Form for filtering programs in the catalog.
+       """
+
+       category = forms.ChoiceField(
+           choices=[('', 'All Categories')] + list(MinistryProgram.PROGRAM_CATEGORIES),
+           required=False,
+           widget=forms.Select(attrs={'class': 'form-select'})
+       )
+
+       grade_level = forms.ChoiceField(
+           choices=[('', 'All Grade Levels')] + list(MinistryProgram.GRADE_LEVEL_CHOICES),
+           required=False,
+           widget=forms.Select(attrs={'class': 'form-select'})
+       )
+
+       status = forms.ChoiceField(
+           choices=[('', 'All Status')] + list(MinistryProgram.STATUS_CHOICES),
+           required=False,
+           initial='active',
+           widget=forms.Select(attrs={'class': 'form-select'})
+       )
+
+       search = forms.CharField(
+           required=False,
+           widget=forms.TextInput(
+               attrs={
+                   'class': 'form-control',
+                   'placeholder': 'Search programs...'
+               }
+           )
+       )
+
+
+   class BulkEnrollmentApprovalForm(forms.Form):
+       """
+       Form for approving multiple enrollments at once.
+       """
+
+       enrollments = forms.ModelMultipleChoiceField(
+           queryset=ProgramEnrollment.objects.filter(status='pending'),
+           widget=forms.CheckboxSelectMultiple,
+           required=True,
+           label="Select enrollments to approve"
+       )
+
+       approval_notes = forms.CharField(
+           required=False,
+           widget=forms.Textarea(
+               attrs={
+                   'rows': 3,
+                   'class': 'form-control',
+                   'placeholder': 'Optional notes for approved applicants...'
+               }
+           )
+       )
+
+       def approve_enrollments(self, approved_by):
+           """Approve all selected enrollments"""
+           enrollments = self.cleaned_data['enrollments']
+           notes = self.cleaned_data.get('approval_notes', '')
+
+           approved_count = 0
+           errors = []
+
+           for enrollment in enrollments:
+               try:
+                   enrollment.approve(approved_by=approved_by)
+                   if notes:
+                       enrollment.notes = notes
+                       enrollment.save()
+                   approved_count += 1
+               except Exception as e:
+                   errors.append(f"{enrollment.participant.get_full_name()}: {str(e)}")
+
+           return approved_count, errors
+   ```
+2. Update admin.py to use custom forms:
+   ```python
+   # Update in apps/services/admin.py:
+   from .forms import ProgramEnrollmentAdminForm, RequirementVerificationForm
+
+   # Update ProgramEnrollmentAdmin:
+   class ProgramEnrollmentAdmin(admin.ModelAdmin):
+       form = ProgramEnrollmentAdminForm
+       # ... rest of configuration
+
+   # Update EnrollmentRequirementStatusAdmin:
+   class EnrollmentRequirementStatusAdmin(admin.ModelAdmin):
+       form = RequirementVerificationForm
+       # ... rest of configuration
+
+       def save_model(self, request, obj, form, change):
+           """Save with verification metadata"""
+           if obj.is_met and not obj.verified_by:
+               obj.verified_by = request.user
+               from django.utils import timezone
+               obj.verification_date = timezone.now()
+           super().save_model(request, obj, form, change)
+   ```
+3. Create basic form templates directory:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/src/apps/services/templates/services/forms
+   ```
+4. Create program application template:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/src/apps/services/templates/services/forms/program_application.html << 'EOF'
+   {% extends 'base.html' %}
+   {% load crispy_forms_tags %}
+
+   {% block title %}Apply for Program - {{ SYSTEM_NAME }}{% endblock %}
+
+   {% block content %}
+   <div class="container mt-4">
+       <div class="row justify-content-center">
+           <div class="col-md-8">
+               <div class="card">
+                   <div class="card-header">
+                       <h3>Apply for Educational Program</h3>
+                   </div>
+                   <div class="card-body">
+                       {% if program %}
+                           <h4>{{ program.title }}</h4>
+                           <p class="text-muted">{{ program.get_program_category_display }}</p>
+                           <hr>
+                       {% endif %}
+
+                       <form method="post" enctype="multipart/form-data">
+                           {% csrf_token %}
+                           {{ form|crispy }}
+                           <div class="d-grid gap-2">
+                               <button type="submit" class="btn btn-primary">Submit Application</button>
+                               <a href="{% url 'services:program_catalog' %}" class="btn btn-secondary">Cancel</a>
+                           </div>
+                       </form>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   EOF
+   ```
+5. Create requirement verification template:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/src/apps/services/templates/services/forms/verify_requirement.html << 'EOF'
+   {% extends 'base.html' %}
+   {% load crispy_forms_tags %}
+
+   {% block title %}Verify Requirement - {{ SYSTEM_NAME }}{% endblock %}
+
+   {% block content %}
+   <div class="container mt-4">
+       <div class="row justify-content-center">
+           <div class="col-md-8">
+               <div class="card">
+                   <div class="card-header">
+                       <h3>Verify Program Requirement</h3>
+                   </div>
+                   <div class="card-body">
+                       <h5>{{ enrollment.participant.get_full_name }}</h5>
+                       <p class="text-muted">{{ enrollment.program.title }}</p>
+                       <p><strong>Requirement:</strong> {{ requirement.title }}</p>
+                       <p>{{ requirement.description }}</p>
+                       <hr>
+
+                       <form method="post" enctype="multipart/form-data">
+                           {% csrf_token %}
+                           {{ form|crispy }}
+                           <div class="d-grid gap-2">
+                               <button type="submit" class="btn btn-success">Save Verification</button>
+                               <a href="{% url 'admin:services_programenrollment_change' enrollment.id %}" class="btn btn-secondary">Cancel</a>
+                           </div>
+                       </form>
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   EOF
+   ```
+6. Test forms in Django shell:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py shell -c "
+   from apps.services.forms import (
+       ProgramApplicationForm,
+       ProgramEnrollmentAdminForm,
+       RequirementVerificationForm
+   )
+
+   # Test form imports
+   print('✓ ProgramApplicationForm imported')
+   print('✓ ProgramEnrollmentAdminForm imported')
+   print('✓ RequirementVerificationForm imported')
+
+   # Test form instantiation
+   app_form = ProgramApplicationForm()
+   print(f'✓ Application form fields: {list(app_form.fields.keys())}')
+
+   ver_form = RequirementVerificationForm()
+   print(f'✓ Verification form fields: {list(ver_form.fields.keys())}')
+   "
+   ```
+7. Test form validation:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.forms import ProgramApplicationForm
+   from apps.services.models import MinistryProgram
+   from apps.users.models import User
+   from datetime import date, timedelta
+
+   admin = User.objects.filter(is_superuser=True).first()
+
+   # Create test program
+   program = MinistryProgram.objects.create(
+       code='FORM_TEST_001',
+       title='Test Application Form Program',
+       slug='test-application-form',
+       ministry='mbasiced',
+       program_source='education',
+       program_category='scholarship',
+       ppa_type='program',
+       description='Test',
+       objectives='Test',
+       expected_outcomes='Test',
+       key_performance_indicators='Test',
+       target_beneficiaries='Students',
+       geographic_coverage='Test',
+       implementation_strategy='Test',
+       implementing_units='Test',
+       start_date=date.today(),
+       end_date=date.today() + timedelta(days=365),
+       funding_source='regional',
+       created_by=admin,
+       status='active',
+       enrollment_capacity=10,
+       application_deadline=date.today() + timedelta(days=30)
+   )
+
+   student = User.objects.create_user(
+       username='student_form_test',
+       email='student@test.com',
+       first_name='Test',
+       last_name='Student',
+       role='student'
+   )
+
+   # Test valid form data
+   form_data = {
+       'program': program.id,
+       'participant_type': 'student',
+       'application_notes': 'I would like to apply for this scholarship.',
+       'accept_terms': True,
+   }
+
+   form = ProgramApplicationForm(data=form_data, user=student)
+
+   if form.is_valid():
+       print('✓ Form validation passed')
+       print(f'  Program: {form.cleaned_data[\"program\"].title}')
+   else:
+       print('✗ Form validation failed:')
+       for field, errors in form.errors.items():
+           print(f'  {field}: {errors}')
+
+   # Cleanup
+   student.delete()
+   program.delete()
+   print('✓ Test complete')
+   "
+   ```
+8. Test duplicate application prevention:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.forms import ProgramApplicationForm
+   from apps.services.models import MinistryProgram, ProgramEnrollment
+   from apps.users.models import User
+   from datetime import date, timedelta
+
+   admin = User.objects.filter(is_superuser=True).first()
+
+   program = MinistryProgram.objects.create(
+       code='DUP_TEST_001',
+       title='Duplicate Prevention Test',
+       slug='duplicate-test',
+       ministry='mbasiced',
+       program_source='education',
+       program_category='scholarship',
+       ppa_type='program',
+       description='Test',
+       objectives='Test',
+       expected_outcomes='Test',
+       key_performance_indicators='Test',
+       target_beneficiaries='Students',
+       geographic_coverage='Test',
+       implementation_strategy='Test',
+       implementing_units='Test',
+       start_date=date.today(),
+       end_date=date.today() + timedelta(days=365),
+       funding_source='regional',
+       created_by=admin,
+       status='active',
+       application_deadline=date.today() + timedelta(days=30)
+   )
+
+   student = User.objects.create_user(
+       username='student_dup_test',
+       email='student_dup@test.com',
+       first_name='Duplicate',
+       last_name='Test',
+       role='student'
+   )
+
+   # Create existing enrollment
+   existing = ProgramEnrollment.objects.create(
+       program=program,
+       participant=student,
+       participant_type='student'
+   )
+
+   # Try to apply again
+   form_data = {
+       'program': program.id,
+       'participant_type': 'student',
+       'application_notes': 'Second application',
+       'accept_terms': True,
+   }
+
+   form = ProgramApplicationForm(data=form_data, user=student)
+
+   if not form.is_valid():
+       print('✓ Duplicate application prevented')
+       print(f'  Error: {form.errors[\"program\"][0]}')
+   else:
+       print('✗ Duplicate application was not prevented!')
+
+   # Cleanup
+   existing.delete()
+   student.delete()
+   program.delete()
+   print('✓ Test complete')
+   "
+   ```
+9. Verify admin forms work:
+   ```bash
+   python manage.py check
+   ```
+10. Create test scenario with file upload:
+    ```bash
+    python manage.py shell -c "
+    from apps.services.forms import ProgramApplicationForm
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    # Test file validation
+    form = ProgramApplicationForm()
+
+    print('Form Fields:')
+    for field_name, field in form.fields.items():
+        print(f'  {field_name}: {field.__class__.__name__}')
+        if hasattr(field, 'required'):
+            print(f'    Required: {field.required}')
+
+    print('\\n✓ Form structure verified')
+    "
+    ```
+
+## Acceptance Criteria:
+- ProgramApplicationForm created
+- ProgramEnrollmentForm created
+- RequirementVerificationForm created
+- Field validation implemented
+- File upload handling added
+- Dynamic requirement fields added
+- Forms registered in admin
+- Form templates created
+- Forms tested manually
+- Validation errors handled properly
+
+## Files Modified:
+- `src/apps/services/forms.py (new forms added)`
+- `src/apps/services/admin.py (updated to use custom forms)`
+- `src/apps/services/templates/services/forms/program_application.html (new)`
+- `src/apps/services/templates/services/forms/verify_requirement.html (new)`
+
+## Important Notes:
+- Forms include validation for program capacity and deadlines
+- File upload validation checks size (10MB max) and type
+- Duplicate application prevention built-in
+- Admin forms for staff/admin use
+- Public forms for student/teacher applications
+- Bulk approval form for administrators
+- Filter form for program catalog
+- Templates use crispy_forms for styling
+- All forms follow Django best practices
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection

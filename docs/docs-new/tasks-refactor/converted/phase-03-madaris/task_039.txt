@@ -1,0 +1,79 @@
+# Task ID: 039
+# Title: Create MadrasahUpdateForm
+# Status: pending
+# Dependencies: 038
+# Priority: high
+# Description: Create MadrasahUpdateForm that extends registration form and adds fields for updating existing madaris (operational_status, current_enrollment, parent
+
+# Details:
+Create MadrasahUpdateForm that extends registration form and adds fields for updating existing madaris (operational_status, current_enrollment, parent_madrasah).
+
+## Implementation Steps:
+1. Add update form to forms.py:
+   ```python
+   class MadrasahUpdateForm(MadrasahRegistrationForm):
+       class Meta(MadrasahRegistrationForm.Meta):
+           fields = MadrasahRegistrationForm.Meta.fields + [
+               'operational_status',
+               'current_enrollment',
+               'parent_madrasah'
+           ]
+
+       def __init__(self, *args, **kwargs):
+           super().__init__(*args, **kwargs)
+           # Prevent self-reference in parent
+           if self.instance.pk:
+               self.fields['parent_madrasah'].queryset = \
+                   Madrasah.objects.exclude(pk=self.instance.pk)
+
+       def clean(self):
+           cleaned_data = super().clean()
+           parent = cleaned_data.get('parent_madrasah')
+           if parent and self.instance.pk:
+               # Check for circular reference
+               if parent == self.instance:
+                   raise forms.ValidationError(
+                       "Madrasah cannot be its own parent."
+                   )
+           return cleaned_data
+   ```
+2. Create update view:
+   ```python
+   @role_required('tarbiyyah_admin', 'madrasah_admin', 'muder')
+   def update_madrasah(request, pk):
+       madrasah = get_object_or_404(Madrasah, pk=pk)
+       if request.method == 'POST':
+           form = MadrasahUpdateForm(request.POST, instance=madrasah)
+           if form.is_valid():
+               form.save()
+               messages.success(request, 'Madrasah updated successfully!')
+               return redirect('chapters:detail', pk=pk)
+       else:
+           form = MadrasahUpdateForm(instance=madrasah)
+       return render(request, 'chapters/update.html', {'form': form, 'madrasah': madrasah})
+   ```
+3. Test updating madrasah info
+
+## Acceptance Criteria:
+- MadrasahUpdateForm inherits from MadrasahRegistrationForm
+- Includes operational_status field
+- Includes current_enrollment field
+- Includes parent_madrasah field
+- Form validation prevents circular relationships
+- Test updating madrasah
+
+## Files Modified:
+- `src/apps/chapters/forms.py`
+- `src/apps/chapters/views.py`
+
+## Important Notes:
+- Prevent circular parent relationships
+- Only authorized roles can update
+- Estimate: 40 minutes
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

@@ -1,0 +1,560 @@
+# Task ID: 115
+# Title: Update Form Error Messages
+# Status: pending
+# Dependencies: 112, 113, 114
+# Priority: medium
+# Description: Update all form error messages to use education terminology and provide clear, user-friendly guidance. Replace technical error messages with contextua
+
+# Details:
+Update all form error messages to use education terminology and provide clear, user-friendly guidance. Replace technical error messages with contextual, helpful messages appropriate for madrasah administrators, teachers, students, and parents.
+
+## Implementation Steps:
+### 1. Create error messages module:
+
+```bash
+touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/core/error_messages.py
+```
+
+### 2. Define standard error messages (apps/core/error_messages.py):
+
+```python
+"""
+Standard form error messages for Tarbiyyah Management System.
+Provides consistent, user-friendly error messages across all forms.
+"""
+from django.utils.translation import gettext_lazy as _
+
+
+# General Field Validation Errors
+REQUIRED_FIELD = _("This field is required. Please provide a value.")
+INVALID_FORMAT = _("The format you entered is invalid. Please check and try again.")
+FIELD_TOO_LONG = _("This value is too long. Please use {max_length} characters or fewer.")
+FIELD_TOO_SHORT = _("This value is too short. Please use at least {min_length} characters.")
+
+
+# Madrasah-Specific Error Messages
+MADRASAH_ERRORS = {
+    'name_required': _("Please enter the madrasah name."),
+    'name_duplicate': _("A madrasah with this name already exists in this municipality. "
+                       "Please use a different name or add a distinguishing detail."),
+    'school_code_invalid': _("School code must follow format MAD-XXX-### (e.g., MAD-LDS-001). "
+                            "XXX is the province code and ### is the school number."),
+    'school_code_duplicate': _("This school code is already in use. Please contact the "
+                              "Tarbiyyah administration office for a unique code."),
+    'founded_date_future': _("Founded date cannot be in the future. Please enter the actual "
+                            "date when the madrasah was established."),
+    'founded_date_too_old': _("The founded date appears to be incorrect (before 1900). "
+                             "Please verify the year."),
+    'capacity_exceeded': _("Current enrollment ({current}) cannot exceed total capacity ({total}). "
+                          "Please update the capacity or verify the enrollment count."),
+    'no_madrasah_type': _("Please select at least one education level that this madrasah offers "
+                         "(e.g., Ibtidaiyyah, Thanawiyyah)."),
+    'accreditation_number_invalid': _("Accreditation number must follow format MBHTE-YYYY-#### "
+                                     "(e.g., MBHTE-2023-0015)."),
+    'muder_required': _("Please select a Muder (مدير - School Director) for this madrasah. "
+                       "The selected user must have the 'muder' role."),
+    'contact_required': _("Please provide at least one contact method (phone or email) "
+                         "for this madrasah."),
+}
+
+
+# Student-Specific Error Messages
+STUDENT_ERRORS = {
+    'name_required': _("Please enter the student's full name."),
+    'age_too_young': _("Student must be at least 4 years old for enrollment. "
+                      "If this is correct, please contact the registrar."),
+    'age_too_old': _("The age entered ({age}) seems high for basic education enrollment. "
+                    "Please verify the birth date or contact the registrar for assistance."),
+    'age_grade_mismatch': _("The student's age ({age}) may not be appropriate for {grade}. "
+                           "Typical age range is {min_age}-{max_age} years. "
+                           "If this is correct, please provide a note in the application."),
+    'student_number_invalid': _("Student number must follow format MAD-XXX-YYYY-#### "
+                               "(e.g., MAD-LDS-2025-0001). Please contact the registrar "
+                               "if you need a student number assigned."),
+    'student_number_duplicate': _("This student number is already in use. Please contact "
+                                 "the registrar's office."),
+    'email_required': _("Email address is required for communication. Please provide the "
+                       "student's email or parent/guardian email."),
+    'phone_invalid': _("Please enter a valid Philippine mobile number in format +63XXXXXXXXXX "
+                      "or 09XXXXXXXXX."),
+    'address_incomplete': _("Please provide complete address including barangay, municipality, "
+                           "and province."),
+    'photo_required': _("Please upload a student photo for the ID card. "
+                       "Accepted formats: JPG, PNG (max 5MB)."),
+    'photo_too_large': _("The photo file is too large (max 5MB). Please upload a smaller file."),
+    'photo_invalid_format': _("Invalid photo format. Please upload a JPG or PNG image."),
+    'guardian_required': _("For students under 18 years old, please provide parent/guardian "
+                          "information."),
+}
+
+
+# Enrollment-Specific Error Messages
+ENROLLMENT_ERRORS = {
+    'duplicate_enrollment': _("This student is already enrolled in this madrasah for the selected "
+                             "academic year. Please check existing enrollments."),
+    'academic_year_required': _("Please select an academic year for this enrollment."),
+    'grade_level_required': _("Please select the grade level for this student enrollment."),
+    'invalid_grade_for_madrasah': _("This madrasah does not offer {grade}. "
+                                   "Please select a grade level from the available options."),
+    'enrollment_capacity_full': _("This madrasah has reached its enrollment capacity. "
+                                 "Please contact the madrasah administration for waitlist options."),
+    'invalid_enrollment_date': _("Enrollment date must be within the academic year period "
+                                "({start_date} to {end_date})."),
+    'asatidz_assignment_conflict': _("This teacher (asatidz) already has a class scheduled "
+                                    "at this time. Please adjust the schedule."),
+}
+
+
+# User Account Error Messages
+USER_ERRORS = {
+    'username_taken': _("This username is already taken. Please choose a different username."),
+    'email_taken': _("An account with this email address already exists. "
+                    "If you forgot your password, please use the password reset option."),
+    'password_mismatch': _("The passwords you entered don't match. Please try again."),
+    'password_too_short': _("Password must be at least 8 characters long."),
+    'password_too_common': _("This password is too common. Please choose a more unique password."),
+    'password_numeric_only': _("Password cannot be entirely numeric. Please include letters."),
+    'invalid_credentials': _("Invalid username or password. Please try again."),
+    'account_not_approved': _("Your account is pending approval by the administrator. "
+                             "You will receive an email notification when approved."),
+    'terms_not_accepted': _("You must accept the Terms of Service and Privacy Policy "
+                           "to create an account."),
+}
+
+
+# Form-Level Error Messages
+FORM_ERRORS = {
+    'form_invalid': _("Please correct the errors below and submit again."),
+    'required_fields_missing': _("Some required fields are missing. Please fill in all "
+                                "required fields marked with *."),
+    'save_failed': _("Unable to save the form. Please try again or contact support if "
+                    "the problem persists."),
+    'permission_denied': _("You don't have permission to perform this action. "
+                          "Please contact your madrasah administrator."),
+}
+
+
+# Success Messages
+SUCCESS_MESSAGES = {
+    'madrasah_created': _("Madrasah registered successfully! You can now add students and staff."),
+    'madrasah_updated': _("Madrasah information updated successfully."),
+    'student_registered': _("Student registration submitted successfully. "
+                           "You will receive a confirmation email once approved."),
+    'student_updated': _("Student information updated successfully."),
+    'enrollment_created': _("Student enrolled successfully in {madrasah} for {academic_year}."),
+    'enrollment_updated': _("Enrollment information updated successfully."),
+    'user_created': _("Account created successfully! Please check your email to verify your account."),
+    'profile_updated': _("Your profile has been updated successfully."),
+    'password_changed': _("Password changed successfully."),
+}
+
+
+def get_error_message(category, key, **kwargs):
+    """
+    Get a formatted error message from the error messages dictionary.
+
+    Args:
+        category: Error category (e.g., 'MADRASAH', 'STUDENT', 'ENROLLMENT')
+        key: Specific error key
+        **kwargs: Format arguments for the message
+
+    Returns:
+        Formatted error message string
+    """
+    error_dict = {
+        'MADRASAH': MADRASAH_ERRORS,
+        'STUDENT': STUDENT_ERRORS,
+        'ENROLLMENT': ENROLLMENT_ERRORS,
+        'USER': USER_ERRORS,
+        'FORM': FORM_ERRORS,
+    }.get(category.upper(), {})
+
+    message = error_dict.get(key, INVALID_FORMAT)
+    return message.format(**kwargs) if kwargs else message
+
+
+def get_success_message(key, **kwargs):
+    """
+    Get a formatted success message.
+
+    Args:
+        key: Success message key
+        **kwargs: Format arguments for the message
+
+    Returns:
+        Formatted success message string
+    """
+    message = SUCCESS_MESSAGES.get(key, _("Operation completed successfully."))
+    return message.format(**kwargs) if kwargs else message
+```
+
+### 3. Update ChapterForm with custom error messages (apps/chapters/forms.py):
+
+```python
+from apps.core.error_messages import MADRASAH_ERRORS, get_error_message
+from django.core.exceptions import ValidationError
+
+class ChapterForm(forms.ModelForm):
+    """Form for creating and updating madaris (Islamic schools)."""
+
+    # Override default error messages for specific fields
+    error_messages = {
+        'name': {
+            'required': MADRASAH_ERRORS['name_required'],
+            'unique': MADRASAH_ERRORS['name_duplicate'],
+        },
+        'school_code': {
+            'required': MADRASAH_ERRORS['school_code_invalid'],
+            'unique': MADRASAH_ERRORS['school_code_duplicate'],
+        },
+        'muder': {
+            'required': MADRASAH_ERRORS['muder_required'],
+        },
+    }
+
+    def clean_founded_date(self):
+        founded_date = self.cleaned_data.get('founded_date')
+        if founded_date:
+            if founded_date > date.today():
+                raise ValidationError(MADRASAH_ERRORS['founded_date_future'])
+            if founded_date.year < 1900:
+                raise ValidationError(MADRASAH_ERRORS['founded_date_too_old'])
+        return founded_date
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Check madrasah types selected
+        madrasah_types = cleaned_data.get('madrasah_types')
+        if not madrasah_types:
+            raise ValidationError(MADRASAH_ERRORS['no_madrasah_type'])
+
+        # Check enrollment capacity
+        current = cleaned_data.get('current_enrollment', 0)
+        total = cleaned_data.get('total_capacity', 0)
+        if current > total:
+            raise ValidationError(
+                get_error_message('MADRASAH', 'capacity_exceeded',
+                                 current=current, total=total)
+            )
+
+        # Ensure at least one contact method
+        email = cleaned_data.get('email')
+        phone = cleaned_data.get('phone')
+        if not email and not phone:
+            raise ValidationError(MADRASAH_ERRORS['contact_required'])
+
+        return cleaned_data
+```
+
+### 4. Update BMParliamentMemberRegistrationForm (apps/constituents/forms.py):
+
+```python
+from apps.core.error_messages import STUDENT_ERRORS, get_error_message
+from django.core.exceptions import ValidationError
+
+class BMParliamentMemberRegistrationForm(forms.ModelForm):
+    """Student registration form for Tarbiyyah Management System."""
+
+    error_messages = {
+        'first_name': {
+            'required': STUDENT_ERRORS['name_required'],
+        },
+        'last_name': {
+            'required': STUDENT_ERRORS['name_required'],
+        },
+        'email': {
+            'required': STUDENT_ERRORS['email_required'],
+        },
+        'contact_number': {
+            'invalid': STUDENT_ERRORS['phone_invalid'],
+        },
+        'voter_id_photo': {
+            'required': STUDENT_ERRORS['photo_required'],
+            'invalid': STUDENT_ERRORS['photo_invalid_format'],
+        },
+    }
+
+    def clean_age(self):
+        age = self.cleaned_data.get('age')
+        if age:
+            if age < 4:
+                raise ValidationError(STUDENT_ERRORS['age_too_young'])
+            if age > 25:
+                raise ValidationError(
+                    get_error_message('STUDENT', 'age_too_old', age=age)
+                )
+        return age
+
+    def clean_voter_id_photo(self):
+        photo = self.cleaned_data.get('voter_id_photo')
+        if photo:
+            # Check file size (5MB)
+            if photo.size > 5 * 1024 * 1024:
+                raise ValidationError(STUDENT_ERRORS['photo_too_large'])
+
+            # Check file format
+            valid_formats = ['image/jpeg', 'image/png', 'image/jpg']
+            if photo.content_type not in valid_formats:
+                raise ValidationError(STUDENT_ERRORS['photo_invalid_format'])
+
+        return photo
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # Check age-grade match
+        age = cleaned_data.get('age')
+        grade_level = cleaned_data.get('grade_level')
+        if age and grade_level:
+            grade_age_map = {
+                'Grade 1': (6, 8), 'Grade 7': (12, 14),
+                # ... full mapping
+            }
+            if grade_level in grade_age_map:
+                min_age, max_age = grade_age_map[grade_level]
+                if age < (min_age - 2) or age > (max_age + 2):
+                    raise ValidationError(
+                        get_error_message('STUDENT', 'age_grade_mismatch',
+                                        age=age, grade=grade_level,
+                                        min_age=min_age, max_age=max_age)
+                    )
+
+        # Check complete address
+        address_fields = [
+            'address_barangay',
+            'address_municipality',
+            'address_province'
+        ]
+        if not all(cleaned_data.get(field) for field in address_fields):
+            raise ValidationError(STUDENT_ERRORS['address_incomplete'])
+
+        # Check guardian info for minors
+        age = cleaned_data.get('age')
+        if age and age < 18:
+            # Ensure guardian information is provided
+            # (This would check for guardian-related fields once added)
+            pass
+
+        return cleaned_data
+```
+
+### 5. Update MembershipForm (enrollment) with error messages:
+
+```python
+from apps.core.error_messages import ENROLLMENT_ERRORS, get_error_message
+
+class MembershipForm(forms.ModelForm):
+    """Form for managing madrasah enrollments."""
+
+    error_messages = {
+        'user': {
+            'required': _("Please select a student or staff member to enroll."),
+        },
+        'academic_year': {
+            'required': ENROLLMENT_ERRORS['academic_year_required'],
+        },
+        'grade_level': {
+            'required': ENROLLMENT_ERRORS['grade_level_required'],
+        },
+    }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        madrasah = cleaned_data.get('madrasah')
+        user = cleaned_data.get('user')
+        academic_year = cleaned_data.get('academic_year')
+        grade_level = cleaned_data.get('grade_level')
+
+        # Check for duplicate enrollment
+        if madrasah and user and academic_year:
+            existing = ChapterMembership.objects.filter(
+                chapter=madrasah,
+                user=user,
+                # Check academic year field when available
+            ).exists()
+            if existing:
+                raise ValidationError(ENROLLMENT_ERRORS['duplicate_enrollment'])
+
+        # Check if madrasah offers the grade level
+        if madrasah and grade_level:
+            # This would check madrasah.madrasah_types once implemented
+            pass
+
+        # Check enrollment capacity
+        if madrasah:
+            if madrasah.current_enrollment >= madrasah.total_capacity:
+                raise ValidationError(ENROLLMENT_ERRORS['enrollment_capacity_full'])
+
+        return cleaned_data
+```
+
+### 6. Update UserRegistrationForm error messages (apps/users/forms.py):
+
+```python
+from apps.core.error_messages import USER_ERRORS
+
+class UserRegistrationForm(UserCreationForm):
+    """User registration form for Tarbiyyah Management System."""
+
+    error_messages = {
+        'username': {
+            'unique': USER_ERRORS['username_taken'],
+        },
+        'email': {
+            'unique': USER_ERRORS['email_taken'],
+        },
+        'password_mismatch': USER_ERRORS['password_mismatch'],
+    }
+
+    def clean_terms(self):
+        terms = self.cleaned_data.get('terms')
+        if not terms:
+            raise ValidationError(USER_ERRORS['terms_not_accepted'])
+        return terms
+```
+
+### 7. Update view error handling (example for ChapterCreateView):
+
+```python
+from django.contrib import messages
+from apps.core.error_messages import get_success_message, FORM_ERRORS
+
+class ChapterCreateView(CreateView):
+    model = Chapter
+    form_class = ChapterForm
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        messages.success(
+            self.request,
+            get_success_message('madrasah_created')
+        )
+        return response
+
+    def form_invalid(self, form):
+        messages.error(
+            self.request,
+            FORM_ERRORS['form_invalid']
+        )
+        return super().form_invalid(form)
+```
+
+### 8. Create template for displaying errors (templates/includes/form_errors.html):
+
+```html
+{% load i18n %}
+
+{% if form.non_field_errors %}
+<div class="alert alert-error mb-4 p-4 bg-red-50 border-l-4 border-red-500 text-red-700"
+     role="alert">
+    <div class="flex items-start">
+        <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+        </svg>
+        <div>
+            <p class="font-semibold">{% trans "Please correct the following errors:" %}</p>
+            <ul class="mt-2 list-disc list-inside">
+                {% for error in form.non_field_errors %}
+                <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% for field in form %}
+    {% if field.errors %}
+    <div class="field-error text-red-600 text-sm mt-1" role="alert">
+        {% for error in field.errors %}
+        <p class="flex items-start">
+            <svg class="w-4 h-4 mr-1 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+            </svg>
+            {{ error }}
+        </p>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endfor %}
+```
+
+### 9. Test error messages:
+
+```bash
+cd /Users/saidamenmambayao/apps/madaris-ms
+python manage.py shell << 'EOF'
+from apps.chapters.forms import ChapterForm
+from apps.constituents.forms import BMParliamentMemberRegistrationForm
+
+# Test empty form submission
+chapter_form = ChapterForm(data={})
+if not chapter_form.is_valid():
+    print("ChapterForm validation errors:")
+    for field, errors in chapter_form.errors.items():
+        print(f"  {field}: {errors}")
+
+# Test invalid school code
+form_data = {'school_code': 'INVALID-CODE'}
+chapter_form = ChapterForm(data=form_data)
+if not chapter_form.is_valid():
+    print("\nSchool code error:", chapter_form.errors.get('school_code'))
+
+print("\nError messages tested successfully!")
+EOF
+```
+
+### 10. Document error message conventions:
+
+```bash
+cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-11-forms/ERROR_MESSAGE_GUIDELINES.md << 'EOF'
+# Error Message Guidelines
+
+## Acceptance Criteria:
+- All form validation error messages updated
+- Error messages use education terminology
+- Error messages provide actionable guidance
+- Field-specific error messages are contextual
+- Form-level error messages implemented
+- Error messages support internationalization (i18n)
+- Success messages updated with education context
+- Error styling consistent with design system
+- User testing confirms clarity of messages
+
+## Files Modified:
+- `src/apps/core/error_messages.py (new file)`
+- `src/apps/chapters/forms.py (error messages added)`
+- `src/apps/constituents/forms.py (error messages added)`
+- `src/apps/users/forms.py (error messages added)`
+- `src/templates/includes/form_errors.html (new file)`
+- `docs/docs-new/tasks-refactor/phase-11-forms/ERROR_MESSAGE_GUIDELINES.md (new file)`
+
+## Important Notes:
+- All error messages use education terminology
+- Messages are actionable and user-friendly
+- Supports Django i18n for future translations
+- Consistent tone across all forms
+- Clear distinction between field errors and form-level errors
+- Success messages also updated with education context
+- Error styling uses Tailwind CSS utility classes
+- Messages provide specific guidance (not generic "invalid input")
+- Special handling for photo upload errors
+- Capacity and enrollment validation messages are contextual
+- User testing recommended to validate message clarity
+- Estimate: 2-3 hours
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
+10. Login to Django admin as superuser
+11. Verify models appear in admin interface
+12. Test create, read, update, delete operations
+13. Verify list display, filters, and search work

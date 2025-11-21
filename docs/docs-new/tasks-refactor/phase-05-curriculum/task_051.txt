@@ -1,0 +1,113 @@
+# Task ID: 051
+# Title: Create Curriculum App Structure
+# Status: pending
+# Dependencies: 045, 050
+# Priority: medium
+# Description: Create the basic Django app structure for the curriculum management system. This app will handle subjects, curriculum frameworks, and lesson plans for
+
+# Details:
+Create the basic Django app structure for the curriculum management system. This app will handle subjects, curriculum frameworks, and lesson plans for the Tarbiyyah Management System.
+
+## Implementation Steps:
+1. Create the curriculum app:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py startapp curriculum
+   ```
+
+2. Move app to apps directory:
+   ```bash
+   mv curriculum apps/
+   ```
+
+3. Update apps/curriculum/apps.py:
+   ```python
+   from django.apps import AppConfig
+
+   class CurriculumConfig(AppConfig):
+       default_auto_field = 'django.db.models.BigAutoField'
+       name = 'apps.curriculum'
+       verbose_name = 'Curriculum Management'
+
+       def ready(self):
+           """Import signals when app is ready."""
+           pass  # Import signals here when needed
+   ```
+
+4. Create necessary subdirectories:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src/apps/curriculum
+   mkdir -p templates/curriculum
+   mkdir -p static/curriculum/css
+   mkdir -p static/curriculum/js
+   mkdir -p migrations
+   ```
+
+5. Add app to INSTALLED_APPS in src/config/settings/base.py:
+   ```python
+   INSTALLED_APPS = [
+       # ... existing apps ...
+       'apps.madaris',
+       'apps.teachers',
+       'apps.curriculum',  # New app
+       # ... rest of apps ...
+   ]
+   ```
+
+6. Create initial __init__.py file in apps/curriculum/:
+   ```python
+   # apps/curriculum/__init__.py
+   """
+   Curriculum Management App
+
+   Handles subjects, curriculum frameworks, and lesson plans
+   for madaris in the Tarbiyyah Management System.
+   """
+   default_app_config = 'apps.curriculum.apps.CurriculumConfig'
+   ```
+
+7. Verify app is recognized:
+   ```bash
+   python manage.py check curriculum
+   ```
+
+8. Create initial migration (empty):
+   ```bash
+   python manage.py makemigrations curriculum
+   ```
+
+## Acceptance Criteria:
+- Curriculum app created with proper Django structure
+- App registered in INSTALLED_APPS
+- Basic __init__.py files present
+- Apps.py configured with proper verbose name
+- Directory structure follows Django conventions
+- App accessible in Django admin (empty for now)
+
+## Files Modified:
+- `apps/curriculum/ (new directory)`
+- `apps/curriculum/__init__.py (new file)`
+- `apps/curriculum/apps.py (new file)`
+- `apps/curriculum/models.py (new file - empty for now)`
+- `apps/curriculum/admin.py (new file - empty for now)`
+- `apps/curriculum/views.py (new file - empty for now)`
+- `apps/curriculum/urls.py (new file)`
+- `apps/curriculum/forms.py (new file)`
+- `apps/curriculum/tests.py (new file)`
+- `src/config/settings/base.py (update)`
+
+## Important Notes:
+- This task only creates the app structure, no models yet
+- Models will be added in subsequent tasks
+- Follow Django best practices for app organization
+- Estimate: 30 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin
+5. Review planning documentation
+6. Verify all risks identified
+7. Confirm rollback procedures documented
+8. Ensure dependencies are mapped

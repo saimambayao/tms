@@ -1,0 +1,820 @@
+# Task ID: 090
+# Title: Create Program Catalog Views
+# Status: pending
+# Dependencies: 089
+# Priority: medium
+# Description: Create public-facing views and templates for program catalog, program detail pages, and application submission. Allow students/teachers to browse prog
+
+# Details:
+Create public-facing views and templates for program catalog, program detail pages, and application submission. Allow students/teachers to browse programs, view details, check eligibility, and submit applications.
+
+## Implementation Steps:
+1. Create/update views in apps/services/views.py:
+   ```python
+   # Add to views.py:
+   from django.views.generic import ListView, DetailView, CreateView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.contrib import messages
+   from django.urls import reverse_lazy
+   from django.shortcuts import get_object_or_404, redirect
+   from django.db.models import Q
+   from .models import MinistryProgram, ProgramEnrollment
+   from .forms import ProgramApplicationForm, ProgramFilterForm
+
+
+   class ProgramCatalogView(ListView):
+       """
+       Public catalog of educational programs.
+       """
+       model = MinistryProgram
+       template_name = 'services/program_catalog.html'
+       context_object_name = 'programs'
+       paginate_by = 12
+
+       def get_queryset(self):
+           queryset = MinistryProgram.objects.filter(
+               status='active',
+               is_public=True,
+               program_category__in=[
+                   'scholarship',
+                   'teacher_training',
+                   'extracurricular',
+                   'curriculum',
+                   'academic',
+               ]
+           ).select_related('created_by', 'madrasah')
+
+           # Apply filters from GET parameters
+           category = self.request.GET.get('category')
+           if category:
+               queryset = queryset.filter(program_category=category)
+
+           grade_level = self.request.GET.get('grade_level')
+           if grade_level:
+               queryset = queryset.filter(grade_levels=grade_level)
+
+           search = self.request.GET.get('search')
+           if search:
+               queryset = queryset.filter(
+                   Q(title__icontains=search) |
+                   Q(description__icontains=search) |
+                   Q(target_beneficiaries__icontains=search)
+               )
+
+           # Show featured programs first
+           return queryset.order_by('-is_featured', '-created_at')
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['filter_form'] = ProgramFilterForm(self.request.GET)
+           context['featured_programs'] = MinistryProgram.objects.filter(
+               status='active',
+               is_public=True,
+               is_featured=True
+           )[:3]
+           return context
+
+
+   class ProgramDetailView(DetailView):
+       """
+       Detailed view of a single program.
+       """
+       model = MinistryProgram
+       template_name = 'services/program_detail.html'
+       context_object_name = 'program'
+       slug_field = 'slug'
+       slug_url_kwarg = 'slug'
+
+       def get_queryset(self):
+           # Allow staff to see all programs, others only public ones
+           if self.request.user.is_authenticated and self.request.user.is_staff:
+               return MinistryProgram.objects.all()
+           return MinistryProgram.objects.filter(is_public=True)
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           program = self.object
+
+           # Check if user already applied
+           if self.request.user.is_authenticated:
+               context['user_enrollment'] = ProgramEnrollment.objects.filter(
+                   program=program,
+                   participant=self.request.user
+               ).first()
+
+           # Show requirements
+           context['prerequisites'] = program.requirements.filter(
+               requirement_type='prerequisite'
+           )
+           context['eligibility_requirements'] = program.requirements.filter(
+               requirement_type='eligibility'
+           )
+           context['completion_requirements'] = program.requirements.filter(
+               requirement_type='completion'
+           )
+           context['documentation_requirements'] = program.requirements.filter(
+               requirement_type='documentation'
+           )
+
+           # Enrollment stats
+           context['remaining_capacity'] = program.remaining_capacity()
+           context['is_accepting'] = program.is_accepting_applications()
+
+           return context
+
+
+   class ProgramApplicationView(LoginRequiredMixin, CreateView):
+       """
+       View for submitting program applications.
+       """
+       model = ProgramEnrollment
+       form_class = ProgramApplicationForm
+       template_name = 'services/program_application.html'
+       success_url = reverse_lazy('services:my_enrollments')
+
+       def get_program(self):
+           return get_object_or_404(
+               MinistryProgram,
+               slug=self.kwargs['slug'],
+               status='active',
+               is_public=True
+           )
+
+       def get_form_kwargs(self):
+           kwargs = super().get_form_kwargs()
+           kwargs['user'] = self.request.user
+           return kwargs
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['program'] = self.get_program()
+           return context
+
+       def form_valid(self, form):
+           # Set participant
+           form.instance.participant = self.request.user
+           form.instance.program = self.get_program()
+
+           # Initialize requirements after saving
+           response = super().form_valid(form)
+           self.object.initialize_requirements()
+
+           messages.success(
+               self.request,
+               f'Your application to "{self.object.program.title}" has been submitted successfully. '
+               f'You will be notified once it is reviewed.'
+           )
+           return response
+
+       def form_invalid(self, form):
+           messages.error(
+               self.request,
+               'There was an error with your application. Please check the form and try again.'
+           )
+           return super().form_invalid(form)
+
+
+   class MyEnrollmentsView(LoginRequiredMixin, ListView):
+       """
+       View for user to see their own program enrollments.
+       """
+       model = ProgramEnrollment
+       template_name = 'services/my_enrollments.html'
+       context_object_name = 'enrollments'
+       paginate_by = 10
+
+       def get_queryset(self):
+           return ProgramEnrollment.objects.filter(
+               participant=self.request.user
+           ).select_related('program').prefetch_related(
+               'requirement_statuses__requirement'
+           ).order_by('-application_date')
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+
+           # Enrollment statistics
+           enrollments = self.get_queryset()
+           context['stats'] = {
+               'total': enrollments.count(),
+               'pending': enrollments.filter(status='pending').count(),
+               'approved': enrollments.filter(status='approved').count(),
+               'enrolled': enrollments.filter(status='enrolled').count(),
+               'completed': enrollments.filter(status='completed').count(),
+           }
+
+           return context
+
+
+   class EnrollmentDetailView(LoginRequiredMixin, DetailView):
+       """
+       Detailed view of a specific enrollment with requirements tracking.
+       """
+       model = ProgramEnrollment
+       template_name = 'services/enrollment_detail.html'
+       context_object_name = 'enrollment'
+
+       def get_queryset(self):
+           # Users can only see their own enrollments unless staff
+           queryset = ProgramEnrollment.objects.select_related(
+               'program',
+               'participant',
+               'approved_by'
+           ).prefetch_related(
+               'requirement_statuses__requirement',
+               'requirement_statuses__verified_by'
+           )
+
+           if not self.request.user.is_staff:
+               queryset = queryset.filter(participant=self.request.user)
+
+           return queryset
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           enrollment = self.object
+
+           # Group requirements by type
+           context['requirement_statuses'] = {
+               'prerequisite': enrollment.requirement_statuses.filter(
+                   requirement__requirement_type='prerequisite'
+               ),
+               'eligibility': enrollment.requirement_statuses.filter(
+                   requirement__requirement_type='eligibility'
+               ),
+               'documentation': enrollment.requirement_statuses.filter(
+                   requirement__requirement_type='documentation'
+               ),
+               'completion': enrollment.requirement_statuses.filter(
+                   requirement__requirement_type='completion'
+               ),
+           }
+
+           # Progress information
+           context['requirements_progress'] = enrollment.get_requirements_progress()
+           context['can_enroll'] = enrollment.can_enroll()
+           context['can_complete'] = enrollment.can_complete()
+
+           return context
+   ```
+2. Create URL patterns in apps/services/urls.py:
+   ```python
+   # Create or update urls.py:
+   from django.urls import path
+   from .views import (
+       ProgramCatalogView,
+       ProgramDetailView,
+       ProgramApplicationView,
+       MyEnrollmentsView,
+       EnrollmentDetailView,
+   )
+
+   app_name = 'services'
+
+   urlpatterns = [
+       # ... existing URLs ...
+
+       # Program Catalog
+       path('programs/', ProgramCatalogView.as_view(), name='program_catalog'),
+       path('programs/<slug:slug>/', ProgramDetailView.as_view(), name='program_detail'),
+       path('programs/<slug:slug>/apply/', ProgramApplicationView.as_view(), name='program_apply'),
+
+       # User Enrollments
+       path('my-enrollments/', MyEnrollmentsView.as_view(), name='my_enrollments'),
+       path('enrollment/<int:pk>/', EnrollmentDetailView.as_view(), name='enrollment_detail'),
+   ]
+   ```
+3. Create program catalog template:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/src/apps/services/templates/services/program_catalog.html << 'EOF'
+   {% extends 'base.html' %}
+   {% load crispy_forms_tags %}
+
+   {% block title %}Program Catalog - {{ SYSTEM_NAME }}{% endblock %}
+
+   {% block content %}
+   <div class="container mt-4">
+       <h1 class="mb-4">Educational Programs</h1>
+
+       <!-- Featured Programs -->
+       {% if featured_programs %}
+       <div class="row mb-4">
+           <div class="col-12">
+               <h3>Featured Programs</h3>
+               <div class="row">
+                   {% for program in featured_programs %}
+                   <div class="col-md-4 mb-3">
+                       <div class="card h-100 border-primary">
+                           <div class="card-body">
+                               <span class="badge bg-primary mb-2">Featured</span>
+                               <h5 class="card-title">{{ program.title }}</h5>
+                               <p class="text-muted small">{{ program.get_program_category_display }}</p>
+                               <p class="card-text">{{ program.description|truncatewords:20 }}</p>
+                               <a href="{% url 'services:program_detail' program.slug %}" class="btn btn-outline-primary">View Details</a>
+                           </div>
+                       </div>
+                   </div>
+                   {% endfor %}
+               </div>
+           </div>
+       </div>
+       {% endif %}
+
+       <!-- Filters -->
+       <div class="card mb-4">
+           <div class="card-body">
+               <form method="get" class="row g-3">
+                   <div class="col-md-3">
+                       {{ filter_form.category }}
+                   </div>
+                   <div class="col-md-3">
+                       {{ filter_form.grade_level }}
+                   </div>
+                   <div class="col-md-4">
+                       {{ filter_form.search }}
+                   </div>
+                   <div class="col-md-2">
+                       <button type="submit" class="btn btn-primary w-100">Filter</button>
+                   </div>
+               </form>
+           </div>
+       </div>
+
+       <!-- Programs Grid -->
+       <div class="row">
+           {% for program in programs %}
+           <div class="col-md-6 col-lg-4 mb-4">
+               <div class="card h-100">
+                   <div class="card-body">
+                       <h5 class="card-title">{{ program.title }}</h5>
+                       <span class="badge bg-secondary mb-2">{{ program.get_program_category_display }}</span>
+                       {% if program.grade_levels %}
+                       <span class="badge bg-info mb-2">{{ program.get_grade_levels_display }}</span>
+                       {% endif %}
+                       <p class="card-text">{{ program.description|truncatewords:15 }}</p>
+
+                       <!-- Enrollment Info -->
+                       {% if program.enrollment_capacity %}
+                       <p class="small text-muted mb-1">
+                           <i class="bi bi-people"></i>
+                           {{ program.current_enrollment }} / {{ program.enrollment_capacity }} enrolled
+                       </p>
+                       {% endif %}
+
+                       <!-- Dates -->
+                       <p class="small text-muted mb-3">
+                           <i class="bi bi-calendar"></i>
+                           {{ program.start_date|date:"M d, Y" }} - {{ program.end_date|date:"M d, Y" }}
+                       </p>
+
+                       <a href="{% url 'services:program_detail' program.slug %}" class="btn btn-primary btn-sm">View Details</a>
+                   </div>
+               </div>
+           </div>
+           {% empty %}
+           <div class="col-12">
+               <div class="alert alert-info">
+                   No programs found matching your criteria.
+               </div>
+           </div>
+           {% endfor %}
+       </div>
+
+       <!-- Pagination -->
+       {% if is_paginated %}
+       <nav aria-label="Page navigation">
+           <ul class="pagination justify-content-center">
+               {% if page_obj.has_previous %}
+               <li class="page-item">
+                   <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+               </li>
+               {% endif %}
+
+               <li class="page-item active">
+                   <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+               </li>
+
+               {% if page_obj.has_next %}
+               <li class="page-item">
+                   <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+               </li>
+               {% endif %}
+           </ul>
+       </nav>
+       {% endif %}
+   </div>
+   {% endblock %}
+   EOF
+   ```
+4. Create program detail template:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/src/apps/services/templates/services/program_detail.html << 'EOF'
+   {% extends 'base.html' %}
+
+   {% block title %}{{ program.title }} - {{ SYSTEM_NAME }}{% endblock %}
+
+   {% block content %}
+   <div class="container mt-4">
+       <nav aria-label="breadcrumb">
+           <ol class="breadcrumb">
+               <li class="breadcrumb-item"><a href="{% url 'services:program_catalog' %}">Programs</a></li>
+               <li class="breadcrumb-item active">{{ program.title }}</li>
+           </ol>
+       </nav>
+
+       <div class="row">
+           <div class="col-lg-8">
+               <h1>{{ program.title }}</h1>
+               <p class="lead">
+                   <span class="badge bg-primary">{{ program.get_program_category_display }}</span>
+                   {% if program.grade_levels %}
+                   <span class="badge bg-info">{{ program.get_grade_levels_display }}</span>
+                   {% endif %}
+                   {% if program.is_featured %}
+                   <span class="badge bg-warning">Featured</span>
+                   {% endif %}
+               </p>
+
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h4>Description</h4>
+                       <p>{{ program.description }}</p>
+
+                       <h5>Objectives</h5>
+                       <p>{{ program.objectives }}</p>
+
+                       <h5>Expected Outcomes</h5>
+                       <p>{{ program.expected_outcomes }}</p>
+                   </div>
+               </div>
+
+               <!-- Requirements -->
+               {% if prerequisites or eligibility_requirements or documentation_requirements %}
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h4>Requirements</h4>
+
+                       {% if prerequisites %}
+                       <h5>Prerequisites</h5>
+                       <ul>
+                           {% for req in prerequisites %}
+                           <li>
+                               {{ req.title }}
+                               {% if req.is_mandatory %}<span class="badge bg-danger">Required</span>{% endif %}
+                               <p class="text-muted small">{{ req.description }}</p>
+                           </li>
+                           {% endfor %}
+                       </ul>
+                       {% endif %}
+
+                       {% if eligibility_requirements %}
+                       <h5>Eligibility Requirements</h5>
+                       <ul>
+                           {% for req in eligibility_requirements %}
+                           <li>
+                               {{ req.title }}
+                               {% if req.is_mandatory %}<span class="badge bg-danger">Required</span>{% endif %}
+                               <p class="text-muted small">{{ req.description }}</p>
+                           </li>
+                           {% endfor %}
+                       </ul>
+                       {% endif %}
+
+                       {% if documentation_requirements %}
+                       <h5>Required Documentation</h5>
+                       <ul>
+                           {% for req in documentation_requirements %}
+                           <li>{{ req.title }}</li>
+                           {% endfor %}
+                       </ul>
+                       {% endif %}
+                   </div>
+               </div>
+               {% endif %}
+           </div>
+
+           <div class="col-lg-4">
+               <!-- Application Card -->
+               <div class="card mb-4">
+                   <div class="card-body">
+                       <h5>Program Information</h5>
+
+                       <p><strong>Duration:</strong> {{ program.start_date|date:"M d, Y" }} - {{ program.end_date|date:"M d, Y" }}</p>
+
+                       {% if program.enrollment_capacity %}
+                       <p><strong>Capacity:</strong> {{ program.current_enrollment }} / {{ program.enrollment_capacity }}</p>
+                       {% if remaining_capacity %}
+                       <p class="text-success"><strong>{{ remaining_capacity }} spots remaining</strong></p>
+                       {% else %}
+                       <p class="text-danger"><strong>Program is full</strong></p>
+                       {% endif %}
+                       {% endif %}
+
+                       {% if program.application_deadline %}
+                       <p><strong>Application Deadline:</strong> {{ program.application_deadline|date:"M d, Y" }}</p>
+                       {% endif %}
+
+                       <hr>
+
+                       {% if user.is_authenticated %}
+                           {% if user_enrollment %}
+                               <div class="alert alert-info">
+                                   You have already applied to this program.
+                                   <a href="{% url 'services:enrollment_detail' user_enrollment.pk %}">View your application</a>
+                               </div>
+                           {% elif is_accepting %}
+                               <a href="{% url 'services:program_apply' program.slug %}" class="btn btn-primary w-100">Apply Now</a>
+                           {% else %}
+                               <div class="alert alert-warning">
+                                   This program is not currently accepting applications.
+                               </div>
+                           {% endif %}
+                       {% else %}
+                           <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary w-100">Login to Apply</a>
+                       {% endif %}
+                   </div>
+               </div>
+
+               <!-- Contact Info -->
+               <div class="card">
+                   <div class="card-body">
+                       <h5>Contact Information</h5>
+                       <p><strong>Implementing Unit:</strong> {{ program.implementing_units }}</p>
+                       {% if program.program_coordinator %}
+                       <p><strong>Coordinator:</strong> {{ program.program_coordinator.get_full_name }}</p>
+                       {% endif %}
+                   </div>
+               </div>
+           </div>
+       </div>
+   </div>
+   {% endblock %}
+   EOF
+   ```
+5. Create my enrollments template:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/src/apps/services/templates/services/my_enrollments.html << 'EOF'
+   {% extends 'base.html' %}
+
+   {% block title %}My Program Enrollments - {{ SYSTEM_NAME }}{% endblock %}
+
+   {% block content %}
+   <div class="container mt-4">
+       <h1 class="mb-4">My Program Enrollments</h1>
+
+       <!-- Statistics -->
+       <div class="row mb-4">
+           <div class="col-md-2">
+               <div class="card text-center">
+                   <div class="card-body">
+                       <h3>{{ stats.total }}</h3>
+                       <p class="text-muted mb-0">Total</p>
+                   </div>
+               </div>
+           </div>
+           <div class="col-md-2">
+               <div class="card text-center border-warning">
+                   <div class="card-body">
+                       <h3>{{ stats.pending }}</h3>
+                       <p class="text-muted mb-0">Pending</p>
+                   </div>
+               </div>
+           </div>
+           <div class="col-md-2">
+               <div class="card text-center border-info">
+                   <div class="card-body">
+                       <h3>{{ stats.approved }}</h3>
+                       <p class="text-muted mb-0">Approved</p>
+                   </div>
+               </div>
+           </div>
+           <div class="col-md-2">
+               <div class="card text-center border-primary">
+                   <div class="card-body">
+                       <h3>{{ stats.enrolled }}</h3>
+                       <p class="text-muted mb-0">Enrolled</p>
+                   </div>
+               </div>
+           </div>
+           <div class="col-md-2">
+               <div class="card text-center border-success">
+                   <div class="card-body">
+                       <h3>{{ stats.completed }}</h3>
+                       <p class="text-muted mb-0">Completed</p>
+                   </div>
+               </div>
+           </div>
+       </div>
+
+       <!-- Enrollments List -->
+       {% for enrollment in enrollments %}
+       <div class="card mb-3">
+           <div class="card-body">
+               <div class="row">
+                   <div class="col-md-8">
+                       <h5>{{ enrollment.program.title }}</h5>
+                       <p class="text-muted">{{ enrollment.program.get_program_category_display }}</p>
+                       <p class="mb-1">
+                           <strong>Status:</strong>
+                           <span class="badge
+                               {% if enrollment.status == 'pending' %}bg-warning
+                               {% elif enrollment.status == 'approved' %}bg-info
+                               {% elif enrollment.status == 'enrolled' %}bg-primary
+                               {% elif enrollment.status == 'completed' %}bg-success
+                               {% elif enrollment.status == 'rejected' %}bg-danger
+                               {% endif %}">
+                               {{ enrollment.get_status_display }}
+                           </span>
+                       </p>
+                       <p class="mb-1"><strong>Applied:</strong> {{ enrollment.application_date|date:"M d, Y" }}</p>
+                       {% if enrollment.progress_percentage %}
+                       <div class="progress" style="height: 20px;">
+                           <div class="progress-bar" role="progressbar" style="width: {{ enrollment.progress_percentage }}%;"
+                                aria-valuenow="{{ enrollment.progress_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                               {{ enrollment.progress_percentage }}%
+                           </div>
+                       </div>
+                       {% endif %}
+                   </div>
+                   <div class="col-md-4 text-end">
+                       <a href="{% url 'services:enrollment_detail' enrollment.pk %}" class="btn btn-primary">View Details</a>
+                       <a href="{% url 'services:program_detail' enrollment.program.slug %}" class="btn btn-outline-secondary">Program Info</a>
+                   </div>
+               </div>
+           </div>
+       </div>
+       {% empty %}
+       <div class="alert alert-info">
+           You haven't enrolled in any programs yet.
+           <a href="{% url 'services:program_catalog' %}">Browse available programs</a>
+       </div>
+       {% endfor %}
+
+       <!-- Pagination -->
+       {% if is_paginated %}
+       <nav aria-label="Page navigation">
+           <ul class="pagination justify-content-center">
+               {% if page_obj.has_previous %}
+               <li class="page-item">
+                   <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+               </li>
+               {% endif %}
+
+               <li class="page-item active">
+                   <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+               </li>
+
+               {% if page_obj.has_next %}
+               <li class="page-item">
+                   <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+               </li>
+               {% endif %}
+           </ul>
+       </nav>
+       {% endif %}
+   </div>
+   {% endblock %}
+   EOF
+   ```
+6. Test views:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py check
+   ```
+7. Verify URL patterns:
+   ```bash
+   python manage.py show_urls | grep -i program
+   ```
+8. Test catalog view:
+   ```bash
+   python manage.py shell -c "
+   from django.test import RequestFactory
+   from apps.services.views import ProgramCatalogView
+   from apps.users.models import User
+
+   factory = RequestFactory()
+   request = factory.get('/programs/')
+   request.user = User.objects.filter(is_superuser=True).first()
+
+   view = ProgramCatalogView.as_view()
+   response = view(request)
+
+   print(f'✓ ProgramCatalogView response status: {response.status_code}')
+   "
+   ```
+9. Create navigation links (add to base template or navigation):
+   ```bash
+   echo "
+   Add to navigation template:
+   <li class='nav-item'>
+       <a class='nav-link' href='{% url \"services:program_catalog\" %}'>Programs</a>
+   </li>
+   <li class='nav-item'>
+       <a class='nav-link' href='{% url \"services:my_enrollments\" %}'>My Enrollments</a>
+   </li>
+   " > /tmp/navigation_links.txt
+   cat /tmp/navigation_links.txt
+   ```
+10. Test complete workflow:
+    ```bash
+    python manage.py shell -c "
+    from apps.services.models import MinistryProgram, ProgramEnrollment, ProgramRequirement
+    from apps.users.models import User
+    from datetime import date, timedelta
+
+    admin = User.objects.filter(is_superuser=True).first()
+
+    # Create public program
+    program = MinistryProgram.objects.create(
+        code='PUBLIC_TEST_001',
+        title='Public Scholarship Program',
+        slug='public-scholarship',
+        ministry='mbasiced',
+        program_source='education',
+        program_category='scholarship',
+        ppa_type='program',
+        description='Scholarship for high-achieving students',
+        objectives='Support academic excellence',
+        expected_outcomes='Increased student performance',
+        key_performance_indicators='GPA improvement',
+        target_beneficiaries='High school students',
+        geographic_coverage='BARMM',
+        implementation_strategy='Direct aid',
+        implementing_units='Education Ministry',
+        start_date=date.today(),
+        end_date=date.today() + timedelta(days=365),
+        funding_source='regional',
+        created_by=admin,
+        status='active',
+        is_public=True,
+        enrollment_capacity=50,
+        application_deadline=date.today() + timedelta(days=30)
+    )
+
+    # Add requirements
+    ProgramRequirement.objects.create(
+        program=program,
+        requirement_type='eligibility',
+        title='Minimum GPA 3.0',
+        description='Must have GPA of 3.0 or higher',
+        is_mandatory=True,
+        order=1
+    )
+
+    print(f'✓ Created public program: {program.title}')
+    print(f'  URL: /programs/{program.slug}/')
+    print(f'  Apply URL: /programs/{program.slug}/apply/')
+    print('\\nTest in browser:')
+    print('  1. Visit /programs/ (catalog)')
+    print('  2. Click on program (detail)')
+    print('  3. Click Apply (application form)')
+    print('  4. Submit application')
+    print('  5. Visit /my-enrollments/ (your enrollments)')
+    "
+    ```
+
+## Acceptance Criteria:
+- Program catalog view created
+- Program detail view created
+- Program application view created
+- My enrollments view created
+- URL patterns configured
+- Templates created with Bootstrap styling
+- Filtering and search implemented
+- Permission checks added
+- Views tested manually
+- Navigation links added
+
+## Files Modified:
+- `src/apps/services/views.py (views added)`
+- `src/apps/services/urls.py (URL patterns updated)`
+- `src/apps/services/templates/services/program_catalog.html (new)`
+- `src/apps/services/templates/services/program_detail.html (new)`
+- `src/apps/services/templates/services/my_enrollments.html (new)`
+
+## Important Notes:
+- Views use Django class-based views for consistency
+- Permissions enforce that users only see their own data
+- Templates use Bootstrap 5 for responsive design
+- Filtering and search improve user experience
+- Pagination handles large program lists
+- Success/error messages guide users
+- Requirements are displayed clearly for transparency
+- Enrollment capacity is checked before allowing applications
+- Staff can see all programs, users only see public ones
+- Navigation links should be added to base template
+- Estimate: 75 minutes
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Access view URL and verify HTTP 200 response
+10. Test with different user permissions
+11. Verify context data passed to template
+12. Test any query parameters or filters

@@ -1,0 +1,247 @@
+# Task ID: 064
+# Title: Create Data Migration Script
+# Status: pending
+# Dependencies: 063
+# Priority: high
+# Description: Create data migration script to clean up and normalize student data after model transition. This includes setting default enrollment statuses, cleanin
+
+# Details:
+Create data migration script to clean up and normalize student data after model transition. This includes setting default enrollment statuses, cleaning up madrasah education data, and validating family information.
+
+## Implementation Steps:
+1. Create data migration file:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations constituents --empty --name migrate_student_data
+   ```
+2. Implement data migration in the created file:
+   ```python
+   from django.db import migrations
+   from datetime import datetime
+
+   def migrate_student_data(apps, schema_editor):
+       """Migrate and clean student data after model transition"""
+       Student = apps.get_model('constituents', 'Student')
+
+       total = Student.objects.count()
+       print(f"Migrating {total} student records...")
+
+       updated_enrollment = 0
+       generated_student_numbers = 0
+       cleaned_madrasah_data = 0
+
+       for student in Student.objects.all():
+           changed = False
+
+           # 1. Set enrollment status based on existing data
+           if not student.enrollment_status or student.enrollment_status == 'applicant':
+               # If student has graduation year, mark as graduate
+               if student.year_graduated:
+                   student.enrollment_status = 'graduate'
+                   changed = True
+                   updated_enrollment += 1
+               # If student has enrollment year but no graduation, mark as enrolled
+               elif student.year_enrolled:
+                   student.enrollment_status = 'enrolled'
+                   changed = True
+                   updated_enrollment += 1
+               # If old status was 'active', mark as enrolled
+               elif hasattr(student, 'status') and student.status == 'active':
+                   student.enrollment_status = 'enrolled'
+                   changed = True
+                   updated_enrollment += 1
+
+           # 2. Generate student number if missing
+           if not student.student_number:
+               current_year = datetime.now().year
+               student.student_number = f"STU-{current_year}-{student.id:05d}"
+               changed = True
+               generated_student_numbers += 1
+
+           # 3. Set current_grade_level from madrasah_level if not set
+           if not student.current_grade_level and student.madrasah_level:
+               # Map madrasah_level to grade level
+               level_mapping = {
+                   'elementary': 'Elementary',
+                   'secondary': 'Secondary',
+                   'high': 'High School',
+                   'college': 'College',
+               }
+               student.current_grade_level = level_mapping.get(
+                   student.madrasah_level,
+                   student.madrasah_level.title()
+               )
+               changed = True
+               cleaned_madrasah_data += 1
+
+           if changed:
+               student.save()
+
+       print(f"Data migration complete:")
+       print(f"  - Updated enrollment status: {updated_enrollment}")
+       print(f"  - Generated student numbers: {generated_student_numbers}")
+       print(f"  - Set grade levels: {cleaned_madrasah_data}")
+
+   def reverse_migration(apps, schema_editor):
+       """Reverse the data migration if needed"""
+       Student = apps.get_model('constituents', 'Student')
+
+       # Reset auto-generated values
+       Student.objects.filter(student_number__startswith='STU-').update(
+           student_number=None
+       )
+       Student.objects.update(enrollment_status='applicant')
+
+       print("Data migration reversed")
+
+   class Migration(migrations.Migration):
+       dependencies = [
+           ('constituents', '000X_add_student_specific_fields'),
+       ]
+
+       operations = [
+           migrations.RunPython(migrate_student_data, reverse_migration),
+       ]
+   ```
+3. Create data quality check script:
+   ```bash
+   cat > /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_data.py << 'EOF'
+   #!/usr/bin/env python
+   """Verify student data quality after migration"""
+
+   import os
+   import sys
+   import django
+
+   # Setup Django
+   sys.path.insert(0, '/Users/saidamenmambayao/apps/madaris-ms/src')
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   from apps.constituents.models import Student
+
+   print("=" * 60)
+   print("STUDENT DATA QUALITY REPORT")
+   print("=" * 60)
+
+   total = Student.objects.count()
+   print(f"\nTotal Students: {total}")
+
+   # Check student numbers
+   with_numbers = Student.objects.exclude(student_number__isnull=True).exclude(student_number='').count()
+   print(f"Students with student_number: {with_numbers}/{total}")
+
+   # Check enrollment status
+   for status, label in Student.EnrollmentStatus.choices:
+       count = Student.objects.filter(enrollment_status=status).count()
+       print(f"  - {label}: {count}")
+
+   # Check grade levels
+   with_grade = Student.objects.exclude(current_grade_level='').count()
+   print(f"Students with grade level: {with_grade}/{total}")
+
+   # Check madrasah education
+   with_madrasah = Student.objects.exclude(madrasah_name='').count()
+   print(f"Students with madrasah name: {with_madrasah}/{total}")
+
+   # Check family info
+   with_father = Student.objects.exclude(father_name='').count()
+   with_mother = Student.objects.exclude(mother_name='').count()
+   with_guardian = Student.objects.exclude(guardian_name='').count()
+   print(f"\nFamily Information:")
+   print(f"  - With father name: {with_father}/{total}")
+   print(f"  - With mother name: {with_mother}/{total}")
+   print(f"  - With guardian name: {with_guardian}/{total}")
+
+   # Data quality issues
+   print(f"\nData Quality Issues:")
+   missing_student_number = Student.objects.filter(student_number__isnull=True).count()
+   if missing_student_number > 0:
+       print(f"  ⚠️  Missing student numbers: {missing_student_number}")
+   else:
+       print(f"  ✓ All students have student numbers")
+
+   duplicate_numbers = Student.objects.values('student_number').annotate(
+       count=models.Count('id')
+   ).filter(count__gt=1).count()
+   if duplicate_numbers > 0:
+       print(f"  ⚠️  Duplicate student numbers: {duplicate_numbers}")
+   else:
+       print(f"  ✓ No duplicate student numbers")
+
+   print("=" * 60)
+   EOF
+   chmod +x /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_data.py
+   ```
+4. Test migration on staging database first:
+   ```bash
+   python manage.py migrate constituents --database=staging
+   ```
+5. Run data verification script:
+   ```bash
+   python /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_data.py
+   ```
+6. If verification passes, run on main database:
+   ```bash
+   python manage.py migrate constituents
+   ```
+7. Run verification again on main database:
+   ```bash
+   python /Users/saidamenmambayao/apps/madaris-ms/scripts/verify_student_data.py > /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/data_quality_report.txt
+   ```
+8. Document migration results:
+   ```bash
+   cat >> /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/MIGRATION_LOG.txt << EOF
+
+   Data Migration: $(date)
+   Migration: migrate_student_data
+   Status: COMPLETE
+   See: backups/phase6_student/data_quality_report.txt
+   EOF
+   ```
+
+## Acceptance Criteria:
+- Data migration script created
+- Enrollment statuses set based on existing data
+- Student numbers validated
+- Madrasah education data cleaned
+- Data quality checks implemented
+- Migration tested on staging
+- Migration log created
+- Rollback procedure documented
+
+## Files Modified:
+- `src/apps/constituents/migrations/000X_migrate_student_data.py`
+- `scripts/verify_student_data.py`
+- `backups/phase6_student/data_quality_report.txt`
+- `backups/phase6_student/MIGRATION_LOG.txt`
+
+## Important Notes:
+- This is a data-only migration (no schema changes)
+- Sets enrollment_status based on existing year_graduated/year_enrolled
+- Generates student numbers in format: STU-YYYY-XXXXX
+- Maps madrasah_level to current_grade_level
+- Includes reverse migration for rollback
+- Estimate: 1 hour
+
+## Risk Mitigation:
+- ⚠️ Test on staging database first
+- ⚠️ Run verification script before and after
+- ⚠️ Keep backup until verified
+- ⚠️ Reverse migration available if needed
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Run migrations and verify schema changes
+7. Create test instances to verify new fields
+8. Test admin interface with new fields
+9. Verify backward compatibility with existing data
+10. Test form validation with valid data
+11. Test form validation with invalid data
+12. Verify error messages display correctly
+13. Test form submission and data persistence
+14. Test CSRF protection

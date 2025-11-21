@@ -1,0 +1,342 @@
+{% extends 'base/base.html' %} {% load static %} {% block title %}Ministry
+Programs Admin Dashboard{% endblock %} {% block content %}
+<div class="container mx-auto px-4 py-4">
+  <div class="flex flex-wrap -mx-2 mb-4">
+    <div class="w-full px-2">
+      <h1 class="text-2xl font-bold text-gray-800 mb-0">
+        <i class="fas fa-chart-pie mr-2"></i>Ministry Programs Admin Dashboard
+      </h1>
+      <p class="text-gray-500">
+        Manage and monitor ministry programs across BARMM
+      </p>
+    </div>
+  </div>
+
+  <!-- Ministry Filter -->
+  <div class="border border-blue-100 rounded-lg p-4 mb-5">
+    <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div>
+        <label for="ministry" class="block text-sm font-medium text-gray-700"
+          >Filter by Ministry</label
+        >
+        {{ filter_form.ministry }}
+      </div>
+      <div class="flex items-end">
+        <button
+          type="submit"
+          class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full"
+        >
+          <i class="fas fa-filter mr-1"></i>Apply Filter
+        </button>
+      </div>
+      <div class="flex items-end">
+        <a
+          href="{% url 'admin_dashboard' %}"
+          class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full"
+        >
+          <i class="fas fa-times mr-1"></i>Clear Filter
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div
+      class="bg-white rounded-lg shadow-md p-4 border-l-4 border-primary-500"
+    >
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold text-primary-600 uppercase mb-1">
+            Total Programs
+          </div>
+          <div class="text-2xl font-bold text-gray-800">
+            {{ stats.total_programs }}
+          </div>
+        </div>
+        <div class="flex-shrink-0">
+          <i class="fas fa-clipboard-list text-3xl text-gray-300"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-green-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold text-green-600 uppercase mb-1">
+            Active Programs
+          </div>
+          <div class="text-2xl font-bold text-gray-800">
+            {{ stats.active_programs }}
+          </div>
+        </div>
+        <div class="flex-shrink-0">
+          <i class="fas fa-play-circle text-3xl text-gray-300"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-blue-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold text-blue-600 uppercase mb-1">
+            Total Budget
+          </div>
+          <div class="text-2xl font-bold text-gray-800">
+            ₱{{ stats.total_budget|floatformat:0 }}
+          </div>
+        </div>
+        <div class="flex-shrink-0">
+          <i class="fas fa-peso-sign text-3xl text-gray-300"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-md p-4 border-l-4 border-yellow-500">
+      <div class="flex items-center justify-between">
+        <div>
+          <div class="text-xs font-bold text-yellow-600 uppercase mb-1">
+            Target Beneficiaries
+          </div>
+          <div class="text-2xl font-bold text-gray-800">
+            {{ stats.total_beneficiaries|floatformat:0 }}
+          </div>
+        </div>
+        <div class="flex-shrink-0">
+          <i class="fas fa-users text-3xl text-gray-300"></i>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Actions & Ministry Breakdown -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div>
+      <div
+        class="bg-gradient-to-br from-indigo-500 to-purple-600 text-white rounded-lg shadow-md p-4 mb-4"
+      >
+        <div class="text-lg font-bold mb-3">Quick Actions</div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <a
+              href="{% url 'program_create' %}"
+              class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full"
+            >
+              <i class="fas fa-plus mr-2"></i>Add Program
+            </a>
+          </div>
+          <div>
+            <a
+              href="{% url 'program_list' %}"
+              class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full"
+            >
+              <i class="fas fa-list mr-2"></i>View All
+            </a>
+          </div>
+          <div>
+            <a
+              href="{% url 'program_import' %}"
+              class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full"
+            >
+              <i class="fas fa-upload mr-2"></i>Import
+            </a>
+          </div>
+          <div>
+            <a
+              href="{% url 'program_export' %}"
+              class="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 w-full"
+            >
+              <i class="fas fa-download mr-2"></i>Export
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div class="text-lg font-bold text-primary-600 mb-3">
+          Programs by Ministry
+        </div>
+        <div>
+          {% for ministry_stat in ministry_stats %}
+          <div class="mb-3">
+            <div class="flex justify-between items-center mb-1">
+              <span class="font-bold">{{ ministry_stat.name }}</span>
+              <span class="text-sm text-gray-600"
+                >{{ ministry_stat.count }} programs</span
+              >
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-5">
+              <div
+                class="h-5 rounded-full text-xs flex items-center justify-center text-white {% if ministry_stat.color == 'primary' %}bg-primary-500 {% elif ministry_stat.color == 'success' %}bg-green-500 {% elif ministry_stat.color == 'info' %}bg-blue-500 {% elif ministry_stat.color == 'warning' %}bg-yellow-500 {% elif ministry_stat.color == 'danger' %}bg-red-500 {% elif ministry_stat.color == 'secondary' %}bg-gray-500 {% elif ministry_stat.color == 'dark' %}bg-gray-800 {% endif %}"
+                style="width: {{ ministry_stat.percentage }}%"
+              >
+                ₱{{ ministry_stat.budget|floatformat:0 }}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity & Featured Programs -->
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div class="lg:col-span-2">
+      <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div class="flex justify-between items-center mb-3">
+          <h2 class="text-lg font-bold text-primary-600">Recent Activity</h2>
+          <a
+            href="{% url 'program_history' %}"
+            class="inline-flex items-center px-3 py-1 border border-primary-600 text-sm font-medium rounded-md text-primary-600 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+          >
+            View All History
+          </a>
+        </div>
+        <div class="max-h-96 overflow-y-auto">
+          {% for activity in recent_activity %} {# Changed from
+          recent_activities to recent_activity based on admin_views.py context
+          #}
+          <div
+            class="flex items-center mb-3 pb-3 border-b border-gray-200 last:border-b-0"
+          >
+            <div class="mr-3 flex-shrink-0">
+              {% if activity.action == 'create' %} {# Changed from 'created' to
+              'create' based on models.py ACTION_TYPES #}
+              <i class="fas fa-plus-circle text-green-500 text-lg"></i>
+              {% elif activity.action == 'update' %} {# Changed from 'updated'
+              to 'update' #}
+              <i class="fas fa-edit text-blue-500 text-lg"></i>
+              {% elif activity.action == 'delete' %} {# Changed from 'deleted'
+              to 'delete' #}
+              <i class="fas fa-trash text-red-500 text-lg"></i>
+              {% else %}
+              <i class="fas fa-info-circle text-yellow-500 text-lg"></i>
+              {% endif %}
+            </div>
+            <div class="flex-grow">
+              <div class="font-bold text-gray-800">
+                {{ activity.program_title }}
+              </div>
+              <div class="text-gray-500 text-sm">
+                {{ activity.action|title }} by {{ activity.user }}
+                <span class="text-gray-500"
+                  >{{ activity.timestamp|timesince }} ago</span
+                >
+              </div>
+              {% if activity.changes %}
+              <div class="text-sm text-gray-600">{{ activity.changes }}</div>
+              {% endif %}
+            </div>
+          </div>
+          {% empty %}
+          <div class="text-center text-gray-500 py-4">
+            <i class="fas fa-history text-4xl mb-3"></i>
+            <p>No recent activity found.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="bg-white rounded-lg shadow-md p-4 mb-4">
+        <div class="text-lg font-bold text-primary-600 mb-3">
+          Featured Programs
+        </div>
+        <div>
+          {% for program in featured_programs %}
+          <div class="mb-3 pb-3 border-b border-gray-200 last:border-b-0">
+            <div class="font-bold text-gray-900">{{ program.title }}</div>
+            <div class="text-sm text-gray-500">{{ program.ministry }}</div>
+            <div class="text-sm">
+              <strong class="font-semibold">Budget:</strong> ₱{{
+              program.allocated_budget|floatformat:0 }} {# Changed from
+              budget_allocated to allocated_budget #}
+            </div>
+            <div class="text-sm">
+              <strong class="font-semibold">Status:</strong>
+              <span
+                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if program.status_color == 'primary' %}bg-primary-100 text-primary-800 {% elif program.status_color == 'success' %}bg-green-100 text-green-800 {% elif program.status_color == 'info' %}bg-blue-100 text-blue-800 {% elif program.status_color == 'warning' %}bg-yellow-100 text-yellow-800 {% elif program.status_color == 'danger' %}bg-red-100 text-red-800 {% elif program.status_color == 'secondary' %}bg-gray-100 text-gray-800 {% elif program.status_color == 'dark' %}bg-gray-700 text-white {% elif program.status_color == 'light' %}bg-gray-200 text-gray-800 {% endif %}"
+              >
+                {{ program.get_status_display }}
+              </span>
+            </div>
+            <a
+              href="{% url 'program_detail' program.id %}"
+              class="inline-flex items-center px-3 py-1 border border-primary-600 text-sm font-medium rounded-md text-primary-600 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 mt-2"
+            >
+              View Details
+            </a>
+          </div>
+          {% empty %}
+          <div class="text-center text-gray-500 py-4">
+            <i class="fas fa-star text-4xl mb-3"></i>
+            <p>No featured programs.</p>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="bg-white rounded-lg shadow-md p-4">
+        <div class="text-lg font-bold text-primary-600 mb-3">Quick Stats</div>
+        <div class="grid grid-cols-2 gap-4 text-center">
+          <div>
+            <div class="text-2xl font-bold text-primary-600">
+              {{ stats.programs_this_month }}
+            </div>
+            <div class="text-sm text-gray-500">This Month</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-green-600">
+              {{ stats.completed_programs }}
+            </div>
+            <div class="text-sm text-gray-500">Completed</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-yellow-600">
+              {{ stats.high_priority }}
+            </div>
+            <div class="text-sm text-gray-500">High Priority</div>
+          </div>
+          <div>
+            <div class="text-2xl font-bold text-blue-600">
+              {{ stats.avg_budget|floatformat:0 }}
+            </div>
+            <div class="text-sm text-gray-500">Avg Budget</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block extra_js %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Auto-refresh every 5 minutes
+    setTimeout(function () {
+      location.reload();
+    }, 300000);
+
+    // Add hover effects to cards (Tailwind equivalent)
+    document
+      .querySelectorAll(".bg-white.rounded-lg.shadow-md")
+      .forEach((card) => {
+        card.addEventListener("mouseenter", function () {
+          this.classList.add("shadow-lg");
+          this.classList.remove("shadow-md");
+          this.style.transform = "translateY(-2px)";
+        });
+
+        card.addEventListener("mouseleave", function () {
+          this.classList.add("shadow-md");
+          this.classList.remove("shadow-lg");
+          this.style.transform = "translateY(0)";
+        });
+      });
+  });
+</script>
+{% endblock %}

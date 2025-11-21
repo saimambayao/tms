@@ -1,0 +1,237 @@
+# Task ID: 052
+# Title: Create Subject Model
+# Status: pending
+# Dependencies: 051
+# Priority: medium
+# Description: Create the Subject model to represent individual subjects/courses taught in madaris. This model will track subject information including code, name, c
+
+# Details:
+Create the Subject model to represent individual subjects/courses taught in madaris. This model will track subject information including code, name, category, credit hours, and Islamic education specifics.
+
+## Implementation Steps:
+1. Create Subject model in apps/curriculum/models.py:
+   ```python
+   from django.db import models
+   from django.core.validators import MinValueValidator, MaxValueValidator
+   from django.utils.translation import gettext_lazy as _
+
+   class Subject(models.Model):
+       """
+       Represents a subject/course taught in madaris.
+       Supports both Islamic education and general subjects.
+       """
+
+       class SubjectCategory(models.TextChoices):
+           """Categories of subjects offered in Islamic education"""
+           QURAN = 'quran', _('Quranic Studies')
+           HADITH = 'hadith', _('Hadith Studies')
+           FIQH = 'fiqh', _('Islamic Jurisprudence (Fiqh)')
+           AQEEDAH = 'aqeedah', _('Islamic Creed (Aqeedah)')
+           ARABIC = 'arabic', _('Arabic Language')
+           ISLAMIC_HISTORY = 'history', _('Islamic History & Seerah')
+           AKHLAQ = 'akhlaq', _('Islamic Ethics & Morals (Akhlaq)')
+           TAFSIR = 'tafsir', _('Quranic Exegesis (Tafsir)')
+           TAJWEED = 'tajweed', _('Quran Recitation (Tajweed)')
+           MATHEMATICS = 'math', _('Mathematics')
+           SCIENCE = 'science', _('Science')
+           ENGLISH = 'english', _('English Language')
+           FILIPINO = 'filipino', _('Filipino Language')
+           SOCIAL_STUDIES = 'social', _('Social Studies')
+           VALUES = 'values', _('Values Education')
+           PE = 'pe', _('Physical Education')
+           ARTS = 'arts', _('Arts & Culture')
+           OTHER = 'other', _('Other')
+
+       # Basic Information
+       code = models.CharField(
+           max_length=20,
+           unique=True,
+           help_text=_('Subject code (e.g., QRN101, ARB201)')
+       )
+       name = models.CharField(
+           max_length=255,
+           help_text=_('Subject name (e.g., Introduction to Tajweed)')
+       )
+       name_arabic = models.CharField(
+           max_length=255,
+           blank=True,
+           help_text=_('Arabic name of the subject')
+       )
+       description = models.TextField(
+           blank=True,
+           help_text=_('Detailed description of the subject')
+       )
+
+       # Categorization
+       category = models.CharField(
+           max_length=20,
+           choices=SubjectCategory.choices,
+           help_text=_('Subject category')
+       )
+
+       # Academic Information
+       credit_hours = models.DecimalField(
+           max_digits=4,
+           decimal_places=2,
+           default=1.0,
+           validators=[MinValueValidator(0.25), MaxValueValidator(10.0)],
+           help_text=_('Credit hours per week (e.g., 3.0)')
+       )
+       lecture_hours = models.DecimalField(
+           max_digits=4,
+           decimal_places=2,
+           default=0.0,
+           help_text=_('Lecture hours per week')
+       )
+       lab_hours = models.DecimalField(
+           max_digits=4,
+           decimal_places=2,
+           default=0.0,
+           help_text=_('Laboratory/practice hours per week')
+       )
+
+       # Prerequisites
+       prerequisites = models.ManyToManyField(
+           'self',
+           symmetrical=False,
+           blank=True,
+           related_name='prerequisite_for',
+           help_text=_('Subjects that must be completed before this one')
+       )
+
+       # Status
+       is_active = models.BooleanField(
+           default=True,
+           help_text=_('Is this subject currently being offered?')
+       )
+       is_core = models.BooleanField(
+           default=True,
+           help_text=_('Is this a core/required subject?')
+       )
+
+       # Metadata
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'curriculum_subject'
+           verbose_name = _('Subject')
+           verbose_name_plural = _('Subjects')
+           ordering = ['category', 'code']
+           indexes = [
+               models.Index(fields=['category']),
+               models.Index(fields=['is_active']),
+               models.Index(fields=['code']),
+           ]
+
+       def __str__(self):
+           return f"{self.code} - {self.name}"
+
+       def get_total_hours(self):
+           """Calculate total contact hours per week."""
+           return float(self.lecture_hours) + float(self.lab_hours)
+
+       def get_category_display_arabic(self):
+           """Return Arabic translation of category if available."""
+           arabic_categories = {
+               'quran': 'القرآن الكريم',
+               'hadith': 'الحديث الشريف',
+               'fiqh': 'الفقه',
+               'aqeedah': 'العقيدة',
+               'arabic': 'اللغة العربية',
+               'tafsir': 'التفسير',
+               'tajweed': 'التجويد',
+           }
+           return arabic_categories.get(self.category, self.get_category_display())
+   ```
+
+2. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py makemigrations curriculum
+   ```
+
+3. Review migration file to ensure it's correct
+
+4. Register model in admin (apps/curriculum/admin.py):
+   ```python
+   from django.contrib import admin
+   from .models import Subject
+
+   @admin.register(Subject)
+   class SubjectAdmin(admin.ModelAdmin):
+       list_display = ['code', 'name', 'category', 'credit_hours', 'is_core', 'is_active']
+       list_filter = ['category', 'is_core', 'is_active']
+       search_fields = ['code', 'name', 'name_arabic', 'description']
+       filter_horizontal = ['prerequisites']
+       fieldsets = (
+           ('Basic Information', {
+               'fields': ('code', 'name', 'name_arabic', 'description')
+           }),
+           ('Categorization', {
+               'fields': ('category',)
+           }),
+           ('Academic Details', {
+               'fields': ('credit_hours', 'lecture_hours', 'lab_hours', 'prerequisites')
+           }),
+           ('Status', {
+               'fields': ('is_active', 'is_core')
+           }),
+       )
+   ```
+
+5. Run migration:
+   ```bash
+   python manage.py migrate curriculum
+   ```
+
+6. Test in Django shell:
+   ```python
+   python manage.py shell
+   from apps.curriculum.models import Subject
+
+   # Create test subject
+   subject = Subject.objects.create(
+       code='QRN101',
+       name='Introduction to Tajweed',
+       name_arabic='مقدمة في التجويد',
+       category='tajweed',
+       credit_hours=3.0,
+       is_core=True
+   )
+   print(subject)  # Should display: QRN101 - Introduction to Tajweed
+   ```
+
+7. Verify in Django admin at /admin/curriculum/subject/
+
+## Acceptance Criteria:
+- Subject model created with all required fields
+- Model includes Islamic education subject categories
+- Subject code validation implemented
+- Meta class configured properly
+- __str__ method returns meaningful representation
+- Model migrations created successfully
+- Model appears in Django admin (basic registration)
+
+## Files Modified:
+- `apps/curriculum/models.py (create Subject model)`
+- `apps/curriculum/admin.py (register Subject)`
+- `apps/curriculum/migrations/0001_initial.py (new migration)`
+
+## Important Notes:
+- Subject categories cover both Islamic education and general subjects
+- Credit hours system allows fractional values (e.g., 1.5 hours)
+- Prerequisites relationship allows complex curriculum structures
+- Arabic name field supports bilingual education
+- Estimate: 1.5 hours
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection

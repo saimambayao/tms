@@ -1,0 +1,47 @@
+# Task ID: 002
+# Title: Backup Media Files and Static Assets
+# Status: done
+# Dependencies: none
+# Priority: high
+# Description: Create complete backup of all user-uploaded media files, static assets, and documents before refactoring.
+
+# Details:
+Create complete backup of all user-uploaded media files, static assets, and documents before refactoring.
+
+## Implementation Steps:
+1. Identify media directories:
+   - `ls -la media/`
+   - `ls -la static/`
+2. Create archive: `tar -czf media_backup_$(date +%Y%m%d).tar.gz media/`
+3. Create static backup: `tar -czf static_backup_$(date +%Y%m%d).tar.gz static/`
+4. Verify archives:
+   - `tar -tzf media_backup_*.tar.gz | wc -l`
+5. Upload to cloud storage
+6. Keep local copies
+7. Document in BACKUP_LOG.md
+
+## Acceptance Criteria:
+- All files in MEDIA_ROOT are backed up
+- All static files are backed up
+- User profile images backed up
+- Document uploads (certificates, transcripts) backed up
+- Backup verified (file count matches)
+- Backup stored in 2+ locations
+- Backup compressed to save space
+
+## Files Modified:
+- `media_backup_YYYYMMDD.tar.gz`
+- `static_backup_YYYYMMDD.tar.gz`
+- `BACKUP_LOG.md`
+
+## Important Notes:
+- Check available disk space before creating archives
+- Large media directories may take significant time
+- Consider using rsync for incremental backups
+- Estimate: 15-30 minutes
+
+# Test Strategy:
+1. Verify backup file exists and has reasonable size
+2. Restore on test database to verify integrity
+3. Confirm all tables present in restored database
+4. Compare row counts with original database

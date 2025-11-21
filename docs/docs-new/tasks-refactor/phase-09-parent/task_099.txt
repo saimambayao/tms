@@ -1,0 +1,560 @@
+# Task ID: 099
+# Title: Create Parent Notification System
+# Status: pending
+# Dependencies: 098
+# Priority: medium
+# Description: Create notification system to keep parents informed about their children's school activities, including announcements, grade updates, attendance alert
+
+# Details:
+Create notification system to keep parents informed about their children's school activities, including announcements, grade updates, attendance alerts, and upcoming events. Supports both in-app notifications and optional email/SMS delivery.
+
+## Implementation Steps:
+1. Create notification models:
+   ```python
+   # apps/parents/models.py
+   from django.db import models
+   from apps.users.models import User
+   from django.utils import timezone
+
+   class ParentNotification(models.Model):
+       """Notifications for parent portal"""
+
+       class NotificationType(models.TextChoices):
+           ANNOUNCEMENT = 'announcement', 'School Announcement'
+           GRADE_POSTED = 'grade_posted', 'New Grade Posted'
+           ATTENDANCE_ALERT = 'attendance_alert', 'Attendance Alert'
+           ABSENCE = 'absence', 'Student Absence'
+           LATE_ARRIVAL = 'late_arrival', 'Late Arrival'
+           EVENT_REMINDER = 'event_reminder', 'Event Reminder'
+           MESSAGE_RECEIVED = 'message_received', 'New Message Received'
+           PAYMENT_DUE = 'payment_due', 'Payment Due'
+           GENERAL = 'general', 'General Notification'
+
+       class Priority(models.TextChoices):
+           LOW = 'low', 'Low'
+           NORMAL = 'normal', 'Normal'
+           HIGH = 'high', 'High'
+           URGENT = 'urgent', 'Urgent'
+
+       parent = models.ForeignKey(
+           User,
+           on_delete=models.CASCADE,
+           related_name='parent_notifications',
+           limit_choices_to={'role': 'parent'},
+           help_text="Parent who receives this notification"
+       )
+
+       student = models.ForeignKey(
+           User,
+           on_delete=models.CASCADE,
+           related_name='student_notifications',
+           limit_choices_to={'role': 'student'},
+           null=True,
+           blank=True,
+           help_text="Student this notification is about (if applicable)"
+       )
+
+       notification_type = models.CharField(
+           max_length=20,
+           choices=NotificationType.choices,
+           default=NotificationType.GENERAL,
+           help_text="Type of notification"
+       )
+
+       priority = models.CharField(
+           max_length=10,
+           choices=Priority.choices,
+           default=Priority.NORMAL,
+           help_text="Notification priority level"
+       )
+
+       title = models.CharField(
+           max_length=200,
+           help_text="Notification title/subject"
+       )
+
+       message = models.TextField(
+           help_text="Notification message content"
+       )
+
+       action_url = models.CharField(
+           max_length=500,
+           blank=True,
+           help_text="URL to navigate when notification is clicked (optional)"
+       )
+
+       is_read = models.BooleanField(
+           default=False,
+           help_text="Has parent read this notification"
+       )
+
+       read_at = models.DateTimeField(
+           null=True,
+           blank=True,
+           help_text="When notification was read"
+       )
+
+       email_sent = models.BooleanField(
+           default=False,
+           help_text="Email notification sent"
+       )
+
+       sms_sent = models.BooleanField(
+           default=False,
+           help_text="SMS notification sent"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+
+       class Meta:
+           verbose_name = "Parent Notification"
+           verbose_name_plural = "Parent Notifications"
+           ordering = ['-created_at']
+           indexes = [
+               models.Index(fields=['parent', 'is_read']),
+               models.Index(fields=['parent', '-created_at']),
+           ]
+
+       def __str__(self):
+           return f"{self.parent.get_full_name()}: {self.title}"
+
+       def mark_as_read(self):
+           """Mark notification as read"""
+           if not self.is_read:
+               self.is_read = True
+               self.read_at = timezone.now()
+               self.save(update_fields=['is_read', 'read_at'])
+
+   class ParentNotificationPreference(models.Model):
+       """Parent preferences for notifications"""
+
+       parent = models.OneToOneField(
+           User,
+           on_delete=models.CASCADE,
+           related_name='notification_preferences',
+           limit_choices_to={'role': 'parent'},
+           help_text="Parent user"
+       )
+
+       # In-app notifications (always enabled)
+       enable_in_app = models.BooleanField(
+           default=True,
+           help_text="Enable in-app notifications"
+       )
+
+       # Email notifications
+       enable_email = models.BooleanField(
+           default=True,
+           help_text="Enable email notifications"
+       )
+
+       email_announcements = models.BooleanField(default=True)
+       email_grades = models.BooleanField(default=True)
+       email_attendance = models.BooleanField(default=True)
+       email_events = models.BooleanField(default=True)
+       email_messages = models.BooleanField(default=True)
+
+       # SMS notifications (if available)
+       enable_sms = models.BooleanField(
+           default=False,
+           help_text="Enable SMS notifications"
+       )
+
+       sms_urgent_only = models.BooleanField(
+           default=True,
+           help_text="Only send urgent notifications via SMS"
+       )
+
+       # Notification frequency
+       digest_mode = models.BooleanField(
+           default=False,
+           help_text="Receive daily digest instead of immediate notifications"
+       )
+
+       digest_time = models.TimeField(
+           null=True,
+           blank=True,
+           help_text="Time to send daily digest (if enabled)"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           verbose_name = "Notification Preference"
+           verbose_name_plural = "Notification Preferences"
+
+       def __str__(self):
+           return f"Notification preferences for {self.parent.get_full_name()}"
+   ```
+
+2. Create notification helper functions:
+   ```python
+   # apps/parents/utils.py
+   from apps.parents.models import ParentNotification, ParentNotificationPreference
+   from apps.users.models import User
+
+   def create_notification(parent, title, message, notification_type='general',
+                          student=None, priority='normal', action_url=''):
+       """
+       Create notification for parent
+
+       Args:
+           parent: User instance (parent)
+           title: Notification title
+           message: Notification message
+           notification_type: Type of notification
+           student: User instance (student) - optional
+           priority: Priority level
+           action_url: URL to navigate to - optional
+
+       Returns:
+           ParentNotification instance
+       """
+       notification = ParentNotification.objects.create(
+           parent=parent,
+           student=student,
+           notification_type=notification_type,
+           priority=priority,
+           title=title,
+           message=message,
+           action_url=action_url
+       )
+
+       # Check notification preferences and send email/SMS if enabled
+       try:
+           prefs = ParentNotificationPreference.objects.get(parent=parent)
+
+           # Send email if enabled for this notification type
+           if prefs.enable_email and not prefs.digest_mode:
+               if should_send_email(prefs, notification_type):
+                   # TODO: Implement email sending
+                   # send_notification_email(parent, notification)
+                   notification.email_sent = True
+                   notification.save(update_fields=['email_sent'])
+
+           # Send SMS if enabled and urgent
+           if prefs.enable_sms:
+               if priority == 'urgent' or (not prefs.sms_urgent_only):
+                   # TODO: Implement SMS sending
+                   # send_notification_sms(parent, notification)
+                   notification.sms_sent = True
+                   notification.save(update_fields=['sms_sent'])
+
+       except ParentNotificationPreference.DoesNotExist:
+           # Create default preferences if not exists
+           ParentNotificationPreference.objects.create(parent=parent)
+
+       return notification
+
+   def should_send_email(prefs, notification_type):
+       """Check if email should be sent based on preferences"""
+       type_mapping = {
+           'announcement': prefs.email_announcements,
+           'grade_posted': prefs.email_grades,
+           'attendance_alert': prefs.email_attendance,
+           'absence': prefs.email_attendance,
+           'late_arrival': prefs.email_attendance,
+           'event_reminder': prefs.email_events,
+           'message_received': prefs.email_messages,
+       }
+       return type_mapping.get(notification_type, True)
+
+   def notify_parents_of_student(student, title, message, notification_type='general',
+                                 priority='normal', action_url=''):
+       """
+       Send notification to all parents of a student
+
+       Args:
+           student: User instance (student)
+           title: Notification title
+           message: Notification message
+           notification_type: Type of notification
+           priority: Priority level
+           action_url: URL to navigate to - optional
+
+       Returns:
+           List of created notifications
+       """
+       from apps.parents.models import ParentStudent
+
+       notifications = []
+
+       # Get all active parents of this student
+       parent_relationships = ParentStudent.objects.filter(
+           student=student,
+           status=ParentStudent.Status.ACTIVE
+       ).select_related('parent')
+
+       for relationship in parent_relationships:
+           notification = create_notification(
+               parent=relationship.parent,
+               student=student,
+               title=title,
+               message=message,
+               notification_type=notification_type,
+               priority=priority,
+               action_url=action_url
+           )
+           notifications.append(notification)
+
+       return notifications
+   ```
+
+3. Create notification views:
+   ```python
+   # apps/parents/views.py
+   from django.views.generic import ListView, UpdateView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.shortcuts import get_object_or_404, redirect
+   from django.http import JsonResponse
+   from apps.parents.models import ParentNotification, ParentNotificationPreference
+
+   class NotificationListView(LoginRequiredMixin, ListView):
+       """View parent notifications"""
+       template_name = 'parents/notifications.html'
+       context_object_name = 'notifications'
+       paginate_by = 20
+
+       def get_queryset(self):
+           return ParentNotification.objects.filter(
+               parent=self.request.user
+           ).select_related('student')
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           context['unread_count'] = ParentNotification.objects.filter(
+               parent=self.request.user,
+               is_read=False
+           ).count()
+           return context
+
+   class NotificationPreferencesView(LoginRequiredMixin, UpdateView):
+       """Update notification preferences"""
+       template_name = 'parents/notification_preferences.html'
+       model = ParentNotificationPreference
+       fields = [
+           'enable_email', 'email_announcements', 'email_grades',
+           'email_attendance', 'email_events', 'email_messages',
+           'enable_sms', 'sms_urgent_only', 'digest_mode', 'digest_time'
+       ]
+       success_url = '/parents/notifications/preferences/'
+
+       def get_object(self):
+           obj, created = ParentNotificationPreference.objects.get_or_create(
+               parent=self.request.user
+           )
+           return obj
+
+   def mark_notification_read(request, notification_id):
+       """Mark notification as read (AJAX endpoint)"""
+       notification = get_object_or_404(
+           ParentNotification,
+           id=notification_id,
+           parent=request.user
+       )
+       notification.mark_as_read()
+
+       if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+           return JsonResponse({'status': 'success'})
+       return redirect('parents:notifications')
+
+   def mark_all_read(request):
+       """Mark all notifications as read"""
+       ParentNotification.objects.filter(
+           parent=request.user,
+           is_read=False
+       ).update(is_read=True, read_at=timezone.now())
+
+       return redirect('parents:notifications')
+   ```
+
+4. Add notification URLs:
+   ```python
+   # apps/parents/urls.py
+   urlpatterns = [
+       # ... existing patterns ...
+
+       # Notifications
+       path('notifications/',
+            views.NotificationListView.as_view(),
+            name='notifications'),
+       path('notifications/preferences/',
+            views.NotificationPreferencesView.as_view(),
+            name='notification-preferences'),
+       path('notifications/<int:notification_id>/read/',
+            views.mark_notification_read,
+            name='notification-read'),
+       path('notifications/mark-all-read/',
+            views.mark_all_read,
+            name='notifications-mark-all-read'),
+   ]
+   ```
+
+5. Update dashboard to show unread count:
+   ```python
+   # In ParentDashboardView.get_context_data()
+   context['unread_notifications'] = ParentNotification.objects.filter(
+       parent=self.request.user,
+       is_read=False
+   ).count()
+   ```
+
+6. Create notification template:
+   ```html
+   <!-- templates/parents/notifications.html -->
+   {% extends "base.html" %}
+
+   {% block title %}Notifications{% endblock %}
+
+   {% block content %}
+   <div class="container mx-auto px-4 py-8">
+       <div class="flex justify-between items-center mb-6">
+           <h1 class="text-2xl font-bold text-gray-800">
+               Notifications
+               {% if unread_count > 0 %}
+               <span class="ml-2 bg-red-500 text-white text-sm rounded-full px-3 py-1">
+                   {{ unread_count }} new
+               </span>
+               {% endif %}
+           </h1>
+           <div class="flex space-x-2">
+               {% if unread_count > 0 %}
+               <a href="{% url 'parents:notifications-mark-all-read' %}"
+                  class="btn btn-secondary">
+                   Mark All Read
+               </a>
+               {% endif %}
+               <a href="{% url 'parents:notification-preferences' %}"
+                  class="btn btn-outline">
+                   Preferences
+               </a>
+           </div>
+       </div>
+
+       <div class="bg-white rounded-lg shadow-md">
+           {% if notifications %}
+               <ul class="divide-y divide-gray-200">
+                   {% for notification in notifications %}
+                   <li class="p-4 {% if not notification.is_read %}bg-blue-50{% endif %}">
+                       <div class="flex items-start">
+                           <!-- Notification Icon -->
+                           <div class="flex-shrink-0">
+                               {% if notification.priority == 'urgent' %}
+                               <span class="inline-block w-3 h-3 bg-red-500 rounded-full"></span>
+                               {% elif notification.priority == 'high' %}
+                               <span class="inline-block w-3 h-3 bg-orange-500 rounded-full"></span>
+                               {% else %}
+                               <span class="inline-block w-3 h-3 bg-blue-500 rounded-full"></span>
+                               {% endif %}
+                           </div>
+
+                           <!-- Notification Content -->
+                           <div class="ml-3 flex-1">
+                               <div class="flex items-center justify-between">
+                                   <h3 class="text-lg font-semibold text-gray-800">
+                                       {{ notification.title }}
+                                   </h3>
+                                   <span class="text-sm text-gray-500">
+                                       {{ notification.created_at|timesince }} ago
+                                   </span>
+                               </div>
+                               {% if notification.student %}
+                               <p class="text-sm text-gray-600 mt-1">
+                                   Student: {{ notification.student.get_full_name }}
+                               </p>
+                               {% endif %}
+                               <p class="text-gray-700 mt-2">{{ notification.message }}</p>
+
+                               <div class="mt-3 flex items-center space-x-4">
+                                   {% if notification.action_url %}
+                                   <a href="{{ notification.action_url }}"
+                                      class="text-blue-600 hover:underline text-sm">
+                                       View Details
+                                   </a>
+                                   {% endif %}
+                                   {% if not notification.is_read %}
+                                   <a href="{% url 'parents:notification-read' notification.id %}"
+                                      class="text-gray-600 hover:underline text-sm">
+                                       Mark as Read
+                                   </a>
+                                   {% endif %}
+                               </div>
+                           </div>
+                       </div>
+                   </li>
+                   {% endfor %}
+               </ul>
+
+               {% if is_paginated %}
+               <!-- Pagination -->
+               <div class="p-4 border-t border-gray-200">
+                   <!-- Add pagination controls -->
+               </div>
+               {% endif %}
+           {% else %}
+               <div class="text-center py-12">
+                   <p class="text-gray-600">No notifications</p>
+               </div>
+           {% endif %}
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+7. Create migration and test:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations parents
+   python manage.py migrate parents
+   ```
+
+8. Test notification system:
+   - Create test notifications via Django shell
+   - Test marking notifications as read
+   - Test notification preferences
+   - Test unread count display
+   - Test notification filtering
+
+## Acceptance Criteria:
+- ParentNotification model created
+- Notification types defined (announcement, grade, attendance, event, etc.)
+- Notification preferences model created
+- Notification creation helper functions implemented
+- Notification list view created for parent dashboard
+- Unread notification count displayed
+- Mark as read functionality implemented
+- Notification preferences page created
+- Email notification integration (optional)
+- Notifications tested with various types
+
+## Files Modified:
+- `src/apps/parents/models.py`
+- `src/apps/parents/utils.py (new file)`
+- `src/apps/parents/views.py`
+- `src/apps/parents/urls.py`
+- `src/apps/parents/templates/parents/notifications.html (new file)`
+- `src/apps/parents/templates/parents/notification_preferences.html (new file)`
+- `src/apps/parents/migrations/000X_notifications.py`
+
+## Important Notes:
+- Notification preferences allow granular control
+- Support for email and SMS notifications (implementation pending)
+- Digest mode for daily summaries instead of immediate notifications
+- Helper functions make creating notifications easy from other parts of app
+- Priority levels for urgent notifications
+- Action URLs allow deep linking to related content
+- Indexes added for performance on common queries
+- Future: Add push notifications for mobile apps
+- Estimate: 90 minutes
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection

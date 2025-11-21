@@ -1,0 +1,475 @@
+# Task ID: 086
+# Title: Create Program Enrollment Model
+# Status: pending
+# Dependencies: 085
+# Priority: medium
+# Description: Create ProgramEnrollment model to track student/teacher enrollment in programs (scholarships, training, activities). Adapt existing ServiceApplication
+
+# Details:
+Create ProgramEnrollment model to track student/teacher enrollment in programs (scholarships, training, activities). Adapt existing ServiceApplication model for program applications and create enrollment workflow.
+
+## Implementation Steps:
+1. Add ProgramEnrollment model to apps/services/models.py:
+   ```python
+   # Add after MinistryProgram model definition:
+
+   class ProgramEnrollment(models.Model):
+       """
+       Track enrollment of students/teachers in educational programs.
+       Used for scholarships, training programs, extracurricular activities.
+       """
+
+       ENROLLMENT_STATUS = (
+           ('pending', 'Pending Approval'),
+           ('approved', 'Approved'),
+           ('enrolled', 'Currently Enrolled'),
+           ('completed', 'Completed'),
+           ('dropped', 'Dropped/Withdrawn'),
+           ('rejected', 'Rejected'),
+           ('waitlisted', 'Waitlisted'),
+       )
+
+       PARTICIPANT_TYPE = (
+           ('student', 'Student'),
+           ('teacher', 'Teacher/Asatidz'),
+           ('staff', 'Staff'),
+           ('parent', 'Parent'),
+           ('other', 'Other'),
+       )
+
+       # Core relationships
+       program = models.ForeignKey(
+           MinistryProgram,
+           on_delete=models.CASCADE,
+           related_name='enrollments',
+           help_text="Program student/teacher is enrolled in"
+       )
+
+       participant = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.CASCADE,
+           related_name='program_enrollments',
+           help_text="Student, teacher, or staff member enrolled"
+       )
+
+       participant_type = models.CharField(
+           max_length=20,
+           choices=PARTICIPANT_TYPE,
+           default='student',
+           help_text="Type of participant"
+       )
+
+       # Enrollment tracking
+       status = models.CharField(
+           max_length=20,
+           choices=ENROLLMENT_STATUS,
+           default='pending'
+       )
+
+       application_date = models.DateTimeField(
+           auto_now_add=True,
+           help_text="When participant applied"
+       )
+
+       approval_date = models.DateTimeField(
+           null=True,
+           blank=True,
+           help_text="When enrollment was approved"
+       )
+
+       enrollment_date = models.DateTimeField(
+           null=True,
+           blank=True,
+           help_text="When participant officially enrolled"
+       )
+
+       completion_date = models.DateTimeField(
+           null=True,
+           blank=True,
+           help_text="When participant completed program"
+       )
+
+       # Application details
+       application_notes = models.TextField(
+           blank=True,
+           help_text="Participant's application statement or notes"
+       )
+
+       submitted_documents = models.FileField(
+           upload_to='program_enrollments/documents/',
+           blank=True,
+           null=True,
+           help_text="Application documents (transcripts, recommendations, etc.)"
+       )
+
+       # Progress tracking
+       progress_percentage = models.PositiveIntegerField(
+           default=0,
+           help_text="Progress through program (0-100)"
+       )
+
+       attendance_rate = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           default=0,
+           help_text="Attendance percentage"
+       )
+
+       performance_rating = models.CharField(
+           max_length=20,
+           blank=True,
+           choices=(
+               ('excellent', 'Excellent'),
+               ('good', 'Good'),
+               ('satisfactory', 'Satisfactory'),
+               ('needs_improvement', 'Needs Improvement'),
+               ('unsatisfactory', 'Unsatisfactory'),
+           ),
+           help_text="Performance in program"
+       )
+
+       # Administrative
+       approved_by = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.SET_NULL,
+           null=True,
+           blank=True,
+           related_name='approved_enrollments',
+           help_text="Who approved this enrollment"
+       )
+
+       rejection_reason = models.TextField(
+           blank=True,
+           help_text="Reason for rejection (if applicable)"
+       )
+
+       notes = models.TextField(
+           blank=True,
+           help_text="Internal notes about this enrollment"
+       )
+
+       # Timestamps
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'services_programenrollment'
+           ordering = ['-application_date']
+           unique_together = ['program', 'participant']
+           indexes = [
+               models.Index(fields=['program', 'status']),
+               models.Index(fields=['participant', 'status']),
+           ]
+
+       def __str__(self):
+           return f"{self.participant.get_full_name()} - {self.program.title}"
+
+       def approve(self, approved_by):
+           """Approve enrollment application"""
+           from django.utils import timezone
+           self.status = 'approved'
+           self.approved_by = approved_by
+           self.approval_date = timezone.now()
+           self.save()
+
+       def enroll(self):
+           """Mark as enrolled (after approval)"""
+           from django.utils import timezone
+           if self.status != 'approved':
+               raise ValidationError("Can only enroll approved applications")
+           self.status = 'enrolled'
+           self.enrollment_date = timezone.now()
+           # Update program enrollment count
+           self.program.current_enrollment += 1
+           self.program.save()
+           self.save()
+
+       def complete(self):
+           """Mark program as completed"""
+           from django.utils import timezone
+           self.status = 'completed'
+           self.completion_date = timezone.now()
+           self.progress_percentage = 100
+           self.save()
+
+       def reject(self, reason, rejected_by):
+           """Reject enrollment application"""
+           self.status = 'rejected'
+           self.rejection_reason = reason
+           self.approved_by = rejected_by
+           self.save()
+   ```
+2. Update ServiceApplication model for education context:
+   ```python
+   # Find ServiceApplication model and add education-specific fields if needed
+   # This model can be used for scholarship applications, training applications, etc.
+   ```
+3. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py makemigrations services -n "add_program_enrollment_model"
+   ```
+4. Review migration:
+   ```bash
+   cat apps/services/migrations/*_add_program_enrollment_model.py
+   ```
+5. Run migration:
+   ```bash
+   python manage.py migrate services
+   ```
+6. Verify model in database:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import ProgramEnrollment
+   print('ProgramEnrollment model loaded successfully')
+   print(f'Table name: {ProgramEnrollment._meta.db_table}')
+   print(f'Fields: {[f.name for f in ProgramEnrollment._meta.fields]}')
+   "
+   ```
+7. Register in admin (apps/services/admin.py):
+   ```python
+   # Add to admin.py:
+   from .models import ProgramEnrollment
+
+   @admin.register(ProgramEnrollment)
+   class ProgramEnrollmentAdmin(admin.ModelAdmin):
+       list_display = [
+           'participant',
+           'program',
+           'participant_type',
+           'status',
+           'application_date',
+           'progress_percentage',
+       ]
+       list_filter = [
+           'status',
+           'participant_type',
+           'application_date',
+       ]
+       search_fields = [
+           'participant__first_name',
+           'participant__last_name',
+           'participant__email',
+           'program__title',
+       ]
+       readonly_fields = [
+           'application_date',
+           'created_at',
+           'updated_at',
+       ]
+       fieldsets = (
+           ('Program Information', {
+               'fields': ('program', 'participant', 'participant_type')
+           }),
+           ('Status', {
+               'fields': (
+                   'status',
+                   'application_date',
+                   'approval_date',
+                   'enrollment_date',
+                   'completion_date',
+               )
+           }),
+           ('Application', {
+               'fields': (
+                   'application_notes',
+                   'submitted_documents',
+               )
+           }),
+           ('Progress', {
+               'fields': (
+                   'progress_percentage',
+                   'attendance_rate',
+                   'performance_rating',
+               )
+           }),
+           ('Administrative', {
+               'fields': (
+                   'approved_by',
+                   'rejection_reason',
+                   'notes',
+               )
+           }),
+       )
+   ```
+8. Test creating enrollment:
+   ```bash
+   python manage.py shell -c "
+   from apps.services.models import MinistryProgram, ProgramEnrollment
+   from apps.users.models import User
+   from datetime import date, timedelta
+
+   # Get or create test program
+   admin = User.objects.filter(is_superuser=True).first()
+   program, created = MinistryProgram.objects.get_or_create(
+       code='TEST_ENROLL_001',
+       defaults={
+           'title': 'Test Enrollment Program',
+           'slug': 'test-enrollment-program',
+           'ministry': 'mbasiced',
+           'program_source': 'education',
+           'program_category': 'scholarship',
+           'ppa_type': 'program',
+           'description': 'Test',
+           'objectives': 'Test',
+           'expected_outcomes': 'Test',
+           'key_performance_indicators': 'Test',
+           'target_beneficiaries': 'Students',
+           'geographic_coverage': 'Test',
+           'implementation_strategy': 'Test',
+           'implementing_units': 'Test',
+           'start_date': date.today(),
+           'end_date': date.today() + timedelta(days=365),
+           'funding_source': 'regional',
+           'created_by': admin,
+           'enrollment_capacity': 10,
+       }
+   )
+
+   # Create test student user
+   student = User.objects.create_user(
+       username='test_student_enroll',
+       email='test.student@madrasah.test',
+       first_name='Test',
+       last_name='Student',
+       role='student'
+   )
+
+   # Create enrollment
+   enrollment = ProgramEnrollment.objects.create(
+       program=program,
+       participant=student,
+       participant_type='student',
+       status='pending',
+       application_notes='I would like to apply for this scholarship program.'
+   )
+
+   print(f'✓ Created enrollment: {enrollment}')
+   print(f'  Status: {enrollment.get_status_display()}')
+   print(f'  Applied: {enrollment.application_date}')
+
+   # Test approval workflow
+   enrollment.approve(approved_by=admin)
+   print(f'✓ Enrollment approved by {admin.username}')
+
+   enrollment.enroll()
+   print(f'✓ Student enrolled, program count: {program.current_enrollment}')
+
+   # Cleanup
+   enrollment.delete()
+   student.delete()
+   program.delete()
+   print('✓ Test data cleaned up')
+   "
+   ```
+9. Verify admin interface:
+   ```bash
+   python manage.py check
+   ```
+10. Test enrollment workflow:
+    ```bash
+    python manage.py shell -c "
+    from apps.services.models import MinistryProgram, ProgramEnrollment
+    from apps.users.models import User
+    from datetime import date, timedelta
+
+    admin = User.objects.filter(is_superuser=True).first()
+
+    # Test complete workflow
+    program = MinistryProgram.objects.create(
+        code='WORKFLOW_TEST_001',
+        title='Workflow Test Program',
+        slug='workflow-test',
+        ministry='mbasiced',
+        program_source='education',
+        program_category='teacher_training',
+        ppa_type='program',
+        description='Test',
+        objectives='Test',
+        expected_outcomes='Test',
+        key_performance_indicators='Test',
+        target_beneficiaries='Teachers',
+        geographic_coverage='Test',
+        implementation_strategy='Test',
+        implementing_units='Test',
+        start_date=date.today(),
+        end_date=date.today() + timedelta(days=180),
+        funding_source='regional',
+        created_by=admin,
+        enrollment_capacity=5,
+    )
+
+    teacher = User.objects.create_user(
+        username='test_teacher_workflow',
+        email='teacher@test.com',
+        first_name='Test',
+        last_name='Teacher',
+        role='asatidz'
+    )
+
+    enrollment = ProgramEnrollment.objects.create(
+        program=program,
+        participant=teacher,
+        participant_type='teacher',
+        application_notes='Applying for professional development'
+    )
+
+    print('Workflow Test:')
+    print(f'1. Application created: {enrollment.status}')
+
+    enrollment.approve(approved_by=admin)
+    print(f'2. After approval: {enrollment.status}')
+
+    enrollment.enroll()
+    print(f'3. After enrollment: {enrollment.status}')
+    print(f'   Program enrollment count: {program.current_enrollment}')
+
+    enrollment.progress_percentage = 100
+    enrollment.complete()
+    print(f'4. After completion: {enrollment.status}')
+    print(f'   Progress: {enrollment.progress_percentage}%')
+
+    # Cleanup
+    enrollment.delete()
+    teacher.delete()
+    program.delete()
+    print('✓ Workflow test complete')
+    "
+    ```
+
+## Acceptance Criteria:
+- ProgramEnrollment model created
+- Enrollment status choices defined
+- Relationship to MinistryProgram established
+- Relationship to User (student/teacher) established
+- Enrollment date tracking added
+- Progress tracking fields added
+- ServiceApplication adapted for educational use
+- Migration created and applied
+- Admin interface configured
+- Test enrollments created
+
+## Files Modified:
+- `src/apps/services/models.py (ProgramEnrollment model added)`
+- `src/apps/services/admin.py (ProgramEnrollmentAdmin added)`
+- `src/apps/services/migrations/*_add_program_enrollment_model.py (new)`
+
+## Important Notes:
+- ProgramEnrollment tracks individual participation in programs
+- unique_together constraint prevents duplicate enrollments
+- Workflow: pending → approved → enrolled → completed
+- Can track student scholarships, teacher training, activities
+- Methods provided for state transitions with validation
+- Program enrollment count auto-updates on enrollment
+- Performance and attendance tracking included
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin

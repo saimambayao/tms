@@ -1,0 +1,357 @@
+# Task ID: 123
+# Title: Archive/Remove Deprecated Tables
+# Status: pending
+# Dependencies: 122
+# Priority: high
+# Description: Archive or remove deprecated database tables based on stakeholder-approved analysis from task_122.txt. This task implements the ADDITIVE ONLY strategy
+
+# Details:
+Archive or remove deprecated database tables based on stakeholder-approved analysis from task_122.txt. This task implements the ADDITIVE ONLY strategy - tables with data are archived first, empty tables may be dropped. ALL operations must be reversible.
+
+## Implementation Steps:
+1. **Create Fresh Backup (MANDATORY)**:
+   ```bash
+   # Create backup before ANY modifications
+   pg_dump -h localhost -U postgres -d madaris_db \
+     -F c -b -v -f "backups/db_backup_task123_$(date +%Y%m%d_%H%M%S).dump"
+
+   # Verify backup
+   pg_restore --list "backups/db_backup_task123_*.dump" | wc -l
+
+   # Log backup
+   echo "=== Task 123 Backup - $(date) ===" >> backups/BACKUP_LOG.md
+   echo "File: db_backup_task123_$(date +%Y%m%d_%H%M%S).dump" >> backups/BACKUP_LOG.md
+   echo "Size: $(du -h backups/db_backup_task123_*.dump | cut -f1)" >> backups/BACKUP_LOG.md
+   ```
+
+2. **Verify stakeholder approval**:
+   ```bash
+   # Ensure DATABASE_ANALYSIS_REPORT.md has all approvals checked
+   grep "Approved" docs/DATABASE_ANALYSIS_REPORT.md
+
+   # Do NOT proceed without approval signatures
+   ```
+
+3. **Create archive directory structure**:
+   ```bash
+   mkdir -p archives/database/phase13
+   mkdir -p archives/database/phase13/tables
+   mkdir -p archives/database/phase13/metadata
+   ```
+
+4. **Create table archive script**:
+   ```python
+   # scripts/archive_deprecated_tables.py
+   import django
+   import os
+   import json
+   from django.db import connection
+   from datetime import datetime
+
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   # Tables approved for archival (from task_122 report)
+   TABLES_TO_ARCHIVE = [
+       # Add tables from approved list
+       # Example: 'old_chapters_backup',
+       # Example: 'legacy_member_data',
+   ]
+
+   # Empty tables approved for removal
+   EMPTY_TABLES_TO_REMOVE = [
+       # Add empty tables from approved list
+       # Example: 'temp_import_staging',
+   ]
+
+   def export_table_data(table_name):
+       """Export table data to JSON archive"""
+
+       print(f"Archiving table: {table_name}")
+
+       with connection.cursor() as cursor:
+           # Get table metadata
+           cursor.execute(f"""
+               SELECT column_name, data_type
+               FROM information_schema.columns
+               WHERE table_name = '{table_name}'
+               ORDER BY ordinal_position;
+           """)
+           columns = cursor.fetchall()
+
+           # Get all data
+           cursor.execute(f'SELECT * FROM "{table_name}";')
+           rows = cursor.fetchall()
+
+           # Get row count
+           row_count = len(rows)
+
+           archive_data = {
+               'table_name': table_name,
+               'archived_at': datetime.now().isoformat(),
+               'row_count': row_count,
+               'columns': [{'name': col[0], 'type': col[1]} for col in columns],
+               'data': [
+                   dict(zip([col[0] for col in columns], row))
+                   for row in rows
+               ]
+           }
+
+           # Save to JSON file
+           archive_file = f"archives/database/phase13/tables/{table_name}_{datetime.now().strftime('%Y%m%d')}.json"
+
+           with open(archive_file, 'w') as f:
+               json.dump(archive_data, f, indent=2, default=str)
+
+           print(f"  ✓ Exported {row_count} rows to {archive_file}")
+
+           # Also export as CSV for easy viewing
+           csv_file = f"archives/database/phase13/tables/{table_name}_{datetime.now().strftime('%Y%m%d')}.csv"
+           cursor.execute(f'COPY (SELECT * FROM "{table_name}") TO STDOUT WITH CSV HEADER;')
+
+           return {
+               'table': table_name,
+               'rows': row_count,
+               'json_file': archive_file,
+               'csv_file': csv_file
+           }
+
+   def verify_archive(table_name, archive_file):
+       """Verify archive file is valid and complete"""
+
+       print(f"Verifying archive: {archive_file}")
+
+       with open(archive_file, 'r') as f:
+           archive_data = json.load(f)
+
+       # Verify row count matches
+       with connection.cursor() as cursor:
+           cursor.execute(f'SELECT COUNT(*) FROM "{table_name}";')
+           actual_count = cursor.fetchone()[0]
+
+       if archive_data['row_count'] != actual_count:
+           raise ValueError(f"Archive verification failed: row count mismatch")
+
+       print(f"  ✓ Archive verified: {actual_count} rows")
+       return True
+
+   def generate_drop_migration(tables_to_drop):
+       """Generate Django migration to drop tables"""
+
+       migration_content = f'''# Generated by archive_deprecated_tables.py
+   # Date: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+
+   from django.db import migrations
+
+   class Migration(migrations.Migration):
+
+       dependencies = [
+           # Add appropriate dependency here
+           ('your_app', 'previous_migration'),
+       ]
+
+       operations = [
+   '''
+
+       for table in tables_to_drop:
+           migration_content += f'''
+           migrations.RunSQL(
+               sql='DROP TABLE IF EXISTS "{table}" CASCADE;',
+               reverse_sql='-- Table {table} can be restored from archive: archives/database/phase13/tables/{table}_*.json'
+           ),
+   '''
+
+       migration_content += '''
+       ]
+   '''
+
+       return migration_content
+
+   def main():
+       """Main archive process"""
+
+       print("=" * 60)
+       print("DATABASE TABLE ARCHIVAL - PHASE 13")
+       print("=" * 60)
+       print()
+
+       archived_tables = []
+
+       # Archive tables with data
+       if TABLES_TO_ARCHIVE:
+           print(f"Archiving {len(TABLES_TO_ARCHIVE)} tables...")
+           print()
+
+           for table in TABLES_TO_ARCHIVE:
+               try:
+                   result = export_table_data(table)
+                   verify_archive(table, result['json_file'])
+                   archived_tables.append(result)
+                   print()
+               except Exception as e:
+                   print(f"  ✗ ERROR archiving {table}: {e}")
+                   print("  STOPPING - Fix error before continuing")
+                   return False
+
+       # Generate metadata file
+       metadata = {
+           'phase': 13,
+           'task': 'task_123',
+           'archived_at': datetime.now().isoformat(),
+           'tables_archived': len(archived_tables),
+           'tables_to_drop': EMPTY_TABLES_TO_REMOVE,
+           'archived_tables': archived_tables
+       }
+
+       metadata_file = f"archives/database/phase13/metadata/archive_metadata_{datetime.now().strftime('%Y%m%d')}.json"
+
+       with open(metadata_file, 'w') as f:
+           json.dump(metadata, f, indent=2)
+
+       print("=" * 60)
+       print("ARCHIVAL COMPLETE")
+       print("=" * 60)
+       print(f"Tables archived: {len(archived_tables)}")
+       print(f"Metadata saved: {metadata_file}")
+       print()
+       print("⚠️  NEXT STEPS:")
+       print("1. Review archive files")
+       print("2. Test restore on staging")
+       print("3. Generate drop migration")
+       print("4. Test migration on staging")
+       print("5. Apply to production (with backup)")
+
+       return True
+
+   if __name__ == '__main__':
+       success = main()
+       if success:
+           print("\n✅ Archive process completed successfully")
+       else:
+           print("\n✗ Archive process failed - review errors above")
+   ```
+
+5. **Run archive script**:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python scripts/archive_deprecated_tables.py
+   ```
+
+6. **Verify archive files**:
+   ```bash
+   # Check archives were created
+   ls -lh archives/database/phase13/tables/
+
+   # Verify JSON is valid
+   python -m json.tool archives/database/phase13/tables/[table_name]_*.json | head
+
+   # Check row counts
+   cat archives/database/phase13/metadata/archive_metadata_*.json
+   ```
+
+7. **Test archive restore on staging** (MANDATORY):
+   ```python
+   # scripts/test_restore_archive.py
+   import json
+   from django.db import connection
+
+   def test_restore(archive_file):
+       """Test restoring data from archive"""
+
+       with open(archive_file, 'r') as f:
+           archive_data = json.load(f)
+
+       table_name = archive_data['table_name'] + '_restore_test'
+
+       # Create test table and restore data
+       # ... implementation ...
+
+       print(f"✓ Successfully restored {archive_data['row_count']} rows")
+
+   # Run on staging only!
+   ```
+
+8. **Generate migration for table removal** (after successful archive):
+   ```bash
+   # Only after archives are verified!
+   python manage.py makemigrations --empty your_app --name remove_deprecated_tables
+
+   # Edit migration manually to add DROP TABLE operations
+   ```
+
+9. **Test migration on staging**:
+   ```bash
+   # On STAGING environment only
+   python manage.py migrate your_app --plan
+
+   # Apply migration
+   python manage.py migrate your_app
+
+   # Verify tables dropped
+   python manage.py dbshell
+   \dt  # List tables
+
+   # Test rollback (restore from backup)
+   pg_restore -h localhost -U postgres -d madaris_staging \
+     -c backups/db_backup_task123_*.dump
+   ```
+
+10. **Document operations**:
+    ```bash
+    echo "## Task 123 Complete - $(date)" >> docs/PHASE_13_LOG.md
+    echo "- Tables archived: [count]" >> docs/PHASE_13_LOG.md
+    echo "- Archive location: archives/database/phase13/" >> docs/PHASE_13_LOG.md
+    echo "- Tables dropped: [list]" >> docs/PHASE_13_LOG.md
+    echo "- Rollback tested: YES" >> docs/PHASE_13_LOG.md
+    ```
+
+## Acceptance Criteria:
+- Fresh database backup created and verified
+- Stakeholder approval obtained for all table operations
+- All tables with data exported to archive files
+- Archive files verified (can be imported)
+- Empty tables documented before removal
+- Migration created for table removal (reversible)
+- Migration tested on staging database
+- Rollback procedure documented and tested
+- All operations logged in PHASE_13_LOG.md
+
+## Files Modified:
+- `scripts/archive_deprecated_tables.py (create)`
+- `scripts/test_restore_archive.py (create)`
+- `archives/database/phase13/tables/*.json (create)`
+- `archives/database/phase13/tables/*.csv (create)`
+- `archives/database/phase13/metadata/archive_metadata_*.json (create)`
+- `src/apps/[app]/migrations/XXXX_remove_deprecated_tables.py (create)`
+- `docs/PHASE_13_LOG.md (update)`
+- `backups/db_backup_task123_[timestamp].dump (create)`
+- `backups/BACKUP_LOG.md (update)`
+
+## Important Notes:
+- **NEVER drop tables with data without archiving first**
+- Test ALL operations on staging before production
+- Maintain ability to restore archived data
+- Keep archives for at least 6 months
+- Document which tables were dropped and why
+- Estimate: 120 minutes
+- Risk Level: HIGH (table deletion)
+
+## Backup Requirements:
+1. **Pre-Operation Backup**: Full database dump before ANY changes
+2. **Archive Backups**: Export all table data to JSON/CSV
+3. **Backup Verification**: Test restore from both dumps and archives
+4. **Multiple Storage**: Store backups in 3+ locations
+5. **Rollback Ready**: Keep backup accessible during migration
+
+## Data Integrity Checks:
+- Verify archive row counts match actual tables
+- Test archive restore on staging environment
+- Confirm no foreign key violations after table removal
+- Validate all data is recoverable
+- Check application still functions after cleanup
+
+# Test Strategy:
+1. Verify app appears in INSTALLED_APPS
+2. Run migrations successfully
+3. Import app models without errors
+4. Verify app shows in Django admin

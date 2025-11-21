@@ -1,0 +1,49 @@
+# Task ID: 035
+# Title: Add Madrasah Curriculum Offering Fields
+# Status: pending
+# Dependencies: 034
+# Priority: medium
+# Description: Add curriculum offering fields: offers_arabic_language, offers_quran_studies, offers_hadith_studies, offers_islamic_studies, offers_general_education.
+
+# Details:
+Add curriculum offering fields: offers_arabic_language, offers_quran_studies, offers_hadith_studies, offers_islamic_studies, offers_general_education.
+
+## Implementation Steps:
+1. Add curriculum fields:
+   ```python
+   class Madrasah(models.Model):
+       ...
+       # Curriculum Offered
+       offers_arabic_language = BooleanField(default=True)
+       offers_quran_studies = BooleanField(default=True)
+       offers_hadith_studies = BooleanField(default=True, help_text="Ilm al-Hadith")
+       offers_islamic_studies = BooleanField(default=True)
+       offers_general_education = BooleanField(
+           default=False,
+           help_text="Secular subjects (Math, Science, etc.)"
+       )
+   ```
+2. Create migration
+3. Test filtering in admin by curriculum type
+
+## Acceptance Criteria:
+- Boolean fields for curriculum offerings added
+- All fields default appropriately for Islamic schools
+- Migration created
+- Can filter madaris by curriculum type
+- Fields appear in admin
+
+## Files Modified:
+- `src/apps/chapters/models.py`
+- `src/apps/chapters/migrations/000X_add_curriculum_fields.py`
+
+## Important Notes:
+- Most madaris offer Islamic subjects by default
+- General education is additional offering
+- Estimate: 20 minutes
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

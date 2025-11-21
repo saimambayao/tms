@@ -1,0 +1,576 @@
+# Task ID: 081
+# Title: Create Academic Records Tests
+# Status: pending
+# Dependencies: 074, 075, 076, 077
+# Priority: high
+# Description: Create comprehensive test suite for academic records functionality including model tests, view tests, and integration tests for gradebook and report c
+
+# Details:
+Create comprehensive test suite for academic records functionality including model tests, view tests, and integration tests for gradebook and report cards.
+
+## Implementation Steps:
+1. Create model tests:
+   ```python
+   # apps/academics/tests/test_models.py
+   from django.test import TestCase
+   from django.core.exceptions import ValidationError
+   from datetime import date, timedelta
+   from decimal import Decimal
+
+   from apps.academics.models import (
+       AcademicYear, Class, ClassEnrollment, Grade, GradeReport,
+       Attendance, AttendanceSummary, AcademicEvent
+   )
+   from apps.users.models import User
+   from apps.madrasahs.models import Madrasah
+   from apps.curriculum.models import Subject
+
+   class AcademicYearModelTest(TestCase):
+       """Test AcademicYear model"""
+
+       def setUp(self):
+           self.academic_year = AcademicYear.objects.create(
+               year='2024-2025',
+               start_date=date(2024, 9, 1),
+               end_date=date(2025, 6, 30),
+               hijri_year='1446-1447',
+               status='active',
+               term_structure={'terms': 2, 'semesters': ['Fall', 'Spring']}
+           )
+
+       def test_academic_year_creation(self):
+           """Test academic year is created correctly"""
+           self.assertEqual(self.academic_year.year, '2024-2025')
+           self.assertEqual(self.academic_year.status, 'active')
+
+       def test_academic_year_str(self):
+           """Test string representation"""
+           expected = "2024-2025 (Active)"
+           self.assertEqual(str(self.academic_year), expected)
+
+       def test_is_current_property(self):
+           """Test is_current property"""
+           # Should be True if today is within academic year
+           today = date.today()
+           if self.academic_year.start_date <= today <= self.academic_year.end_date:
+               self.assertTrue(self.academic_year.is_current)
+
+       def test_duration_days(self):
+           """Test duration calculation"""
+           expected_days = (date(2025, 6, 30) - date(2024, 9, 1)).days
+           self.assertEqual(self.academic_year.duration_days, expected_days)
+
+       def test_only_one_active_year(self):
+           """Test that only one academic year can be active"""
+           # Try to create another active year
+           with self.assertRaises(ValidationError):
+               ay2 = AcademicYear(
+                   year='2025-2026',
+                   start_date=date(2025, 9, 1),
+                   end_date=date(2026, 6, 30),
+                   status='active'
+               )
+               ay2.full_clean()
+
+       def test_end_date_after_start_date(self):
+           """Test that end date must be after start date"""
+           with self.assertRaises(ValidationError):
+               ay = AcademicYear(
+                   year='2024-2025',
+                   start_date=date(2025, 6, 30),
+                   end_date=date(2024, 9, 1),
+                   status='upcoming'
+               )
+               ay.full_clean()
+
+       def test_get_term_dates(self):
+           """Test term date calculation"""
+           term1 = self.academic_year.get_term_dates(1)
+           self.assertIsNotNone(term1)
+           self.assertIn('start', term1)
+           self.assertIn('end', term1)
+
+   class GradeModelTest(TestCase):
+       """Test Grade model"""
+
+       def setUp(self):
+           # Create test data
+           self.student = User.objects.create_user(
+               username='student1',
+               role='student',
+               first_name='Ahmad',
+               last_name='Ali'
+           )
+           self.teacher = User.objects.create_user(
+               username='teacher1',
+               role='asatidz',
+               first_name='Fatima',
+               last_name='Hassan'
+           )
+           self.madrasah = Madrasah.objects.create(
+               name='Test Madrasah',
+               registration_number='TEST001'
+           )
+           self.academic_year = AcademicYear.objects.create(
+               year='2024-2025',
+               start_date=date(2024, 9, 1),
+               end_date=date(2025, 6, 30),
+               status='active'
+           )
+           self.subject = Subject.objects.create(
+               name='Quran Studies',
+               code='QURAN101'
+           )
+           self.class_obj = Class.objects.create(
+               madrasah=self.madrasah,
+               academic_year=self.academic_year,
+               teacher=self.teacher,
+               subject=self.subject,
+               grade_level='grade5',
+               section='A',
+               class_code='QURAN-G5-A-2024'
+           )
+
+       def test_grade_creation(self):
+           """Test grade is created correctly"""
+           grade = Grade.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               assessment_type='quiz',
+               assessment_name='Chapter 1 Quiz',
+               assessment_date=date.today(),
+               score=85,
+               max_score=100,
+               term=1
+           )
+           self.assertEqual(grade.percentage, Decimal('85.00'))
+
+       def test_percentage_calculation(self):
+           """Test percentage is calculated correctly"""
+           grade = Grade.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               assessment_type='quiz',
+               assessment_name='Quiz',
+               assessment_date=date.today(),
+               score=42,
+               max_score=50,
+               term=1
+           )
+           self.assertEqual(grade.percentage, Decimal('84.00'))
+
+       def test_letter_grade_calculation(self):
+           """Test letter grade conversion"""
+           test_cases = [
+               (95, 'A+'),
+               (87, 'A'),
+               (82, 'B+'),
+               (77, 'B'),
+               (72, 'C+'),
+               (67, 'C'),
+               (62, 'D'),
+               (55, 'F'),
+           ]
+
+           for score, expected_letter in test_cases:
+               grade = Grade(
+                   student=self.student,
+                   class_instance=self.class_obj,
+                   academic_year=self.academic_year,
+                   assessment_type='test',
+                   assessment_name=f'Test {score}',
+                   assessment_date=date.today(),
+                   score=score,
+                   max_score=100,
+                   term=1
+               )
+               grade.save()
+               self.assertEqual(grade.letter_grade, expected_letter)
+
+       def test_is_passing(self):
+           """Test is_passing property"""
+           passing_grade = Grade.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               assessment_type='test',
+               assessment_name='Pass Test',
+               assessment_date=date.today(),
+               score=70,
+               max_score=100,
+               term=1
+           )
+           self.assertTrue(passing_grade.is_passing)
+
+           failing_grade = Grade.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               assessment_type='test',
+               assessment_name='Fail Test',
+               assessment_date=date.today(),
+               score=50,
+               max_score=100,
+               term=1
+           )
+           self.assertFalse(failing_grade.is_passing)
+
+       def test_weighted_score(self):
+           """Test weighted score calculation"""
+           grade = Grade.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               assessment_type='quiz',
+               assessment_name='Weighted Quiz',
+               assessment_date=date.today(),
+               score=80,
+               max_score=100,
+               weight=0.3,
+               term=1
+           )
+           expected_weighted = 80.0 * 0.3
+           self.assertEqual(grade.weighted_score, expected_weighted)
+
+   class AttendanceModelTest(TestCase):
+       """Test Attendance model"""
+
+       def setUp(self):
+           self.student = User.objects.create_user(
+               username='student1',
+               role='student'
+           )
+           self.madrasah = Madrasah.objects.create(
+               name='Test Madrasah',
+               registration_number='TEST001'
+           )
+           self.academic_year = AcademicYear.objects.create(
+               year='2024-2025',
+               start_date=date(2024, 9, 1),
+               end_date=date(2025, 6, 30),
+               status='active'
+           )
+           self.subject = Subject.objects.create(
+               name='Arabic',
+               code='ARAB101'
+           )
+           self.class_obj = Class.objects.create(
+               madrasah=self.madrasah,
+               academic_year=self.academic_year,
+               subject=self.subject,
+               grade_level='grade5',
+               section='A'
+           )
+
+       def test_attendance_creation(self):
+           """Test attendance record creation"""
+           attendance = Attendance.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               date=date.today(),
+               status='present'
+           )
+           self.assertEqual(attendance.status, 'present')
+
+       def test_is_present_property(self):
+           """Test is_present property"""
+           present = Attendance.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               date=date.today(),
+               status='present'
+           )
+           self.assertTrue(present.is_present)
+
+           late = Attendance.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               date=date.today() - timedelta(days=1),
+               status='late'
+           )
+           self.assertTrue(late.is_present)
+
+       def test_is_absent_property(self):
+           """Test is_absent property"""
+           absent = Attendance.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               date=date.today(),
+               status='absent'
+           )
+           self.assertTrue(absent.is_absent)
+
+       def test_auto_excused_flag(self):
+           """Test that excused statuses auto-set is_excused flag"""
+           sick = Attendance.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               date=date.today(),
+               status='sick'
+           )
+           self.assertTrue(sick.is_excused)
+
+   class AttendanceSummaryTest(TestCase):
+       """Test AttendanceSummary calculations"""
+
+       def setUp(self):
+           self.student = User.objects.create_user(
+               username='student1',
+               role='student'
+           )
+           self.madrasah = Madrasah.objects.create(
+               name='Test Madrasah',
+               registration_number='TEST001'
+           )
+           self.academic_year = AcademicYear.objects.create(
+               year='2024-2025',
+               start_date=date(2024, 9, 1),
+               end_date=date(2025, 6, 30),
+               status='active'
+           )
+           self.subject = Subject.objects.create(
+               name='Fiqh',
+               code='FIQH101'
+           )
+           self.class_obj = Class.objects.create(
+               madrasah=self.madrasah,
+               academic_year=self.academic_year,
+               subject=self.subject,
+               grade_level='grade5',
+               section='A'
+           )
+
+       def test_calculate_statistics(self):
+           """Test attendance statistics calculation"""
+           # Create attendance records for September 2024
+           base_date = date(2024, 9, 1)
+           for i in range(20):
+               status = 'present' if i < 18 else 'absent'
+               Attendance.objects.create(
+                   student=self.student,
+                   class_instance=self.class_obj,
+                   academic_year=self.academic_year,
+                   date=base_date + timedelta(days=i),
+                   status=status
+               )
+
+           # Create summary
+           summary = AttendanceSummary.objects.create(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               month=9,
+               year=2024
+           )
+           summary.calculate_statistics()
+
+           self.assertEqual(summary.total_sessions, 20)
+           self.assertEqual(summary.present_count, 18)
+           self.assertEqual(summary.absent_count, 2)
+           self.assertEqual(summary.attendance_percentage, Decimal('90.00'))
+
+       def test_attendance_status_property(self):
+           """Test attendance status descriptor"""
+           summary = AttendanceSummary(
+               student=self.student,
+               class_instance=self.class_obj,
+               academic_year=self.academic_year,
+               month=9,
+               year=2024,
+               attendance_percentage=Decimal('96.0')
+           )
+           self.assertEqual(summary.attendance_status, 'Excellent (Mumtaz)')
+
+   def test_suite():
+       """Create test suite"""
+       suite = TestCase.TestSuite()
+       suite.addTest(AcademicYearModelTest)
+       suite.addTest(GradeModelTest)
+       suite.addTest(AttendanceModelTest)
+       suite.addTest(AttendanceSummaryTest)
+       return suite
+   ```
+
+2. Create view tests:
+   ```python
+   # apps/academics/tests/test_views.py
+   from django.test import TestCase, Client
+   from django.urls import reverse
+   from datetime import date
+
+   from apps.academics.models import AcademicYear, Class, Grade, Attendance
+   from apps.users.models import User
+   from apps.madrasahs.models import Madrasah
+   from apps.curriculum.models import Subject
+
+   class GradebookViewsTest(TestCase):
+       """Test gradebook views"""
+
+       def setUp(self):
+           self.client = Client()
+           self.teacher = User.objects.create_user(
+               username='teacher1',
+               password='testpass123',
+               role='asatidz',
+               email='teacher@test.com'
+           )
+           self.student = User.objects.create_user(
+               username='student1',
+               password='testpass123',
+               role='student'
+           )
+           self.madrasah = Madrasah.objects.create(
+               name='Test Madrasah',
+               registration_number='TEST001'
+           )
+           self.academic_year = AcademicYear.objects.create(
+               year='2024-2025',
+               start_date=date(2024, 9, 1),
+               end_date=date(2025, 6, 30),
+               status='active'
+           )
+           self.subject = Subject.objects.create(
+               name='Quran',
+               code='QURAN'
+           )
+           self.class_obj = Class.objects.create(
+               madrasah=self.madrasah,
+               academic_year=self.academic_year,
+               teacher=self.teacher,
+               subject=self.subject,
+               grade_level='grade5',
+               section='A'
+           )
+
+       def test_gradebook_class_list_requires_login(self):
+           """Test that gradebook requires login"""
+           response = self.client.get(reverse('academics:gradebook_class_list'))
+           self.assertEqual(response.status_code, 302)  # Redirect to login
+
+       def test_gradebook_class_list_authenticated(self):
+           """Test gradebook list view for authenticated teacher"""
+           self.client.login(username='teacher1', password='testpass123')
+           response = self.client.get(reverse('academics:gradebook_class_list'))
+           self.assertEqual(response.status_code, 200)
+           self.assertContains(response, 'My Classes')
+
+       def test_gradebook_roster_view(self):
+           """Test class roster view"""
+           self.client.login(username='teacher1', password='testpass123')
+           url = reverse('academics:gradebook_roster', args=[self.class_obj.id])
+           response = self.client.get(url)
+           self.assertEqual(response.status_code, 200)
+           self.assertContains(response, self.class_obj.subject.name)
+
+       def test_gradebook_roster_permission_denied(self):
+           """Test that other teachers cannot access gradebook"""
+           other_teacher = User.objects.create_user(
+               username='teacher2',
+               password='testpass123',
+               role='asatidz'
+           )
+           self.client.login(username='teacher2', password='testpass123')
+           url = reverse('academics:gradebook_roster', args=[self.class_obj.id])
+           response = self.client.get(url)
+           self.assertEqual(response.status_code, 302)  # Redirect
+
+   class CalendarViewsTest(TestCase):
+       """Test calendar views"""
+
+       def setUp(self):
+           self.client = Client()
+           self.user = User.objects.create_user(
+               username='user1',
+               password='testpass123'
+           )
+
+       def test_calendar_view_requires_login(self):
+           """Test calendar requires login"""
+           response = self.client.get(reverse('academics:calendar'))
+           self.assertEqual(response.status_code, 302)
+
+       def test_calendar_view_authenticated(self):
+           """Test calendar view for authenticated user"""
+           self.client.login(username='user1', password='testpass123')
+           response = self.client.get(reverse('academics:calendar'))
+           self.assertEqual(response.status_code, 200)
+           self.assertContains(response, 'Academic Calendar')
+   ```
+
+3. Create test runner script:
+   ```bash
+   # Create script to run all academic tests
+   cat > /Users/saidamenmambayao/apps/madaris-ms/src/scripts/test_academics.sh << 'EOF'
+   #!/bin/bash
+   # Test runner for academics app
+
+   echo "Running Academic Records Tests..."
+
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+
+   # Run tests with coverage
+   python manage.py test apps.academics.tests --verbosity=2
+
+   # Generate coverage report
+   coverage run --source='apps.academics' manage.py test apps.academics.tests
+   coverage report
+   coverage html
+
+   echo "Tests complete. Coverage report generated in htmlcov/"
+   EOF
+
+   chmod +x /Users/saidamenmambayao/apps/madaris-ms/src/scripts/test_academics.sh
+   ```
+
+4. Run tests:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py test apps.academics.tests --verbosity=2
+   ```
+
+## Acceptance Criteria:
+- Model tests created
+- View tests created
+- Form tests created
+- Grade calculation tests
+- Attendance calculation tests
+- Report generation tests
+- All tests passing
+- Code coverage > 80%
+
+## Files Modified:
+- `src/apps/academics/tests/__init__.py (new)`
+- `src/apps/academics/tests/test_models.py (new)`
+- `src/apps/academics/tests/test_views.py (new)`
+- `src/apps/academics/tests/test_forms.py (new)`
+- `src/scripts/test_academics.sh (new)`
+
+## Important Notes:
+- Comprehensive model tests for all core models
+- View tests with authentication checks
+- Permission tests for teacher access
+- Grade and attendance calculation tests
+- Test coverage monitoring
+- Run with: python manage.py test apps.academics
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Access view URL and verify HTTP 200 response
+6. Test with different user permissions
+7. Verify context data passed to template
+8. Test any query parameters or filters
+9. Run test suite with `python manage.py test`
+10. Verify test coverage meets requirements
+11. Check for any failing tests
+12. Verify test assertions are correct

@@ -1,0 +1,374 @@
+# Task ID: 060
+# Title: Verify Phase 5 Complete
+# Status: pending
+# Dependencies: 051, 052, 053, 054, 055, 056, 057, 058, 059
+# Priority: medium
+# Description: Comprehensive verification that Phase 5 (Curriculum Management) is complete and all components are working correctly. This includes testing all models
+
+# Details:
+Comprehensive verification that Phase 5 (Curriculum Management) is complete and all components are working correctly. This includes testing all models, forms, views, templates, and admin interfaces to ensure the curriculum system is fully functional.
+
+## Implementation Steps:
+1. Verify database migrations:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python manage.py showmigrations curriculum
+   # All migrations should be applied [X]
+   ```
+
+2. Verify models in Django shell:
+   ```python
+   python manage.py shell
+   from apps.curriculum.models import Subject, CurriculumFramework, CurriculumSubject, LessonPlan
+
+   # Test Subject
+   subject = Subject.objects.create(
+       code='TEST101',
+       name='Test Subject',
+       category='quran',
+       credit_hours=3.0,
+       is_core=True
+   )
+   print(f"Subject created: {subject}")
+
+   # Test CurriculumFramework
+   from apps.users.models import User
+   admin = User.objects.filter(role='tarbiyyah_admin').first()
+   framework = CurriculumFramework.objects.create(
+       name='Test Framework',
+       code='TEST-2024',
+       description='Test framework',
+       education_level='ibtidaiyyah',
+       grade_levels=['Grade 1'],
+       created_by=admin,
+       is_active=True
+   )
+   print(f"Framework created: {framework}")
+
+   # Test LessonPlan
+   from apps.madaris.models import Madrasah
+   teacher = User.objects.filter(role='asatidz').first()
+   madrasah = Madrasah.objects.first()
+   lesson_plan = LessonPlan.objects.create(
+       title='Test Lesson',
+       subject=subject,
+       teacher=teacher,
+       grade_level='grade_1',
+       madrasah=madrasah,
+       academic_year='2024-2025',
+       description='Test lesson plan',
+       content='Test content',
+       duration_minutes=60
+   )
+   print(f"Lesson plan created: {lesson_plan}")
+
+   # Verify counts
+   print(f"Total subjects: {Subject.objects.count()}")
+   print(f"Total frameworks: {CurriculumFramework.objects.count()}")
+   print(f"Total lesson plans: {LessonPlan.objects.count()}")
+   ```
+
+3. Test admin interface:
+   ```bash
+   python manage.py runserver
+   # Navigate to http://localhost:8000/admin/curriculum/
+   # Verify:
+   # - Subject admin loads and works
+   # - CurriculumFramework admin loads with inline editing
+   # - CurriculumSubject admin loads
+   # - LessonPlan admin loads with bulk actions
+   # - Search and filters work
+   # - Color-coded badges display correctly
+   # - Bulk actions execute successfully
+   ```
+
+4. Test URLs:
+   ```bash
+   python manage.py show_urls | grep curriculum
+   # Should show all curriculum URLs:
+   # - /curriculum/subjects/
+   # - /curriculum/frameworks/
+   # - /curriculum/lesson-plans/
+   # - etc.
+   ```
+
+5. Test views in browser:
+   ```
+   Visit each URL and verify:
+   - /curriculum/subjects/ - list displays
+   - /curriculum/subjects/create/ - form works
+   - /curriculum/subjects/<id>/ - detail displays
+   - /curriculum/subjects/<id>/update/ - update works
+   - /curriculum/frameworks/ - list displays
+   - /curriculum/frameworks/create/ - form works
+   - /curriculum/lesson-plans/ - list displays
+   - /curriculum/lesson-plans/my/ - user's plans display
+   - /curriculum/lesson-plans/public/ - public plans display
+   - /curriculum/lesson-plans/create/ - form works
+   ```
+
+6. Test forms:
+   ```python
+   from apps.curriculum.forms import SubjectForm, CurriculumFrameworkForm, LessonPlanForm
+
+   # Test SubjectForm
+   form = SubjectForm(data={
+       'code': 'VERIFY101',
+       'name': 'Verification Subject',
+       'category': 'quran',
+       'credit_hours': 3.0,
+       'is_core': True,
+       'is_active': True
+   })
+   assert form.is_valid(), f"Form errors: {form.errors}"
+   subject = form.save()
+   print(f"Subject form test passed: {subject}")
+
+   # Test validation
+   invalid_form = SubjectForm(data={
+       'code': 'VERIFY101',  # Duplicate
+       'name': 'Another',
+       'category': 'quran',
+       'credit_hours': 3.0
+   })
+   assert not invalid_form.is_valid(), "Duplicate code should be rejected"
+   print("Form validation test passed")
+   ```
+
+7. Run all tests:
+   ```bash
+   python manage.py test apps.curriculum -v 2
+   # All tests should pass
+   ```
+
+8. Test permissions:
+   ```python
+   from django.test import Client
+   from apps.users.models import User
+
+   # Test with teacher (asatidz)
+   client = Client()
+   teacher = User.objects.create_user(
+       username='test_teacher',
+       password='testpass123',
+       role='asatidz'
+   )
+   client.login(username='test_teacher', password='testpass123')
+
+   # Should access own lesson plans
+   response = client.get('/curriculum/lesson-plans/my/')
+   assert response.status_code == 200, "Teacher should access own plans"
+
+   # Should NOT access subject creation without permission
+   response = client.get('/curriculum/subjects/create/')
+   assert response.status_code == 403, "Teacher should not create subjects"
+
+   print("Permission tests passed")
+   ```
+
+9. Verify integration with Madaris app:
+   ```python
+   from apps.madaris.models import Madrasah
+   from apps.curriculum.models import CurriculumFramework, LessonPlan
+
+   # Check Madrasah can reference CurriculumFramework
+   madrasah = Madrasah.objects.first()
+   framework = CurriculumFramework.objects.first()
+
+   # In real implementation, Madrasah has curriculum_framework FK
+   # Verify the relationship works
+   print(f"Madrasah: {madrasah}")
+   print(f"Framework: {framework}")
+
+   # Check lesson plans are linked to madrasah
+   lesson_plans = LessonPlan.objects.filter(madrasah=madrasah)
+   print(f"Lesson plans for {madrasah.name}: {lesson_plans.count()}")
+   ```
+
+10. Check static files and templates:
+    ```bash
+    # Verify template directory exists
+    ls -la /Users/saidamenmambayao/apps/madaris-ms/src/apps/curriculum/templates/curriculum/
+
+    # Verify all templates are present
+    ls -la /Users/saidamenmambayao/apps/madaris-ms/src/apps/curriculum/templates/curriculum/ | grep .html
+    ```
+
+11. Run test coverage:
+    ```bash
+    coverage run --source='apps.curriculum' manage.py test apps.curriculum
+    coverage report
+    # Target: >80% coverage
+    ```
+
+12. Create verification report:
+    ```bash
+    cat > /Users/saidamenmambayao/apps/madaris-ms/docs/docs-new/tasks-refactor/phase-05-curriculum/VERIFICATION_REPORT.md << 'EOF'
+    # Phase 5 Curriculum Management - Verification Report
+
+    **Date:** [Current Date]
+    **Status:** COMPLETE
+
+    ## Components Verified
+
+    ### Models ✓
+    - [x] Subject model created and working
+    - [x] CurriculumFramework model created and working
+    - [x] CurriculumSubject through model working
+    - [x] LessonPlan model created and working
+    - [x] All model methods functioning
+    - [x] Relationships working correctly
+
+    ### Admin Interface ✓
+    - [x] Subject admin with enhanced features
+    - [x] CurriculumFramework admin with inline editing
+    - [x] CurriculumSubject admin
+    - [x] LessonPlan admin with approval workflow
+    - [x] Bulk actions working
+    - [x] Search and filters functional
+
+    ### Forms ✓
+    - [x] SubjectForm with validation
+    - [x] CurriculumFrameworkForm
+    - [x] LessonPlanForm with file upload
+    - [x] Form validation working
+    - [x] Crispy forms styling applied
+
+    ### Views ✓
+    - [x] Subject list/detail/create/update/delete views
+    - [x] Framework list/detail/create/update/delete views
+    - [x] LessonPlan list/detail/create/update/delete views
+    - [x] My Lesson Plans view
+    - [x] Public Lesson Plans view
+    - [x] Approval workflow views
+
+    ### Templates ✓
+    - [x] Base curriculum template
+    - [x] Subject templates
+    - [x] Framework templates
+    - [x] Lesson plan templates
+    - [x] Responsive design verified
+    - [x] Navigation working
+
+    ### Tests ✓
+    - [x] Model tests passing
+    - [x] Form tests passing
+    - [x] View tests passing
+    - [x] Permission tests passing
+    - [x] Coverage > 80%
+
+    ### Integration ✓
+    - [x] Integration with User model
+    - [x] Integration with Madaris app
+    - [x] Foreign key relationships working
+    - [x] URLs properly configured
+
+    ## Test Results
+
+    ```
+    Total Tests: [X]
+    Passed: [X]
+    Failed: 0
+    Coverage: [X]%
+    ```
+
+    ## Known Issues
+    - None
+
+    ## Next Steps
+    - Proceed to Phase 6: Student Management
+    - Monitor curriculum usage in production
+    - Gather user feedback for improvements
+
+    ---
+    **Verified by:** [Name]
+    **Signature:** ________________
+    EOF
+    ```
+
+13. Final checklist verification:
+    ```
+    ✓ App structure created
+    ✓ Models created and migrated
+    ✓ Admin interface functional
+    ✓ Forms created and validated
+    ✓ Views implemented
+    ✓ URLs configured
+    ✓ Templates created
+    ✓ Tests written and passing
+    ✓ Permissions working
+    ✓ Integration verified
+    ✓ Documentation complete
+    ```
+
+## Acceptance Criteria:
+- All curriculum models created and migrated
+- Admin interface fully functional with all features
+- All forms working with proper validation
+- All views accessible and functioning
+- All templates rendering correctly
+- All tests passing
+- URLs properly configured
+- Permissions working correctly
+- Documentation complete
+- Integration with existing apps verified
+
+## Files Modified:
+- `All curriculum app files (verification only)`
+- `/docs/docs-new/tasks-refactor/phase-05-curriculum/VERIFICATION_REPORT.md (new file)`
+
+## Important Notes:
+- This is a comprehensive verification task
+- All previous tasks must be completed
+- Take time to thoroughly test all functionality
+- Document any issues found
+- Update verification report with actual results
+- Phase 5 must be fully complete before moving to Phase 6
+- Estimate: 2 hours
+
+## Phase 5 Completion Criteria
+
+**All 10 tasks must be marked as DONE:**
+- ✓ task_051.txt - Curriculum app structure
+- ✓ task_052.txt - Subject model
+- ✓ task_053.txt - CurriculumFramework model
+- ✓ task_054.txt - LessonPlan model
+- ✓ task_055.txt - Admin interface
+- ✓ task_056.txt - Forms
+- ✓ task_057.txt - Views and URLs
+- ✓ task_058.txt - Templates
+- ✓ task_059.txt - Tests
+- ✓ task_060.txt - Verification
+
+**When complete:**
+- Mark this task as done
+- Update phase-05-curriculum/README.md status
+- Create git commit with message: "Complete Phase 5 - Curriculum Management"
+- Notify team that Phase 6 can begin
+
+# Test Strategy:
+1. Load page in browser and verify visual changes
+2. Test responsive design on mobile and desktop
+3. Verify no console errors in browser DevTools
+4. Test form submissions if applicable
+5. Run migrations and verify schema changes
+6. Create test instances to verify new fields
+7. Test admin interface with new fields
+8. Verify backward compatibility with existing data
+9. Test form validation with valid data
+10. Test form validation with invalid data
+11. Verify error messages display correctly
+12. Test form submission and data persistence
+13. Test CSRF protection
+14. Login to Django admin as superuser
+15. Verify models appear in admin interface
+16. Test create, read, update, delete operations
+17. Verify list display, filters, and search work
+18. Access view URL and verify HTTP 200 response
+19. Test with different user permissions
+20. Verify context data passed to template
+21. Test any query parameters or filters
+22. Run test suite with `python manage.py test`
+23. Verify test coverage meets requirements
+24. Check for any failing tests
+25. Verify test assertions are correct

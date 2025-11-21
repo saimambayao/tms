@@ -1,0 +1,67 @@
+# Task ID: 046
+# Title: Create Teachers App
+# Status: pending
+# Dependencies: 045
+# Priority: medium
+# Description: Create new Django app for teacher/asatidz management with TeacherProfile model extending User.
+
+# Details:
+Create new Django app for teacher/asatidz management with TeacherProfile model extending User.
+
+## Implementation Steps:
+1. Create teachers app:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src/apps
+   python ../manage.py startapp teachers
+   ```
+2. Add to INSTALLED_APPS in settings:
+   ```python
+   # config/settings/base.py
+   INSTALLED_APPS = [
+       ...
+       'apps.chapters',
+       'apps.teachers',  # New app
+       ...
+   ]
+   ```
+3. Create __init__.py files:
+   ```bash
+   touch /Users/saidamenmambayao/apps/madaris-ms/src/apps/teachers/__init__.py
+   ```
+4. Run initial migration:
+   ```bash
+   python manage.py makemigrations teachers
+   python manage.py migrate teachers
+   ```
+5. Verify in Django admin
+
+## Acceptance Criteria:
+- Teachers app created
+- App added to INSTALLED_APPS
+- Basic app structure verified
+- Initial migration created
+- App accessible in admin
+
+## Files Modified:
+- `src/apps/teachers/ (new directory)`
+- `src/apps/teachers/__init__.py`
+- `src/apps/teachers/models.py`
+- `src/apps/teachers/admin.py`
+- `src/apps/teachers/views.py`
+- `src/apps/teachers/apps.py`
+- `src/config/settings/base.py`
+
+## Important Notes:
+- Keep app name as 'teachers' in code (Django convention)
+- Refer to as 'Asatidz' in UI/templates
+- Estimate: 20 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin

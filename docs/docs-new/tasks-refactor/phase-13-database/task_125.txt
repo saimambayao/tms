@@ -1,0 +1,531 @@
+# Task ID: 125
+# Title: Run Data Integrity Checks
+# Status: pending
+# Dependencies: 124
+# Priority: high
+# Description: Perform comprehensive data integrity checks to ensure database consistency, validate foreign key relationships, identify orphaned records, check for d
+
+# Details:
+Perform comprehensive data integrity checks to ensure database consistency, validate foreign key relationships, identify orphaned records, check for data anomalies, and verify referential integrity across all tables. This is a READ-ONLY verification task with detailed reporting.
+
+## Implementation Steps:
+1. **Verify Recent Backup Exists**:
+   ```bash
+   # Ensure we have a recent backup
+   ls -lht backups/db_backup_task124_* | head -1
+
+   # If no recent backup, create one
+   pg_dump -h localhost -U postgres -d madaris_db \
+     -F c -b -v -f "backups/db_backup_task125_$(date +%Y%m%d_%H%M%S).dump"
+   ```
+
+2. **Create comprehensive data integrity checker**:
+   ```python
+   # scripts/check_data_integrity.py
+   import django
+   import os
+   from django.db import connection
+   from django.apps import apps
+   from datetime import datetime
+   from collections import defaultdict
+
+   os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+   django.setup()
+
+   class DataIntegrityChecker:
+       """Comprehensive database integrity checker"""
+
+       def __init__(self):
+           self.issues = {
+               'critical': [],
+               'high': [],
+               'medium': [],
+               'low': []
+           }
+           self.stats = {}
+
+       def check_foreign_key_integrity(self):
+           """Check all foreign key relationships are valid"""
+
+           print("Checking foreign key integrity...")
+
+           with connection.cursor() as cursor:
+               # Get all foreign key constraints
+               cursor.execute("""
+                   SELECT
+                       tc.table_name,
+                       kcu.column_name,
+                       ccu.table_name AS foreign_table_name,
+                       ccu.column_name AS foreign_column_name,
+                       tc.constraint_name
+                   FROM information_schema.table_constraints AS tc
+                   JOIN information_schema.key_column_usage AS kcu
+                       ON tc.constraint_name = kcu.constraint_name
+                   JOIN information_schema.constraint_column_usage AS ccu
+                       ON ccu.constraint_name = tc.constraint_name
+                   WHERE tc.constraint_type = 'FOREIGN KEY'
+                   AND tc.table_schema = 'public';
+               """)
+
+               foreign_keys = cursor.fetchall()
+
+               for fk in foreign_keys:
+                   table, column, ref_table, ref_column, constraint = fk
+
+                   # Check for orphaned records
+                   query = f"""
+                       SELECT COUNT(*) as orphaned_count
+                       FROM {table} t
+                       WHERE t.{column} IS NOT NULL
+                       AND NOT EXISTS (
+                           SELECT 1
+                           FROM {ref_table} r
+                           WHERE r.{ref_column} = t.{column}
+                       );
+                   """
+
+                   cursor.execute(query)
+                   result = cursor.fetchone()
+                   orphaned_count = result[0]
+
+                   if orphaned_count > 0:
+                       self.issues['critical'].append({
+                           'type': 'orphaned_records',
+                           'table': table,
+                           'column': column,
+                           'reference': f"{ref_table}.{ref_column}",
+                           'count': orphaned_count,
+                           'message': f"Found {orphaned_count} orphaned records in {table}.{column}"
+                       })
+
+           print(f"  ✓ Checked {len(foreign_keys)} foreign key relationships")
+
+       def check_null_constraints(self):
+           """Check for NULL values in columns that shouldn't have them"""
+
+           print("Checking NULL value constraints...")
+
+           with connection.cursor() as cursor:
+               # Get columns with NOT NULL constraint
+               cursor.execute("""
+                   SELECT
+                       table_name,
+                       column_name,
+                       is_nullable,
+                       data_type
+                   FROM information_schema.columns
+                   WHERE table_schema = 'public'
+                   AND is_nullable = 'NO'
+                   AND column_name NOT IN ('id', 'created_at', 'updated_at')
+                   ORDER BY table_name, column_name;
+               """)
+
+               not_null_columns = cursor.fetchall()
+
+               # For tables without NOT NULL but should have data
+               important_fields = {
+                   'users_user': ['username', 'email', 'role'],
+                   'chapters_madrasah': ['name', 'madrasah_type'],
+                   'constituents_student': ['student_number', 'enrollment_status'],
+               }
+
+               for table, fields in important_fields.items():
+                   for field in fields:
+                       cursor.execute(f"""
+                           SELECT COUNT(*) FROM {table}
+                           WHERE {field} IS NULL OR {field} = '';
+                       """)
+
+                       null_count = cursor.fetchone()[0]
+
+                       if null_count > 0:
+                           self.issues['high'].append({
+                               'type': 'null_values',
+                               'table': table,
+                               'column': field,
+                               'count': null_count,
+                               'message': f"Found {null_count} NULL/empty values in {table}.{field}"
+                           })
+
+           print(f"  ✓ Checked NULL constraints")
+
+       def check_duplicate_records(self):
+           """Check for duplicate records where they shouldn't exist"""
+
+           print("Checking for duplicate records...")
+
+           duplicate_checks = {
+               'users_user': ['username'],
+               'users_user': ['email'],
+               'chapters_madrasah': ['code'],
+               'constituents_student': ['student_number'],
+           }
+
+           with connection.cursor() as cursor:
+               for table, columns in duplicate_checks.items():
+                   column_list = ', '.join(columns)
+
+                   query = f"""
+                       SELECT {column_list}, COUNT(*) as dup_count
+                       FROM {table}
+                       WHERE {columns[0]} IS NOT NULL
+                       GROUP BY {column_list}
+                       HAVING COUNT(*) > 1;
+                   """
+
+                   try:
+                       cursor.execute(query)
+                       duplicates = cursor.fetchall()
+
+                       if duplicates:
+                           for dup in duplicates:
+                               self.issues['high'].append({
+                                   'type': 'duplicate_records',
+                                   'table': table,
+                                   'columns': columns,
+                                   'value': dup[:-1],
+                                   'count': dup[-1],
+                                   'message': f"Duplicate {column_list} in {table}: {dup}"
+                               })
+                   except Exception as e:
+                       print(f"  ⚠ Could not check {table}: {e}")
+
+           print(f"  ✓ Checked for duplicate records")
+
+       def check_data_consistency(self):
+           """Check cross-table data consistency"""
+
+           print("Checking data consistency...")
+
+           with connection.cursor() as cursor:
+               # Check: Students should have enrollments
+               cursor.execute("""
+                   SELECT COUNT(*)
+                   FROM constituents_student s
+                   WHERE NOT EXISTS (
+                       SELECT 1
+                       FROM chapters_madrasahenrollment e
+                       WHERE e.student_id = s.id
+                   );
+               """)
+
+               students_without_enrollment = cursor.fetchone()[0]
+
+               if students_without_enrollment > 0:
+                   self.issues['medium'].append({
+                       'type': 'consistency_issue',
+                       'area': 'student_enrollment',
+                       'count': students_without_enrollment,
+                       'message': f"Found {students_without_enrollment} students without enrollments"
+                   })
+
+               # Check: Enrollments should have valid date ranges
+               cursor.execute("""
+                   SELECT COUNT(*)
+                   FROM chapters_madrasahenrollment
+                   WHERE start_date > end_date;
+               """)
+
+               invalid_date_ranges = cursor.fetchone()[0]
+
+               if invalid_date_ranges > 0:
+                   self.issues['high'].append({
+                       'type': 'data_anomaly',
+                       'area': 'enrollment_dates',
+                       'count': invalid_date_ranges,
+                       'message': f"Found {invalid_date_ranges} enrollments with end_date before start_date"
+                   })
+
+               # Check: Users with student role should have student records
+               cursor.execute("""
+                   SELECT COUNT(*)
+                   FROM users_user u
+                   WHERE u.role = 'student'
+                   AND NOT EXISTS (
+                       SELECT 1
+                       FROM constituents_student s
+                       WHERE s.user_id = u.id
+                   );
+               """)
+
+               users_without_student_record = cursor.fetchone()[0]
+
+               if users_without_student_record > 0:
+                   self.issues['high'].append({
+                       'type': 'consistency_issue',
+                       'area': 'user_student_link',
+                       'count': users_without_student_record,
+                       'message': f"Found {users_without_student_record} users with 'student' role but no student record"
+                   })
+
+           print(f"  ✓ Checked data consistency")
+
+       def check_referential_integrity(self):
+           """Verify all foreign keys have proper ON DELETE behavior"""
+
+           print("Checking referential integrity rules...")
+
+           with connection.cursor() as cursor:
+               cursor.execute("""
+                   SELECT
+                       tc.table_name,
+                       kcu.column_name,
+                       ccu.table_name AS foreign_table_name,
+                       rc.delete_rule,
+                       rc.update_rule
+                   FROM information_schema.table_constraints AS tc
+                   JOIN information_schema.key_column_usage AS kcu
+                       ON tc.constraint_name = kcu.constraint_name
+                   JOIN information_schema.constraint_column_usage AS ccu
+                       ON ccu.constraint_name = tc.constraint_name
+                   JOIN information_schema.referential_constraints AS rc
+                       ON tc.constraint_name = rc.constraint_name
+                   WHERE tc.constraint_type = 'FOREIGN KEY'
+                   AND tc.table_schema = 'public';
+               """)
+
+               fk_rules = cursor.fetchall()
+
+               for fk in fk_rules:
+                   table, column, ref_table, delete_rule, update_rule = fk
+
+                   # Flag potentially dangerous cascades
+                   if delete_rule == 'CASCADE' and ref_table in ['users_user', 'chapters_madrasah']:
+                       self.issues['low'].append({
+                           'type': 'cascade_warning',
+                           'table': table,
+                           'column': column,
+                           'reference': ref_table,
+                           'rule': delete_rule,
+                           'message': f"{table}.{column} has CASCADE delete on {ref_table} - verify this is intentional"
+                       })
+
+           print(f"  ✓ Checked referential integrity rules")
+
+       def generate_report(self):
+           """Generate comprehensive integrity report"""
+
+           total_issues = sum(len(issues) for issues in self.issues.values())
+
+           report = f"""# Data Integrity Check Report
+
+   **Generated:** {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+   **Phase:** 13 - Database Final Cleanup
+   **Task:** 125
+
+   ---
+
+   ## Executive Summary
+
+   **Total Issues Found:** {total_issues}
+
+   - **Critical:** {len(self.issues['critical'])} 🔴
+   - **High:** {len(self.issues['high'])} 🟠
+   - **Medium:** {len(self.issues['medium'])} 🟡
+   - **Low:** {len(self.issues['low'])} 🟢
+
+   ---
+
+   ## Critical Issues 🔴
+
+   **These issues must be fixed immediately:**
+
+   """
+
+           if self.issues['critical']:
+               for i, issue in enumerate(self.issues['critical'], 1):
+                   report += f"\n### {i}. {issue['type'].replace('_', ' ').title()}\n\n"
+                   report += f"**Message:** {issue['message']}\n\n"
+                   for key, value in issue.items():
+                       if key != 'message':
+                           report += f"- **{key.title()}:** {value}\n"
+                   report += "\n"
+           else:
+               report += "\n✅ No critical issues found.\n\n"
+
+           report += "---\n\n## High Priority Issues 🟠\n\n"
+
+           if self.issues['high']:
+               for i, issue in enumerate(self.issues['high'], 1):
+                   report += f"\n### {i}. {issue['type'].replace('_', ' ').title()}\n\n"
+                   report += f"**Message:** {issue['message']}\n\n"
+           else:
+               report += "✅ No high priority issues found.\n\n"
+
+           report += "---\n\n## Medium Priority Issues 🟡\n\n"
+
+           if self.issues['medium']:
+               for i, issue in enumerate(self.issues['medium'], 1):
+                   report += f"- {issue['message']}\n"
+           else:
+               report += "✅ No medium priority issues found.\n\n"
+
+           report += "\n---\n\n## Low Priority Issues 🟢\n\n"
+
+           if self.issues['low']:
+               for i, issue in enumerate(self.issues['low'], 1):
+                   report += f"- {issue['message']}\n"
+           else:
+               report += "✅ No low priority issues found.\n\n"
+
+           report += "\n---\n\n## Recommended Actions\n\n"
+
+           if self.issues['critical']:
+               report += "### 1. Fix Critical Issues (IMMEDIATE)\n\n"
+               report += "- Create backup before fixing\n"
+               report += "- Fix orphaned records (delete or reassign)\n"
+               report += "- Test thoroughly after fixes\n\n"
+
+           if self.issues['high']:
+               report += "### 2. Address High Priority Issues (This Week)\n\n"
+               report += "- Review duplicate records\n"
+               report += "- Fill in missing required data\n"
+               report += "- Fix data anomalies\n\n"
+
+           if self.issues['medium'] or self.issues['low']:
+               report += "### 3. Plan for Medium/Low Issues (Next Sprint)\n\n"
+               report += "- Schedule data cleanup\n"
+               report += "- Review consistency issues\n"
+               report += "- Document workarounds if needed\n\n"
+
+           report += "---\n\n"
+           report += "**Next Steps:**\n\n"
+           report += "1. Review this report with stakeholders\n"
+           report += "2. Create backup before attempting fixes\n"
+           report += "3. Fix critical issues first\n"
+           report += "4. Re-run integrity checks after fixes\n"
+           report += "5. Proceed to task_126.txt (Update Database Constraints)\n"
+
+           return report
+
+       def run_all_checks(self):
+           """Run all integrity checks"""
+
+           print("=" * 60)
+           print("DATABASE INTEGRITY CHECK - PHASE 13")
+           print("=" * 60)
+           print()
+
+           self.check_foreign_key_integrity()
+           self.check_null_constraints()
+           self.check_duplicate_records()
+           self.check_data_consistency()
+           self.check_referential_integrity()
+
+           print()
+           print("=" * 60)
+           print("INTEGRITY CHECK COMPLETE")
+           print("=" * 60)
+
+           total_issues = sum(len(issues) for issues in self.issues.values())
+
+           print(f"\nTotal issues found: {total_issues}")
+           print(f"  Critical: {len(self.issues['critical'])}")
+           print(f"  High: {len(self.issues['high'])}")
+           print(f"  Medium: {len(self.issues['medium'])}")
+           print(f"  Low: {len(self.issues['low'])}")
+
+           return total_issues
+
+   if __name__ == '__main__':
+       checker = DataIntegrityChecker()
+       total_issues = checker.run_all_checks()
+
+       report = checker.generate_report()
+
+       with open('docs/DATA_INTEGRITY_REPORT.md', 'w') as f:
+           f.write(report)
+
+       print(f"\n✅ Report saved to: docs/DATA_INTEGRITY_REPORT.md")
+
+       if total_issues > 0:
+           print(f"\n⚠️  WARNING: {total_issues} issues found - review report before proceeding")
+       else:
+           print("\n✅ No integrity issues found - database is healthy!")
+   ```
+
+3. **Run integrity checks**:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src
+   python scripts/check_data_integrity.py
+   ```
+
+4. **Review integrity report**:
+   ```bash
+   cat docs/DATA_INTEGRITY_REPORT.md
+   ```
+
+5. **If critical issues found, create fix plan**:
+   ```bash
+   # DO NOT fix automatically - review with stakeholders first
+   # Document each critical issue and proposed fix
+   ```
+
+6. **Verify specific issues manually**:
+   ```sql
+   -- Example: Check orphaned records
+   SELECT s.* FROM constituents_student s
+   LEFT JOIN chapters_madrasahenrollment e ON e.student_id = s.id
+   WHERE e.id IS NULL
+   LIMIT 10;
+
+   -- Example: Check duplicates
+   SELECT email, COUNT(*) FROM users_user
+   GROUP BY email
+   HAVING COUNT(*) > 1;
+   ```
+
+7. **Document findings**:
+   ```bash
+   echo "## Task 125 Complete - $(date)" >> docs/PHASE_13_LOG.md
+   echo "- Data integrity checks completed" >> docs/PHASE_13_LOG.md
+   echo "- Total issues found: [count]" >> docs/PHASE_13_LOG.md
+   echo "- Critical issues: [count]" >> docs/PHASE_13_LOG.md
+   echo "- Report saved: DATA_INTEGRITY_REPORT.md" >> docs/PHASE_13_LOG.md
+   ```
+
+## Acceptance Criteria:
+- Database backup verified (from previous task)
+- Foreign key integrity validated
+- Orphaned records identified and documented
+- NULL value checks completed for required fields
+- Duplicate records identified
+- Data type consistency verified
+- Cross-table relationships validated
+- Referential integrity report generated
+- Critical issues flagged for immediate attention
+- Non-critical issues documented for future fixes
+
+## Files Modified:
+- `scripts/check_data_integrity.py (create)`
+- `docs/DATA_INTEGRITY_REPORT.md (create)`
+- `docs/PHASE_13_LOG.md (update)`
+
+## Important Notes:
+- This is READ-ONLY analysis - no automatic fixes
+- Critical issues must be reviewed before fixing
+- Some issues may require business logic decisions
+- Re-run checks after fixes to verify resolution
+- Keep reports for audit trail
+- Estimate: 60 minutes
+- Risk Level: LOW (read-only analysis)
+
+## Backup Requirements:
+- Verify recent backup exists before running checks
+- If fixing issues, create fresh backup first
+- Document all fixes for audit trail
+
+## Data Integrity Checks:
+- Foreign key relationships validated
+- NULL constraints verified
+- Duplicate records identified
+- Cross-table consistency checked
+- Referential integrity confirmed
+- Data anomalies documented
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

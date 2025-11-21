@@ -1,0 +1,940 @@
+# Task ID: 007a
+# Title: Implement Role-Based Navigation Structure (Multitenant UI)
+# Status: pending
+# Dependencies: 007
+# Priority: high
+# Description: Implement the multitenant TMS navigation structure with 5 DIFFERENT navigation bars based on user roles. Each role sees a completely different navigat
+
+# Details:
+Implement the multitenant TMS navigation structure with 5 DIFFERENT navigation bars based on user roles. Each role sees a completely different navigation bar tailored to their tasks and responsibilities.
+
+**Key Principle:** ONE Django application with FIVE different navigation bars (different menu items per role).
+
+**Multitenant Architecture:**
+- Each madrasah is a separate tenant
+- Each user role has a specific navigation bar
+- All users access the same domain: tms.tarbiyyah.gov.ph
+- Navigation rendered based on authenticated user's role
+
+**Five Navigation Types:**
+
+1. **TMS Admin Navigation** (TARBIYYAH_ADMIN)
+   - Homepage | About | Madaris ▼ | Support | Curriculum | Dashboards
+
+2. **Madrasah Navigation** (MADRASAH_ADMIN, MUDER)
+   - Dashboard | Students ▼ | Teachers ▼ | Classes | Academic | Reports
+
+3. **Teacher Navigation** (ASATIDZ)
+   - Dashboard | My Classes ▼ | Students | Gradebook | Attendance | Calendar
+
+4. **Student Navigation** (STUDENT)
+   - Dashboard | My Classes | Grades | Schedule | Assignments | Resources
+
+5. **Parent Navigation** (PARENT)
+   - Dashboard | My Children ▼ | Academic Progress | Attendance | Messages
+
+## Implementation Steps:
+### 1. Update Base Template with Role-Based Navbar Rendering
+
+Edit `src/templates/base.html`:
+
+```django
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Tarbiyyah Management System{% endblock %}</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {# Include navbar based on user role #}
+    {% if user.is_authenticated %}
+        {% if user.role == 'TARBIYYAH_ADMIN' %}
+            {% include 'navbars/tarbiyyah_admin_navbar.html' %}
+
+        {% elif user.role in 'MADRASAH_ADMIN,MUDER' %}
+            {% include 'navbars/madrasah_navbar.html' %}
+
+        {% elif user.role == 'ASATIDZ' %}
+            {% include 'navbars/teacher_navbar.html' %}
+
+        {% elif user.role == 'STUDENT' %}
+            {% include 'navbars/student_navbar.html' %}
+
+        {% elif user.role == 'PARENT' %}
+            {% include 'navbars/parent_navbar.html' %}
+
+        {% endif %}
+    {% else %}
+        {% include 'navbars/public_navbar.html' %}
+    {% endif %}
+
+    {# Main content area #}
+    <main class="content">
+        {% if messages %}
+            <div class="container mt-3">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    {# Footer #}
+    <footer class="footer mt-5 py-3 bg-light">
+        <div class="container text-center">
+            <span class="text-muted">&copy; 2025 Tarbiyyah Committee - BARMM</span>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+```
+
+### 2. Create TMS Admin Navbar
+
+Create `src/templates/navbars/tarbiyyah_admin_navbar.html`:
+
+```django
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #00916E;">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{% static 'images/tms-logo.png' %}" alt="TMS" height="40" class="me-2">
+            <span class="fw-bold">Tarbiyyah Management System</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTMS">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarTMS">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="/">
+                        <i class="bi bi-house-fill"></i> Homepage
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/about/' %}active{% endif %}" href="/about/">
+                        <i class="bi bi-info-circle-fill"></i> About
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="mdarisDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-building"></i> Madaris
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/madaris/madrasah/register/">
+                            <i class="bi bi-plus-circle"></i> Madrasah Registration
+                        </a></li>
+                        <li><a class="dropdown-item" href="/madaris/madrasah/directory/">
+                            <i class="bi bi-list-ul"></i> Madrasah Database
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/madaris/asatidz/register/">
+                            <i class="bi bi-person-plus"></i> Asatidz Registration
+                        </a></li>
+                        <li><a class="dropdown-item" href="/madaris/asatidz/directory/">
+                            <i class="bi bi-people"></i> Asatidz Database
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="/madaris/students/register/">
+                            <i class="bi bi-person-plus-fill"></i> Student Registration
+                        </a></li>
+                        <li><a class="dropdown-item" href="/madaris/students/directory/">
+                            <i class="bi bi-person-lines-fill"></i> Student Database
+                        </a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/support/">
+                        <i class="bi bi-headset"></i> Support
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/curriculum/">
+                        <i class="bi bi-book"></i> Curriculum
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/dashboards/">
+                        <i class="bi bi-graph-up"></i> Dashboards
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                        <span class="badge bg-warning text-dark ms-1">ADMIN</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings/"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="/notifications/"><i class="bi bi-bell"></i> Notifications</a></li>
+                        <li><a class="dropdown-item" href="/help/"><i class="bi bi-question-circle"></i> Help</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+### 3. Create Madrasah Navbar
+
+Create `src/templates/navbars/madrasah_navbar.html`:
+
+```django
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #003366;">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/madrasah/dashboard/">
+            {% if user.madrasah.logo %}
+            <img src="{{ user.madrasah.logo.url }}" alt="{{ user.madrasah.name }}" height="40" class="me-2">
+            {% else %}
+            <i class="bi bi-building me-2" style="font-size: 2rem;"></i>
+            {% endif %}
+            <span class="fw-bold">{{ user.madrasah.name }}</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMadrasah">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMadrasah">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/madrasah/dashboard/' %}active{% endif %}" href="/madrasah/dashboard/">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="studentsDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-mortarboard"></i> Students
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/madrasah/students/enroll/"><i class="bi bi-person-plus"></i> Enroll Student</a></li>
+                        <li><a class="dropdown-item" href="/madrasah/students/directory/"><i class="bi bi-list"></i> Student Directory</a></li>
+                        <li><a class="dropdown-item" href="/madrasah/students/enrollment/"><i class="bi bi-clipboard-check"></i> Manage Enrollment</a></li>
+                        <li><a class="dropdown-item" href="/madrasah/students/records/"><i class="bi bi-file-earmark-text"></i> Student Records</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="teachersDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-people"></i> Teachers
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/madrasah/teachers/add/"><i class="bi bi-person-plus-fill"></i> Add Teacher</a></li>
+                        <li><a class="dropdown-item" href="/madrasah/teachers/directory/"><i class="bi bi-list"></i> Teacher Directory</a></li>
+                        <li><a class="dropdown-item" href="/madrasah/teachers/assignments/"><i class="bi bi-calendar-check"></i> Assignments</a></li>
+                        <li><a class="dropdown-item" href="/madrasah/teachers/performance/"><i class="bi bi-graph-up"></i> Performance</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/madrasah/classes/">
+                        <i class="bi bi-door-open"></i> Classes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/madrasah/academic/">
+                        <i class="bi bi-journal-text"></i> Academic
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/madrasah/reports/">
+                        <i class="bi bi-bar-chart"></i> Reports
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/madrasah/settings/">
+                        <i class="bi bi-gear"></i> Settings
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                        <span class="badge bg-info text-dark ms-1">{{ user.get_role_display }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings/"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="/help/"><i class="bi bi-question-circle"></i> Help</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+### 4. Create Teacher Navbar
+
+Create `src/templates/navbars/teacher_navbar.html`:
+
+```django
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #6A0DAD;">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/teacher/dashboard/">
+            <i class="bi bi-person-workspace me-2" style="font-size: 1.5rem;"></i>
+            <div class="d-flex flex-column">
+                <span class="fw-bold">{{ user.get_full_name }}</span>
+                <small style="font-size: 0.75rem;">{{ user.madrasah.name }}</small>
+            </div>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTeacher">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarTeacher">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/teacher/dashboard/' %}active{% endif %}" href="/teacher/dashboard/">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="classesDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-book"></i> My Classes
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="/teacher/classes/list/"><i class="bi bi-list"></i> Class List</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        {% comment %}
+                        {% for class in user.assigned_classes.all %}
+                        <li><a class="dropdown-item" href="/teacher/classes/{{ class.id }}/">{{ class.name }}</a></li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        {% endcomment %}
+                        <li><a class="dropdown-item" href="/teacher/classes/schedule/"><i class="bi bi-calendar"></i> Class Schedule</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/teacher/students/">
+                        <i class="bi bi-people"></i> Students
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/teacher/gradebook/">
+                        <i class="bi bi-journal-check"></i> Gradebook
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/teacher/attendance/">
+                        <i class="bi bi-clipboard-check"></i> Attendance
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/teacher/curriculum/">
+                        <i class="bi bi-book"></i> Curriculum
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/teacher/calendar/">
+                        <i class="bi bi-calendar-event"></i> Calendar
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                        <span class="badge bg-success ms-1">Teacher</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings/"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="/teacher/resources/"><i class="bi bi-folder"></i> Resources</a></li>
+                        <li><a class="dropdown-item" href="/help/"><i class="bi bi-question-circle"></i> Help</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+### 5. Create Student Navbar
+
+Create `src/templates/navbars/student_navbar.html`:
+
+```django
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #00A8E8;">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/student/dashboard/">
+            <i class="bi bi-mortarboard-fill me-2" style="font-size: 1.5rem;"></i>
+            <div class="d-flex flex-column">
+                <span class="fw-bold">{{ user.get_full_name }}</span>
+                <small style="font-size: 0.75rem;">{{ user.student_profile.madrasah.name }}</small>
+            </div>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarStudent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarStudent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/student/dashboard/' %}active{% endif %}" href="/student/dashboard/">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/student/classes/">
+                        <i class="bi bi-book"></i> My Classes
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/student/grades/">
+                        <i class="bi bi-award"></i> Grades
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/student/schedule/">
+                        <i class="bi bi-calendar-week"></i> Schedule
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/student/assignments/">
+                        <i class="bi bi-clipboard-check"></i> Assignments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/student/resources/">
+                        <i class="bi bi-folder"></i> Resources
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/student/calendar/">
+                        <i class="bi bi-calendar-event"></i> Calendar
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                        <span class="badge bg-light text-dark ms-1">Student</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings/"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="/help/"><i class="bi bi-question-circle"></i> Help</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+### 6. Create Parent Navbar
+
+Create `src/templates/navbars/parent_navbar.html`:
+
+```django
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #FF8C42;">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/parent/dashboard/">
+            <i class="bi bi-house-heart me-2" style="font-size: 1.5rem;"></i>
+            <div class="d-flex flex-column">
+                <span class="fw-bold">{{ user.get_full_name }}</span>
+                <small style="font-size: 0.75rem;">Parent Portal</small>
+            </div>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarParent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarParent">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link {% if request.path == '/parent/dashboard/' %}active{% endif %}" href="/parent/dashboard/">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="childrenDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-people"></i> My Children
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% comment %}
+                        {% for child in user.children.all %}
+                        <li><a class="dropdown-item" href="/parent/children/{{ child.id }}/">{{ child.get_full_name }}</a></li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        {% endcomment %}
+                        <li><a class="dropdown-item" href="/parent/children/add/"><i class="bi bi-person-plus"></i> Enroll Child</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/parent/academic/">
+                        <i class="bi bi-graph-up"></i> Academic Progress
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/parent/attendance/">
+                        <i class="bi bi-clipboard-check"></i> Attendance
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/parent/messages/">
+                        <i class="bi bi-chat-dots"></i> Messages
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/parent/calendar/">
+                        <i class="bi bi-calendar-event"></i> Calendar
+                    </a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
+                        <span class="badge bg-light text-dark ms-1">Parent</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="/profile/"><i class="bi bi-person"></i> Profile</a></li>
+                        <li><a class="dropdown-item" href="/settings/"><i class="bi bi-gear"></i> Settings</a></li>
+                        <li><a class="dropdown-item" href="/help/"><i class="bi bi-question-circle"></i> Help</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'logout' %}"><i class="bi bi-box-arrow-right"></i> Logout</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+### 7. Create Public Navbar (for unauthenticated users)
+
+Create `src/templates/navbars/public_navbar.html`:
+
+```django
+{% load static %}
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="/">
+            <img src="{% static 'images/tms-logo.png' %}" alt="TMS" height="40" class="me-2">
+            <span class="fw-bold">Tarbiyyah Management System</span>
+        </a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarPublic">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarPublic">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                <li class="nav-item">
+                    <a class="nav-link" href="/"><i class="bi bi-house"></i> Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/about/"><i class="bi bi-info-circle"></i> About</a>
+                </li>
+            </ul>
+
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">
+                        <i class="bi bi-box-arrow-in-right"></i> Login
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+```
+
+### 8. Update Login View with Role-Based Redirect
+
+Edit or create `src/apps/accounts/views.py`:
+
+```python
+from django.contrib.auth import login, authenticate
+from django.shortcuts import redirect, render
+from django.contrib.auth.views import LoginView
+
+class TMSLoginView(LoginView):
+    template_name = 'accounts/login.html'
+
+    def get_success_url(self):
+        """Redirect user to role-appropriate dashboard after login"""
+        user = self.request.user
+
+        if user.role == 'TARBIYYAH_ADMIN':
+            return '/'  # TMS homepage
+
+        elif user.role in ['MADRASAH_ADMIN', 'MUDER']:
+            return '/madrasah/dashboard/'  # School dashboard
+
+        elif user.role == 'ASATIDZ':
+            return '/teacher/dashboard/'  # Teacher dashboard
+
+        elif user.role == 'STUDENT':
+            return '/student/dashboard/'  # Student dashboard
+
+        elif user.role == 'PARENT':
+            return '/parent/dashboard/'  # Parent dashboard
+
+        else:
+            return '/'  # Default homepage
+```
+
+### 9. Create Placeholder Views for Each Portal
+
+Create `src/apps/core/views.py`:
+
+```python
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+
+class RoleRequiredMixin:
+    """Mixin to require specific roles for view access"""
+    allowed_roles = []
+
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+
+        if self.allowed_roles and request.user.role not in self.allowed_roles:
+            raise PermissionDenied(
+                f"This page is only accessible to: {', '.join(self.allowed_roles)}"
+            )
+
+        return super().dispatch(request, *args, **kwargs)
+
+
+class HomeView(TemplateView):
+    """Homepage - accessible to all"""
+    template_name = 'home.html'
+
+
+class AboutView(TemplateView):
+    """About page - accessible to all"""
+    template_name = 'about.html'
+
+
+class PlaceholderView(LoginRequiredMixin, TemplateView):
+    """Base placeholder view for features under development"""
+    template_name = 'placeholder.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['page_title'] = getattr(self, 'page_title', 'Coming Soon')
+        context['coming_in_phase'] = getattr(self, 'coming_in_phase', 'TBD')
+        context['description'] = getattr(self, 'description', 'This feature is under development.')
+        return context
+
+
+# TMS Admin Placeholder Views
+class TMSSupportView(RoleRequiredMixin, PlaceholderView):
+    allowed_roles = ['TARBIYYAH_ADMIN']
+    page_title = 'Madaris Support'
+    coming_in_phase = 'Phase 6'
+    description = 'System-wide madaris support programs and services.'
+
+
+class TMSCurriculumView(RoleRequiredMixin, PlaceholderView):
+    allowed_roles = ['TARBIYYAH_ADMIN']
+    page_title = 'Curriculum Management'
+    coming_in_phase = 'Phase 5'
+    description = 'Manage curriculum standards and frameworks for all madaris.'
+
+
+class TMSDashboardsView(RoleRequiredMixin, PlaceholderView):
+    allowed_roles = ['TARBIYYAH_ADMIN']
+    page_title = 'System Dashboards'
+    coming_in_phase = 'Phase 8'
+    description = 'System-wide analytics and reports.'
+
+
+# Madrasah Portal Placeholder Views
+class MadrasahDashboardView(RoleRequiredMixin, PlaceholderView):
+    allowed_roles = ['MADRASAH_ADMIN', 'MUDER']
+    page_title = 'School Dashboard'
+    coming_in_phase = 'Phase 3'
+    description = 'School overview, statistics, and today\'s schedule.'
+
+
+# Teacher Portal Placeholder Views
+class TeacherDashboardView(RoleRequiredMixin, PlaceholderView):
+    allowed_roles = ['ASATIDZ']
+    page_title = 'Teacher Dashboard'
+    coming_in_phase = 'Phase 4'
+    description = 'Today\'s schedule, upcoming tasks, and student performance overview.'
+
+
+# Student Portal Placeholder Views
+class StudentDashboardView(RoleRequiredMixin, PlaceholderView):
+    allowed_roles = ['STUDENT']
+    page_title = 'Student Dashboard'
+    coming_in_phase = 'Phase 5'
+    description = 'Personal overview, today\'s classes, and recent grades.'
+
+
+# Parent Portal Placeholder Views
+class ParentDashboardView(RoleRequiredMixin, PlaceholderView):
+    allowed_roles = ['PARENT']
+    page_title = 'Parent Dashboard'
+    coming_in_phase = 'Phase 6'
+    description = 'Overview of all children\'s academic progress.'
+```
+
+### 10. Create Placeholder Template
+
+Create `src/templates/placeholder.html`:
+
+```django
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ page_title }} - TMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-primary shadow">
+                <div class="card-header bg-primary text-white">
+                    <h2><i class="bi bi-hourglass-split"></i> {{ page_title }}</h2>
+                </div>
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        <i class="bi bi-tools" style="font-size: 5rem; color: #0066CC;"></i>
+                    </div>
+                    <h3>Coming Soon</h3>
+                    <p class="lead">{{ description }}</p>
+                    <p class="text-muted">This feature is currently under development as part of <strong>{{ coming_in_phase }}</strong>.</p>
+                    <hr class="my-4">
+                    <p>For assistance, please contact the system administrator.</p>
+                    <a href="/" class="btn btn-primary btn-lg mt-3">
+                        <i class="bi bi-house"></i> Return to Home
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+```
+
+### 11. Update Main URLs
+
+Edit `src/config/urls.py`:
+
+```python
+from django.urls import path, include
+from apps.core.views import (
+    HomeView, AboutView,
+    TMSSupportView, TMSCurriculumView, TMSDashboardsView,
+    MadrasahDashboardView,
+    TeacherDashboardView,
+    StudentDashboardView,
+    ParentDashboardView,
+)
+from apps.accounts.views import TMSLoginView
+
+urlpatterns = [
+    # ... existing patterns ...
+
+    # Public pages
+    path('', HomeView.as_view(), name='home'),
+    path('about/', AboutView.as_view(), name='about'),
+
+    # Authentication
+    path('login/', TMSLoginView.as_view(), name='login'),
+
+    # TMS Admin Portal
+    path('madaris/', include('apps.madaris.urls')),  # Existing madaris app
+    path('support/', TMSSupportView.as_view(), name='tms_support'),
+    path('curriculum/', TMSCurriculumView.as_view(), name='tms_curriculum'),
+    path('dashboards/', TMSDashboardsView.as_view(), name='tms_dashboards'),
+
+    # Madrasah Portal (placeholder)
+    path('madrasah/dashboard/', MadrasahDashboardView.as_view(), name='madrasah_dashboard'),
+    # Future: path('madrasah/', include('apps.madrasah_portal.urls')),
+
+    # Teacher Portal (placeholder)
+    path('teacher/dashboard/', TeacherDashboardView.as_view(), name='teacher_dashboard'),
+    # Future: path('teacher/', include('apps.teacher_portal.urls')),
+
+    # Student Portal (placeholder)
+    path('student/dashboard/', StudentDashboardView.as_view(), name='student_dashboard'),
+    # Future: path('student/', include('apps.student_portal.urls')),
+
+    # Parent Portal (placeholder)
+    path('parent/dashboard/', ParentDashboardView.as_view(), name='parent_dashboard'),
+    # Future: path('parent/', include('apps.parent_portal.urls')),
+]
+```
+
+### 12. Test Role-Based Navigation
+
+Run the development server:
+
+```bash
+python manage.py runserver
+```
+
+Test with different user roles:
+
+1. **TARBIYYAH_ADMIN user:**
+   - Should see TMS Admin navbar (green)
+   - Homepage | About | Madaris | Support | Curriculum | Dashboards
+
+2. **MUDER user:**
+   - Should see Madrasah navbar (dark blue)
+   - Dashboard | Students | Teachers | Classes | Academic | Reports
+
+3. **ASATIDZ user:**
+   - Should see Teacher navbar (purple)
+   - Dashboard | My Classes | Students | Gradebook | Attendance | Calendar
+
+4. **STUDENT user:**
+   - Should see Student navbar (sky blue)
+   - Dashboard | My Classes | Grades | Schedule | Assignments | Resources
+
+5. **PARENT user:**
+   - Should see Parent navbar (orange)
+   - Dashboard | My Children | Academic Progress | Attendance | Messages
+
+## Acceptance Criteria:
+- Base template includes role-based navbar rendering
+- 5 different navbar templates created (one per role)
+- Navigation renders correctly based on user.role
+- TMS Admin navbar shows system-wide navigation
+- Madrasah navbar shows school management navigation
+- Teacher navbar shows teaching tools navigation
+- Student navbar shows learning tools navigation
+- Parent navbar shows parent portal navigation
+- Login redirects to role-appropriate dashboard
+- Homepage appropriate for each role
+- About page displays for all roles
+- Placeholder views created for incomplete features
+- Mobile responsive navigation for all 5 navigation types
+- User dropdown menu functional on all navbars
+- Color schemes differentiate each role's UI
+
+## Files Modified:
+- `MODIFY: src/templates/base.html`
+- `NEW: src/templates/navbars/tarbiyyah_admin_navbar.html`
+- `NEW: src/templates/navbars/madrasah_navbar.html`
+- `NEW: src/templates/navbars/teacher_navbar.html`
+- `NEW: src/templates/navbars/student_navbar.html`
+- `NEW: src/templates/navbars/parent_navbar.html`
+- `NEW: src/templates/navbars/public_navbar.html`
+- `NEW: src/templates/placeholder.html`
+- `NEW: src/templates/home.html`
+- `NEW: src/templates/about.html`
+- `NEW/MODIFY: src/apps/core/views.py`
+- `NEW/MODIFY: src/apps/accounts/views.py`
+- `MODIFY: src/config/urls.py`
+
+## Important Notes:
+- **Multitenant Architecture:** Each madrasah is a separate tenant
+- **5 Different Navbars:** Each role sees a completely different navigation bar
+- **Same Domain:** All users access tms.tarbiyyah.gov.ph (no separate subdomains)
+- **Role-Based Rendering:** Base template includes different navbar based on user.role
+- **Placeholder Views:** Show "Coming Soon" for features not yet implemented
+- **Login Redirect:** Users automatically redirected to role-appropriate dashboard
+- **Color Differentiation:** Each role's navbar has a distinct color scheme
+- **Bootstrap 5:** Using Bootstrap 5 with Bootstrap Icons for modern UI
+- **Mobile Responsive:** All navbars work on mobile devices
+- This provides immediate visual transformation of the system
+- Backend features can be developed incrementally behind stable navigation
+- Estimate: 6-8 hours
+
+## Multitenant Architecture Summary:
+```
+TMS Application (One Django App)
+├─ TARBIYYAH_ADMIN → TMS Admin Navigation (green)
+│   └─ System-wide management
+├─ MADRASAH_ADMIN/MUDER → Madrasah Navigation (blue)
+│   └─ School-level management
+├─ ASATIDZ → Teacher Navigation (purple)
+│   └─ Teaching tools and class management
+├─ STUDENT → Student Navigation (sky blue)
+│   └─ Learning tools and personal records
+└─ PARENT → Parent Navigation (orange)
+    └─ Children's academic monitoring
+```
+
+## Testing Checklist:
+- [ ] Base template renders correct navbar based on user.role
+- [ ] TMS Admin navbar shows for TARBIYYAH_ADMIN role
+- [ ] Madrasah navbar shows for MADRASAH_ADMIN and MUDER roles
+- [ ] Teacher navbar shows for ASATIDZ role
+- [ ] Student navbar shows for STUDENT role
+- [ ] Parent navbar shows for PARENT role
+- [ ] Public navbar shows for unauthenticated users
+- [ ] Login redirects to correct dashboard based on role
+- [ ] Placeholder views display "Coming Soon" message
+- [ ] All navbars are mobile responsive
+- [ ] User dropdown menus work on all navbars
+- [ ] Logout functionality works from all navbars
+- [ ] Color schemes differentiate each role's interface
+- [ ] Active menu items highlight correctly
+- [ ] Bootstrap icons display correctly
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Login to Django admin as superuser
+10. Verify models appear in admin interface
+11. Test create, read, update, delete operations
+12. Verify list display, filters, and search work

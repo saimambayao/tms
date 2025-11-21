@@ -1,0 +1,578 @@
+# Task ID: 104
+# Title: Create Education-Specific Reports
+# Status: pending
+# Dependencies: 045, 050, 103
+# Priority: high
+# Description: Create education-specific reports for academic performance, attendance, enrollment, and teacher effectiveness. Adapt existing reporting infrastructure
+
+# Details:
+Create education-specific reports for academic performance, attendance, enrollment, and teacher effectiveness. Adapt existing reporting infrastructure from parliamentary reports to education context.
+
+## Implementation Steps:
+1. Create reports module structure:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src/apps/dashboards
+   mkdir -p reports templates/dashboards/reports
+   touch reports/__init__.py reports/generators.py reports/exporters.py
+   ```
+
+2. Create report generators in `apps/dashboards/reports/generators.py`:
+   ```python
+   from django.db.models import Count, Avg, Q
+   from django.utils import timezone
+   from apps.students.models import Student
+   from apps.teachers.models import TeacherProfile
+   from apps.madaris.models import Madrasah
+   from apps.academic.models import Grade, Attendance, Assessment
+
+   class StudentProgressReport:
+       """Generate student progress report"""
+
+       def __init__(self, student_id, academic_year=None):
+           self.student = Student.objects.get(id=student_id)
+           self.academic_year = academic_year or self.get_current_academic_year()
+
+       def generate(self):
+           grades = Grade.objects.filter(
+               student=self.student,
+               academic_year=self.academic_year
+           ).select_related('subject', 'assessment')
+
+           attendance = Attendance.objects.filter(
+               student=self.student,
+               academic_year=self.academic_year
+           )
+
+           return {
+               'student': self.student,
+               'academic_year': self.academic_year,
+               'grades': grades,
+               'average_score': grades.aggregate(avg=Avg('score'))['avg'] or 0,
+               'attendance_rate': self.calculate_attendance_rate(attendance),
+               'subjects': self.get_subject_breakdown(grades),
+               'assessments': grades.count(),
+               'generated_at': timezone.now()
+           }
+
+       def calculate_attendance_rate(self, attendance):
+           total = attendance.count()
+           if total == 0:
+               return 0
+           present = attendance.filter(status='present').count()
+           return (present / total) * 100
+
+       def get_subject_breakdown(self, grades):
+           return grades.values('subject__name').annotate(
+               avg_score=Avg('score'),
+               count=Count('id')
+           ).order_by('subject__name')
+
+   class AttendanceReport:
+       """Generate attendance report"""
+
+       def __init__(self, madrasah_id=None, start_date=None, end_date=None):
+           self.madrasah_id = madrasah_id
+           self.start_date = start_date or timezone.now().date() - timezone.timedelta(days=30)
+           self.end_date = end_date or timezone.now().date()
+
+       def generate(self):
+           queryset = Attendance.objects.filter(
+               date__range=[self.start_date, self.end_date]
+           )
+
+           if self.madrasah_id:
+               queryset = queryset.filter(
+                   student__enrollments__madrasah_id=self.madrasah_id
+               )
+
+           total_records = queryset.count()
+           present = queryset.filter(status='present').count()
+           absent = queryset.filter(status='absent').count()
+           late = queryset.filter(status='late').count()
+           excused = queryset.filter(status='excused').count()
+
+           # Daily breakdown
+           daily = queryset.values('date').annotate(
+               present=Count('id', filter=Q(status='present')),
+               absent=Count('id', filter=Q(status='absent')),
+               late=Count('id', filter=Q(status='late'))
+           ).order_by('date')
+
+           # By madrasah
+           by_madrasah = queryset.values(
+               'student__enrollments__madrasah__name'
+           ).annotate(
+               total=Count('id'),
+               present=Count('id', filter=Q(status='present'))
+           ).order_by('-total')
+
+           return {
+               'start_date': self.start_date,
+               'end_date': self.end_date,
+               'total_records': total_records,
+               'present': present,
+               'absent': absent,
+               'late': late,
+               'excused': excused,
+               'attendance_rate': (present / total_records * 100) if total_records > 0 else 0,
+               'daily_breakdown': list(daily),
+               'by_madrasah': list(by_madrasah),
+               'generated_at': timezone.now()
+           }
+
+   class EnrollmentReport:
+       """Generate enrollment statistics report"""
+
+       def __init__(self, academic_year=None):
+           self.academic_year = academic_year
+
+       def generate(self):
+           queryset = Student.objects.filter(status='active')
+
+           if self.academic_year:
+               queryset = queryset.filter(
+                   enrollments__academic_year=self.academic_year
+               )
+
+           total_students = queryset.count()
+
+           # By madrasah
+           by_madrasah = Madrasah.objects.annotate(
+               student_count=Count('enrollments', filter=Q(
+                   enrollments__student__status='active'
+               )),
+               capacity_used=Count('enrollments') * 100.0 / F('capacity')
+           ).values('name', 'student_count', 'capacity', 'capacity_used')
+
+           # By grade level
+           by_grade = queryset.values('grade_level').annotate(
+               count=Count('id')
+           ).order_by('grade_level')
+
+           # By gender
+           by_gender = queryset.values('gender').annotate(
+               count=Count('id')
+           )
+
+           # New enrollments (last 30 days)
+           thirty_days_ago = timezone.now() - timezone.timedelta(days=30)
+           new_enrollments = queryset.filter(
+               created_at__gte=thirty_days_ago
+           ).count()
+
+           return {
+               'academic_year': self.academic_year,
+               'total_students': total_students,
+               'by_madrasah': list(by_madrasah),
+               'by_grade': list(by_grade),
+               'by_gender': list(by_gender),
+               'new_enrollments': new_enrollments,
+               'generated_at': timezone.now()
+           }
+
+   class TeacherPerformanceReport:
+       """Generate teacher performance report"""
+
+       def __init__(self, teacher_id=None, academic_year=None):
+           self.teacher_id = teacher_id
+           self.academic_year = academic_year
+
+       def generate(self):
+           queryset = TeacherProfile.objects.filter(status='active')
+
+           if self.teacher_id:
+               queryset = queryset.filter(id=self.teacher_id)
+
+           teachers_data = []
+           for teacher in queryset:
+               # Get classes taught
+               classes = teacher.classes.filter(
+                   academic_year=self.academic_year
+               )
+
+               # Get student grades
+               grades = Grade.objects.filter(
+                   assessment__class__teacher=teacher,
+                   academic_year=self.academic_year
+               )
+
+               teachers_data.append({
+                   'teacher': teacher,
+                   'classes_count': classes.count(),
+                   'students_count': classes.aggregate(
+                       total=Count('students')
+                   )['total'] or 0,
+                   'average_grade': grades.aggregate(
+                       avg=Avg('score')
+                   )['avg'] or 0,
+                   'assessments_given': grades.values('assessment').distinct().count()
+               })
+
+           return {
+               'academic_year': self.academic_year,
+               'teachers': teachers_data,
+               'total_teachers': len(teachers_data),
+               'generated_at': timezone.now()
+           }
+
+   class MadrasahComparisonReport:
+       """Generate comparison report across madaris"""
+
+       def __init__(self, academic_year=None):
+           self.academic_year = academic_year
+
+       def generate(self):
+           madaris = Madrasah.objects.filter(status='active')
+
+           comparison_data = []
+           for madrasah in madaris:
+               students = Student.objects.filter(
+                   enrollments__madrasah=madrasah,
+                   status='active'
+               )
+
+               grades = Grade.objects.filter(
+                   student__enrollments__madrasah=madrasah,
+                   academic_year=self.academic_year
+               )
+
+               attendance = Attendance.objects.filter(
+                   student__enrollments__madrasah=madrasah,
+                   academic_year=self.academic_year
+               )
+
+               comparison_data.append({
+                   'madrasah': madrasah,
+                   'total_students': students.count(),
+                   'capacity_percentage': (students.count() / madrasah.capacity * 100) if madrasah.capacity > 0 else 0,
+                   'average_grade': grades.aggregate(avg=Avg('score'))['avg'] or 0,
+                   'attendance_rate': self.calculate_attendance_rate(attendance),
+                   'teachers_count': TeacherProfile.objects.filter(
+                       madrasah=madrasah,
+                       status='active'
+                   ).count()
+               })
+
+           return {
+               'academic_year': self.academic_year,
+               'madaris': comparison_data,
+               'generated_at': timezone.now()
+           }
+
+       def calculate_attendance_rate(self, attendance):
+           total = attendance.count()
+           if total == 0:
+               return 0
+           present = attendance.filter(status='present').count()
+           return (present / total) * 100
+   ```
+
+3. Create report exporters in `apps/dashboards/reports/exporters.py`:
+   ```python
+   import csv
+   from io import BytesIO
+   from django.http import HttpResponse
+   from reportlab.lib import colors
+   from reportlab.lib.pagesizes import letter, A4
+   from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+   from reportlab.lib.styles import getSampleStyleSheet
+   import xlsxwriter
+
+   class ReportExporter:
+       """Base class for report exporters"""
+
+       def export_csv(self, data, filename):
+           response = HttpResponse(content_type='text/csv')
+           response['Content-Disposition'] = f'attachment; filename="{filename}.csv"'
+
+           writer = csv.writer(response)
+           self.write_csv_data(writer, data)
+
+           return response
+
+       def export_excel(self, data, filename):
+           output = BytesIO()
+           workbook = xlsxwriter.Workbook(output)
+           worksheet = workbook.add_worksheet()
+
+           self.write_excel_data(workbook, worksheet, data)
+
+           workbook.close()
+           output.seek(0)
+
+           response = HttpResponse(
+               output.read(),
+               content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+           )
+           response['Content-Disposition'] = f'attachment; filename="{filename}.xlsx"'
+
+           return response
+
+       def export_pdf(self, data, filename):
+           buffer = BytesIO()
+           doc = SimpleDocTemplate(buffer, pagesize=A4)
+           elements = []
+
+           styles = getSampleStyleSheet()
+           elements = self.build_pdf_content(data, styles)
+
+           doc.build(elements)
+           pdf = buffer.getvalue()
+           buffer.close()
+
+           response = HttpResponse(content_type='application/pdf')
+           response['Content-Disposition'] = f'attachment; filename="{filename}.pdf"'
+           response.write(pdf)
+
+           return response
+
+   class StudentProgressExporter(ReportExporter):
+       def write_csv_data(self, writer, data):
+           writer.writerow(['Student Progress Report'])
+           writer.writerow(['Student:', data['student'].user.get_full_name()])
+           writer.writerow(['Academic Year:', data['academic_year']])
+           writer.writerow(['Generated:', data['generated_at']])
+           writer.writerow([])
+           writer.writerow(['Subject', 'Average Score', 'Assessments'])
+           for subject in data['subjects']:
+               writer.writerow([
+                   subject['subject__name'],
+                   f"{subject['avg_score']:.2f}",
+                   subject['count']
+               ])
+   ```
+
+4. Create report views in `apps/dashboards/views.py` (add to existing):
+   ```python
+   from django.views.generic import TemplateView
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from .reports.generators import (
+       StudentProgressReport, AttendanceReport, EnrollmentReport,
+       TeacherPerformanceReport, MadrasahComparisonReport
+   )
+   from .reports.exporters import StudentProgressExporter
+
+   class StudentProgressReportView(LoginRequiredMixin, TemplateView):
+       template_name = 'dashboards/reports/student_progress.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           student_id = self.kwargs.get('student_id')
+           report = StudentProgressReport(student_id)
+           context['report'] = report.generate()
+           return context
+
+   class AttendanceReportView(LoginRequiredMixin, TemplateView):
+       template_name = 'dashboards/reports/attendance.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+           madrasah_id = self.request.GET.get('madrasah')
+           start_date = self.request.GET.get('start_date')
+           end_date = self.request.GET.get('end_date')
+           report = AttendanceReport(madrasah_id, start_date, end_date)
+           context['report'] = report.generate()
+           return context
+
+   class ExportReportView(LoginRequiredMixin, View):
+       def get(self, request, report_type, format):
+           # Generate report based on type
+           # Export in requested format (csv, excel, pdf)
+           pass
+   ```
+
+5. Create report templates (example - student progress):
+   ```html
+   <!-- apps/dashboards/templates/dashboards/reports/student_progress.html -->
+   {% extends "base.html" %}
+
+   {% block title %}Student Progress Report{% endblock %}
+
+   {% block content %}
+   <div class="report-container">
+       <div class="report-header">
+           <h1>Student Progress Report</h1>
+           <div class="report-meta">
+               <p>Student: {{ report.student.user.get_full_name }}</p>
+               <p>Academic Year: {{ report.academic_year }}</p>
+               <p>Generated: {{ report.generated_at|date:"F d, Y" }}</p>
+           </div>
+           <div class="export-buttons">
+               <a href="{% url 'dashboards:export_report' 'student_progress' 'pdf' %}?student={{ report.student.id }}" class="btn">Export PDF</a>
+               <a href="{% url 'dashboards:export_report' 'student_progress' 'excel' %}?student={{ report.student.id }}" class="btn">Export Excel</a>
+           </div>
+       </div>
+
+       <div class="report-summary">
+           <div class="summary-card">
+               <h3>Average Score</h3>
+               <div class="metric">{{ report.average_score|floatformat:1 }}</div>
+           </div>
+           <div class="summary-card">
+               <h3>Attendance Rate</h3>
+               <div class="metric">{{ report.attendance_rate|floatformat:1 }}%</div>
+           </div>
+           <div class="summary-card">
+               <h3>Assessments</h3>
+               <div class="metric">{{ report.assessments }}</div>
+           </div>
+       </div>
+
+       <div class="report-section">
+           <h2>Subject Breakdown</h2>
+           <table class="report-table">
+               <thead>
+                   <tr>
+                       <th>Subject</th>
+                       <th>Average Score</th>
+                       <th>Assessments</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   {% for subject in report.subjects %}
+                   <tr>
+                       <td>{{ subject.subject__name }}</td>
+                       <td>{{ subject.avg_score|floatformat:1 }}</td>
+                       <td>{{ subject.count }}</td>
+                   </tr>
+                   {% endfor %}
+               </tbody>
+           </table>
+       </div>
+
+       <div class="report-section">
+           <h2>Grade Details</h2>
+           <table class="report-table">
+               <thead>
+                   <tr>
+                       <th>Date</th>
+                       <th>Subject</th>
+                       <th>Assessment</th>
+                       <th>Score</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   {% for grade in report.grades %}
+                   <tr>
+                       <td>{{ grade.date|date:"M d, Y" }}</td>
+                       <td>{{ grade.subject.name }}</td>
+                       <td>{{ grade.assessment.name }}</td>
+                       <td>{{ grade.score }}</td>
+                   </tr>
+                   {% endfor %}
+               </tbody>
+           </table>
+       </div>
+   </div>
+   {% endblock %}
+   ```
+
+6. Update URLs for reports:
+   ```python
+   # apps/dashboards/urls.py
+   urlpatterns = [
+       # ... existing patterns ...
+       path('reports/student-progress/<int:student_id>/',
+            StudentProgressReportView.as_view(), name='student_progress'),
+       path('reports/attendance/',
+            AttendanceReportView.as_view(), name='attendance_report'),
+       path('reports/enrollment/',
+            EnrollmentReportView.as_view(), name='enrollment_report'),
+       path('reports/export/<str:report_type>/<str:format>/',
+            ExportReportView.as_view(), name='export_report'),
+   ]
+   ```
+
+7. Create report styles in `static/css/reports.css`:
+   ```css
+   .report-container {
+       max-width: 1200px;
+       margin: 0 auto;
+       padding: 20px;
+   }
+
+   .report-header {
+       margin-bottom: 30px;
+       padding-bottom: 20px;
+       border-bottom: 2px solid #e2e8f0;
+   }
+
+   .report-table {
+       width: 100%;
+       border-collapse: collapse;
+       margin: 20px 0;
+   }
+
+   .report-table th,
+   .report-table td {
+       padding: 12px;
+       text-align: left;
+       border-bottom: 1px solid #e2e8f0;
+   }
+
+   .export-buttons {
+       margin-top: 15px;
+   }
+   ```
+
+8. Add report permissions:
+   ```python
+   # In view classes
+   def dispatch(self, request, *args, **kwargs):
+       if not request.user.has_role(['tarbiyyah_admin', 'madrasah_admin', 'asatidz']):
+           raise PermissionDenied
+       return super().dispatch(request, *args, **kwargs)
+   ```
+
+9. Test report generation:
+   ```bash
+   python manage.py test apps.dashboards.tests.test_reports
+   ```
+
+10. Install required packages:
+    ```bash
+    pip install reportlab xlsxwriter
+    pip freeze > requirements.txt
+    ```
+
+## Acceptance Criteria:
+- Student progress report created
+- Attendance report created
+- Enrollment report created
+- Teacher performance report created
+- Madrasah comparison report created
+- Academic year summary report created
+- Report export functionality (PDF, Excel)
+- Report filtering and date range selection
+- Reports accessible by appropriate roles
+- Report templates styled properly
+
+## Files Modified:
+- `src/apps/dashboards/reports/__init__.py (new)`
+- `src/apps/dashboards/reports/generators.py (new)`
+- `src/apps/dashboards/reports/exporters.py (new)`
+- `src/apps/dashboards/views.py (add report views)`
+- `src/apps/dashboards/urls.py (add report URLs)`
+- `src/apps/dashboards/templates/dashboards/reports/student_progress.html (new)`
+- `src/apps/dashboards/templates/dashboards/reports/attendance.html (new)`
+- `src/apps/dashboards/templates/dashboards/reports/enrollment.html (new)`
+- `src/apps/dashboards/templates/dashboards/reports/teacher_performance.html (new)`
+- `src/apps/dashboards/templates/dashboards/reports/madrasah_comparison.html (new)`
+- `src/static/css/reports.css (new)`
+- `src/apps/dashboards/tests/test_reports.py (new)`
+- `requirements.txt (add reportlab, xlsxwriter)`
+
+## Important Notes:
+- Reports should be accessible based on user roles
+- Add caching for frequently accessed reports
+- Consider background task processing for large reports
+- Ensure data privacy - users should only see authorized data
+- Add date range filters for all reports
+- Estimate: 4-5 hours
+
+# Test Strategy:
+1. Test form validation with valid data
+2. Test form validation with invalid data
+3. Verify error messages display correctly
+4. Test form submission and data persistence
+5. Test CSRF protection

@@ -1,0 +1,62 @@
+# Task ID: 006
+# Title: Get Stakeholder Sign-off
+# Status: pending
+# Dependencies: none
+# Priority: high
+# Description: Present refactoring plan to MBASICED/Tarbiyyah leadership and obtain written approval for terminology, roles, and implementation approach.
+
+# Details:
+Present refactoring plan to MBASICED/Tarbiyyah leadership and obtain written approval for terminology, roles, and implementation approach.
+
+## Implementation Steps:
+1. Create presentation (PowerPoint/Google Slides):
+   - Current system overview
+   - Proposed changes (BM Parliament → Tarbiyyah MS)
+   - Model renames (Chapter → Madrasah, etc.)
+   - Role structure and hierarchy
+   - Education levels and madrasah types
+   - Timeline (Week 1-6 breakdown)
+   - Risk mitigation (backups, staging, rollback)
+2. Schedule meeting with stakeholders
+3. Present refactoring plan (docs/docs-new/architecture-tarbiyyah/REFACTORING_PLAN.md)
+4. Address questions and concerns
+5. Make adjustments based on feedback (if needed)
+6. Request written approval
+7. Save approval document in docs/approvals/
+8. Update REFACTORING_PLAN.md status to "Approved"
+
+## Acceptance Criteria:
+- Presentation deck created showing refactoring plan
+- Meeting scheduled with MBASICED/Tarbiyyah leadership
+- Islamic education terminology reviewed and approved
+- Role names (TARBIYYAH_ADMIN, MUDER, ASATIDZ) approved
+- Education levels (Ibtidaiyyah, I'dadiyyah, etc.) confirmed
+- Madrasah types align with actual school offerings in BARMM
+- Written approval received (email or signed document)
+- Implementation timeline agreed upon
+
+## Files Modified:
+- `docs/presentations/tarbiyyah_refactoring_plan.pptx (new)`
+- `docs/approvals/stakeholder_approval_YYYYMMDD.pdf (new)`
+- `docs/docs-new/architecture-tarbiyyah/REFACTORING_PLAN.md (status update)`
+
+## Important Notes:
+- Bring printed copies of REFACTORING_PLAN.md
+- Highlight culturally appropriate terminology
+- Emphasize zero data loss strategy
+- Be prepared to adjust terminology if requested
+- Estimate: 2-3 hours (prep + meeting)
+
+# Test Strategy:
+1. Verify new roles appear in Django admin dropdown
+2. Create test users with new roles
+3. Verify permissions work correctly
+4. Test role-based access control
+5. Verify app appears in INSTALLED_APPS
+6. Run migrations successfully
+7. Import app models without errors
+8. Verify app shows in Django admin
+9. Review planning documentation
+10. Verify all risks identified
+11. Confirm rollback procedures documented
+12. Ensure dependencies are mapped

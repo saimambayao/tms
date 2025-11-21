@@ -1,0 +1,407 @@
+# Task ID: 103
+# Title: Adapt Dashboard Widgets for Education
+# Status: pending
+# Dependencies: 045, 050, 102
+# Priority: high
+# Description: Adapt existing dashboard widgets from parliamentary context to education context. Update queries, labels, and metrics to show education-relevant data 
+
+# Details:
+Adapt existing dashboard widgets from parliamentary context to education context. Update queries, labels, and metrics to show education-relevant data (enrollment, attendance, academic progress) instead of parliamentary data.
+
+## Implementation Steps:
+1. Review existing dashboard widgets:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms/src/apps/dashboards
+   cat widgets.py
+   cat views.py
+   ```
+
+2. Update widget queries in `apps/dashboards/widgets.py`:
+   ```python
+   # Replace Chapter with Madrasah
+   from apps.madaris.models import Madrasah, MadrasahEnrollment
+   from apps.teachers.models import TeacherProfile
+   from apps.students.models import Student
+
+   class EnrollmentWidget:
+       """Show total students enrolled across all madaris"""
+       def get_data(self):
+           total_students = Student.objects.filter(status='active').count()
+           by_madrasah = Madrasah.objects.annotate(
+               student_count=Count('enrollments')
+           ).values('name', 'student_count')
+           return {
+               'total': total_students,
+               'by_madrasah': list(by_madrasah)
+           }
+
+   class AttendanceWidget:
+       """Show attendance statistics"""
+       def get_data(self):
+           today = timezone.now().date()
+           present = Attendance.objects.filter(
+               date=today,
+               status='present'
+           ).count()
+           total = Student.objects.filter(status='active').count()
+           return {
+               'present': present,
+               'total': total,
+               'percentage': (present / total * 100) if total > 0 else 0
+           }
+
+   class AcademicProgressWidget:
+       """Show academic progress metrics"""
+       def get_data(self):
+           from django.db.models import Avg
+           avg_grades = Grade.objects.aggregate(
+               avg_score=Avg('score')
+           )
+           return {
+               'average_score': avg_grades['avg_score'] or 0,
+               'subjects': Subject.objects.count(),
+               'assessments_completed': Assessment.objects.filter(
+                   status='completed'
+               ).count()
+           }
+
+   class TeacherStatsWidget:
+       """Show teacher statistics"""
+       def get_data(self):
+           total_teachers = TeacherProfile.objects.filter(
+               status='active'
+           ).count()
+           by_specialization = TeacherProfile.objects.values(
+               'specialization'
+           ).annotate(count=Count('id'))
+           return {
+               'total': total_teachers,
+               'by_specialization': list(by_specialization)
+           }
+
+   class MadrasahOverviewWidget:
+       """Show madrasah overview"""
+       def get_data(self):
+           total_madaris = Madrasah.objects.filter(status='active').count()
+           by_type = Madrasah.objects.values('madrasah_type').annotate(
+               count=Count('id')
+           )
+           return {
+               'total': total_madaris,
+               'by_type': list(by_type),
+               'total_capacity': Madrasah.objects.aggregate(
+                   total=Sum('capacity')
+               )['total'] or 0
+           }
+   ```
+
+3. Update dashboard views in `apps/dashboards/views.py`:
+   ```python
+   from django.contrib.auth.mixins import LoginRequiredMixin
+   from django.views.generic import TemplateView
+   from .widgets import (
+       EnrollmentWidget, AttendanceWidget, AcademicProgressWidget,
+       TeacherStatsWidget, MadrasahOverviewWidget
+   )
+
+   class TarbiyyahDashboardView(LoginRequiredMixin, TemplateView):
+       template_name = 'dashboards/tarbiyyah_dashboard.html'
+
+       def get_context_data(self, **kwargs):
+           context = super().get_context_data(**kwargs)
+
+           # Add widgets based on user role
+           user = self.request.user
+
+           if user.has_role(['tarbiyyah_admin', 'madrasah_admin']):
+               context['enrollment_widget'] = EnrollmentWidget().get_data()
+               context['attendance_widget'] = AttendanceWidget().get_data()
+               context['madrasah_widget'] = MadrasahOverviewWidget().get_data()
+               context['teacher_widget'] = TeacherStatsWidget().get_data()
+
+           if user.has_role(['asatidz']):
+               # Teacher dashboard - show only their data
+               context['my_classes'] = Class.objects.filter(
+                   teacher=user.teacher_profile
+               )
+               context['my_students'] = Student.objects.filter(
+                   enrollments__class__teacher=user.teacher_profile
+               )
+
+           if user.has_role(['student']):
+               # Student dashboard
+               context['my_courses'] = user.student_profile.get_enrolled_courses()
+               context['my_grades'] = Grade.objects.filter(
+                   student=user.student_profile
+               )
+
+           context['academic_progress'] = AcademicProgressWidget().get_data()
+
+           return context
+   ```
+
+4. Update widget templates in `apps/dashboards/templates/dashboards/widgets/`:
+   ```html
+   <!-- enrollment_widget.html -->
+   <div class="dashboard-widget">
+       <h3>Student Enrollment</h3>
+       <div class="metric-large">{{ enrollment_widget.total }}</div>
+       <p>Total Active Students</p>
+       <div class="breakdown">
+           {% for madrasah in enrollment_widget.by_madrasah %}
+           <div class="breakdown-item">
+               <span>{{ madrasah.name }}</span>
+               <span>{{ madrasah.student_count }}</span>
+           </div>
+           {% endfor %}
+       </div>
+   </div>
+
+   <!-- attendance_widget.html -->
+   <div class="dashboard-widget">
+       <h3>Today's Attendance</h3>
+       <div class="metric-large">{{ attendance_widget.percentage|floatformat:1 }}%</div>
+       <p>{{ attendance_widget.present }} of {{ attendance_widget.total }} present</p>
+   </div>
+
+   <!-- academic_progress_widget.html -->
+   <div class="dashboard-widget">
+       <h3>Academic Progress</h3>
+       <div class="metric-large">{{ academic_progress.average_score|floatformat:1 }}</div>
+       <p>Average Score</p>
+       <div class="stats">
+           <div>{{ academic_progress.subjects }} Subjects</div>
+           <div>{{ academic_progress.assessments_completed }} Assessments Completed</div>
+       </div>
+   </div>
+
+   <!-- teacher_stats_widget.html -->
+   <div class="dashboard-widget">
+       <h3>Teaching Staff (Asatidz)</h3>
+       <div class="metric-large">{{ teacher_widget.total }}</div>
+       <p>Active Teachers</p>
+       <div class="breakdown">
+           {% for spec in teacher_widget.by_specialization %}
+           <div class="breakdown-item">
+               <span>{{ spec.specialization }}</span>
+               <span>{{ spec.count }}</span>
+           </div>
+           {% endfor %}
+       </div>
+   </div>
+
+   <!-- madrasah_overview_widget.html -->
+   <div class="dashboard-widget">
+       <h3>Madaris Overview</h3>
+       <div class="metric-large">{{ madrasah_widget.total }}</div>
+       <p>Active Schools</p>
+       <div class="stats">
+           <div>Total Capacity: {{ madrasah_widget.total_capacity }}</div>
+           {% for type in madrasah_widget.by_type %}
+           <div>{{ type.madrasah_type }}: {{ type.count }}</div>
+           {% endfor %}
+       </div>
+   </div>
+   ```
+
+5. Update main dashboard template `apps/dashboards/templates/dashboards/tarbiyyah_dashboard.html`:
+   ```html
+   {% extends "base.html" %}
+   {% load static %}
+
+   {% block title %}Dashboard - Tarbiyyah Management System{% endblock %}
+
+   {% block content %}
+   <div class="dashboard-container">
+       <h1>Tarbiyyah Management Dashboard</h1>
+
+       <div class="widgets-grid">
+           {% if enrollment_widget %}
+           {% include "dashboards/widgets/enrollment_widget.html" %}
+           {% endif %}
+
+           {% if attendance_widget %}
+           {% include "dashboards/widgets/attendance_widget.html" %}
+           {% endif %}
+
+           {% if academic_progress %}
+           {% include "dashboards/widgets/academic_progress_widget.html" %}
+           {% endif %}
+
+           {% if teacher_widget %}
+           {% include "dashboards/widgets/teacher_stats_widget.html" %}
+           {% endif %}
+
+           {% if madrasah_widget %}
+           {% include "dashboards/widgets/madrasah_overview_widget.html" %}
+           {% endif %}
+       </div>
+
+       <!-- Role-specific sections -->
+       {% if my_classes %}
+       <div class="teacher-section">
+           <h2>My Classes</h2>
+           {% for class in my_classes %}
+           <div class="class-card">
+               <h3>{{ class.name }}</h3>
+               <p>{{ class.students.count }} students</p>
+           </div>
+           {% endfor %}
+       </div>
+       {% endif %}
+
+       {% if my_courses %}
+       <div class="student-section">
+           <h2>My Courses</h2>
+           {% for course in my_courses %}
+           <div class="course-card">
+               <h3>{{ course.name }}</h3>
+               <p>Teacher: {{ course.teacher.user.get_full_name }}</p>
+           </div>
+           {% endfor %}
+       </div>
+       {% endif %}
+   </div>
+   {% endblock %}
+   ```
+
+6. Update dashboard URLs in `apps/dashboards/urls.py`:
+   ```python
+   from django.urls import path
+   from .views import TarbiyyahDashboardView
+
+   app_name = 'dashboards'
+
+   urlpatterns = [
+       path('', TarbiyyahDashboardView.as_view(), name='main'),
+       path('tarbiyyah/', TarbiyyahDashboardView.as_view(), name='tarbiyyah'),
+   ]
+   ```
+
+7. Create widget styles in `static/css/dashboard_widgets.css`:
+   ```css
+   .dashboard-container {
+       padding: 20px;
+   }
+
+   .widgets-grid {
+       display: grid;
+       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+       gap: 20px;
+       margin-bottom: 30px;
+   }
+
+   .dashboard-widget {
+       background: white;
+       border-radius: 8px;
+       padding: 20px;
+       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+   }
+
+   .dashboard-widget h3 {
+       margin: 0 0 15px 0;
+       font-size: 16px;
+       color: #666;
+   }
+
+   .metric-large {
+       font-size: 48px;
+       font-weight: bold;
+       color: #2c5282;
+       margin-bottom: 5px;
+   }
+
+   .breakdown {
+       margin-top: 15px;
+       border-top: 1px solid #eee;
+       padding-top: 15px;
+   }
+
+   .breakdown-item {
+       display: flex;
+       justify-content: space-between;
+       padding: 5px 0;
+   }
+
+   .stats {
+       margin-top: 15px;
+       display: flex;
+       flex-direction: column;
+       gap: 8px;
+   }
+   ```
+
+8. Test dashboard with different user roles:
+   ```bash
+   python manage.py runserver
+   # Login as tarbiyyah_admin, madrasah_admin, asatidz, student
+   # Verify each sees appropriate widgets
+   ```
+
+9. Create widget tests in `apps/dashboards/tests/test_widgets.py`:
+   ```python
+   from django.test import TestCase
+   from apps.dashboards.widgets import (
+       EnrollmentWidget, AttendanceWidget, TeacherStatsWidget
+   )
+   from apps.students.models import Student
+   from apps.teachers.models import TeacherProfile
+
+   class WidgetTests(TestCase):
+       def test_enrollment_widget(self):
+           widget = EnrollmentWidget()
+           data = widget.get_data()
+           self.assertIn('total', data)
+           self.assertIn('by_madrasah', data)
+
+       def test_attendance_widget(self):
+           widget = AttendanceWidget()
+           data = widget.get_data()
+           self.assertIn('present', data)
+           self.assertIn('percentage', data)
+   ```
+
+10. Update navigation to include dashboard link:
+    ```html
+    <!-- In base.html navigation -->
+    <a href="{% url 'dashboards:main' %}">Dashboard</a>
+    ```
+
+## Acceptance Criteria:
+- Dashboard widgets adapted for education context
+- Enrollment metrics widget created
+- Attendance tracking widget created
+- Academic progress widget updated
+- Teacher statistics widget created
+- Madrasah overview widget updated
+- All widgets display education-relevant data
+- Widget labels updated (no parliamentary terms)
+- Dashboard queries optimized for education models
+- Widgets tested with real data
+
+## Files Modified:
+- `src/apps/dashboards/widgets.py (update queries)`
+- `src/apps/dashboards/views.py (update dashboard views)`
+- `src/apps/dashboards/urls.py (update URL patterns)`
+- `src/apps/dashboards/templates/dashboards/tarbiyyah_dashboard.html (new)`
+- `src/apps/dashboards/templates/dashboards/widgets/enrollment_widget.html (new)`
+- `src/apps/dashboards/templates/dashboards/widgets/attendance_widget.html (new)`
+- `src/apps/dashboards/templates/dashboards/widgets/academic_progress_widget.html (new)`
+- `src/apps/dashboards/templates/dashboards/widgets/teacher_stats_widget.html (new)`
+- `src/apps/dashboards/templates/dashboards/widgets/madrasah_overview_widget.html (new)`
+- `src/static/css/dashboard_widgets.css (new)`
+- `src/apps/dashboards/tests/test_widgets.py (new)`
+
+## Important Notes:
+- Reuse existing dashboard infrastructure
+- Focus on changing queries and labels, not rebuilding
+- Ensure widgets are role-aware (show different data for different roles)
+- Keep widget code modular for easy testing
+- Use existing CSS framework (Tailwind) where possible
+- Estimate: 3-4 hours
+
+# Test Strategy:
+1. Verify all acceptance criteria are met
+2. Test the implemented functionality
+3. Verify no regressions in related features
+4. Confirm all files were properly modified

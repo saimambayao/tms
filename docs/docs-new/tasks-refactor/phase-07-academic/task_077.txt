@@ -1,0 +1,394 @@
+# Task ID: 077
+# Title: Create Attendance Model
+# Status: pending
+# Dependencies: 075
+# Priority: medium
+# Description: Create Attendance model to track student attendance with support for multiple attendance statuses, excused absences, and attendance analytics.
+
+# Details:
+Create Attendance model to track student attendance with support for multiple attendance statuses, excused absences, and attendance analytics.
+
+## Implementation Steps:
+1. Create Attendance model:
+   ```python
+   # apps/academics/models.py (add to existing file)
+
+   class Attendance(models.Model):
+       """Student attendance tracking"""
+
+       STATUS_CHOICES = [
+           ('present', 'Present (Hadir)'),
+           ('absent', 'Absent (Gha\'ib)'),
+           ('late', 'Late (Muta\'akhir)'),
+           ('excused', 'Excused Absence (Ghiyab bi-\'Udhr)'),
+           ('sick', 'Sick Leave (Ijazah Maradiyyah)'),
+           ('authorized', 'Authorized Leave (Ijazah Rasmiyyah)'),
+       ]
+
+       # Core relationships
+       student = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.CASCADE,
+           limit_choices_to={'role': 'student'},
+           related_name='attendance_records',
+           help_text="Student whose attendance is being recorded"
+       )
+
+       class_instance = models.ForeignKey(
+           Class,
+           on_delete=models.CASCADE,
+           related_name='attendance_records',
+           help_text="Class session"
+       )
+
+       academic_year = models.ForeignKey(
+           AcademicYear,
+           on_delete=models.CASCADE,
+           related_name='attendance_records'
+       )
+
+       # Attendance details
+       date = models.DateField(
+           help_text="Date of class session"
+       )
+
+       status = models.CharField(
+           max_length=20,
+           choices=STATUS_CHOICES,
+           default='present',
+           help_text="Attendance status"
+       )
+
+       # Additional tracking
+       time_arrived = models.TimeField(
+           null=True,
+           blank=True,
+           help_text="Time student arrived (for late arrivals)"
+       )
+
+       minutes_late = models.PositiveIntegerField(
+           default=0,
+           help_text="Number of minutes late"
+       )
+
+       # Excused absence details
+       is_excused = models.BooleanField(
+           default=False,
+           help_text="Absence is excused"
+       )
+
+       excuse_reason = models.TextField(
+           blank=True,
+           help_text="Reason for absence/lateness"
+       )
+
+       excuse_documentation = models.FileField(
+           upload_to='attendance/excuses/%Y/%m/',
+           null=True,
+           blank=True,
+           help_text="Supporting documentation (medical note, etc.)"
+       )
+
+       # Teacher notes
+       notes = models.TextField(
+           blank=True,
+           help_text="Additional notes from teacher"
+       )
+
+       # Metadata
+       recorded_by = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.SET_NULL,
+           null=True,
+           related_name='recorded_attendance',
+           help_text="Teacher who recorded attendance"
+       )
+
+       created_at = models.DateTimeField(auto_now_add=True)
+       updated_at = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'academics_attendance'
+           verbose_name = 'Attendance Record'
+           verbose_name_plural = 'Attendance Records'
+           unique_together = [['student', 'class_instance', 'date']]
+           ordering = ['-date', 'class_instance', 'student__last_name']
+           indexes = [
+               models.Index(fields=['student', 'date']),
+               models.Index(fields=['class_instance', 'date']),
+               models.Index(fields=['status']),
+           ]
+
+       def __str__(self):
+           return f"{self.student.get_full_name()} - {self.class_instance} - {self.date}: {self.get_status_display()}"
+
+       @property
+       def is_present(self):
+           """Check if student was present (includes late)"""
+           return self.status in ['present', 'late']
+
+       @property
+       def is_absent(self):
+           """Check if student was absent"""
+           return self.status in ['absent', 'excused', 'sick', 'authorized']
+
+       @property
+       def arabic_status(self):
+           """Get Arabic translation of status"""
+           status_map = {
+               'present': 'حاضر (Hadir)',
+               'absent': 'غائب (Gha\'ib)',
+               'late': 'متأخر (Muta\'akhir)',
+               'excused': 'غياب بعذر (Ghiyab bi-\'Udhr)',
+               'sick': 'إجازة مرضية (Ijazah Maradiyyah)',
+               'authorized': 'إجازة رسمية (Ijazah Rasmiyyah)',
+           }
+           return status_map.get(self.status, self.status)
+
+       def save(self, *args, **kwargs):
+           # Auto-set is_excused based on status
+           if self.status in ['excused', 'sick', 'authorized']:
+               self.is_excused = True
+           super().save(*args, **kwargs)
+   ```
+
+2. Create AttendanceSummary model for analytics:
+   ```python
+   # apps/academics/models.py (add after Attendance model)
+
+   class AttendanceSummary(models.Model):
+       """Monthly attendance summary for a student"""
+
+       student = models.ForeignKey(
+           settings.AUTH_USER_MODEL,
+           on_delete=models.CASCADE,
+           limit_choices_to={'role': 'student'},
+           related_name='attendance_summaries'
+       )
+
+       class_instance = models.ForeignKey(
+           Class,
+           on_delete=models.CASCADE,
+           related_name='attendance_summaries'
+       )
+
+       academic_year = models.ForeignKey(
+           AcademicYear,
+           on_delete=models.CASCADE,
+           related_name='attendance_summaries'
+       )
+
+       # Summary period
+       month = models.PositiveIntegerField(
+           help_text="Month (1-12)"
+       )
+
+       year = models.PositiveIntegerField(
+           help_text="Year"
+       )
+
+       # Statistics
+       total_sessions = models.PositiveIntegerField(
+           default=0,
+           help_text="Total number of class sessions"
+       )
+
+       present_count = models.PositiveIntegerField(
+           default=0,
+           help_text="Number of times present"
+       )
+
+       absent_count = models.PositiveIntegerField(
+           default=0,
+           help_text="Number of times absent"
+       )
+
+       late_count = models.PositiveIntegerField(
+           default=0,
+           help_text="Number of times late"
+       )
+
+       excused_count = models.PositiveIntegerField(
+           default=0,
+           help_text="Number of excused absences"
+       )
+
+       # Calculated fields
+       attendance_percentage = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           default=0,
+           help_text="Percentage of sessions attended"
+       )
+
+       punctuality_percentage = models.DecimalField(
+           max_digits=5,
+           decimal_places=2,
+           default=0,
+           help_text="Percentage of on-time arrivals"
+       )
+
+       # Metadata
+       last_updated = models.DateTimeField(auto_now=True)
+
+       class Meta:
+           db_table = 'academics_attendance_summary'
+           verbose_name = 'Attendance Summary'
+           verbose_name_plural = 'Attendance Summaries'
+           unique_together = [['student', 'class_instance', 'academic_year', 'month', 'year']]
+           ordering = ['-year', '-month', 'student__last_name']
+
+       def __str__(self):
+           return f"{self.student.get_full_name()} - {self.month}/{self.year}: {self.attendance_percentage}%"
+
+       def calculate_statistics(self):
+           """Calculate attendance statistics from records"""
+           from datetime import date
+
+           # Get attendance records for this month
+           records = Attendance.objects.filter(
+               student=self.student,
+               class_instance=self.class_instance,
+               academic_year=self.academic_year,
+               date__month=self.month,
+               date__year=self.year
+           )
+
+           self.total_sessions = records.count()
+
+           if self.total_sessions == 0:
+               self.attendance_percentage = 0
+               self.punctuality_percentage = 0
+               return
+
+           # Count statuses
+           self.present_count = records.filter(status='present').count()
+           self.late_count = records.filter(status='late').count()
+           self.absent_count = records.filter(
+               status__in=['absent', 'excused', 'sick', 'authorized']
+           ).count()
+           self.excused_count = records.filter(is_excused=True).count()
+
+           # Calculate percentages
+           attended = self.present_count + self.late_count
+           self.attendance_percentage = (attended / self.total_sessions) * 100
+
+           on_time = self.present_count
+           self.punctuality_percentage = (on_time / self.total_sessions) * 100
+
+       @property
+       def attendance_status(self):
+           """Get attendance status descriptor"""
+           if self.attendance_percentage >= 95:
+               return 'Excellent (Mumtaz)'
+           elif self.attendance_percentage >= 85:
+               return 'Good (Jayyid)'
+           elif self.attendance_percentage >= 75:
+               return 'Satisfactory (Maqbool)'
+           elif self.attendance_percentage >= 60:
+               return 'Poor (Da\'if)'
+           else:
+               return 'Critical (Khatir)'
+
+       @property
+       def needs_attention(self):
+           """Check if attendance needs attention"""
+           return self.attendance_percentage < 75
+   ```
+
+3. Create migration:
+   ```bash
+   python manage.py makemigrations academics
+   ```
+
+4. Apply migration:
+   ```bash
+   python manage.py migrate academics
+   ```
+
+5. Test model in shell:
+   ```python
+   from apps.academics.models import Attendance, AttendanceSummary
+   from apps.academics.models import Class
+   from apps.users.models import User
+   from datetime import date, time
+
+   # Get objects
+   student = User.objects.filter(role='student').first()
+   class_obj = Class.objects.first()
+
+   # Create attendance records
+   # Present
+   att1 = Attendance.objects.create(
+       student=student,
+       class_instance=class_obj,
+       academic_year=class_obj.academic_year,
+       date=date(2024, 9, 1),
+       status='present'
+   )
+
+   # Late arrival
+   att2 = Attendance.objects.create(
+       student=student,
+       class_instance=class_obj,
+       academic_year=class_obj.academic_year,
+       date=date(2024, 9, 2),
+       status='late',
+       time_arrived=time(8, 15),
+       minutes_late=15
+   )
+
+   # Excused absence with documentation
+   att3 = Attendance.objects.create(
+       student=student,
+       class_instance=class_obj,
+       academic_year=class_obj.academic_year,
+       date=date(2024, 9, 3),
+       status='sick',
+       excuse_reason='Medical appointment'
+   )
+
+   # Create monthly summary
+   summary = AttendanceSummary.objects.create(
+       student=student,
+       class_instance=class_obj,
+       academic_year=class_obj.academic_year,
+       month=9,
+       year=2024
+   )
+   summary.calculate_statistics()
+   summary.save()
+
+   print(f"Attendance: {summary.attendance_percentage}%")
+   print(f"Punctuality: {summary.punctuality_percentage}%")
+   print(f"Status: {summary.attendance_status}")
+   ```
+
+## Acceptance Criteria:
+- Attendance model created
+- Links to Student, Class, AcademicYear
+- Multiple attendance statuses
+- Support for excused/unexcused absences
+- Late arrival tracking
+- Attendance percentage calculation
+- Migration created successfully
+- Model accessible in admin
+
+## Files Modified:
+- `src/apps/academics/models.py`
+- `src/apps/academics/migrations/0004_attendance.py`
+
+## Important Notes:
+- Support for multiple absence types (excused, sick, authorized)
+- Late arrival tracking with minutes late
+- Monthly summaries for analytics
+- Arabic translations for statuses
+- File upload for excuse documentation
+- Attendance percentage calculations
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data

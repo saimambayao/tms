@@ -1,0 +1,436 @@
+# Task ID: 055
+# Title: Create Curriculum Admin Interface
+# Status: pending
+# Dependencies: 052, 053, 054
+# Priority: medium
+# Description: Enhance the Django admin interface for curriculum models with advanced features including filters, search, inline editing, bulk actions, and custom vi
+
+# Details:
+Enhance the Django admin interface for curriculum models with advanced features including filters, search, inline editing, bulk actions, and custom views for better curriculum management.
+
+## Implementation Steps:
+1. Update apps/curriculum/admin.py with enhanced admin classes:
+   ```python
+   from django.contrib import admin
+   from django.utils.html import format_html
+   from django.utils.translation import gettext_lazy as _
+   from .models import Subject, CurriculumFramework, CurriculumSubject, LessonPlan
+
+
+   # Subject Admin
+   @admin.register(Subject)
+   class SubjectAdmin(admin.ModelAdmin):
+       list_display = [
+           'code', 'name', 'category_badge', 'credit_hours',
+           'is_core_badge', 'is_active_badge', 'created_at'
+       ]
+       list_filter = [
+           'category', 'is_core', 'is_active', 'created_at'
+       ]
+       search_fields = [
+           'code', 'name', 'name_arabic', 'description'
+       ]
+       filter_horizontal = ['prerequisites']
+       list_per_page = 50
+
+       fieldsets = (
+           (_('Basic Information'), {
+               'fields': ('code', 'name', 'name_arabic', 'description')
+           }),
+           (_('Categorization'), {
+               'fields': ('category',)
+           }),
+           (_('Academic Details'), {
+               'fields': (
+                   'credit_hours', 'lecture_hours', 'lab_hours',
+                   'prerequisites'
+               )
+           }),
+           (_('Status'), {
+               'fields': ('is_active', 'is_core')
+           }),
+           (_('Metadata'), {
+               'fields': ('created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+       readonly_fields = ['created_at', 'updated_at']
+
+       def category_badge(self, obj):
+           """Display category with color badge."""
+           colors = {
+               'quran': '#10B981',  # Green
+               'hadith': '#3B82F6',  # Blue
+               'fiqh': '#8B5CF6',   # Purple
+               'arabic': '#F59E0B', # Amber
+           }
+           color = colors.get(obj.category, '#6B7280')
+           return format_html(
+               '<span style="background: {}; color: white; padding: 3px 10px; '
+               'border-radius: 3px; font-size: 11px;">{}</span>',
+               color,
+               obj.get_category_display()
+           )
+       category_badge.short_description = _('Category')
+
+       def is_core_badge(self, obj):
+           """Display core status as badge."""
+           if obj.is_core:
+               return format_html(
+                   '<span style="color: #059669;">✓ Core</span>'
+               )
+           return format_html(
+               '<span style="color: #9CA3AF;">Elective</span>'
+           )
+       is_core_badge.short_description = _('Type')
+
+       def is_active_badge(self, obj):
+           """Display active status as badge."""
+           if obj.is_active:
+               return format_html(
+                   '<span style="color: #059669;">● Active</span>'
+               )
+           return format_html(
+               '<span style="color: #DC2626;">● Inactive</span>'
+           )
+       is_active_badge.short_description = _('Status')
+
+       actions = ['activate_subjects', 'deactivate_subjects']
+
+       def activate_subjects(self, request, queryset):
+           """Bulk activate subjects."""
+           count = queryset.update(is_active=True)
+           self.message_user(request, _(f'{count} subject(s) activated.'))
+       activate_subjects.short_description = _('Activate selected subjects')
+
+       def deactivate_subjects(self, request, queryset):
+           """Bulk deactivate subjects."""
+           count = queryset.update(is_active=False)
+           self.message_user(request, _(f'{count} subject(s) deactivated.'))
+       deactivate_subjects.short_description = _('Deactivate selected subjects')
+
+
+   # CurriculumSubject Inline
+   class CurriculumSubjectInline(admin.TabularInline):
+       model = CurriculumSubject
+       extra = 1
+       fields = [
+           'subject', 'grade_level', 'semester',
+           'is_required', 'minimum_grade', 'order'
+       ]
+       autocomplete_fields = ['subject']
+
+
+   # CurriculumFramework Admin
+   @admin.register(CurriculumFramework)
+   class CurriculumFrameworkAdmin(admin.ModelAdmin):
+       list_display = [
+           'code', 'name', 'education_level',
+           'total_subjects_count', 'mbhte_badge',
+           'status_badge', 'created_at'
+       ]
+       list_filter = [
+           'education_level', 'is_mbhte_approved',
+           'is_active', 'created_at'
+       ]
+       search_fields = [
+           'name', 'name_arabic', 'code', 'description'
+       ]
+       inlines = [CurriculumSubjectInline]
+       list_per_page = 25
+
+       fieldsets = (
+           (_('Basic Information'), {
+               'fields': ('name', 'name_arabic', 'code', 'description')
+           }),
+           (_('Education Details'), {
+               'fields': (
+                   'education_level', 'grade_levels',
+                   'total_credit_hours', 'academic_year_structure'
+               )
+           }),
+           (_('MBHTE Compliance'), {
+               'fields': (
+                   'is_mbhte_approved', 'mbhte_approval_date',
+                   'mbhte_approval_number'
+               )
+           }),
+           (_('Implementation'), {
+               'fields': ('effective_date', 'end_date', 'is_active')
+           }),
+           (_('Metadata'), {
+               'fields': ('created_by', 'created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+       readonly_fields = ['created_by', 'created_at', 'updated_at']
+
+       def save_model(self, request, obj, form, change):
+           """Set created_by on creation."""
+           if not change:
+               obj.created_by = request.user
+           super().save_model(request, obj, form, change)
+
+       def total_subjects_count(self, obj):
+           """Display total number of subjects."""
+           count = obj.get_total_subjects()
+           core = obj.get_core_subjects().count()
+           return format_html(
+               '<strong>{}</strong> total ({} core)',
+               count, core
+           )
+       total_subjects_count.short_description = _('Subjects')
+
+       def mbhte_badge(self, obj):
+           """Display MBHTE approval status."""
+           if obj.is_mbhte_approved:
+               return format_html(
+                   '<span style="background: #10B981; color: white; '
+                   'padding: 3px 10px; border-radius: 3px;">✓ Approved</span>'
+               )
+           return format_html(
+               '<span style="background: #6B7280; color: white; '
+               'padding: 3px 10px; border-radius: 3px;">Pending</span>'
+           )
+       mbhte_badge.short_description = _('MBHTE Status')
+
+       def status_badge(self, obj):
+           """Display active status."""
+           if obj.is_active:
+               return format_html(
+                   '<span style="color: #059669;">● Active</span>'
+               )
+           return format_html(
+               '<span style="color: #DC2626;">● Inactive</span>'
+           )
+       status_badge.short_description = _('Status')
+
+       def get_queryset(self, request):
+           """Optimize queryset with prefetch."""
+           qs = super().get_queryset(request)
+           return qs.select_related('created_by').prefetch_related('subjects')
+
+
+   # CurriculumSubject Admin
+   @admin.register(CurriculumSubject)
+   class CurriculumSubjectAdmin(admin.ModelAdmin):
+       list_display = [
+           'subject', 'framework', 'grade_level',
+           'semester', 'required_badge', 'order'
+       ]
+       list_filter = [
+           'framework', 'grade_level', 'is_required', 'semester'
+       ]
+       search_fields = [
+           'subject__name', 'subject__code',
+           'framework__name', 'grade_level'
+       ]
+       autocomplete_fields = ['subject', 'framework']
+       list_per_page = 100
+
+       def required_badge(self, obj):
+           """Display required status."""
+           if obj.is_required:
+               return format_html(
+                   '<span style="color: #DC2626;">● Required</span>'
+               )
+           return format_html(
+               '<span style="color: #9CA3AF;">○ Elective</span>'
+           )
+       required_badge.short_description = _('Type')
+
+
+   # LessonPlan Admin
+   @admin.register(LessonPlan)
+   class LessonPlanAdmin(admin.ModelAdmin):
+       list_display = [
+           'title', 'subject', 'teacher', 'grade_level',
+           'madrasah', 'status_badge', 'public_badge',
+           'created_at'
+       ]
+       list_filter = [
+           'status', 'grade_level', 'is_public',
+           'is_template', 'madrasah', 'academic_year',
+           'created_at'
+       ]
+       search_fields = [
+           'title', 'description', 'content',
+           'teacher__first_name', 'teacher__last_name',
+           'subject__name'
+       ]
+       autocomplete_fields = ['subject', 'teacher', 'madrasah', 'reviewed_by']
+       readonly_fields = ['created_at', 'updated_at', 'approved_at']
+       list_per_page = 50
+
+       fieldsets = (
+           (_('Basic Information'), {
+               'fields': (
+                   'title', 'subject', 'teacher', 'grade_level',
+                   'madrasah', 'academic_year', 'semester'
+               )
+           }),
+           (_('Content'), {
+               'fields': (
+                   'description', 'learning_objectives', 'content',
+                   'teaching_methods', 'assessment_methods',
+                   'materials_needed', 'duration_minutes'
+               )
+           }),
+           (_('Islamic Education References'), {
+               'fields': ('quranic_references', 'hadith_references'),
+               'classes': ('collapse',)
+           }),
+           (_('Attachments'), {
+               'fields': ('attachment',)
+           }),
+           (_('Review and Approval'), {
+               'fields': (
+                   'status', 'reviewed_by', 'review_notes', 'approved_at'
+               )
+           }),
+           (_('Sharing Options'), {
+               'fields': ('is_public', 'is_template')
+           }),
+           (_('Metadata'), {
+               'fields': ('created_at', 'updated_at'),
+               'classes': ('collapse',)
+           }),
+       )
+
+       def status_badge(self, obj):
+           """Display status with color coding."""
+           colors = {
+               'draft': '#6B7280',
+               'submitted': '#3B82F6',
+               'approved': '#10B981',
+               'needs_revision': '#F59E0B',
+               'archived': '#DC2626',
+           }
+           color = colors.get(obj.status, '#6B7280')
+           return format_html(
+               '<span style="background: {}; color: white; '
+               'padding: 3px 10px; border-radius: 3px;">{}</span>',
+               color,
+               obj.get_status_display()
+           )
+       status_badge.short_description = _('Status')
+
+       def public_badge(self, obj):
+           """Display public/private status."""
+           if obj.is_public:
+               return format_html(
+                   '<span style="color: #059669;">🌐 Public</span>'
+               )
+           return format_html(
+               '<span style="color: #6B7280;">🔒 Private</span>'
+           )
+       public_badge.short_description = _('Visibility')
+
+       actions = [
+           'approve_lesson_plans', 'submit_for_review',
+           'archive_lesson_plans', 'make_public', 'make_private'
+       ]
+
+       def approve_lesson_plans(self, request, queryset):
+           """Bulk approve lesson plans."""
+           from django.utils import timezone
+           count = queryset.update(
+               status='approved',
+               reviewed_by=request.user,
+               approved_at=timezone.now()
+           )
+           self.message_user(request, _(f'{count} lesson plan(s) approved.'))
+       approve_lesson_plans.short_description = _('Approve selected lesson plans')
+
+       def submit_for_review(self, request, queryset):
+           """Submit lesson plans for review."""
+           count = queryset.filter(status='draft').update(status='submitted')
+           self.message_user(request, _(f'{count} lesson plan(s) submitted for review.'))
+       submit_for_review.short_description = _('Submit for review')
+
+       def archive_lesson_plans(self, request, queryset):
+           """Archive lesson plans."""
+           count = queryset.update(status='archived')
+           self.message_user(request, _(f'{count} lesson plan(s) archived.'))
+       archive_lesson_plans.short_description = _('Archive selected lesson plans')
+
+       def make_public(self, request, queryset):
+           """Make lesson plans public."""
+           count = queryset.update(is_public=True)
+           self.message_user(request, _(f'{count} lesson plan(s) made public.'))
+       make_public.short_description = _('Make public')
+
+       def make_private(self, request, queryset):
+           """Make lesson plans private."""
+           count = queryset.update(is_public=False)
+           self.message_user(request, _(f'{count} lesson plan(s) made private.'))
+       make_private.short_description = _('Make private')
+
+       def get_queryset(self, request):
+           """Optimize queryset."""
+           qs = super().get_queryset(request)
+           return qs.select_related(
+               'subject', 'teacher', 'madrasah', 'reviewed_by'
+           )
+   ```
+
+2. Add autocomplete support by enabling search_fields in Subject admin:
+   ```python
+   # This is already in SubjectAdmin above
+   search_fields = ['code', 'name', 'name_arabic', 'description']
+   ```
+
+3. Test admin interface:
+   ```bash
+   python manage.py runserver
+   # Navigate to http://localhost:8000/admin/curriculum/
+   ```
+
+4. Verify all features:
+   - List views display correctly with badges
+   - Search functionality works
+   - Filters are functional
+   - Inline editing works for CurriculumFramework
+   - Bulk actions execute successfully
+   - Autocomplete fields work properly
+
+5. Test permissions:
+   - Create a test user with limited permissions
+   - Verify they can only see appropriate actions
+   - Ensure custom permissions work correctly
+
+## Acceptance Criteria:
+- Subject admin enhanced with search and filters
+- CurriculumFramework admin has inline subject management
+- LessonPlan admin includes approval workflow actions
+- Admin list views optimized with select_related/prefetch_related
+- Custom admin actions implemented for bulk operations
+- Admin interface is user-friendly and efficient
+- All models have appropriate autocomplete fields
+- Custom permissions respected in admin
+
+## Files Modified:
+- `apps/curriculum/admin.py (comprehensive update)`
+
+## Important Notes:
+- Color-coded badges improve visual clarity
+- Optimized queries with select_related and prefetch_related
+- Bulk actions save time for administrators
+- Autocomplete fields improve usability
+- Inline editing allows efficient curriculum framework management
+- Custom permissions respected throughout admin interface
+- Estimate: 2 hours
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Login to Django admin as superuser
+6. Verify models appear in admin interface
+7. Test create, read, update, delete operations
+8. Verify list display, filters, and search work
+9. Access view URL and verify HTTP 200 response
+10. Test with different user permissions
+11. Verify context data passed to template
+12. Test any query parameters or filters

@@ -1,0 +1,114 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}All Tasks - Staff Management{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-primary-800">All Tasks</h1>
+            <p class="text-gray-600 mt-1">Manage and track all staff tasks</p>
+        </div>
+        <div class="flex gap-3">
+            {% include 'components/atoms/button.html' with variant='primary' text='Create New Task' href='/staff/tasks/create/' %}
+            {% include 'components/atoms/button.html' with variant='outline' text='My Tasks' href='/staff/tasks/my/' %}
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow p-4 mb-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <select name="status" class="border rounded px-3 py-2">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+            </select>
+            <select name="priority" class="border rounded px-3 py-2">
+                <option value="">All Priorities</option>
+                <option value="urgent">Urgent</option>
+                <option value="high">High</option>
+                <option value="medium">Medium</option>
+                <option value="low">Low</option>
+            </select>
+            <input type="text" name="search" placeholder="Search tasks..." class="border rounded px-3 py-2" value="{{ request.GET.search }}">
+            {% include 'components/atoms/button.html' with variant='primary' text='Filter' type='submit' %}
+        </form>
+    </div>
+
+    <!-- Tasks List -->
+    <div class="bg-white rounded-lg shadow">
+        {% if tasks %}
+            <div class="divide-y divide-gray-200">
+                {% for task in tasks %}
+                <div class="p-6 hover:bg-gray-50">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-medium text-gray-900">
+                                <a href="/staff/tasks/{{ task.id }}/" class="hover:text-primary-600">{{ task.title }}</a>
+                            </h3>
+                            <p class="text-gray-600 mt-1">{{ task.description|truncatewords:20 }}</p>
+                            <div class="flex items-center space-x-4 mt-2 text-sm text-gray-500">
+                                <span>Assigned to: {{ task.assigned_to.full_name }}</span>
+                                {% if task.due_date %}
+                                <span>Due: {{ task.due_date|date:"M d, Y" }}</span>
+                                {% endif %}
+                                <span>Priority: {{ task.get_priority_display }}</span>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex flex-col items-end">
+                            <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full
+                                {% if task.status == 'pending' %}bg-gray-100 text-gray-800
+                                {% elif task.status == 'in_progress' %}bg-blue-100 text-blue-800
+                                {% elif task.status == 'completed' %}bg-green-100 text-green-800
+                                {% endif %}">
+                                {{ task.get_status_display }}
+                            </span>
+                            {% if task.is_overdue %}
+                            <span class="text-red-600 text-xs mt-1 font-semibold">OVERDUE</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <div class="px-6 py-4 border-t">
+                <div class="flex justify-between">
+                    {% if page_obj.has_previous %}
+                        <a href="?page={{ page_obj.previous_page_number }}" class="text-primary-600 hover:text-primary-700">Previous</a>
+                    {% else %}
+                        <span class="text-gray-400">Previous</span>
+                    {% endif %}
+                    
+                    <span class="text-gray-600">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                    
+                    {% if page_obj.has_next %}
+                        <a href="?page={{ page_obj.next_page_number }}" class="text-primary-600 hover:text-primary-700">Next</a>
+                    {% else %}
+                        <span class="text-gray-400">Next</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-12">
+                <div class="text-gray-400 text-6xl mb-4">
+                    <i class="fas fa-tasks"></i>
+                </div>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">No tasks found</h3>
+                <p class="text-gray-600">Get started by creating a new task.</p>
+                <div class="mt-4">
+                    {% include 'components/atoms/button.html' with variant='primary' text='Create First Task' href='/staff/tasks/create/' %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

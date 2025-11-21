@@ -1,0 +1,139 @@
+# Task ID: 062
+# Title: Create Student Model (Rename from BMParliamentMember)
+# Status: pending
+# Dependencies: 061
+# Priority: high
+# Description: Rename BMParliamentMember model to Student using Django's RenameModel migration. This preserves all existing data while changing the model name and da
+
+# Details:
+Rename BMParliamentMember model to Student using Django's RenameModel migration. This preserves all existing data while changing the model name and database table name.
+
+**CRITICAL:** This task renames a core model. All data must be preserved.
+
+## Implementation Steps:
+1. Backup constituents app before changes:
+   ```bash
+   mkdir -p /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student
+   cp -r /Users/saidamenmambayao/apps/madaris-ms/src/apps/constituents \
+         /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/constituents_app_backup
+   ```
+2. Record current row counts:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py shell -c "from apps.constituents.models import BMParliamentMember; print(f'BMParliamentMember count: {BMParliamentMember.objects.count()}')" > /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/row_count_before.txt
+   ```
+3. Update model name in src/apps/constituents/models.py:
+   ```python
+   # Before
+   class BMParliamentMember(models.Model):
+       """BM Parliament Member profile"""
+       ...
+
+   # After
+   class Student(models.Model):
+       """Student profile for madaris enrollments"""
+
+       # All existing fields remain the same
+       # (personal info, family details, educational background, etc.)
+
+       class Meta:
+           db_table = 'constituents_student'
+           verbose_name = 'Student'
+           verbose_name_plural = 'Students'
+           ordering = ['-created_at']
+   ```
+4. Create migration:
+   ```bash
+   cd /Users/saidamenmambayao/apps/madaris-ms
+   python manage.py makemigrations constituents --name rename_bmparlimentmember_to_student
+   ```
+5. Review migration file - should contain:
+   ```python
+   operations = [
+       migrations.RenameModel(
+           old_name='BMParliamentMember',
+           new_name='Student',
+       ),
+   ]
+   ```
+6. Test migration on staging database first:
+   ```bash
+   # Load staging data
+   python manage.py migrate constituents --database=staging
+
+   # Verify staging
+   python manage.py shell --database=staging -c "from apps.constituents.models import Student; print(f'Student count: {Student.objects.count()}')"
+   ```
+7. If staging successful, run on main database:
+   ```bash
+   python manage.py migrate constituents
+   ```
+8. Verify data preserved:
+   ```bash
+   python manage.py shell -c "from apps.constituents.models import Student; print(f'Student count: {Student.objects.count()}')" > /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/row_count_after.txt
+
+   # Compare counts
+   diff /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/row_count_before.txt \
+        /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/row_count_after.txt
+   ```
+9. Verify table renamed in database:
+   ```bash
+   python manage.py dbshell -c "SELECT table_name FROM information_schema.tables WHERE table_name LIKE '%student%';"
+   # Should show constituents_student
+   ```
+10. Test in Django admin interface
+11. Document migration results:
+    ```bash
+    cat > /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/MIGRATION_LOG.txt << EOF
+    Migration Date: $(date)
+    Migration: rename_bmparlimentmember_to_student
+    Status: SUCCESS
+    Records before: $(cat /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/row_count_before.txt)
+    Records after: $(cat /Users/saidamenmambayao/apps/madaris-ms/backups/phase6_student/row_count_after.txt)
+    Table name: constituents_student
+    EOF
+    ```
+
+## Acceptance Criteria:
+- Model renamed in constituents/models.py
+- Meta class updated with new names
+- Migration file created with RenameModel
+- Migration tested on staging
+- Table renamed: constituents_bmparlimentmember → constituents_student
+- All data preserved (row count matches)
+- Foreign keys still functional
+- Admin shows Student model
+- No data loss verified
+
+## Files Modified:
+- `src/apps/constituents/models.py`
+- `src/apps/constituents/migrations/000X_rename_bmparlimentmember_to_student.py`
+- `backups/phase6_student/constituents_app_backup/ (backup)`
+- `backups/phase6_student/row_count_before.txt`
+- `backups/phase6_student/row_count_after.txt`
+- `backups/phase6_student/MIGRATION_LOG.txt`
+
+## Important Notes:
+- RenameModel is safe - preserves all data
+- Table name changed but data intact
+- Import statements will be updated in task_066
+- Keep BMParliamentMember name in code temporarily for backward compatibility
+- All existing fields remain unchanged
+- Estimate: 45 minutes
+
+## Risk Mitigation:
+- ⚠️ MUST verify row counts match before/after
+- ⚠️ Test on staging database first
+- ⚠️ Keep backup until phase fully verified
+- ⚠️ Do not delete BMParliamentMember imports yet
+
+# Test Strategy:
+1. Verify migration file syntax with `python manage.py sqlmigrate`
+2. Test forward migration on staging database
+3. Test reverse migration to ensure rollback works
+4. Verify no data loss during migration
+5. Run full test suite to catch regressions
+6. Run migrations and verify schema changes
+7. Create test instances to verify new fields
+8. Test admin interface with new fields
+9. Verify backward compatibility with existing data

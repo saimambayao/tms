@@ -1,0 +1,91 @@
+# Task ID: 045
+# Title: Verify Phase 3 Madrasah System Complete
+# Status: pending
+# Dependencies: 026, 044
+# Priority: high
+# Description: Comprehensive verification that Phase 3 madrasah system is complete. All models renamed, fields added, forms working, and data preserved.
+
+# Details:
+Comprehensive verification that Phase 3 madrasah system is complete. All models renamed, fields added, forms working, and data preserved.
+
+## Implementation Steps:
+1. Verify database tables:
+   ```sql
+   SELECT table_name FROM information_schema.tables
+   WHERE table_name LIKE '%madrasah%';
+   -- Should show: chapters_madrasah, chapters_madrasahenrollment, chapters_madrasahactivity
+   ```
+2. Verify record counts match backup:
+   ```python
+   from apps.chapters.models import Madrasah, MadrasahEnrollment, MadrasahActivity
+   print(f"Madrasah: {Madrasah.objects.count()}")
+   print(f"Enrollment: {MadrasahEnrollment.objects.count()}")
+   print(f"Activity: {MadrasahActivity.objects.count()}")
+   # Compare with backups/phase3_chapters/BACKUP_LOG.txt
+   ```
+3. Test madrasah creation:
+   - Go to admin or registration form
+   - Create new madrasah with all fields
+   - Verify saves successfully
+4. Test madrasah update:
+   - Update existing madrasah
+   - Change accreditation status (record accreditation by MBHTE)
+   - Verify changes saved
+5. Test enrollment:
+   - Enroll a student
+   - Assign a teacher
+   - Verify enrollments appear
+6. Test activities:
+   - Create activity
+   - Verify appears in madrasah detail
+7. Check migrations:
+   ```bash
+   python manage.py showmigrations chapters
+   # All should be [X]
+   ```
+8. Test URL resolution:
+   ```python
+   from django.urls import reverse
+   print(reverse('chapters:madrasah-list'))
+   print(reverse('chapters:madrasah-detail', args=[1]))
+   ```
+9. Search for any remaining "Chapter" references:
+   ```bash
+   grep -r "Chapter\.objects" /Users/saidamenmambayao/apps/madaris-ms/src/apps/chapters --include="*.py"
+   # Should be 0 results
+   ```
+10. Test in browser - create, view, update madrasah
+
+## Acceptance Criteria:
+- Chapter renamed to Madrasah (data preserved)
+- ChapterMembership renamed to MadrasahEnrollment
+- ChapterActivity renamed to MadrasahActivity
+- All new fields added to Madrasah model
+- Forms working for create/update
+- Admin interface fully functional
+- Views working for all CRUD operations
+- URLs resolve correctly
+- No data loss
+- Migrations all applied
+
+## Files Modified:
+- `None - verification task only`
+
+## Important Notes:
+- Critical checkpoint before Phase 4
+- All data must be verified intact
+- Accreditation status changes represent coordination with MBHTE (Ministry of Basic, Higher, and Technical Education)
+- Tarbiyyah Committee maintains accreditation records in the system
+- Document any issues found
+- Estimate: 60 minutes
+
+# Test Strategy:
+1. Run migrations and verify schema changes
+2. Create test instances to verify new fields
+3. Test admin interface with new fields
+4. Verify backward compatibility with existing data
+5. Test form validation with valid data
+6. Test form validation with invalid data
+7. Verify error messages display correctly
+8. Test form submission and data persistence
+9. Test CSRF protection
