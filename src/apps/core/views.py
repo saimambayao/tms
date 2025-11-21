@@ -643,7 +643,7 @@ class AboutPageView(TemplateView):
             submission.save()
             
             context = self.get_context_data(**kwargs)
-            context['message'] = "Thank you for contacting MP Gayak's office. We will get back to you soon."
+            context['message'] = "Thank you for contacting Tarbiyyah's office. We will get back to you soon."
             context['message_type'] = 'success'
             context['contact_form'] = ContactForm(default_subject='feedback')  # Fresh form
             return render(request, self.template_name, context)
@@ -1783,7 +1783,7 @@ class DatabaseStaffView(TemplateView):
             ('administrative_affairs', 'Administrative Affairs'),
             ('communications', 'Communications'),
             ('it_unit', 'IT Unit'),
-            ('mp_office', "MP Gayak's Office"),
+            ('mp_office', "Tarbiyyah's Office"),
         ]
         
         # Employment status choices for filter

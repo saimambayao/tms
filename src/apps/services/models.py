@@ -23,7 +23,7 @@ class MinistryProgram(models.Model):
         ('motc', 'Ministry of Transportation and Communications'),
         ('mei', 'Ministry of Environment and Interior'),
         ('mle', 'Ministry of Labor and Employment'),
-        ('mp_office', 'Office of MP Amiroddin Gayak'),
+        ('mp_office', 'Office of Tarbiyyah'),
         ('other', 'Other Ministry/Office'),
     )
     

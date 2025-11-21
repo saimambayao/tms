@@ -145,10 +145,10 @@ msgstr ""
 
 #: .\src\templates\core\home.html:21
 msgid ""
-"MP Amiroddin Gayak's initiative to improve access to "
+"Tarbiyyah's initiative to improve access to "
 "government services and community support for the Bangsamoro."
 msgstr ""
-"Inisyatiba ni MP Amiroddin Gayak upang mapabuti ang pag-"
+"Inisyatiba ni Tarbiyyah upang mapabuti ang pag-"
 "access sa mga serbisyo ng gobyerno at suporta sa komunidad para sa "
 "Bangsamoro."
 

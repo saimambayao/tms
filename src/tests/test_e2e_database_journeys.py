@@ -460,7 +460,7 @@ class E2EMPUserJourneyTest(TestCase):
         priority_announcement = self.client.post(
             reverse('database_announcement_create'),
             {
-                'title': 'Important Policy Update from MP Gayak',
+                'title': 'Important Policy Update from Tarbiyyah',
                 'category': 'update',
                 'status': 'published',
                 'excerpt': 'New policies for constituent services',

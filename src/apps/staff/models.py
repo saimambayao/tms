@@ -22,7 +22,7 @@ class Staff(models.Model):
         ('legislative_affairs', 'Legislative Affairs'),
         ('administrative_affairs', 'Administrative Affairs'),
         ('communications', 'Communications'),
-        ('mp_office', "MP Gayak's Office"),
+        ('mp_office', "Tarbiyyah's Office"),
         ('it_unit', 'IT Unit'),
     )
     

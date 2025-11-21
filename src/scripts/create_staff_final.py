@@ -57,7 +57,7 @@ STAFF_DATA = [
 4. Other Tasks / Professional Development (1h).'''
     },
     {
-        'full_name': 'MP Amiroddin Gayak',
+        'full_name': 'Tarbiyyah',
         'position': 'Member of Parliament',
         'email': 'mp.uyoyod@bmparliament.gov.ph',
         'phone_number': '09123456789',

@@ -506,7 +506,7 @@ def update_credentials_file():
             'administrative_affairs': 'Administrative Affairs',
             'communications': 'Communications',
             'it_unit': 'IT Unit',
-            'mp_office': "MP Gayak's Office"
+            'mp_office': "Tarbiyyah's Office"
         }.get(staff.division, staff.division or "Administrative Affairs")
         
         if staff.user:

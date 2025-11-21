@@ -906,7 +906,7 @@ class StaffE2EWorkflowTests(TestCase):
         # Create staff profiles
         self.mp_staff = Staff.objects.create(
             user=self.mp_user,
-            full_name='MP Amiroddin Gayak',
+            full_name='Tarbiyyah',
             position='Member of Parliament',
             division='mp_office',
             employment_status='coterminous',
